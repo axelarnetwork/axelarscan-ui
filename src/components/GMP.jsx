@@ -1547,7 +1547,7 @@ export function GMP({ tx, lite }) {
   // setEstimatedGasUsed
   useEffect(() => {
     const getEstimatedGasUsed = async () => {
-      if (!estimatedGasUsed && data?.is_insufficient_fee && !data.confirm && !data.approved && data.call?.returnValues?.destinationChain && data.call.returnValues.destinationContractAddress) {
+      if (!estimatedGasUsed && (data?.is_insufficient_fee || (data?.call && !data.gas_paid)) && !data.confirm && !data.approved && data.call?.returnValues?.destinationChain && data.call.returnValues.destinationContractAddress) {
         const { destinationChain, destinationContractAddress } = { ...data.call.returnValues }
         const { express_executed, executed } = { ..._.head((await searchGMP({ destinationChain, destinationContractAddress, status: 'executed', size: 1 }))?.data) }
         const { gasUsed } = { ...(express_executed || executed)?.receipt }
@@ -1671,8 +1671,9 @@ export function GMP({ tx, lite }) {
           txFee: { gas: '250000', amount: [{ denom: getChainData(chain, chains)?.native_token?.denom, amount: '30000' }] },
         }
 
-        console.log('[addGas request]', { chain, destinationChain, transactionHash, logIndex, messageId, estimatedGasUsed, refundAddress: address, token, sendOptions })
-        const response = chain_type === 'cosmos' ? await sdk.addGasToCosmosChain({ txHash: transactionHash, messageId, gasLimit: estimatedGasUsed, chain, token, sendOptions }) : await sdk.addNativeGas(chain, transactionHash, estimatedGasUsed, { evmWalletDetails: { useWindowEthereum: true, provider, signer }, destChain: destinationChain, logIndex, refundAddress: address })
+        const gasLimit = estimatedGasUsed || 700000
+        console.log('[addGas request]', { chain, destinationChain, transactionHash, logIndex, messageId, estimatedGasUsed: gasLimit, refundAddress: address, token, sendOptions })
+        const response = chain_type === 'cosmos' ? await sdk.addGasToCosmosChain({ txHash: transactionHash, messageId, gasLimit, chain, token, sendOptions }) : await sdk.addNativeGas(chain, transactionHash, gasLimit, { evmWalletDetails: { useWindowEthereum: true, provider, signer }, destChain: destinationChain, logIndex, refundAddress: address })
         console.log('[addGas response]', response)
 
         const { success, error, transaction, broadcastResult } = { ...response }
