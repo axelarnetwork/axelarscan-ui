@@ -112,7 +112,8 @@ export const toArray = (x, options) => {
 }
 
 export const parseError = error => {
-  const message = error?.reason || error?.data?.message || error?.data?.text || error?.message || (typeof error === 'string' ? error : undefined)
+  let message = error?.reason || error?.data?.message || error?.data?.text || error?.message || (typeof error === 'string' ? error : undefined)
   const code = _.slice(split(message, { delimiter: ' ', toCase: 'lower' }), 0, 2).join('_')
+  if (message?.includes('ACTION_REJECTED') || code === 'user_rejected') message = 'User Rejected'
   return { message, code }
 }

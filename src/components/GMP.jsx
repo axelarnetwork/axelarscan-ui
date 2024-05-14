@@ -1680,7 +1680,7 @@ export function GMP({ tx, lite }) {
         if (success) await sleep(1 * 1000)
         setResponse({
           status: success ? 'success' : 'failed',
-          message: error?.message || error || 'Pay gas successful',
+          message: parseError(error)?.message || error || 'Pay gas successful',
           hash: (chain_type === 'cosmos' ? broadcastResult : transaction)?.transactionHash,
           chain,
         })
@@ -1742,7 +1742,7 @@ export function GMP({ tx, lite }) {
         const { success, error, transaction } = { ...response }
         setResponse({
           status: success && transaction ? 'success' : 'failed',
-          message: error?.message || error || (transaction ? 'Execute successful' : 'Error Execution. Please see the error on console.'),
+          message: parseError(error)?.message || error || (transaction ? 'Execute successful' : 'Error Execution. Please see the error on console.'),
           hash: transaction?.transactionHash,
           chain: data.approved.chain,
         })
