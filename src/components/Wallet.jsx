@@ -24,6 +24,13 @@ const publicClientToProvider = publicClient => {
   return new providers.JsonRpcProvider(transport.url, network)
 }
 
+const walletClientToProvider = walletClient => {
+  const { account, chain, transport } = { ...walletClient }
+  const network = { chainId: chain.id, name: chain.name, ensAddress: chain.contracts?.ensRegistry?.address }
+  // const provider = new BrowserProvider(transport, network)
+  return new providers.Web3Provider(transport, network)
+}
+
 const walletClientToSigner = walletClient => {
   const { account, chain, transport } = { ...walletClient }
   const network = { chainId: chain.id, name: chain.name, ensAddress: chain.contracts?.ensRegistry?.address }
@@ -64,7 +71,8 @@ export function EVMWallet({ connectChainId, children, className }) {
     if (chain?.id && walletClient && address) {
       setChainId(chain.id)
       setAddress(address)
-      setProvider(publicClientToProvider(publicClient))
+      // setProvider(publicClientToProvider(publicClient))
+      setProvider(walletClientToProvider(walletClient))
       setSigner(walletClientToSigner(walletClient))
     }
     else {
