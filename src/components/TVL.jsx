@@ -54,7 +54,8 @@ export function TVL() {
       ...d,
       total_value: _.sumBy(filteredData.map(_d => {
         const { supply, total } = { ..._d.tvl?.[d.id] }
-        return { ..._d, value: toNumber((supply || total) * _d.price) }
+        const isITSNotCanonical = _d.assetType === 'its' && Object.values({ ..._d.tvl }).findIndex(d => d.contract_data.token_manager_type?.startsWith('lockUnlock')) < 0
+        return { ..._d, value: isITSNotCanonical ? 0 : toNumber((supply || total) * _d.price) }
       }).filter(d => d.value > 0), 'value'),
     }
   }), 'id'), ['total_value'], ['desc'])
