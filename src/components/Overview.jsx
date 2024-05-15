@@ -337,8 +337,6 @@ export function Overview() {
     getData()
   }, [data, setNetworkGraph])
 
-  const { GMPStats, GMPTotalVolume, transfersStats, transfersTotalVolume } = { ...data }
-
   const groupData = (data, by = 'key') => Object.entries(_.groupBy(toArray(data), by)).map(([k, v]) => ({
     key: _.head(v)?.key || k,
     num_txs: _.sumBy(v, 'num_txs'),
@@ -347,8 +345,8 @@ export function Overview() {
   }))
 
   const chainPairs = groupData(_.concat(
-    toArray(GMPStats?.messages).flatMap(m => toArray(m.sourceChains || m.source_chains).flatMap(s => toArray(s.destinationChains || s.destination_chains).filter(d => !chainFocus || [s.key, d.key].includes(chainFocus)).map(d => ({ key: `${s.key}_${d.key}`, num_txs: d.num_txs, volume: d.volume })))),
-    toArray(transfersStats?.data).filter(d => !chainFocus || [d.source_chain, d.destination_chain].includes(chainFocus)).map(d => ({ key: `${d.source_chain}_${d.destination_chain}`, num_txs: d.num_txs, volume: d.volume })),
+    toArray(data?.GMPStats?.messages).flatMap(m => toArray(m.sourceChains || m.source_chains).flatMap(s => toArray(s.destinationChains || s.destination_chains).filter(d => !chainFocus || [s.key, d.key].includes(chainFocus)).map(d => ({ key: `${s.key}_${d.key}`, num_txs: d.num_txs, volume: d.volume })))),
+    toArray(data?.transfersStats?.data).filter(d => !chainFocus || [d.source_chain, d.destination_chain].includes(chainFocus)).map(d => ({ key: `${d.source_chain}_${d.destination_chain}`, num_txs: d.num_txs, volume: d.volume })),
   ))
 
   return (
@@ -385,7 +383,7 @@ export function Overview() {
                   <SankeyChart
                     data={chainPairs}
                     topN={40}
-                    totalValue={sankeyTab === 'transactions' ? toNumber(_.sumBy(GMPStats?.messages, 'num_txs')) + toNumber(transfersStats?.total) : toNumber(GMPTotalVolume) + toNumber(transfersTotalVolume)}
+                    totalValue={sankeyTab === 'transactions' ? toNumber(_.sumBy(data.GMPStats?.messages, 'num_txs')) + toNumber(data.transfersStats?.total) : toNumber(data.GMPTotalVolume) + toNumber(data.transfersTotalVolume)}
                     field={sankeyTab === 'transactions' ? 'num_txs' : 'volume'}
                     title={<div className="max-w-xl flex flex-wrap items-center">
                       {sankeyTabs.map((d, i) => {
