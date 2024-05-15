@@ -54,7 +54,8 @@ const environments = [
   { name: 'mainnet', href: 'https://axelarscan.io' },
   { name: 'testnet', href: 'https://testnet.axelarscan.io' },
   { name: 'stagenet', href: 'https://stagenet.axelarscan.io' },
-].filter(d => d.name !== 'stagenet' || d.name === ENVIRONMENT)
+  { name: 'devnet-amplifier', href: 'https://devnet-amplifier.axelarscan.io' },
+].filter(d => !['stagenet', 'devnet-amplifier'].includes(d.name) || d.name === ENVIRONMENT)
 
 function MobileNavLink({ href, children, className }) {
   const pathname = usePathname()

@@ -1463,7 +1463,7 @@ export function GMP({ tx, lite }) {
   const [processing, setProcessing] = useState(false)
   const [response, setResponse] = useState(null)
   const { chains, assets } = useGlobalStore()
-  const { chainId, address, signer } = useEVMWalletStore()
+  const { chainId, address, provider, signer } = useEVMWalletStore()
   const cosmosWalletStore = useCosmosWalletStore()
 
   const getData = useCallback(async () => {
@@ -1673,14 +1673,14 @@ export function GMP({ tx, lite }) {
 
         const gasLimit = estimatedGasUsed || 700000
         console.log('[addGas request]', { chain, destinationChain, transactionHash, logIndex, messageId, estimatedGasUsed: gasLimit, refundAddress: address, token, sendOptions })
-        const response = chain_type === 'cosmos' ? await sdk.addGasToCosmosChain({ txHash: transactionHash, messageId, gasLimit, chain, token, sendOptions }) : await sdk.addNativeGas(chain, transactionHash, gasLimit, { evmWalletDetails: { useWindowEthereum: true, signer }, destChain: destinationChain, logIndex, refundAddress: address })
+        const response = chain_type === 'cosmos' ? await sdk.addGasToCosmosChain({ txHash: transactionHash, messageId, gasLimit, chain, token, sendOptions }) : await sdk.addNativeGas(chain, transactionHash, gasLimit, { evmWalletDetails: { useWindowEthereum: true, provider, signer }, destChain: destinationChain, logIndex, refundAddress: address })
         console.log('[addGas response]', response)
 
         const { success, error, transaction, broadcastResult } = { ...response }
         if (success) await sleep(1 * 1000)
         setResponse({
           status: success ? 'success' : 'failed',
-          message: error?.message || error || 'Pay gas successful',
+          message: parseError(error)?.message || error || 'Pay gas successful',
           hash: (chain_type === 'cosmos' ? broadcastResult : transaction)?.transactionHash,
           chain,
         })
@@ -1707,7 +1707,7 @@ export function GMP({ tx, lite }) {
         const escapeAfterConfirm = false
 
         console.log('[manualRelayToDestChain request]', { transactionHash, logIndex, eventIndex, escapeAfterConfirm, messageId })
-        const response = await sdk.manualRelayToDestChain(transactionHash, logIndex, eventIndex, { useWindowEthereum: true, signer }, escapeAfterConfirm, messageId)
+        const response = await sdk.manualRelayToDestChain(transactionHash, logIndex, eventIndex, { useWindowEthereum: true, provider, signer }, escapeAfterConfirm, messageId)
         console.log('[manualRelayToDestChain response]', response)
 
         const { success, error, confirmTx, signCommandTx, routeMessageTx } = { ...response }
@@ -1736,13 +1736,13 @@ export function GMP({ tx, lite }) {
         const gasLimitBuffer = '200000'
 
         console.log('[execute request]', { transactionHash, logIndex, gasLimitBuffer })
-        const response = await sdk.execute(transactionHash, logIndex, { useWindowEthereum: true, signer, gasLimitBuffer })
+        const response = await sdk.execute(transactionHash, logIndex, { useWindowEthereum: true, provider, signer, gasLimitBuffer })
         console.log('[execute response]', response)
 
         const { success, error, transaction } = { ...response }
         setResponse({
           status: success && transaction ? 'success' : 'failed',
-          message: error?.message || error || (transaction ? 'Execute successful' : 'Error Execution. Please see the error on console.'),
+          message: parseError(error)?.message || error || (transaction ? 'Execute successful' : 'Error Execution. Please see the error on console.'),
           hash: transaction?.transactionHash,
           chain: data.approved.chain,
         })
