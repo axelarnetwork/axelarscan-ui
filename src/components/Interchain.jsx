@@ -577,36 +577,38 @@ export function SankeyChart({
             <Spinner />
           </div> :
           <div className={clsx('w-full h-112 font-semibold', className)}>
-            <ResponsiveSankey
-              data={{
-                nodes: _.uniq(chartData.flatMap(d => [d.source, d.target])).map(d => ({ id: d, nodeColor: getChainData(d.trim(), chains)?.color })),
-                links: chartData,
-              }}
-              valueFormat={`>-${valuePrefix},`}
-              margin={{ top: 10, bottom: 10 }}
-              theme={{
-                tooltip: {
-                  container: {
-                    background: resolvedTheme === 'dark' ? '#18181b' : '#f4f4f5',
-                    color: resolvedTheme === 'dark' ? '#f4f4f5' : '#18181b',
-                    fontSize: 12,
-                    fontWeight: 400,
+            {chartData.length > 0 && (
+              <ResponsiveSankey
+                data={{
+                  nodes: _.uniq(chartData.flatMap(d => [d.source, d.target])).map(d => ({ id: d, nodeColor: getChainData(d.trim(), chains)?.color })),
+                  links: chartData,
+                }}
+                valueFormat={`>-${valuePrefix},`}
+                margin={{ top: 10, bottom: 10 }}
+                theme={{
+                  tooltip: {
+                    container: {
+                      background: resolvedTheme === 'dark' ? '#18181b' : '#f4f4f5',
+                      color: resolvedTheme === 'dark' ? '#f4f4f5' : '#18181b',
+                      fontSize: 12,
+                      fontWeight: 400,
+                    },
                   },
-                },
-              }}
-              colors={d => d.nodeColor}
-              nodeOpacity={1}
-              nodeHoverOpacity={1}
-              nodeHoverOthersOpacity={0.35}
-              nodeBorderWidth={0}
-              nodeBorderRadius={3}
-              linkOpacity={resolvedTheme === 'dark' ? 0.2 : 0.4}
-              linkHoverOpacity={resolvedTheme === 'dark' ? 0.7 : 0.9}
-              linkHoverOthersOpacity={resolvedTheme === 'dark' ? 0.1 : 0.2}
-              linkBlendMode={resolvedTheme === 'dark' ? 'lighten' : 'darken'}
-              enableLinkGradient={true}
-              labelTextColor={resolvedTheme === 'dark' ? '#f4f4f5' : '#18181b'}
-            />
+                }}
+                colors={d => d.nodeColor}
+                nodeOpacity={1}
+                nodeHoverOpacity={1}
+                nodeHoverOthersOpacity={0.35}
+                nodeBorderWidth={0}
+                nodeBorderRadius={3}
+                linkOpacity={resolvedTheme === 'dark' ? 0.2 : 0.4}
+                linkHoverOpacity={resolvedTheme === 'dark' ? 0.7 : 0.9}
+                linkHoverOthersOpacity={resolvedTheme === 'dark' ? 0.1 : 0.2}
+                linkBlendMode={resolvedTheme === 'dark' ? 'lighten' : 'darken'}
+                enableLinkGradient={true}
+                labelTextColor={resolvedTheme === 'dark' ? '#f4f4f5' : '#18181b'}
+              />
+            )}
           </div>
         }
       </div>

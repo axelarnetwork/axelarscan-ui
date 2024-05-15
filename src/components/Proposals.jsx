@@ -78,11 +78,11 @@ export function Proposals() {
                         <Link
                           href={`/proposal/${d.proposal_id}`}
                           target="_blank"
-                          className="max-w-xs sm:max-w-md font-display text-blue-600 dark:text-blue-500 font-semibold break-words whitespace-pre-wrap"
+                          className="max-w-xs sm:max-w-sm font-display text-blue-600 dark:text-blue-500 font-semibold break-words whitespace-pre-wrap"
                         >
                           {d.content?.title || d.content?.plan?.name}
                         </Link>
-                        <span className="max-w-xs sm:max-w-md text-zinc-400 dark:text-zinc-500 break-words whitespace-pre-wrap">
+                        <span className="max-w-xs sm:max-w-sm text-zinc-400 dark:text-zinc-500 break-words whitespace-pre-wrap">
                           {d.content?.description}
                         </span>
                       </div>
@@ -94,15 +94,15 @@ export function Proposals() {
                       <Number value={d.content?.plan?.height} />
                     </td>
                     <td className="hidden sm:table-cell px-3 py-4 text-left">
-                      <div className="flex flex-col gap-y-1">
-                        <span className="uppercase">From - To</span>
-                        <div className="flex flex-col gap-y-1">
-                          {[d.voting_start_time, d.voting_end_time].map((t, i) => (
-                            <span key={i} className="text-zinc-700 dark:text-zinc-300 text-xs font-medium whitespace-nowrap">
+                      <div className="flex flex-col gap-y-1 mt-1">
+                        {[d.voting_start_time, d.voting_end_time].map((t, i) => (
+                          <div key={i} className="flex items-center space-x-1.5">
+                            <div className="w-8 text-xs">{i === 0 ? 'From' : 'To'}:</div>
+                            <span className="text-zinc-700 dark:text-zinc-300 text-xs font-medium whitespace-nowrap">
                               {moment(t).format(TIME_FORMAT)}
                             </span>
-                          ))}
-                        </div>
+                          </div>
+                        ))}
                       </div>
                     </td>
                     <td className="hidden sm:table-cell px-3 py-4 text-right">

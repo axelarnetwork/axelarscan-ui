@@ -317,15 +317,17 @@ function Info({ data, address, delegations }) {
                                 </div>
                               </td>
                               <td className="pl-3 pr-4 sm:pr-3 py-3 text-right">
-                                <div className="flex items-center justify-end">
-                                  <Number
-                                    value={d.amount * price}
-                                    format="0,0.00"
-                                    prefix="$"
-                                    noTooltip={true}
-                                    className="text-xs font-medium"
-                                  />
-                                </div>
+                                {isNumber(d.amount) && isNumber(price) && (
+                                  <div className="flex items-center justify-end">
+                                    <Number
+                                      value={d.amount * price}
+                                      format="0,0.00"
+                                      prefix="$"
+                                      noTooltip={true}
+                                      className="text-xs font-medium"
+                                    />
+                                  </div>
+                                )}
                               </td>
                             </tr>
                           )

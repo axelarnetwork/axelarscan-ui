@@ -110,11 +110,11 @@ export const numberFormat = (number, format, exact) => {
         _number = formatUnits(BigInt(_number), 16 + fixedDecimals)
 
         const _format = `0,0${_number >= 100000 ? '.00a' : _number >= 100 ? '' : _number >= 1 ? '.00' : '.000000'}`
-        return `${numberFormat(_number, _format)}t`
+        return toCase(`${numberFormat(_number, _format)}t`, 'upper')
       }
       else return numeral(number).format('0,0e+0')
     }
-    else return numeral(number).format(`0,0${number < 1 ? '.00' : ''}a`)
+    else return toCase(numeral(number).format(`0,0${number < 1 ? '.00' : '.0'}a`), 'upper')
   }
   else if (isNumber(number) && ['a', '+'].findIndex(c => format.includes(c)) < 0 && toNumber(split(formattedNumber).join('')).toString() !== removeDecimals(split(formattedNumber).join(''))) formattedNumber = number.toString()
 

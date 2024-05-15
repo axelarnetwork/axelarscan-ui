@@ -14,7 +14,7 @@ export function Logo(props) {
         width={24}
         height={24}
         unoptimized
-        className="mr-3"
+        className="min-w-4 mr-3"
       />
       <span className="hidden md:block uppercase text-sm font-bold">Axelarscan</span>
     </div>
