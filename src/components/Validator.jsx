@@ -495,7 +495,7 @@ function Votes({ data }) {
   const totalUN = toArray(data).filter(d => typeof d.vote !== 'boolean').length
   const totalVotes = Object.fromEntries(Object.entries({ Y: totalY, N: totalN, UN: totalUN }).filter(([k, v]) => v || k === 'Y'))
 
-  return data && (
+  return data?.length > 0 && (
     <div className="flex flex-col gap-y-2 my-2.5">
       <div className="flex justify-between gap-x-4 pr-1">
         <div className="flex flex-col">
@@ -650,7 +650,7 @@ export function Validator({ address }) {
                   setHeartbeats(_.range(0, size).map(i => {
                     const height = startBlock(toBlock - (i * NUM_BLOCKS_PER_HEARTBEAT))
                     const d = toArray(data).find(d => d.period_height === height)
-                    return { ...d, period_height: height, status: equalsIgnoreCase(d?.sender, broadcaster_address) }
+                    return { ...d, period_height: height, status: !!broadcaster_address && equalsIgnoreCase(d?.sender, broadcaster_address) }
                   }))
                 } catch (error) {}
                 break

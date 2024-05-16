@@ -321,14 +321,16 @@ export function Validators({ status }) {
                         </div>
                       </td>
                       <td className="px-3 py-4 text-left">
-                        <div className="min-w-24 max-w-24 flex flex-col gap-y-2 my-0.5">
-                          {isNumber(d.heartbeat_uptime) && <ProgressBar value={d.heartbeat_uptime} className={clsx(d.heartbeat_uptime < 50 ? 'bg-red-600 dark:bg-red-500' : d.heartbeat_uptime < 80 ? 'bg-yellow-400 dark:bg-yellow-500' : 'bg-green-600 dark:bg-green-500')} />}
-                          {d.stale_heartbeats && (
-                            <span className="text-red-600 dark:text-red-500 text-xs font-medium whitespace-nowrap">
-                              Stale Heartbeats
-                            </span>
-                          )}
-                        </div>
+                        {d.broadcaster_address && (
+                          <div className="min-w-24 max-w-24 flex flex-col gap-y-2 my-0.5">
+                            {isNumber(d.heartbeat_uptime) && <ProgressBar value={d.heartbeat_uptime} className={clsx(d.heartbeat_uptime < 50 ? 'bg-red-600 dark:bg-red-500' : d.heartbeat_uptime < 80 ? 'bg-yellow-400 dark:bg-yellow-500' : 'bg-green-600 dark:bg-green-500')} />}
+                            {d.stale_heartbeats && (
+                              <span className="text-red-600 dark:text-red-500 text-xs font-medium whitespace-nowrap">
+                                Stale Heartbeats
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </td>
                       <td className="hidden sm:table-cell px-3 py-4 text-left">
                         <div className="min-w-48 grid grid-cols-2 gap-x-2 gap-y-1">
