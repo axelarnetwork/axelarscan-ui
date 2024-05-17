@@ -30,7 +30,7 @@ import { timeDiff } from '@/lib/time'
 const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'
 
 function Info({ data, chain, id, executeButton }) {
-  const { chains, assets } = useGlobalStore()
+  const { chains, assets, contracts } = useGlobalStore()
 
   const { key_id, commands, created_at, execute_data, prev_batched_commands_id } = { ...data }
   let { signatures } = { ...data?.proof }
@@ -38,7 +38,9 @@ function Info({ data, chain, id, executeButton }) {
 
   const executed = toArray(commands).length === toArray(commands).filter(d => d.executed).length
   const status = executed ? 'executed' : data?.status?.replace('BATCHED_COMMANDS_STATUS_', '').toLowerCase()
-  const { url, transaction_path } = { ...getChainData(chain, chains)?.explorer }
+  const chainData = getChainData(chain, chains)
+  const { url, address_path, transaction_path } = { ...chainData?.explorer }
+  const gatewayAddress = contracts?.gateway_contracts?.[chainData?.id]?.address
 
   return (
     <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
@@ -70,7 +72,12 @@ function Info({ data, chain, id, executeButton }) {
           <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
             <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Chain</dt>
             <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-              <ChainProfile value={chain} />
+              {url && gatewayAddress ?
+                <Link href={`${url}${address_path?.replace('{address}', gatewayAddress)}`} target="_blank">
+                  <ChainProfile value={chain} />
+                </Link> :
+                <ChainProfile value={chain} />
+              }
             </dd>
           </div>
           <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
