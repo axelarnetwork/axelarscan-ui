@@ -61,7 +61,7 @@ export default function RootLayout({ children }) {
       )}
       <body className="flex min-h-full bg-white dark:bg-zinc-900 antialiased">
         <Providers>
-          <div className="w-full overflow-x-auto">
+          <div className="w-full">
             <Layout>{children}</Layout>
           </div>
         </Providers>

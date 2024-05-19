@@ -34,6 +34,9 @@ module.exports = {
         '112': '28rem',
         '144': '36rem',
       },
+      width: {
+        'tvl': '7516.5px',
+      },
       maxWidth: {
         '2xl': '40rem',
       },

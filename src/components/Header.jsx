@@ -197,8 +197,8 @@ export function Header() {
   }, [assets, itsAssets, tvl, setData])
 
   return (
-    <header className="py-6">
-      <Container>
+    <header className={clsx('bg-white dark:bg-zinc-900 py-6', ['/tvl'].includes(pathname) && !!tvl && 'lg:w-tvl')}>
+      <Container className={!!tvl && clsx('lg:!mx-24')}>
         <nav className="relative z-50 flex justify-between gap-x-4">
           <div className="flex items-center xl:gap-x-12">
             <Link href="/" aria-label="Dashboard">
