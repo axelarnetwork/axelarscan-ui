@@ -6,7 +6,7 @@ import _ from 'lodash'
 import { toCase, split } from '@/lib/parser'
 import { isString, headString } from '@/lib/string'
 
-export const isNumber = number => typeof number === 'number' || (isString(number) && number && !isNaN(split(number).join('')))
+export const isNumber = number => (typeof number === 'number' && !isNaN(number)) || (isString(number) && number && !isNaN(split(number).join('')))
 
 export const toNumber = number => isNumber(number) ? Number(number) : 0
 

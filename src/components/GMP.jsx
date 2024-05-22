@@ -325,6 +325,12 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                   <MdKeyboardArrowRight size={24} />
                   <ChainProfile value={data.originData?.call?.returnValues?.destinationChain || destinationChain} titleClassName="text-base font-semibold" />
                   <MdKeyboardArrowRight size={24} />
+                  {data.originData?.call && data.callbackData?.call && (
+                    <>
+                      <ChainProfile value={data.callbackData.call.chain} titleClassName="text-base font-semibold" />
+                      <MdKeyboardArrowRight size={24} />
+                    </>
+                  )}
                   <ChainProfile value={data.callbackData?.call?.returnValues?.destinationChain || destinationChain} titleClassName="text-base font-semibold" />
                 </div>
               </dd>
