@@ -402,7 +402,7 @@ function Data({ data }) {
               Events
             </span>
             <div className="bg-zinc-50/75 dark:bg-zinc-800/25 sm:rounded-lg flex flex-col gap-y-8 px-4 sm:px-6 py-6">
-              {toJson(data.raw_log).map((d, i) => (
+              {!Array.isArray(toJson(data.raw_log)) ? data.raw_log : toJson(data.raw_log).map((d, i) => (
                 <div key={i} className="flex flex-col gap-y-4">
                   {d.log && <span className="text-sm lg:text-base font-medium">{d.log}</span>}
                   {_.reverse(_.cloneDeep(toArray(d.events))).map(e => ({ ...e, attributes: toArray(e.attributes).map(a => [a.key, a.value]) })).map((e, j) => (
