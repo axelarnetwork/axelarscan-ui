@@ -27,8 +27,8 @@ export const CHAINS = process.env.NEXT_PUBLIC_ENVIRONMENT === 'mainnet' ?
     { _id: 'blast', id: 81457, network: 'blast', name: 'Blast', nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 }, rpcUrls: { default: { http: ['https://rpc.ankr.com/blast'] }, public: { http: ['https://rpc.ankr.com/blast'] } }, blockExplorers: { default: { name: 'Blast', url: 'https://blastscan.io' } } },
   ] :
   [
-    { _id: 'ethereum-2', ...goerli },
     { _id: 'ethereum-sepolia', ...sepolia },
+    { _id: 'ethereum-2', ...goerli },
     { _id: 'binance', ...bscTestnet },
     { _id: 'polygon', ...polygonMumbai },
     { _id: 'polygon-sepolia', id: 80002, network: 'polygon', name: 'Polygon Sepolia', nativeCurrency: { name: 'Polygon', symbol: 'MATIC', decimals: 18 }, rpcUrls: { default: { http: ['https://rpc-amoy.polygon.technology'] }, public: { http: ['https://rpc-amoy.polygon.technology'] } }, blockExplorers: { default: { name: 'Polygon', url: 'https://amoy.polygonscan.com' } } },
