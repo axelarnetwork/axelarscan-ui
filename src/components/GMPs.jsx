@@ -344,7 +344,7 @@ export function GMPs({ address }) {
                     Method
                   </th>
                   <th scope="col" className="px-3 py-3.5 text-left">
-                    Source
+                    Sender
                   </th>
                   <th scope="col" className="px-3 py-3.5 text-left">
                     Destination
