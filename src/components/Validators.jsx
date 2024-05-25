@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { create } from 'zustand'
 import clsx from 'clsx'
 import _ from 'lodash'
+import { RxCaretDown, RxCaretUp } from 'react-icons/rx'
 
 import { Container } from '@/components/Container'
 import { Image } from '@/components/Image'
@@ -33,6 +34,7 @@ export function Validators({ status }) {
   const [EVMChains, setEVMChains] = useState(null)
   const [validatorsVotes, setValidatorsVotes] = useState(null)
   const [data, setData] = useState(null)
+  const [order, setOrder] = useState(['tokens', 'desc'])
   const { chains, contracts, validators, inflationData, networkParameters } = useGlobalStore()
   const { maintainers, setMaintainers } = useValidatorStore()
 
@@ -98,11 +100,21 @@ export function Validators({ status }) {
           supportedChains,
           votes: d.votes && { ...d.votes, chains: Object.fromEntries(Object.entries({ ...d.votes.chains }).filter(([k, v]) => supportedChains.includes(k))) },
         }
-      }), ['quadratic_voting_power', 'tokens'], ['desc', 'desc'])
+      }), _.concat([order[0]], order[0] === 'quadratic_voting_power' ? ['tokens'] : []), [order[1], order[1]])
 
       if (!_.isEqual(_data, data)) setData(_data)
     }
-  }, [status, EVMChains, validatorsVotes, data, validators, inflationData, networkParameters, maintainers, setData])
+  }, [status, EVMChains, validatorsVotes, data, order, validators, inflationData, networkParameters, maintainers, setData])
+
+  const orderBy = key => {
+    switch (key) {
+      case 'quadratic_voting_power':
+        key = status === 'active' ? key : 'tokens'
+      default:
+        setOrder([key || 'tokens', key !== order[0] || order[1] === 'asc' ? 'desc' : 'asc'])
+        break
+    }
+  }
 
   const filter = status => toArray(data).filter(d => status === 'inactive' ? d.status !== 'BOND_STATUS_BONDED' : d.status === 'BOND_STATUS_BONDED' && !d.jailed)
 
@@ -149,25 +161,70 @@ export function Validators({ status }) {
             <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
               <thead className="sticky top-0 z-10 bg-white dark:bg-zinc-900">
                 <tr className="text-zinc-800 dark:text-zinc-200 text-sm font-semibold">
-                  <th scope="col" className="pl-4 sm:pl-0 pr-3 py-3.5 text-left">
+                  <th scope="col" onClick={() => order[0] !== 'tokens' ? orderBy('') : {}} className={clsx('pl-4 sm:pl-0 pr-3 py-3.5 text-left', order[0] !== 'tokens' && 'cursor-pointer')}>
                     #
                   </th>
-                  <th scope="col" className="px-3 py-3.5 text-left">
-                    Validator
+                  <th scope="col" onClick={() => orderBy('apr')} className="px-3 py-3.5 text-left cursor-pointer">
+                    <div className="flex items-center">
+                      <span>Validator</span>
+                      {order[0] === 'apr' && (
+                        <Tooltip content={`APR: ${order[1]}`} className="whitespace-nowrap">
+                          <div className="ml-2">
+                            {order[1] === 'asc' ? <RxCaretUp size={16} /> : <RxCaretDown size={16} />}
+                          </div>
+                        </Tooltip>
+                      )}
+                    </div>
                   </th>
-                  <th scope="col" className="px-3 py-3.5 text-left whitespace-nowrap">
-                    {status === 'active' ? 'Consensus Power' : 'Staking'}
+                  <th scope="col" onClick={() => orderBy('tokens')} className="px-3 py-3.5 text-left whitespace-nowrap cursor-pointer">
+                    <div className="flex items-center">
+                      <span>{status === 'active' ? 'Consensus Power' : 'Staking'}</span>
+                      {order[0] === 'tokens' && (
+                        <Tooltip content={`${status === 'active' ? 'Consensus Power' : 'Staking'}: ${order[1]}`} className="whitespace-nowrap">
+                          <div className="ml-2">
+                            {order[1] === 'asc' ? <RxCaretUp size={16} /> : <RxCaretDown size={16} />}
+                          </div>
+                        </Tooltip>
+                      )}
+                    </div>
                   </th>
                   {status === 'active' && (
-                    <th scope="col" className="px-3 py-3.5 text-left whitespace-nowrap">
-                      Quadratic Power
+                    <th scope="col" onClick={() => orderBy('quadratic_voting_power')} className="px-3 py-3.5 text-left whitespace-nowrap cursor-pointer">
+                      <div className="flex items-center">
+                        <span>Quadratic Power</span>
+                        {order[0] === 'quadratic_voting_power' && (
+                          <Tooltip content={`Quadratic Power: ${order[1]}`} className="whitespace-nowrap">
+                            <div className="ml-2">
+                              {order[1] === 'asc' ? <RxCaretUp size={16} /> : <RxCaretDown size={16} />}
+                            </div>
+                          </Tooltip>
+                        )}
+                      </div>
                     </th>
                   )}
-                  <th scope="col" className="hidden sm:table-cell px-3 py-3.5 text-left">
-                    Uptime
+                  <th scope="col" onClick={() => orderBy('uptime')} className="hidden sm:table-cell px-3 py-3.5 text-left cursor-pointer">
+                    <div className="flex items-center">
+                      <span>Uptime</span>
+                      {order[0] === 'uptime' && (
+                        <Tooltip content={`Uptime: ${order[1]}`} className="whitespace-nowrap">
+                          <div className="ml-2">
+                            {order[1] === 'asc' ? <RxCaretUp size={16} /> : <RxCaretDown size={16} />}
+                          </div>
+                        </Tooltip>
+                      )}
+                    </div>
                   </th>
-                  <th scope="col" className="px-3 py-3.5 text-left">
-                    Heartbeat
+                  <th scope="col" onClick={() => orderBy('heartbeat_uptime')} className="px-3 py-3.5 text-left cursor-pointer">
+                    <div className="flex items-center">
+                      <span>Heartbeat</span>
+                      {order[0] === 'heartbeat_uptime' && (
+                        <Tooltip content={`Heartbeat: ${order[1]}`} className="whitespace-nowrap">
+                          <div className="ml-2">
+                            {order[1] === 'asc' ? <RxCaretUp size={16} /> : <RxCaretDown size={16} />}
+                          </div>
+                        </Tooltip>
+                      )}
+                    </div>
                   </th>
                   <th scope="col" className="pl-3 pr-4 sm:pr-0 py-3.5 text-left whitespace-nowrap">
                     EVM Supported
