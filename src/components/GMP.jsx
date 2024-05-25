@@ -98,7 +98,7 @@ export function getStep(data, chains) {
     },
     refunded?.receipt?.status && {
       id: 'refund',
-      title: 'Gas Refunded',
+      title: 'Excess Gas Refunded',
       status: 'success',
       data: refunded,
       chainData: sourceChainData,
