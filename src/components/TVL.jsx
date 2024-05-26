@@ -21,7 +21,7 @@ import { isNumber, toNumber } from '@/lib/number'
 
 export function TVL() {
   const [data, setData] = useState(null)
-  const [includeITS, setIncludeITS] = useState(false)
+  const [includeITS, setIncludeITS] = useState(true)
   const { chains, assets, itsAssets, tvl } = useGlobalStore()
 
   useEffect(() => {
