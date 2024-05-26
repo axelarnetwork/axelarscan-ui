@@ -169,13 +169,13 @@ export function TVL() {
                           value={d.total}
                           format="0,0.0a"
                           suffix={` ${d.assetData.symbol}`}
-                          className={clsx('text-xs font-semibold', !url && 'text-zinc-700 dark:text-zinc-300')}
+                          className={clsx('leading-4 text-sm font-semibold', !url && 'text-zinc-700 dark:text-zinc-300')}
                         />
                       )
 
                       const isITSNotCanonical = d.assetType === 'its' && Object.values({ ...d.tvl }).findIndex(d => d.contract_data.token_manager_type?.startsWith('lockUnlock')) < 0
                       return (
-                        <div key={d.asset} className="flex flex-col items-end gap-y-0.5">
+                        <div key={d.asset} className="flex flex-col items-end gap-y-1">
                           <div className="flex items-center space-x-1">
                             {url ?
                               <Link
@@ -198,7 +198,7 @@ export function TVL() {
                               value={d.value}
                               format="0,0.0a"
                               prefix="$"
-                              className="text-zinc-400 dark:text-zinc-500 text-xs font-medium"
+                              className="leading-4 text-zinc-400 dark:text-zinc-500 text-sm font-medium"
                             />
                           )}
                         </div>
@@ -206,37 +206,37 @@ export function TVL() {
                     })}
                   </td>
                   <td className="px-3 py-4 text-right">
-                    <div className="flex flex-col items-end gap-y-0.5">
+                    <div className="flex flex-col items-end gap-y-1">
                       <Number
                         value={d.total_on_evm}
                         format="0,0.0a"
                         suffix={` ${d.assetData.symbol}`}
-                        className="text-zinc-700 dark:text-zinc-300 text-xs font-semibold"
+                        className="leading-4 text-zinc-700 dark:text-zinc-300 text-sm font-semibold"
                       />
                       {d.value_on_evm > 0 && (
                         <Number
                           value={d.value_on_evm}
                           format="0,0.0a"
                           prefix="$"
-                          className="text-zinc-400 dark:text-zinc-500 text-xs font-medium"
+                          className="leading-4 text-zinc-400 dark:text-zinc-500 text-sm font-medium"
                         />
                       )}
                     </div>
                   </td>
                   <td className="px-3 py-4 text-right">
-                    <div className="flex flex-col items-end gap-y-0.5">
+                    <div className="flex flex-col items-end gap-y-1">
                       <Number
                         value={d.total_on_cosmos}
                         format="0,0.0a"
                         suffix={` ${d.assetData.symbol}`}
-                        className="text-zinc-700 dark:text-zinc-300 text-xs font-semibold"
+                        className="leading-4 text-zinc-700 dark:text-zinc-300 text-sm font-semibold"
                       />
                       {d.value_on_cosmos > 0 && (
                         <Number
                           value={d.value_on_cosmos}
                           format="0,0.0a"
                           prefix="$"
-                          className="text-zinc-400 dark:text-zinc-500 text-xs font-medium"
+                          className="leading-4 text-zinc-400 dark:text-zinc-500 text-sm font-medium"
                         />
                       )}
                     </div>
