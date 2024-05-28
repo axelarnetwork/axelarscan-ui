@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { create } from 'zustand'
 import clsx from 'clsx'
 import _ from 'lodash'
+import { RxCaretDown, RxCaretUp } from 'react-icons/rx'
 
 import { Container } from '@/components/Container'
 import { Image } from '@/components/Image'
@@ -33,6 +34,7 @@ export function Validators({ status }) {
   const [EVMChains, setEVMChains] = useState(null)
   const [validatorsVotes, setValidatorsVotes] = useState(null)
   const [data, setData] = useState(null)
+  const [order, setOrder] = useState(['tokens', 'desc'])
   const { chains, contracts, validators, inflationData, networkParameters } = useGlobalStore()
   const { maintainers, setMaintainers } = useValidatorStore()
 
@@ -98,11 +100,21 @@ export function Validators({ status }) {
           supportedChains,
           votes: d.votes && { ...d.votes, chains: Object.fromEntries(Object.entries({ ...d.votes.chains }).filter(([k, v]) => supportedChains.includes(k))) },
         }
-      }), ['quadratic_voting_power', 'tokens'], ['desc', 'desc'])
+      }), _.concat([order[0]], order[0] === 'quadratic_voting_power' ? ['tokens'] : []), [order[1], order[1]])
 
       if (!_.isEqual(_data, data)) setData(_data)
     }
-  }, [status, EVMChains, validatorsVotes, data, validators, inflationData, networkParameters, maintainers, setData])
+  }, [status, EVMChains, validatorsVotes, data, order, validators, inflationData, networkParameters, maintainers, setData])
+
+  const orderBy = key => {
+    switch (key) {
+      case 'quadratic_voting_power':
+        key = status === 'active' ? key : 'tokens'
+      default:
+        setOrder([key || 'tokens', key !== order[0] || order[1] === 'asc' ? 'desc' : 'asc'])
+        break
+    }
+  }
 
   const filter = status => toArray(data).filter(d => status === 'inactive' ? d.status !== 'BOND_STATUS_BONDED' : d.status === 'BOND_STATUS_BONDED' && !d.jailed)
 
@@ -149,28 +161,70 @@ export function Validators({ status }) {
             <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
               <thead className="sticky top-0 z-10 bg-white dark:bg-zinc-900">
                 <tr className="text-zinc-800 dark:text-zinc-200 text-sm font-semibold">
-                  <th scope="col" className="pl-4 sm:pl-0 pr-3 py-3.5 text-left">
+                  <th scope="col" onClick={() => order[0] !== 'tokens' ? orderBy('') : {}} className={clsx('pl-4 sm:pl-0 pr-3 py-3.5 text-left', order[0] !== 'tokens' && 'cursor-pointer')}>
                     #
                   </th>
-                  <th scope="col" className="px-3 py-3.5 text-left">
-                    Validator
+                  <th scope="col" onClick={() => orderBy('apr')} className="px-3 py-3.5 text-left cursor-pointer">
+                    <div className="flex items-center">
+                      <span>Validator</span>
+                      {order[0] === 'apr' && (
+                        <Tooltip content={`APR: ${order[1]}`} className="whitespace-nowrap">
+                          <div className="ml-2">
+                            {order[1] === 'asc' ? <RxCaretUp size={16} /> : <RxCaretDown size={16} />}
+                          </div>
+                        </Tooltip>
+                      )}
+                    </div>
                   </th>
-                  <th scope="col" className="px-3 py-3.5 text-left whitespace-nowrap">
-                    {status === 'active' ? 'Consensus Power' : 'Staking'}
+                  <th scope="col" onClick={() => orderBy('tokens')} className="px-3 py-3.5 text-left whitespace-nowrap cursor-pointer">
+                    <div className="flex items-center">
+                      <span>{status === 'active' ? 'Consensus Power' : 'Staking'}</span>
+                      {order[0] === 'tokens' && (
+                        <Tooltip content={`${status === 'active' ? 'Consensus Power' : 'Staking'}: ${order[1]}`} className="whitespace-nowrap">
+                          <div className="ml-2">
+                            {order[1] === 'asc' ? <RxCaretUp size={16} /> : <RxCaretDown size={16} />}
+                          </div>
+                        </Tooltip>
+                      )}
+                    </div>
                   </th>
                   {status === 'active' && (
-                    <th scope="col" className="px-3 py-3.5 text-left whitespace-nowrap">
-                      Quadratic Power
+                    <th scope="col" onClick={() => orderBy('quadratic_voting_power')} className="px-3 py-3.5 text-left whitespace-nowrap cursor-pointer">
+                      <div className="flex items-center">
+                        <span>Quadratic Power</span>
+                        {order[0] === 'quadratic_voting_power' && (
+                          <Tooltip content={`Quadratic Power: ${order[1]}`} className="whitespace-nowrap">
+                            <div className="ml-2">
+                              {order[1] === 'asc' ? <RxCaretUp size={16} /> : <RxCaretDown size={16} />}
+                            </div>
+                          </Tooltip>
+                        )}
+                      </div>
                     </th>
                   )}
-                  <th scope="col" className="hidden sm:table-cell px-3 py-3.5 text-left">
-                    Uptime
+                  <th scope="col" onClick={() => orderBy('uptime')} className="hidden sm:table-cell px-3 py-3.5 text-left cursor-pointer">
+                    <div className="flex items-center">
+                      <span>Uptime</span>
+                      {order[0] === 'uptime' && (
+                        <Tooltip content={`Uptime: ${order[1]}`} className="whitespace-nowrap">
+                          <div className="ml-2">
+                            {order[1] === 'asc' ? <RxCaretUp size={16} /> : <RxCaretDown size={16} />}
+                          </div>
+                        </Tooltip>
+                      )}
+                    </div>
                   </th>
-                  <th scope="col" className="px-3 py-3.5 text-left">
-                    Heartbeat
-                  </th>
-                  <th scope="col" className="hidden sm:table-cell px-3 py-3.5 text-left whitespace-nowrap">
-                    EVM Votes
+                  <th scope="col" onClick={() => orderBy('heartbeat_uptime')} className="px-3 py-3.5 text-left cursor-pointer">
+                    <div className="flex items-center">
+                      <span>Heartbeat</span>
+                      {order[0] === 'heartbeat_uptime' && (
+                        <Tooltip content={`Heartbeat: ${order[1]}`} className="whitespace-nowrap">
+                          <div className="ml-2">
+                            {order[1] === 'asc' ? <RxCaretUp size={16} /> : <RxCaretDown size={16} />}
+                          </div>
+                        </Tooltip>
+                      )}
+                    </div>
                   </th>
                   <th scope="col" className="pl-3 pr-4 sm:pr-0 py-3.5 text-left whitespace-nowrap">
                     EVM Supported
@@ -332,15 +386,17 @@ export function Validators({ status }) {
                           </div>
                         )}
                       </td>
-                      <td className="hidden sm:table-cell px-3 py-4 text-left">
-                        <div className="min-w-48 grid grid-cols-2 gap-x-2 gap-y-1">
-                          {_.orderBy(Object.entries(d.votes.chains).map(([k, v]) => ({ chain: k, ...v })), ['total_polls'], ['desc']).map(d => {
-                            const { name, image } = { ...getChainData(d.chain, chains) }
-                            const votesDetails = ['true', 'false', 'unsubmitted'].map(s => [s === 'true' ? 'Y' : s === 'false' ? 'N' : 'UN', d.votes[s]]).filter(([k, v]) => v).map(([k, v]) => `${numberFormat(v, '0,0')}${k}`).join(' / ')
+                      <td className="table-cell pl-3 pr-4 sm:pr-0 py-4 text-left">
+                        <div className="min-w-56 grid grid-cols-2 lg:grid-cols-3 gap-x-2 gap-y-1">
+                          {toArray(chains).filter(c => c.chain_type === 'evm' && !c.deprecated).map(c => {
+                            const { id, maintainer_id, name, image } = { ...c }
+                            const { votes, total, total_polls } = { ...d.votes.chains[id] }
+                            const isSupported = d.supportedChains.includes(maintainer_id)
+                            const details = !isSupported ? 'Not Supported' : ['true', 'false', 'unsubmitted'].map(s => [s === 'true' ? 'Y' : s === 'false' ? 'N' : 'UN', votes?.[s]]).filter(([k, v]) => v).map(([k, v]) => `${numberFormat(v, '0,0')}${k}`).join(' / ')
 
                             return (
-                              <div key={d.chain} className="flex justify-start">
-                                <Tooltip content={`${name}: ${votesDetails}`} className="whitespace-nowrap">
+                              <div key={id} className="flex justify-start">
+                                <Tooltip content={`${name}${details ? `: ${details}` : ''}`} className="whitespace-nowrap">
                                   <div className="flex items-center gap-x-2">
                                     <Image
                                       src={image}
@@ -348,42 +404,29 @@ export function Validators({ status }) {
                                       width={20}
                                       height={20}
                                     />
-                                    <div className="flex items-center gap-x-1">
-                                      <Number
-                                        value={d.total}
-                                        format="0,0.0a"
-                                        noTooltip={true}
-                                        className={clsx('text-xs font-medium', d.total < d.total_polls ? 'text-zinc-400 dark:text-zinc-500' : 'text-zinc-900 dark:text-zinc-100')}
-                                      />
-                                      <Number
-                                        value={d.total_polls}
-                                        format="0,0.0a"
-                                        prefix=" / "
-                                        noTooltip={true}
-                                        className="text-zinc-900 dark:text-zinc-100 text-xs font-medium"
-                                      />
-                                    </div>
+                                    {!isSupported ?
+                                      <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium whitespace-nowrap">
+                                        Not Supported
+                                      </span> :
+                                      <div className="flex items-center gap-x-1">
+                                        <Number
+                                          value={total || 0}
+                                          format="0,0.0a"
+                                          noTooltip={true}
+                                          className={clsx('text-xs font-medium', total < total_polls ? 'text-zinc-400 dark:text-zinc-500' : 'text-zinc-900 dark:text-zinc-100')}
+                                        />
+                                        <Number
+                                          value={total_polls || 0}
+                                          format="0,0.0a"
+                                          prefix=" / "
+                                          noTooltip={true}
+                                          className="text-zinc-900 dark:text-zinc-100 text-xs font-medium"
+                                        />
+                                      </div>
+                                    }
                                   </div>
                                 </Tooltip>
                               </div>
-                            )
-                          })}
-                        </div>
-                      </td>
-                      <td className="pl-3 pr-4 sm:pr-0 py-4 text-left">
-                        <div className="max-w-40 flex flex-wrap">
-                          {d.supportedChains.map((c, j) => {
-                            const { name, image } = { ...getChainData(c, chains) }
-                            return (
-                              <Tooltip key={j} content={name} className="whitespace-nowrap">
-                                <Image
-                                  src={image}
-                                  alt=""
-                                  width={20}
-                                  height={20}
-                                  className="mr-1.5 mb-1.5"
-                                />
-                              </Tooltip>
                             )
                           })}
                         </div>
