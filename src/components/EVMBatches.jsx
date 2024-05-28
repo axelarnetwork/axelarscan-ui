@@ -68,7 +68,7 @@ function Filters() {
   const attributes = [
     { label: 'Batch ID', name: 'batchId' },
     { label: 'Command ID', name: 'commandId' },
-    { label: 'Chain', name: 'chain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).filter(d => d.chain_type === 'evm' && (!d.no_inflation || d.deprecated)).map((d, i) => ({ ...d, i })), ['deprecated', 'i'], ['desc', 'asc']).map(d => ({ value: d.id, title: d.name })) },
+    { label: 'Chain', name: 'chain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).filter(d => d.chain_type === 'evm' && (!d.no_inflation || d.deprecated)).map((d, i) => ({ ...d, i })), ['deprecated', 'i'], ['desc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
     { label: 'Command Type', name: 'type', type: 'select', options: _.concat({ title: 'Any' }, types.map(d => ({ value: d, title: d }))) },
     { label: 'Status', name: 'status', type: 'select', options: _.concat({ title: 'Any' }, ['executed', 'unexecuted', 'signed', 'signing', 'aborted'].map(d => ({ value: d, title: capitalize(d) }))) },
     { label: 'Time', name: 'time', type: 'datetimeRange' },
