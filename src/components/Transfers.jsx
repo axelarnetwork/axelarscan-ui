@@ -58,9 +58,9 @@ function Filters() {
 
   const attributes = [
     { label: 'Tx Hash', name: 'txHash' },
-    { label: 'Source Chain', name: 'sourceChain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'i'], ['desc', 'asc']).map(d => ({ value: d.id, title: d.name })) },
-    { label: 'Destination Chain', name: 'destinationChain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'i'], ['desc', 'asc']).map(d => ({ value: d.id, title: d.name })) },
-    { label: 'From / To Chain', name: 'chain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'i'], ['desc', 'asc']).map(d => ({ value: d.id, title: d.name })) },
+    { label: 'Source Chain', name: 'sourceChain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'i'], ['desc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
+    { label: 'Destination Chain', name: 'destinationChain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'i'], ['desc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
+    { label: 'From / To Chain', name: 'chain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'i'], ['desc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
     { label: 'Asset', name: 'asset', type: 'select', multiple: true, options: toArray(assets).map(d => ({ value: d.id, title: d.symbol })) },
     { label: 'Type', name: 'type', type: 'select', options: _.concat({ title: 'Any' }, [{ value: 'deposit_address', title: 'Deposit Address' }, { value: 'send_token', title: 'Send Token' }, { value: 'wrap', title: 'Wrap' }, { value: 'unwrap', title: 'Unwrap' }, { value: 'erc20_transfer', title: 'ERC20 Transfer' }]) },
     { label: 'Status', name: 'status', type: 'select', options: _.concat({ title: 'Any' }, ['executed', 'failed'].map(d => ({ value: d, title: capitalize(d) }))) },
