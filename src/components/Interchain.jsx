@@ -607,6 +607,18 @@ export function SankeyChart({
                 linkBlendMode={resolvedTheme === 'dark' ? 'lighten' : 'darken'}
                 enableLinkGradient={true}
                 labelTextColor={resolvedTheme === 'dark' ? '#f4f4f5' : '#18181b'}
+                nodeTooltip={d => {
+                  const { id, formattedValue, nodeColor } = { ...d.node }
+                  return (
+                    <div className="px-2 py-1.5 bg-zinc-100 dark:bg-black rounded-sm shadow-sm flex flex-col space-y-0.5 text-xs">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3" style={{ backgroundColor: nodeColor }} />
+                        <span className="font-bold">{id}</span>
+                      </div>
+                      <span>Total: {formattedValue}</span>
+                    </div>
+                  )
+                }}
               />
             )}
           </div>
