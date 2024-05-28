@@ -252,7 +252,7 @@ export const getEvent = data => {
 export const normalizeEvent = event => event?.replace('ContractCall', 'callContract')
 
 export const customData = async data => {
-  const { call } = { ...data }
+  const { call, interchain_transfer } = { ...data }
   const { destinationContractAddress, payload } = { ...call?.returnValues }
   if (!(destinationContractAddress && isString(payload))) return data
 
@@ -262,6 +262,9 @@ export const customData = async data => {
       const customValues = await customize(call.returnValues, ENVIRONMENT)
       if (typeof customValues === 'object' && !Array.isArray(customValues) && Object.keys({ ...customValues }).length > 0) data.customValues = customValues
     }
+
+    // interchain transfer
+    if (interchain_transfer?.destinationAddress && !data.customValues?.recipientAddress) data.customValues = { ...data.customValues, recipientAddress: interchain_transfer.destinationAddress }
   } catch (error) {}
   return data
 }
@@ -341,7 +344,7 @@ export function GMPs({ address }) {
                     Method
                   </th>
                   <th scope="col" className="px-3 py-3.5 text-left">
-                    Source
+                    Sender
                   </th>
                   <th scope="col" className="px-3 py-3.5 text-left">
                     Destination

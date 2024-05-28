@@ -98,7 +98,7 @@ export function getStep(data, chains) {
     },
     refunded?.receipt?.status && {
       id: 'refund',
-      title: 'Gas Refunded',
+      title: 'Excess Gas Refunded',
       status: 'success',
       data: refunded,
       chainData: sourceChainData,
@@ -110,7 +110,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
   const [seeMore, setSeeMore] = useState(false)
   const { chains, assets } = useGlobalStore()
 
-  const { call, gas_paid, gas_paid_to_callback, express_executed, confirm, approved, executed, error, refunded, token_sent, token_deployment_initialized, token_deployed, interchain_transfer, interchain_transfer_with_data, token_manager_deployment_started, interchain_token_deployment_started, is_executed, amount, fees, gas, is_insufficient_fee, is_invalid_destination_chain, is_invalid_contract_address, not_enough_gas_to_execute, status, simplified_status, time_spent, callbackData, originData } = { ...data }
+  const { call, gas_paid, gas_paid_to_callback, express_executed, confirm, approved, executed, error, refunded, token_sent, token_deployment_initialized, token_deployed, interchain_transfer, interchain_transfer_with_data, token_manager_deployment_started, interchain_token_deployment_started, is_executed, amount, fees, gas, is_insufficient_fee, is_invalid_destination_chain, is_invalid_source_address, is_invalid_contract_address, not_enough_gas_to_execute, status, simplified_status, time_spent, callbackData, originData } = { ...data }
   const { proposal_id } = { ...call }
   const txhash = call?.transactionHash || tx
 
@@ -388,6 +388,20 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
             <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Sender</dt>
             <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
               <Profile address={data.originData?.call?.transaction?.from || senderAddress} chain={data.originData?.call?.chain || sourceChain} />
+            </dd>
+          </div>
+          <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
+            <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Source Address</dt>
+            <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+              <div className="flex flex-col gap-y-2">
+                <Profile address={data.originData?.call?.returnValues?.sender || sourceAddress} chain={data.originData?.call?.chain || sourceChain} />
+                {data.originData?.is_invalid_source_address || is_invalid_source_address && (
+                  <div className="h-6 flex items-center text-red-600 dark:text-red-500 gap-x-1.5">
+                    <PiWarningCircle size={20} />
+                    <span>Invalid Address</span>
+                  </div>
+                )}
+              </div>
             </dd>
           </div>
           <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
