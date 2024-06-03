@@ -70,7 +70,7 @@ function Filters() {
   const attributes = toArray([
     { label: 'Poll ID', name: 'pollId' },
     { label: 'Tx Hash', name: 'transactionId' },
-    { label: 'Chain', name: 'chain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).filter(d => d.chain_type === 'evm' && (!d.no_inflation || d.deprecated)).map((d, i) => ({ ...d, i })), ['deprecated', 'i'], ['desc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
+    { label: 'Chain', name: 'chain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).filter(d => d.chain_type === 'evm' && (!d.no_inflation || d.deprecated)).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
     { label: 'Event Type', name: 'event', type: 'select', multiple: true, options: _.concat({ title: 'Any' }, types.map(d => ({ value: d, title: split(toTitle(d), { delimiter: ' ' }).map(s => capitalize(s)).join('') }))) },
     { label: 'Status', name: 'status', type: 'select', multiple: true, options: _.concat({ title: 'Any' }, ['completed', 'failed', 'expired', 'confirmed', 'pending'].map(d => ({ value: d, title: capitalize(d) }))) },
     { label: 'Voter (Broadcaster Address)', name: 'voter' },
