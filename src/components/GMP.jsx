@@ -1125,186 +1125,187 @@ function Details({ data }) {
             let stepURL
             const stepMoreInfos = []
             const stepMoreTransactions = []
-            if (url && transaction_path) {
-              switch (d.id) {
-                case 'confirm':
-                  if (confirmation_txhash) {
-                    stepTX = confirmation_txhash
-                    stepURL = `/tx/${confirmation_txhash}`
+            switch (d.id) {
+              case 'confirm':
+                if (confirmation_txhash) {
+                  stepTX = confirmation_txhash
+                  stepURL = `/tx/${confirmation_txhash}`
+                }
+                else if (poll_id) {
+                  stepTX = poll_id
+                  stepURL = `/evm-poll/${poll_id}`
+                }
+
+                if (confirmation_txhash && poll_id) {
+                  stepMoreInfos.push((
+                    <Copy size={16} key={stepMoreInfos.length} value={poll_id}>
+                      <Link
+                        href={`/evm-poll/${poll_id}`}
+                        target="_blank"
+                        className="text-blue-600 dark:text-blue-500 text-xs underline"
+                      >
+                        Poll: {poll_id}
+                      </Link>
+                    </Copy>
+                  ))
+                }
+                break
+              default:
+                if (proposal_id) {
+                  stepTX = returnValues?.messageId || transactionHash
+                  stepURL = `/proposal/${proposal_id}`
+                }
+                else {
+                  if (transactionHash) {
+                    stepTX = transactionHash
+                    if (url && transaction_path) stepURL = `${url}${transaction_path.replace('{tx}', transactionHash)}`
                   }
-                  else if (poll_id) {
-                    stepTX = poll_id
-                    stepURL = `/evm-poll/${poll_id}`
+                  else if (axelarTransactionHash && axelarChainData?.explorer?.url) {
+                    stepTX = axelarTransactionHash
+                    stepURL = `${axelarChainData.explorer.url}${axelarChainData.explorer.transaction_path.replace('{tx}', axelarTransactionHash)}`
                   }
 
-                  if (confirmation_txhash && poll_id) {
+                  if (transactionHash && axelarTransactionHash && axelarChainData?.explorer?.url) {
                     stepMoreInfos.push((
-                      <Copy size={16} key={stepMoreInfos.length} value={poll_id}>
-                        <Link
-                          href={`/evm-poll/${poll_id}`}
-                          target="_blank"
-                          className="text-blue-600 dark:text-blue-500 text-xs underline"
-                        >
-                          Poll: {poll_id}
-                        </Link>
-                      </Copy>
+                      <div key={stepMoreInfos.length} className="flex items-center gap-x-1">
+                        <Copy size={16} value={axelarTransactionHash}>
+                          <Link
+                            href={`${axelarChainData.explorer.url}${axelarChainData.explorer.transaction_path.replace('{tx}', axelarTransactionHash)}`}
+                            target="_blank"
+                            className="text-blue-600 dark:text-blue-500 text-xs underline"
+                          >
+                            {['send', 'pay_gas'].includes(d.id) ? 'MessageReceived' : 'RouteMessage'}
+                          </Link>
+                        </Copy>
+                        <ExplorerLink
+                          value={axelarTransactionHash}
+                          chain={axelarChainData.id}
+                          width={14}
+                          height={14}
+                        />
+                      </div>
                     ))
                   }
-                  break
-                default:
-                  if (proposal_id) {
-                    stepTX = returnValues?.messageId || transactionHash
-                    stepURL = `/proposal/${proposal_id}`
-                  }
-                  else {
-                    if (transactionHash) {
-                      stepTX = transactionHash
-                      stepURL = `${url}${transaction_path.replace('{tx}', transactionHash)}`
-                    }
-                    else if (axelarTransactionHash && axelarChainData?.explorer?.url) {
-                      stepTX = axelarTransactionHash
-                      stepURL = `${axelarChainData.explorer.url}${axelarChainData.explorer.transaction_path.replace('{tx}', axelarTransactionHash)}`
-                    }
 
-                    if (transactionHash && axelarTransactionHash && axelarChainData?.explorer?.url) {
+                  if (['send', 'pay_gas', 'approve'].includes(d.id) && chain_type === 'evm') {
+                    if (isNumber(logIndex)) {
                       stepMoreInfos.push((
                         <div key={stepMoreInfos.length} className="flex items-center gap-x-1">
-                          <Copy size={16} value={axelarTransactionHash}>
-                            <Link
-                              href={`${axelarChainData.explorer.url}${axelarChainData.explorer.transaction_path.replace('{tx}', axelarTransactionHash)}`}
-                              target="_blank"
-                              className="text-blue-600 dark:text-blue-500 text-xs underline"
-                            >
-                              {['send', 'pay_gas'].includes(d.id) ? 'MessageReceived' : 'RouteMessage'}
-                            </Link>
-                          </Copy>
+                          <span className="text-zinc-700 dark:text-zinc-300 text-xs">LogIndex:</span>
                           <ExplorerLink
-                            value={axelarTransactionHash}
-                            chain={axelarChainData.id}
+                            value={transactionHash}
+                            chain={d.chainData.id}
+                            hasEventLog={true}
+                            title={numberFormat(logIndex, '0,0')}
+                            iconOnly={false}
                             width={14}
                             height={14}
+                            containerClassName="!gap-x-1.5"
+                            nonIconClassName="text-blue-600 dark:text-blue-500 text-xs"
                           />
                         </div>
                       ))
                     }
-
-                    if (['send', 'pay_gas', 'approve'].includes(d.id) && chain_type === 'evm') {
-                      if (isNumber(logIndex)) {
-                        stepMoreInfos.push((
-                          <div key={stepMoreInfos.length} className="flex items-center gap-x-1">
-                            <span className="text-zinc-700 dark:text-zinc-300 text-xs">LogIndex:</span>
-                            <ExplorerLink
-                              value={transactionHash}
-                              chain={d.chainData.id}
-                              hasEventLog={true}
-                              title={numberFormat(logIndex, '0,0')}
-                              iconOnly={false}
-                              width={14}
-                              height={14}
-                              containerClassName="!gap-x-1.5"
-                              nonIconClassName="text-blue-600 dark:text-blue-500 text-xs"
-                            />
-                          </div>
-                        ))
-                      }
-                      if (d.id === 'send' && isNumber(_logIndex)) {
-                        stepMoreInfos.push((
-                          <div key={stepMoreInfos.length} className="flex items-center gap-x-1">
-                            <span className="text-zinc-700 dark:text-zinc-300 text-xs">EventIndex:</span>
-                            <ExplorerLink
-                              value={transactionHash}
-                              chain={d.chainData.id}
-                              hasEventLog={true}
-                              title={numberFormat(_logIndex, '0,0')}
-                              iconOnly={false}
-                              width={14}
-                              height={14}
-                              containerClassName="!gap-x-1.5"
-                              nonIconClassName="text-blue-600 dark:text-blue-500 text-xs"
-                            />
-                          </div>
-                        ))
-                      }
-                    }
-
-                    if (d.id === 'approve' && returnValues?.commandId) {
+                    if (d.id === 'send' && isNumber(_logIndex)) {
                       stepMoreInfos.push((
-                        <Copy key={stepMoreInfos.length} size={16} value={returnValues.commandId}>
-                          <Link
-                            href={`/evm-batches?commandId=${returnValues.commandId}`}
-                            target="_blank"
-                            className="text-blue-600 dark:text-blue-500 text-xs underline"
-                          >
-                            Command ID
-                          </Link>
-                        </Copy>
-                      ))
-                    }
-
-                    if (d.id === 'execute' && d.status === 'failed' && error) {
-                      const message = error?.data?.message || error?.message
-                      const reason = error?.reason
-                      const code = error?.code
-                      const body = error?.body?.replaceAll('"""', '')
-
-                      stepMoreInfos.push((
-                        <div key={stepMoreInfos.length} className="w-64 flex flex-col gap-y-1">
-                          {message && (
-                            <div className="whitespace-pre-wrap text-red-600 dark:text-red-500 text-xs font-normal">
-                              {ellipse(message, 256)}
-                            </div>
-                          )}
-                          {reason && (
-                            <div className="whitespace-pre-wrap text-red-600 dark:text-red-500 text-xs font-medium">
-                              Reason: {ellipse(reason, 256)}
-                            </div>
-                          )}
-                          <div className="flex flex-col gap-y-4">
-                            {code && (
-                              <Link
-                                href={isNumber(code) ? 'https://docs.metamask.io/guide/ethereum-provider.html#errors' : `https://docs.ethers.io/v5/api/utils/logger/#errors-${isString(code) ? `-${split(code, { toCase: 'lower', delimiter: '_' }).join('-')}` : 'ethereum'}`}
-                                target="_blank"
-                                className="w-fit h-6 bg-zinc-50 dark:bg-zinc-800 rounded-xl flex items-center text-2xs px-2.5 py-1"
-                              >
-                                {code}
-                              </Link>
-                            )}
-                            {body && (
-                              <div className="w-fit bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-all text-xs p-2.5">
-                                {ellipse(body, 256)}
-                              </div>
-                            )}
-                          </div>
+                        <div key={stepMoreInfos.length} className="flex items-center gap-x-1">
+                          <span className="text-zinc-700 dark:text-zinc-300 text-xs">EventIndex:</span>
+                          <ExplorerLink
+                            value={transactionHash}
+                            chain={d.chainData.id}
+                            hasEventLog={true}
+                            title={numberFormat(_logIndex, '0,0')}
+                            iconOnly={false}
+                            width={14}
+                            height={14}
+                            containerClassName="!gap-x-1.5"
+                            nonIconClassName="text-blue-600 dark:text-blue-500 text-xs"
+                          />
                         </div>
                       ))
                     }
+                  }
 
-                    if ((d.id === 'pay_gas' && gas_added_transactions) || (d.id === 'refund' && refunded_more_transactions)) {
-                      for (const tx of toArray(d.id === 'pay_gas' ? gas_added_transactions : refunded_more_transactions)) {
-                        stepMoreTransactions.push((
-                          <div key={stepMoreTransactions.length} className="flex items-center gap-x-1">
-                            <Copy size={16} value={tx.transactionHash}>
+                  if (d.id === 'approve' && returnValues?.commandId) {
+                    stepMoreInfos.push((
+                      <Copy key={stepMoreInfos.length} size={16} value={returnValues.commandId}>
+                        <Link
+                          href={`/evm-batches?commandId=${returnValues.commandId}`}
+                          target="_blank"
+                          className="text-blue-600 dark:text-blue-500 text-xs underline"
+                        >
+                          Command ID
+                        </Link>
+                      </Copy>
+                    ))
+                  }
+
+                  if (d.id === 'execute' && d.status === 'failed' && error) {
+                    const message = error?.data?.message || error?.message
+                    const reason = error?.reason
+                    const code = error?.code
+                    const body = error?.body?.replaceAll('"""', '')
+
+                    stepMoreInfos.push((
+                      <div key={stepMoreInfos.length} className="w-64 flex flex-col gap-y-1">
+                        {message && (
+                          <div className="whitespace-pre-wrap text-red-600 dark:text-red-500 text-xs font-normal">
+                            {ellipse(message, 256)}
+                          </div>
+                        )}
+                        {reason && (
+                          <div className="whitespace-pre-wrap text-red-600 dark:text-red-500 text-xs font-medium">
+                            Reason: {ellipse(reason, 256)}
+                          </div>
+                        )}
+                        <div className="flex flex-col gap-y-4">
+                          {code && (
+                            <Link
+                              href={isNumber(code) ? 'https://docs.metamask.io/guide/ethereum-provider.html#errors' : `https://docs.ethers.io/v5/api/utils/logger/#errors-${isString(code) ? `-${split(code, { toCase: 'lower', delimiter: '_' }).join('-')}` : 'ethereum'}`}
+                              target="_blank"
+                              className="w-fit h-6 bg-zinc-50 dark:bg-zinc-800 rounded-xl flex items-center text-2xs px-2.5 py-1"
+                            >
+                              {code}
+                            </Link>
+                          )}
+                          {body && (
+                            <div className="w-fit bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-all text-xs p-2.5">
+                              {ellipse(body, 256)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  }
+
+                  if ((d.id === 'pay_gas' && gas_added_transactions) || (d.id === 'refund' && refunded_more_transactions)) {
+                    for (const tx of toArray(d.id === 'pay_gas' ? gas_added_transactions : refunded_more_transactions)) {
+                      stepMoreTransactions.push((
+                        <div key={stepMoreTransactions.length} className="flex items-center gap-x-1">
+                          <Copy size={16} value={tx.transactionHash}>
+                            {url ?
                               <Link
                                 href={`${url}${transaction_path.replace('{tx}', tx.transactionHash)}`}
                                 target="_blank"
                                 className="text-blue-600 dark:text-blue-500 text-xs font-medium"
                               >
                                 {ellipse(tx.transactionHash)}
-                              </Link>
-                            </Copy>
-                            <ExplorerLink
-                              value={tx.transactionHash}
-                              chain={d.chainData?.id}
-                              width={14}
-                              height={14}
-                            />
-                          </div>
-                        ))
-                      }
+                              </Link> :
+                              ellipse(tx.transactionHash)
+                            }
+                          </Copy>
+                          <ExplorerLink
+                            value={tx.transactionHash}
+                            chain={d.chainData?.id}
+                            width={14}
+                            height={14}
+                          />
+                        </div>
+                      ))
                     }
                   }
-                  break
-              }
+                }
+                break
             }
 
             const fromAddress = transaction?.from
