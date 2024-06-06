@@ -15,16 +15,17 @@ import { Tag } from '@/components/Tag'
 import { AddMetamask } from '@/components/Metamask'
 import { ValueBox } from '@/components/ValueBox'
 import { useGlobalStore } from '@/components/Global'
-import { getChainData } from '@/lib/config'
+import { ENVIRONMENT, getChainData } from '@/lib/config'
 import { getIBCDenomBase64, split, toArray } from '@/lib/parser'
 import { includesStringList } from '@/lib/operator'
 import { equalsIgnoreCase, ellipse } from '@/lib/string'
 
-const chainTypes = [
+const chainTypes = toArray([
   { label: 'All', value: undefined },
   { label: 'EVM', value: 'evm' },
   { label: 'Cosmos', value: 'cosmos' },
-]
+  ['devnet-amplifier', 'devnet-verifiers'].includes(ENVIRONMENT) && { label: 'VM', value: 'vm' },
+])
 
 const assetTypes = [
   { label: 'All', value: undefined },
