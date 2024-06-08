@@ -37,6 +37,7 @@ const navigations = [
       { title: 'Blocks', href: '/blocks' },
       { title: 'Transactions', href: '/transactions' },
       { title: 'EVM Polls', href: '/evm-polls' },
+      ['devnet-amplifier', 'devnet-verifiers'].includes(ENVIRONMENT) && { title: 'VM Polls', href: '/vm-polls' },
       { title: 'EVM Batches', href: '/evm-batches' },
       { title: 'Proposals', href: '/proposals' },
     ]),
