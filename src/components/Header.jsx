@@ -31,14 +31,15 @@ const navigations = [
   },
   {
     title: 'Network',
-    children: [
+    children: toArray([
       { title: 'Validators', href: '/validators' },
+      ['devnet-amplifier', 'devnet-verifiers'].includes(ENVIRONMENT) && { title: 'Verifiers', href: '/verifiers' },
       { title: 'Blocks', href: '/blocks' },
       { title: 'Transactions', href: '/transactions' },
       { title: 'EVM Polls', href: '/evm-polls' },
       { title: 'EVM Batches', href: '/evm-batches' },
       { title: 'Proposals', href: '/proposals' },
-    ],
+    ]),
   },
   ENVIRONMENT === 'mainnet' && { title: 'TVL', href: '/tvl' },
   {

@@ -14,7 +14,7 @@ export const getSlug = (pathname, id = 'tx') => {
       if (['/gmp', 'transfer', '/tx', '/transaction'].findIndex(d => pathname.startsWith(d)) > -1) return slug
       break
     case 'address':
-      if (['/account', '/address', '/validator/'].findIndex(d => pathname.startsWith(d)) > -1) return slug
+      if (['/account', '/address', '/validator/', '/verifier/'].findIndex(d => pathname.startsWith(d)) > -1) return slug
       break
     default:
       break
