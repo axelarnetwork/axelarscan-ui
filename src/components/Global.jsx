@@ -5,7 +5,7 @@ import { create } from 'zustand'
 import moment from 'moment'
 
 import { getChains, getAssets, getITSAssets, getTokensPrice, getInflation, getNetworkParameters, getTVL } from '@/lib/api/axelarscan'
-import { getValidators } from '@/lib/api/validator'
+import { getValidators, getVerifiers } from '@/lib/api/validator'
 import { transfersStats, transfersChart, transfersTotalVolume, transfersTotalFee, transfersTotalActiveUsers, transfersTopUsers } from '@/lib/api/token-transfer'
 import { getContracts, getConfigurations, GMPStats, GMPChart, GMPTotalVolume, GMPTotalFee, GMPTotalActiveUsers, GMPTopUsers, GMPTopITSAssets } from '@/lib/api/gmp'
 import { ENVIRONMENT } from '@/lib/config'
@@ -18,6 +18,7 @@ export const useGlobalStore = create()(set => ({
   contracts: null,
   configurations: null,
   validators: null,
+  verifiers: null,
   inflationData: null,
   networkParameters: null,
   tvl: null,
@@ -28,6 +29,7 @@ export const useGlobalStore = create()(set => ({
   setContracts: data => set(state => ({ ...state, contracts: data })),
   setConfigurations: data => set(state => ({ ...state, configurations: data })),
   setValidators: data => set(state => ({ ...state, validators: data })),
+  setVerifiers: data => set(state => ({ ...state, verifiers: data })),
   setInflationData: data => set(state => ({ ...state, inflationData: data })),
   setNetworkParameters: data => set(state => ({ ...state, networkParameters: data })),
   setTVL: data => set(state => ({ ...state, tvl: data })),
@@ -35,11 +37,11 @@ export const useGlobalStore = create()(set => ({
 }))
 
 export function Global() {
-  const { setChains, setAssets, setITSAssets, setContracts, setConfigurations, setValidators, setInflationData, setNetworkParameters, setTVL, setStats } = useGlobalStore()
+  const { setChains, setAssets, setITSAssets, setContracts, setConfigurations, setValidators, setVerifiers, setInflationData, setNetworkParameters, setTVL, setStats } = useGlobalStore()
 
   useEffect(() => {
     const getData = async () => {
-      await Promise.all(['chains', 'assets', 'itsAssets', 'contracts', 'configurations', 'validators', 'inflationData', 'networkParameters', 'tvl', 'stats'].map(k => new Promise(async resolve => {
+      await Promise.all(['chains', 'assets', 'itsAssets', 'contracts', 'configurations', 'validators', 'verifiers', 'inflationData', 'networkParameters', 'tvl', 'stats'].map(k => new Promise(async resolve => {
         switch (k) {
           case 'chains':
             setChains(await getChains())
@@ -72,6 +74,9 @@ export function Global() {
             break
           case 'validators':
             setValidators((await getValidators())?.data)
+            break
+          case 'verifiers':
+            setVerifiers((await getVerifiers())?.data)
             break
           case 'inflationData':
             setInflationData(await getInflation())
@@ -184,7 +189,7 @@ export function Global() {
     getData()
     const interval = setInterval(() => getData(), 5 * 60 * 1000)
     return () => clearInterval(interval)
-  }, [setChains, setAssets, setITSAssets, setContracts, setConfigurations, setValidators, setInflationData, setNetworkParameters, setTVL, setStats])
+  }, [setChains, setAssets, setITSAssets, setContracts, setConfigurations, setValidators, setVerifiers, setInflationData, setNetworkParameters, setTVL, setStats])
 
   return null
 }
