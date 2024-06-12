@@ -133,7 +133,7 @@ export function Validators({ status }) {
                       Verifiers
                     </Link>
                   </>
-                  )}
+                )}
               </div>
               <p className="mt-2 text-zinc-400 dark:text-zinc-500 text-sm">
                 List of {status || 'active'} validators in Axelar Network with the latest 10K blocks performance.
