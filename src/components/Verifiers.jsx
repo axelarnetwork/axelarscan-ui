@@ -13,6 +13,7 @@ import { Number } from '@/components/Number'
 import { Profile } from '@/components/Profile'
 import { useGlobalStore } from '@/components/Global'
 import { getVerifiersVotes } from '@/lib/api/validator'
+import { ENVIRONMENT } from '@/lib/config'
 import { toArray } from '@/lib/parser'
 import { equalsIgnoreCase } from '@/lib/string'
 import { toNumber, numberFormat } from '@/lib/number'
@@ -57,11 +58,15 @@ export function Verifiers() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between sm:gap-x-4 gap-y-4 sm:gap-y-0">
             <div className="sm:flex-auto">
               <div className="flex items-center space-x-2">
+                {['devnet-amplifier', 'devnet-verifiers'].includes(ENVIRONMENT) && (
+                  <>
+                    <Link href="/validators" className="text-blue-600 dark:text-blue-500 text-base font-semibold leading-6">
+                      Validators
+                    </Link>
+                    <span className="text-zinc-400 dark:text-zinc-500">|</span>
+                  </>
+                )}
                 <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">Verifiers</h1>
-                <span className="text-zinc-400 dark:text-zinc-500">|</span>
-                <Link href="/validators" className="text-blue-600 dark:text-blue-500 text-base font-semibold leading-6">
-                  Validators
-                </Link>
               </div>
               <p className="mt-2 text-zinc-400 dark:text-zinc-500 text-sm">
                 List of active verifiers in Axelar Network with the latest 10K blocks performance.
