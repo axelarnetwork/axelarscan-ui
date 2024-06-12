@@ -82,7 +82,7 @@ export function Validators({ status }) {
           d.total_unsubmitted_votes = getVoteCount('unsubmitted', d.votes.chains)
         }
 
-        const supportedChains = Object.entries(maintainers).filter(([k, v]) => v.includes(d.operator_address)).map(([k, v]) => k)
+        const supportedChains = Object.entries({ ...maintainers }).filter(([k, v]) => v.includes(d.operator_address)).map(([k, v]) => k)
         const inflation = toFixed(
           ((d.uptime / 100) * toNumber(tendermintInflationRate)) +
           ((isNumber(d.heartbeats_uptime) ? d.heartbeats_uptime / 100 : 1) * toNumber(keyMgmtRelativeInflationRate) * toNumber(tendermintInflationRate)) +
