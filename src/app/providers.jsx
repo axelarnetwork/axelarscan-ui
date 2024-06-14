@@ -11,7 +11,6 @@ import { Global } from '@/components/Global'
 import WagmiConfigProvider from '@/lib/provider/WagmiConfigProvider'
 import { queryClient } from '@/lib/provider/wagmi'
 import * as ga from '@/lib/ga'
-import { ENVIRONMENT } from '@/lib/config'
 
 function ThemeWatcher() {
   const { resolvedTheme, setTheme } = useTheme()
@@ -23,7 +22,7 @@ function ThemeWatcher() {
     function onMediaChange() {
       const systemTheme = media.matches ? 'dark' : 'light'
       if (resolvedTheme === systemTheme) setTheme('system')
-      if (ENVIRONMENT === 'mainnet') setThemeMode(resolvedTheme)
+      setThemeMode(resolvedTheme)
     }
 
     onMediaChange()
