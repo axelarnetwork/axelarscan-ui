@@ -1179,7 +1179,7 @@ function Details({ data }) {
                         </Copy>
                         <ExplorerLink
                           value={axelarTransactionHash}
-                          chain={axelarChainData.id}
+                          chain={axelarChainData?.id}
                           width={14}
                           height={14}
                         />
@@ -1194,7 +1194,7 @@ function Details({ data }) {
                           <span className="text-zinc-700 dark:text-zinc-300 text-xs">LogIndex:</span>
                           <ExplorerLink
                             value={transactionHash}
-                            chain={d.chainData.id}
+                            chain={d.chainData?.id}
                             hasEventLog={true}
                             title={numberFormat(logIndex, '0,0')}
                             iconOnly={false}
@@ -1212,7 +1212,7 @@ function Details({ data }) {
                           <span className="text-zinc-700 dark:text-zinc-300 text-xs">EventIndex:</span>
                           <ExplorerLink
                             value={transactionHash}
-                            chain={d.chainData.id}
+                            chain={d.chainData?.id}
                             hasEventLog={true}
                             title={numberFormat(_logIndex, '0,0')}
                             iconOnly={false}
