@@ -1794,7 +1794,7 @@ export function GMP({ tx, lite }) {
           {gas_paid ? 'Add' : 'Pay'}{processing ? 'ing' : ''} gas{processing ? '...' : ''}
         </button>
       )}
-      {/*call.chain_type === 'cosmos' ? <CosmosWallet connectChainId={sourceChainData?.chain_id} /> : <EVMWallet connectChainId={sourceChainData?.chain_id} />*/}
+      {call.chain_type === 'cosmos' ? <CosmosWallet connectChainId={sourceChainData?.chain_id} /> : <EVMWallet connectChainId={sourceChainData?.chain_id} />}
     </div>
   )
 
