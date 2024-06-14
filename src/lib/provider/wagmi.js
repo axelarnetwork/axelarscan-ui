@@ -1,5 +1,6 @@
 import { QueryClient } from '@tanstack/react-query'
-import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi/react'
+import { defaultWagmiConfig } from '@web3modal/wagmi/react/config'
+import { createWeb3Modal } from '@web3modal/wagmi/react'
 import { mainnet, goerli, sepolia, bsc, bscTestnet, polygon, polygonMumbai, polygonAmoy, polygonZkEvm, polygonZkEvmTestnet, avalanche, avalancheFuji, fantom, fantomTestnet, moonbeam, moonbaseAlpha, aurora, auroraTestnet, arbitrum, arbitrumGoerli, arbitrumSepolia, optimism, optimismGoerli, optimismSepolia, base, baseGoerli, baseSepolia, mantle, mantleTestnet, mantleSepoliaTestnet, celo, celoAlfajores, kava, kavaTestnet, filecoin, filecoinHyperspace, filecoinCalibration, linea, lineaTestnet, lineaSepolia, scroll, scrollSepolia, immutableZkEvm, immutableZkEvmTestnet, fraxtal, fraxtalTestnet, blast, blastSepolia } from 'wagmi/chains'
 
 export const CHAINS = process.env.NEXT_PUBLIC_ENVIRONMENT === 'mainnet' ?
