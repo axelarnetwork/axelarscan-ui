@@ -4,13 +4,14 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { ThemeProvider, useTheme } from 'next-themes'
 import TagManager from 'react-gtm-module'
-import { HydrationBoundary, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { useWeb3ModalTheme } from '@web3modal/wagmi/react'
 
 import { Global } from '@/components/Global'
 import WagmiConfigProvider from '@/lib/provider/WagmiConfigProvider'
 import { queryClient } from '@/lib/provider/wagmi'
 import * as ga from '@/lib/ga'
+import { ENVIRONMENT } from '@/lib/config'
 
 function ThemeWatcher() {
   const { resolvedTheme, setTheme } = useTheme()
@@ -22,7 +23,7 @@ function ThemeWatcher() {
     function onMediaChange() {
       const systemTheme = media.matches ? 'dark' : 'light'
       if (resolvedTheme === systemTheme) setTheme('system')
-      setThemeMode(resolvedTheme)
+      if (ENVIRONMENT === 'mainnet') setThemeMode(resolvedTheme)
     }
 
     onMediaChange()
@@ -33,7 +34,7 @@ function ThemeWatcher() {
   return null
 }
 
-export function Providers({ children, dehydrateState }) {
+export function Providers({ children }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [rendered, setRendered] = useState(false)
@@ -63,11 +64,9 @@ export function Providers({ children, dehydrateState }) {
       <ThemeWatcher />
       <Global />
       <QueryClientProvider client={client}>
-        <HydrationBoundary state={dehydrateState}>
-          <WagmiConfigProvider>
-            {children}
-          </WagmiConfigProvider>
-        </HydrationBoundary>
+        <WagmiConfigProvider>
+          {children}
+        </WagmiConfigProvider>
       </QueryClientProvider>
     </ThemeProvider>
   )
