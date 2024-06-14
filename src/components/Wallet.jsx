@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useWeb3Modal } from '@web3modal/wagmi/react'
-import { usePublicClient, useNetwork, useSwitchNetwork, useWalletClient, useAccount, useDisconnect, useSignMessage } from 'wagmi'
+import { usePublicClient, useChainId, useSwitchChain, useWalletClient, useAccount, useDisconnect, useSignMessage } from 'wagmi'
 import { hashMessage, parseAbiItem, verifyMessage } from 'viem'
 import { providers } from 'ethers'
 // import { BrowserProvider, FallbackProvider, JsonRpcProvider, JsonRpcSigner } from 'ethers'
@@ -11,7 +11,7 @@ import { ENVIRONMENT } from '@/lib/config'
 
 const publicClientToProvider = publicClient => {
   const { chain, transport } = { ...publicClient }
-  const network = { chainId: chain.id, name: chain.name, ensAddress: chain.contracts?.ensRegistry?.address }
+  const network = { chainId: chain?.id, name: chain?.name, ensAddress: chain?.contracts?.ensRegistry?.address }
   // if (transport.type === 'fallback') {
   //   const providers = transport.transports.map(({ value }) => new JsonRpcProvider(value?.url, network))
   //   if (providers.length === 1) return providers[0]
@@ -26,14 +26,14 @@ const publicClientToProvider = publicClient => {
 
 const walletClientToProvider = walletClient => {
   const { account, chain, transport } = { ...walletClient }
-  const network = { chainId: chain.id, name: chain.name, ensAddress: chain.contracts?.ensRegistry?.address }
+  const network = { chainId: chain?.id, name: chain?.name, ensAddress: chain?.contracts?.ensRegistry?.address }
   // const provider = new BrowserProvider(transport, network)
   return new providers.Web3Provider(transport, network)
 }
 
 const walletClientToSigner = walletClient => {
   const { account, chain, transport } = { ...walletClient }
-  const network = { chainId: chain.id, name: chain.name, ensAddress: chain.contracts?.ensRegistry?.address }
+  const network = { chainId: chain?.id, name: chain?.name, ensAddress: chain?.contracts?.ensRegistry?.address }
   // const provider = new BrowserProvider(transport, network)
   // const signer = new JsonRpcSigner(provider, account.address)
   const provider = new providers.Web3Provider(transport, network)
@@ -58,8 +58,8 @@ export function EVMWallet({ connectChainId, children, className }) {
 
   const { open } = useWeb3Modal()
   const publicClient = usePublicClient()
-  const { chain } = useNetwork()
-  const { switchNetwork } = useSwitchNetwork()
+  const _chainId = useChainId()
+  const { switchChain } = useSwitchChain()
   const { data: walletClient } = useWalletClient()
   const { address } = useAccount()
   const { disconnect } = useDisconnect()
@@ -68,8 +68,8 @@ export function EVMWallet({ connectChainId, children, className }) {
   const { data: signature } = useSignMessage({ message })
 
   useEffect(() => {
-    if (chain?.id && walletClient && address) {
-      setChainId(chain.id)
+    if (_chainId && walletClient && address) {
+      setChainId(_chainId)
       setAddress(address)
       // setProvider(publicClientToProvider(publicClient))
       setProvider(walletClientToProvider(walletClient))
@@ -81,7 +81,7 @@ export function EVMWallet({ connectChainId, children, className }) {
       setProvider(null)
       setSigner(null)
     }
-  }, [chain, publicClient, walletClient, address, setChainId, setAddress, setProvider, setSigner])
+  }, [_chainId, publicClient, walletClient, address, setChainId, setAddress, setProvider, setSigner])
 
   useEffect(() => {
     const validateSignature = async () => {
@@ -105,7 +105,7 @@ export function EVMWallet({ connectChainId, children, className }) {
 
   return provider ?
     connectChainId && connectChainId !== chainId ?
-      <button onClick={() => switchNetwork(connectChainId)} className={clsx(className)}>
+      <button onClick={() => switchChain({ chainId: connectChainId })} className={clsx(className)}>
         {children || (
           <div className="h-6 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded-xl flex items-center font-display text-zinc-900 dark:text-zinc-100 whitespace-nowrap px-2.5 py-1">
             Switch Network
