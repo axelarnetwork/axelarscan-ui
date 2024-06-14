@@ -7,7 +7,6 @@ import { providers } from 'ethers'
 import { create } from 'zustand'
 import clsx from 'clsx'
 
-import NonSSRWrapper from '@/components/NonSSRWrapper'
 import { ENVIRONMENT } from '@/lib/config'
 
 const publicClientToProvider = publicClient => {
@@ -212,32 +211,27 @@ export function CosmosWallet({ connectChainId, children, className }) {
     setSigner(null)
   }
 
-  return (
-    <NonSSRWrapper>
-      {provider ?
-        connectChainId && connectChainId !== chainId ?
-          <button onClick={() => connect(connectChainId)} className={clsx(className)}>
-            {children || (
-              <div className="h-6 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded-xl flex items-center font-display text-zinc-900 dark:text-zinc-100 whitespace-nowrap px-2.5 py-1">
-                Connect
-              </div>
-            )}
-          </button> :
-          <button onClick={() => disconnect()} className={clsx(className)}>
-            {children || (
-              <div className="h-6 bg-red-600 hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-600 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1">
-                Disconnect
-              </div>
-            )}
-          </button> :
-        <button onClick={() => connect(connectChainId)} className={clsx(className)}>
-          {children || (
-            <div className="h-6 bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1">
-              Connect
-            </div>
-          )}
-        </button>
-      }
-    </NonSSRWrapper>
-  )
+  return provider ?
+    connectChainId && connectChainId !== chainId ?
+      <button onClick={() => connect(connectChainId)} className={clsx(className)}>
+        {children || (
+          <div className="h-6 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 rounded-xl flex items-center font-display text-zinc-900 dark:text-zinc-100 whitespace-nowrap px-2.5 py-1">
+            Connect
+          </div>
+        )}
+      </button> :
+      <button onClick={() => disconnect()} className={clsx(className)}>
+        {children || (
+          <div className="h-6 bg-red-600 hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-600 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1">
+            Disconnect
+          </div>
+        )}
+      </button> :
+    <button onClick={() => connect(connectChainId)} className={clsx(className)}>
+      {children || (
+        <div className="h-6 bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1">
+          Connect
+        </div>
+      )}
+    </button>
 }
