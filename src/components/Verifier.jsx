@@ -9,6 +9,7 @@ import { Container } from '@/components/Container'
 import { Image } from '@/components/Image'
 import { Tooltip } from '@/components/Tooltip'
 import { Spinner } from '@/components/Spinner'
+import { Tag } from '@/components/Tag'
 import { Number } from '@/components/Number'
 import { Profile } from '@/components/Profile'
 import { useGlobalStore } from '@/components/Global'
@@ -32,27 +33,37 @@ function Info({ data, address }) {
       <div className="border-t border-zinc-200 dark:border-zinc-700">
         <dl className="divide-y divide-zinc-100 dark:divide-zinc-800">
           {supportedChains && (
-            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">VM Supported</dt>
-              <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                <div className="flex flex-wrap">
-                  {supportedChains.map((c, i) => {
-                    const { name, image } = { ...getChainData(c, chains) }
-                    return (
-                      <Tooltip key={i} content={name} className="whitespace-nowrap">
-                        <Image
-                          src={image}
-                          alt=""
-                          width={20}
-                          height={20}
-                          className="mr-1.5 mb-1.5"
-                        />
-                      </Tooltip>
-                    )
-                  })}
-                </div>
-              </dd>
-            </div>
+            <>
+              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Status</dt>
+                <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                  <Tag className={clsx('w-fit', supportedChains.length > 0 ? 'bg-green-600 dark:bg-green-500' : 'bg-red-600 dark:bg-red-500')}>
+                    {supportedChains.length > 0 ? 'Active' : 'Inactive'}
+                  </Tag>
+                </dd>
+              </div>
+              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">VM Supported</dt>
+                <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                  <div className="flex flex-wrap">
+                    {supportedChains.map((c, i) => {
+                      const { name, image } = { ...getChainData(c, chains) }
+                      return (
+                        <Tooltip key={i} content={name} className="whitespace-nowrap">
+                          <Image
+                            src={image}
+                            alt=""
+                            width={20}
+                            height={20}
+                            className="mr-1.5 mb-1.5"
+                          />
+                        </Tooltip>
+                      )
+                    })}
+                  </div>
+                </dd>
+              </div>
+            </>
           )}
         </dl>
       </div>

@@ -60,13 +60,13 @@ export function Verifiers() {
               <div className="flex items-center space-x-2">
                 {['devnet-amplifier', 'devnet-verifiers'].includes(ENVIRONMENT) && (
                   <>
-                    <Link href="/validators" className="text-blue-600 dark:text-blue-500 text-base font-semibold leading-6">
+                    <Link href="/validators" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
                       Validators
                     </Link>
                     <span className="text-zinc-400 dark:text-zinc-500">|</span>
                   </>
                 )}
-                <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">Verifiers</h1>
+                <h1 className="underline text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">Verifiers</h1>
               </div>
               <p className="mt-2 text-zinc-400 dark:text-zinc-500 text-sm">
                 List of active verifiers in Axelar Network with the latest 10K blocks performance.
