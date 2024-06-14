@@ -4,7 +4,7 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { ThemeProvider, useTheme } from 'next-themes'
 import TagManager from 'react-gtm-module'
-import { QueryClientProvider } from '@tanstack/react-query'
+import { HydrationBoundary, QueryClientProvider } from '@tanstack/react-query'
 import { useWeb3ModalTheme } from '@web3modal/wagmi/react'
 
 import { Global } from '@/components/Global'
@@ -33,7 +33,7 @@ function ThemeWatcher() {
   return null
 }
 
-export function Providers({ children }) {
+export function Providers({ children, dehydrateState }) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [rendered, setRendered] = useState(false)
@@ -63,9 +63,11 @@ export function Providers({ children }) {
       <ThemeWatcher />
       <Global />
       <QueryClientProvider client={client}>
-        <WagmiConfigProvider>
-          {children}
-        </WagmiConfigProvider>
+        <HydrationBoundary state={dehydrateState}>
+          <WagmiConfigProvider>
+            {children}
+          </WagmiConfigProvider>
+        </HydrationBoundary>
       </QueryClientProvider>
     </ThemeProvider>
   )
