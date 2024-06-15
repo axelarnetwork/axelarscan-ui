@@ -15,7 +15,11 @@ export function Image({ src, alt = '', className, ...props }) {
       src={src}
       loader={() => loader({ ...props, src })}
       unoptimized
-      className={clsx(className, isString(src) ? includesStringList(src, ['/immutable']) ? 'bg-white rounded-full' : includesStringList(src, ['/blast']) ? 'bg-zinc-900 rounded-full p-0.5' : '' : '')}
+      className={clsx(className, !isString(src) ? '' :
+        includesStringList(src, ['/immutable', '/ropsten']) ? 'bg-white rounded-full' :
+        includesStringList(src, ['/dymension', '/moonbase']) ? 'bg-white rounded-full p-0.5' :
+        includesStringList(src, ['/blast']) ? 'bg-zinc-900 rounded-full p-0.5' : ''
+      )}
     />
   )
 }
