@@ -39,7 +39,7 @@ export function Validators({ status }) {
   const { maintainers, setMaintainers } = useValidatorStore()
 
   useEffect(() => {
-    if (chains && contracts) setEVMChains(toArray(chains).filter(d => d.chain_type ==='evm' && contracts.gateway_contracts?.[d.id]?.address))
+    if (chains && contracts) setEVMChains(toArray(chains).filter(d => d.chain_type ==='evm' && !d.no_inflation && contracts.gateway_contracts?.[d.id]?.address))
   }, [chains, contracts, setEVMChains])
 
   useEffect(() => {
