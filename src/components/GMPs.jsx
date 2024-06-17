@@ -30,7 +30,7 @@ import { useGlobalStore } from '@/components/Global'
 import { searchGMP } from '@/lib/api/gmp'
 import { ENVIRONMENT } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
-import { isString, equalsIgnoreCase, toBoolean, ellipse, toTitle } from '@/lib/string'
+import { isString, equalsIgnoreCase, capitalize, toBoolean, ellipse, toTitle } from '@/lib/string'
 import { isNumber } from '@/lib/number'
 import customGMPs from '@/data/custom/gmp'
 
@@ -257,14 +257,18 @@ export const customData = async data => {
   if (!(destinationContractAddress && isString(payload))) return data
 
   try {
-    const { customize } = { ...toArray(customGMPs).find(d => toArray(d.addresses).findIndex(a => equalsIgnoreCase(a, destinationContractAddress)) > -1 && (!d.environment || equalsIgnoreCase(d.environment, ENVIRONMENT))) }
+    const { id, name, customize } = { ...toArray(customGMPs).find(d => toArray(d.addresses).findIndex(a => equalsIgnoreCase(a, destinationContractAddress)) > -1 && (!d.environment || equalsIgnoreCase(d.environment, ENVIRONMENT))) }
     if (typeof customize === 'function') {
       const customValues = await customize(call.returnValues, ENVIRONMENT)
-      if (typeof customValues === 'object' && !Array.isArray(customValues) && Object.keys({ ...customValues }).length > 0) data.customValues = customValues
+      if (typeof customValues === 'object' && !Array.isArray(customValues) && Object.keys({ ...customValues }).length > 0) {
+        customValues.projectId = id
+        customValues.projectName = name || capitalize(id)
+        data.customValues = customValues
+      }
     }
 
     // interchain transfer
-    if (interchain_transfer?.destinationAddress && !data.customValues?.recipientAddress) data.customValues = { ...data.customValues, recipientAddress: interchain_transfer.destinationAddress }
+    if (interchain_transfer?.destinationAddress && !data.customValues?.recipientAddress) data.customValues = { ...data.customValues, recipientAddress: interchain_transfer.destinationAddress, projectId: 'its', projectName: 'ITS' }
   } catch (error) {}
   return data
 }
@@ -448,7 +452,7 @@ export function GMPs({ address }) {
                                 <Profile address={d.call.returnValues?.destinationContractAddress} chain={d.call.returnValues?.destinationChain} />
                               </Tooltip>
                               {d.customValues?.recipientAddress && (
-                                <Tooltip content="Final User Recipient" parentClassName="!justify-start">
+                                <Tooltip content={`${d.customValues.projectName ? d.customValues.projectName : 'Final User'} Recipient`} parentClassName="!justify-start">
                                   <Profile address={d.customValues.recipientAddress} chain={d.call.returnValues?.destinationChain} />
                                 </Tooltip>
                               )}
