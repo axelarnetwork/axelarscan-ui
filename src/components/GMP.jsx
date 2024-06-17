@@ -514,379 +514,6 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                 </>
               )
           }
-          {isMultihop ?
-            <>
-              {toArray([data.originData, data, data.callbackData]).findIndex(d => d.fees?.base_fee > 0) > -1 && (
-                <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
-                  <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Base Fee</dt>
-                  <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                    <div className="overflow-x-auto flex items-center gap-x-4">
-                      {toArray([data.originData, data, data.callbackData]).filter(d => d.fees).map((d, i) => (
-                        <div key={i} className="flex items-center gap-x-4">
-                          {i > 0 && <FiPlus size={18} className="text-zinc-400 dark:text-zinc-500" />}
-                          <div className="flex flex-col gap-y-1">
-                            <div className="flex items-center gap-x-2">
-                              <Number
-                                value={d.fees.base_fee}
-                                format="0,0.000000"
-                                suffix={` ${d.fees.source_token?.symbol}`}
-                                noTooltip={true}
-                                className="font-medium"
-                              />
-                              {d.fees.base_fee_usd > 0 && (
-                                <Number
-                                  value={d.fees.base_fee_usd}
-                                  format="0,0.00"
-                                  prefix="($"
-                                  suffix=")"
-                                  noTooltip={true}
-                                  className="text-zinc-400 dark:text-zinc-500 font-normal"
-                                />
-                              )}
-                            </div>
-                            {d.fees.source_confirm_fee > 0 && (
-                              <>
-                                <div className="flex items-center gap-x-1 ml-3">
-                                  <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Confirm Fee:</span>
-                                  <Number
-                                    value={d.fees.source_confirm_fee}
-                                    format="0,0.000000"
-                                    suffix={` ${d.fees.source_token?.symbol}`}
-                                    noTooltip={true}
-                                    className="text-xs font-medium"
-                                  />
-                                  {d.fees.source_token?.token_price?.usd > 0 > 0 && (
-                                    <Number
-                                      value={d.fees.source_confirm_fee * d.fees.source_token.token_price.usd}
-                                      format="0,0.00"
-                                      prefix="($"
-                                      suffix=")"
-                                      noTooltip={true}
-                                      className="text-zinc-400 dark:text-zinc-500 text-xs font-normal"
-                                    />
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-x-1 ml-3">
-                                  <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Approve Fee:</span>
-                                  <Number
-                                    value={d.fees.base_fee - d.fees.source_confirm_fee}
-                                    format="0,0.000000"
-                                    suffix={` ${d.fees.source_token?.symbol}`}
-                                    noTooltip={true}
-                                    className="text-xs font-medium"
-                                  />
-                                  {d.fees.source_token?.token_price?.usd > 0 > 0 && (
-                                    <Number
-                                      value={(d.fees.base_fee - d.fees.source_confirm_fee) * d.fees.source_token.token_price.usd}
-                                      format="0,0.00"
-                                      prefix="($"
-                                      suffix=")"
-                                      noTooltip={true}
-                                      className="text-zinc-400 dark:text-zinc-500 text-xs font-normal"
-                                    />
-                                  )}
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </dd>
-                </div>
-              )}
-              {toArray([data.originData, data, data.callbackData]).findIndex(d => d.express_executed && d.fees?.express_supported && d.fees.express_fee > 0) > -1 && (
-                <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
-                  <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Express Fee</dt>
-                  <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                    <div className="overflow-x-auto flex items-center gap-x-4">
-                      {toArray([data.originData, data, data.callbackData]).filter(d => d.fees?.express_supported).map((d, i) => (
-                        <div key={i} className="flex items-center gap-x-4">
-                          {i > 0 && <FiPlus size={18} className="text-zinc-400 dark:text-zinc-500" />}
-                          <div className="flex flex-col gap-y-1">
-                            <div className="flex items-center gap-x-2">
-                              <Number
-                                value={d.fees.express_fee}
-                                format="0,0.000000"
-                                suffix={` ${d.fees.source_token?.symbol}`}
-                                noTooltip={true}
-                                className="font-medium"
-                              />
-                              {d.fees.express_fee_usd > 0 && (
-                                <Number
-                                  value={d.fees.express_fee_usd}
-                                  format="0,0.00"
-                                  prefix="($"
-                                  suffix=")"
-                                  noTooltip={true}
-                                  className="text-zinc-400 dark:text-zinc-500 font-normal"
-                                />
-                              )}
-                            </div>
-                            {d.fees.source_express_fee && (
-                              <>
-                                {isNumber(d.fees.source_express_fee.relayer_fee) && (
-                                  <div className="flex items-center gap-x-1 ml-3">
-                                    <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Relayer Fee:</span>
-                                    <Number
-                                      value={d.fees.source_express_fee.relayer_fee}
-                                      format="0,0.000000"
-                                      suffix={` ${d.fees.source_token?.symbol}`}
-                                      noTooltip={true}
-                                      className="text-xs font-medium"
-                                    />
-                                    {d.fees.source_express_fee.relayer_fee_usd > 0 && (
-                                      <Number
-                                        value={d.fees.source_express_fee.relayer_fee_usd}
-                                        format="0,0.00"
-                                        prefix="($"
-                                        suffix=")"
-                                        noTooltip={true}
-                                        className="text-zinc-400 dark:text-zinc-500 text-xs font-normal"
-                                      />
-                                    )}
-                                  </div>
-                                )}
-                                {isNumber(d.fees.source_express_fee.express_gas_overhead_fee) && (
-                                  <div className="flex items-center gap-x-1 ml-3">
-                                    <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Overhead Fee:</span>
-                                    <Number
-                                      value={d.fees.source_express_fee.express_gas_overhead_fee}
-                                      format="0,0.000000"
-                                      suffix={` ${d.fees.source_token?.symbol}`}
-                                      noTooltip={true}
-                                      className="text-xs font-medium"
-                                    />
-                                    {d.fees.source_express_fee.express_gas_overhead_fee_usd > 0 && (
-                                      <Number
-                                        value={d.fees.source_express_fee.express_gas_overhead_fee_usd}
-                                        format="0,0.00"
-                                        prefix="($"
-                                        suffix=")"
-                                        noTooltip={true}
-                                        className="text-zinc-400 dark:text-zinc-500 text-xs font-normal"
-                                      />
-                                    )}
-                                  </div>
-                                )}
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </dd>
-                </div>
-              )}
-            </> :
-            <>
-              {fees?.base_fee > 0 && (
-                <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
-                  <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Base Fee</dt>
-                  <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                    <div className="flex flex-col gap-y-1">
-                      <div className="flex items-center gap-x-2">
-                        <Number
-                          value={fees.base_fee}
-                          format="0,0.000000"
-                          suffix={` ${fees.source_token?.symbol}`}
-                          noTooltip={true}
-                          className="font-medium"
-                        />
-                        {fees.base_fee_usd > 0 && (
-                          <Number
-                            value={fees.base_fee_usd}
-                            format="0,0.00"
-                            prefix="($"
-                            suffix=")"
-                            noTooltip={true}
-                            className="text-zinc-400 dark:text-zinc-500 font-normal"
-                          />
-                        )}
-                      </div>
-                      {fees.source_confirm_fee > 0 && (
-                        <>
-                          <div className="flex items-center gap-x-1 ml-3">
-                            <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Confirm Fee:</span>
-                            <Number
-                              value={fees.source_confirm_fee}
-                              format="0,0.000000"
-                              suffix={` ${fees.source_token?.symbol}`}
-                              noTooltip={true}
-                              className="text-xs font-medium"
-                            />
-                            {fees.source_token?.token_price?.usd > 0 > 0 && (
-                              <Number
-                                value={fees.source_confirm_fee * fees.source_token.token_price.usd}
-                                format="0,0.00"
-                                prefix="($"
-                                suffix=")"
-                                noTooltip={true}
-                                className="text-zinc-400 dark:text-zinc-500 text-xs font-normal"
-                              />
-                            )}
-                          </div>
-                          <div className="flex items-center gap-x-1 ml-3">
-                            <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Approve Fee:</span>
-                            <Number
-                              value={fees.base_fee - fees.source_confirm_fee}
-                              format="0,0.000000"
-                              suffix={` ${fees.source_token?.symbol}`}
-                              noTooltip={true}
-                              className="text-xs font-medium"
-                            />
-                            {fees.source_token?.token_price?.usd > 0 > 0 && (
-                              <Number
-                                value={(fees.base_fee - fees.source_confirm_fee) * fees.source_token.token_price.usd}
-                                format="0,0.00"
-                                prefix="($"
-                                suffix=")"
-                                noTooltip={true}
-                                className="text-zinc-400 dark:text-zinc-500 text-xs font-normal"
-                              />
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </dd>
-                </div>
-              )}
-              {express_executed && fees?.express_supported && fees.express_fee > 0 && (
-                <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
-                  <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Express Fee</dt>
-                  <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                    <div className="flex flex-col gap-y-1">
-                      <div className="flex items-center gap-x-2">
-                        <Number
-                          value={fees.express_fee}
-                          format="0,0.000000"
-                          suffix={` ${fees.source_token?.symbol}`}
-                          noTooltip={true}
-                          className="font-medium"
-                        />
-                        {fees.express_fee_usd > 0 && (
-                          <Number
-                            value={fees.express_fee_usd}
-                            format="0,0.00"
-                            prefix="($"
-                            suffix=")"
-                            noTooltip={true}
-                            className="text-zinc-400 dark:text-zinc-500 font-normal"
-                          />
-                        )}
-                      </div>
-                      {fees.source_express_fee && (
-                        <>
-                          {isNumber(fees.source_express_fee.relayer_fee) && (
-                            <div className="flex items-center gap-x-1 ml-3">
-                              <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Relayer Fee:</span>
-                              <Number
-                                value={fees.source_express_fee.relayer_fee}
-                                format="0,0.000000"
-                                suffix={` ${fees.source_token?.symbol}`}
-                                noTooltip={true}
-                                className="text-xs font-medium"
-                              />
-                              {fees.source_express_fee.relayer_fee_usd > 0 && (
-                                <Number
-                                  value={fees.source_express_fee.relayer_fee_usd}
-                                  format="0,0.00"
-                                  prefix="($"
-                                  suffix=")"
-                                  noTooltip={true}
-                                  className="text-zinc-400 dark:text-zinc-500 text-xs font-normal"
-                                />
-                              )}
-                            </div>
-                          )}
-                          {isNumber(fees.source_express_fee.express_gas_overhead_fee) && (
-                            <div className="flex items-center gap-x-1 ml-3">
-                              <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Overhead Fee:</span>
-                              <Number
-                                value={fees.source_express_fee.express_gas_overhead_fee}
-                                format="0,0.000000"
-                                suffix={` ${fees.source_token?.symbol}`}
-                                noTooltip={true}
-                                className="text-xs font-medium"
-                              />
-                              {fees.source_express_fee.express_gas_overhead_fee_usd > 0 && (
-                                <Number
-                                  value={fees.source_express_fee.express_gas_overhead_fee_usd}
-                                  format="0,0.00"
-                                  prefix="($"
-                                  suffix=")"
-                                  noTooltip={true}
-                                  className="text-zinc-400 dark:text-zinc-500 text-xs font-normal"
-                                />
-                              )}
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </dd>
-                </div>
-              )}
-            </>
-          }
-          {((gas_paid && gas?.gas_paid_amount > 0) || gas_paid_to_callback) && (
-            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
-              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Gas Paid</dt>
-              <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                <div className="flex items-center gap-x-2">
-                  <Number
-                    value={data.originData ? data.originData.gas?.gas_paid_amount : gas_paid ? gas.gas_paid_amount : gas_paid_to_callback * fees?.source_token?.gas_price}
-                    format="0,0.000000"
-                    suffix={` ${(data.originData?.fees || fees)?.source_token?.symbol}`}
-                    noTooltip={true}
-                    className="font-medium"
-                  />
-                  {(data.originData?.fees || fees)?.source_token?.token_price?.usd > 0 && (
-                    <Number
-                      value={(data.originData ? data.originData.gas?.gas_paid_amount : gas_paid ? gas.gas_paid_amount : gas_paid_to_callback * fees.source_token.gas_price) * (data.originData?.fees || fees).source_token.token_price.usd}
-                      format="0,0.00"
-                      prefix="($"
-                      suffix=")"
-                      noTooltip={true}
-                      className="text-zinc-400 dark:text-zinc-500 font-normal"
-                    />
-                  )}
-                </div>
-              </dd>
-            </div>
-          )}
-          {(!data.originData || data.originData.executed) && executed && isNumber((data.originData?.gas || gas)?.gas_used_amount) && (
-            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
-              <dt className="flex items-center text-zinc-900 dark:text-zinc-100 text-sm font-medium">
-                <span className="whitespace-nowrap mr-1">Gas Used</span>
-                <Tooltip content="The total gas used to accommodate the cross-chain transaction." className="w-44 text-xs">
-                  <PiInfo className="text-zinc-400 dark:text-zinc-500" />
-                </Tooltip>
-              </dt>
-              <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                <div className="flex items-center gap-x-2">
-                  <Number
-                    value={(data.originData?.gas || gas).gas_used_amount}
-                    format="0,0.000000"
-                    suffix={` ${(data.originData?.fees || fees)?.source_token?.symbol}`}
-                    noTooltip={true}
-                    className="font-medium"
-                  />
-                  {(data.originData?.fees || fees)?.source_token?.token_price?.usd > 0 && (
-                    <Number
-                      value={(data.originData?.gas || gas).gas_used_amount * (data.originData?.fees || fees).source_token.token_price.usd}
-                      format="0,0.00"
-                      prefix="($"
-                      suffix=")"
-                      noTooltip={true}
-                      className="text-zinc-400 dark:text-zinc-500 font-normal"
-                    />
-                  )}
-                </div>
-              </dd>
-            </div>
-          )}
           {(!data.originData || data.originData.executed) && executed && ((data.originData?.refunded || refunded)?.receipt?.status || ((((!data.originData || data.originData.executed) && executed) || is_executed || error) && timeDiff(((data.originData?.executed || executed).block_timestamp || (data.originData?.error || error)?.block_timestamp || (data.originData?.approved || approved)?.block_timestamp || (data.originData?.confirm || confirm)?.block_timestamp) * 1000) >= 300)) && isNumber((data.originData?.gas || gas)?.gas_paid_amount) && isNumber((data.originData?.gas || gas).gas_remain_amount) && (
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
               <dt className="flex items-center text-zinc-900 dark:text-zinc-100 text-sm font-medium">
@@ -920,6 +547,379 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
           )}
           {!lite && seeMore && (
             <>
+              {((gas_paid && gas?.gas_paid_amount > 0) || gas_paid_to_callback) && (
+                <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
+                  <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Gas Paid</dt>
+                  <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                    <div className="flex items-center gap-x-2">
+                      <Number
+                        value={data.originData ? data.originData.gas?.gas_paid_amount : gas_paid ? gas.gas_paid_amount : gas_paid_to_callback * fees?.source_token?.gas_price}
+                        format="0,0.000000"
+                        suffix={` ${(data.originData?.fees || fees)?.source_token?.symbol}`}
+                        noTooltip={true}
+                        className="font-medium"
+                      />
+                      {(data.originData?.fees || fees)?.source_token?.token_price?.usd > 0 && (
+                        <Number
+                          value={(data.originData ? data.originData.gas?.gas_paid_amount : gas_paid ? gas.gas_paid_amount : gas_paid_to_callback * fees.source_token.gas_price) * (data.originData?.fees || fees).source_token.token_price.usd}
+                          format="0,0.00"
+                          prefix="($"
+                          suffix=")"
+                          noTooltip={true}
+                          className="text-zinc-400 dark:text-zinc-500 font-normal"
+                        />
+                      )}
+                    </div>
+                  </dd>
+                </div>
+              )}
+              {(!data.originData || data.originData.executed) && executed && isNumber((data.originData?.gas || gas)?.gas_used_amount) && (
+                <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
+                  <dt className="flex items-center text-zinc-900 dark:text-zinc-100 text-sm font-medium">
+                    <span className="whitespace-nowrap mr-1">Gas Used</span>
+                    <Tooltip content="The total gas used to accommodate the cross-chain transaction." className="w-44 text-xs">
+                      <PiInfo className="text-zinc-400 dark:text-zinc-500" />
+                    </Tooltip>
+                  </dt>
+                  <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                    <div className="flex items-center gap-x-2">
+                      <Number
+                        value={(data.originData?.gas || gas).gas_used_amount}
+                        format="0,0.000000"
+                        suffix={` ${(data.originData?.fees || fees)?.source_token?.symbol}`}
+                        noTooltip={true}
+                        className="font-medium"
+                      />
+                      {(data.originData?.fees || fees)?.source_token?.token_price?.usd > 0 && (
+                        <Number
+                          value={(data.originData?.gas || gas).gas_used_amount * (data.originData?.fees || fees).source_token.token_price.usd}
+                          format="0,0.00"
+                          prefix="($"
+                          suffix=")"
+                          noTooltip={true}
+                          className="text-zinc-400 dark:text-zinc-500 font-normal"
+                        />
+                      )}
+                    </div>
+                  </dd>
+                </div>
+              )}
+              {isMultihop ?
+                <>
+                  {toArray([data.originData, data, data.callbackData]).findIndex(d => d.fees?.base_fee > 0) > -1 && (
+                    <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
+                      <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Base Fee</dt>
+                      <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                        <div className="overflow-x-auto flex items-center gap-x-4">
+                          {toArray([data.originData, data, data.callbackData]).filter(d => d.fees).map((d, i) => (
+                            <div key={i} className="flex items-center gap-x-4">
+                              {i > 0 && <FiPlus size={18} className="text-zinc-400 dark:text-zinc-500" />}
+                              <div className="flex flex-col gap-y-1">
+                                <div className="flex items-center gap-x-2">
+                                  <Number
+                                    value={d.fees.base_fee}
+                                    format="0,0.000000"
+                                    suffix={` ${d.fees.source_token?.symbol}`}
+                                    noTooltip={true}
+                                    className="font-medium"
+                                  />
+                                  {d.fees.base_fee_usd > 0 && (
+                                    <Number
+                                      value={d.fees.base_fee_usd}
+                                      format="0,0.00"
+                                      prefix="($"
+                                      suffix=")"
+                                      noTooltip={true}
+                                      className="text-zinc-400 dark:text-zinc-500 font-normal"
+                                    />
+                                  )}
+                                </div>
+                                {d.fees.source_confirm_fee > 0 && (
+                                  <>
+                                    <div className="flex items-center gap-x-1 ml-3">
+                                      <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Confirm Fee:</span>
+                                      <Number
+                                        value={d.fees.source_confirm_fee}
+                                        format="0,0.000000"
+                                        suffix={` ${d.fees.source_token?.symbol}`}
+                                        noTooltip={true}
+                                        className="text-xs font-medium"
+                                      />
+                                      {d.fees.source_token?.token_price?.usd > 0 > 0 && (
+                                        <Number
+                                          value={d.fees.source_confirm_fee * d.fees.source_token.token_price.usd}
+                                          format="0,0.00"
+                                          prefix="($"
+                                          suffix=")"
+                                          noTooltip={true}
+                                          className="text-zinc-400 dark:text-zinc-500 text-xs font-normal"
+                                        />
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-x-1 ml-3">
+                                      <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Approve Fee:</span>
+                                      <Number
+                                        value={d.fees.base_fee - d.fees.source_confirm_fee}
+                                        format="0,0.000000"
+                                        suffix={` ${d.fees.source_token?.symbol}`}
+                                        noTooltip={true}
+                                        className="text-xs font-medium"
+                                      />
+                                      {d.fees.source_token?.token_price?.usd > 0 > 0 && (
+                                        <Number
+                                          value={(d.fees.base_fee - d.fees.source_confirm_fee) * d.fees.source_token.token_price.usd}
+                                          format="0,0.00"
+                                          prefix="($"
+                                          suffix=")"
+                                          noTooltip={true}
+                                          className="text-zinc-400 dark:text-zinc-500 text-xs font-normal"
+                                        />
+                                      )}
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </dd>
+                    </div>
+                  )}
+                  {toArray([data.originData, data, data.callbackData]).findIndex(d => d.express_executed && d.fees?.express_supported && d.fees.express_fee > 0) > -1 && (
+                    <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
+                      <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Express Fee</dt>
+                      <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                        <div className="overflow-x-auto flex items-center gap-x-4">
+                          {toArray([data.originData, data, data.callbackData]).filter(d => d.fees?.express_supported).map((d, i) => (
+                            <div key={i} className="flex items-center gap-x-4">
+                              {i > 0 && <FiPlus size={18} className="text-zinc-400 dark:text-zinc-500" />}
+                              <div className="flex flex-col gap-y-1">
+                                <div className="flex items-center gap-x-2">
+                                  <Number
+                                    value={d.fees.express_fee}
+                                    format="0,0.000000"
+                                    suffix={` ${d.fees.source_token?.symbol}`}
+                                    noTooltip={true}
+                                    className="font-medium"
+                                  />
+                                  {d.fees.express_fee_usd > 0 && (
+                                    <Number
+                                      value={d.fees.express_fee_usd}
+                                      format="0,0.00"
+                                      prefix="($"
+                                      suffix=")"
+                                      noTooltip={true}
+                                      className="text-zinc-400 dark:text-zinc-500 font-normal"
+                                    />
+                                  )}
+                                </div>
+                                {d.fees.source_express_fee && (
+                                  <>
+                                    {isNumber(d.fees.source_express_fee.relayer_fee) && (
+                                      <div className="flex items-center gap-x-1 ml-3">
+                                        <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Relayer Fee:</span>
+                                        <Number
+                                          value={d.fees.source_express_fee.relayer_fee}
+                                          format="0,0.000000"
+                                          suffix={` ${d.fees.source_token?.symbol}`}
+                                          noTooltip={true}
+                                          className="text-xs font-medium"
+                                        />
+                                        {d.fees.source_express_fee.relayer_fee_usd > 0 && (
+                                          <Number
+                                            value={d.fees.source_express_fee.relayer_fee_usd}
+                                            format="0,0.00"
+                                            prefix="($"
+                                            suffix=")"
+                                            noTooltip={true}
+                                            className="text-zinc-400 dark:text-zinc-500 text-xs font-normal"
+                                          />
+                                        )}
+                                      </div>
+                                    )}
+                                    {isNumber(d.fees.source_express_fee.express_gas_overhead_fee) && (
+                                      <div className="flex items-center gap-x-1 ml-3">
+                                        <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Overhead Fee:</span>
+                                        <Number
+                                          value={d.fees.source_express_fee.express_gas_overhead_fee}
+                                          format="0,0.000000"
+                                          suffix={` ${d.fees.source_token?.symbol}`}
+                                          noTooltip={true}
+                                          className="text-xs font-medium"
+                                        />
+                                        {d.fees.source_express_fee.express_gas_overhead_fee_usd > 0 && (
+                                          <Number
+                                            value={d.fees.source_express_fee.express_gas_overhead_fee_usd}
+                                            format="0,0.00"
+                                            prefix="($"
+                                            suffix=")"
+                                            noTooltip={true}
+                                            className="text-zinc-400 dark:text-zinc-500 text-xs font-normal"
+                                          />
+                                        )}
+                                      </div>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </dd>
+                    </div>
+                  )}
+                </> :
+                <>
+                  {fees?.base_fee > 0 && (
+                    <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
+                      <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Base Fee</dt>
+                      <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                        <div className="flex flex-col gap-y-1">
+                          <div className="flex items-center gap-x-2">
+                            <Number
+                              value={fees.base_fee}
+                              format="0,0.000000"
+                              suffix={` ${fees.source_token?.symbol}`}
+                              noTooltip={true}
+                              className="font-medium"
+                            />
+                            {fees.base_fee_usd > 0 && (
+                              <Number
+                                value={fees.base_fee_usd}
+                                format="0,0.00"
+                                prefix="($"
+                                suffix=")"
+                                noTooltip={true}
+                                className="text-zinc-400 dark:text-zinc-500 font-normal"
+                              />
+                            )}
+                          </div>
+                          {fees.source_confirm_fee > 0 && (
+                            <>
+                              <div className="flex items-center gap-x-1 ml-3">
+                                <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Confirm Fee:</span>
+                                <Number
+                                  value={fees.source_confirm_fee}
+                                  format="0,0.000000"
+                                  suffix={` ${fees.source_token?.symbol}`}
+                                  noTooltip={true}
+                                  className="text-xs font-medium"
+                                />
+                                {fees.source_token?.token_price?.usd > 0 > 0 && (
+                                  <Number
+                                    value={fees.source_confirm_fee * fees.source_token.token_price.usd}
+                                    format="0,0.00"
+                                    prefix="($"
+                                    suffix=")"
+                                    noTooltip={true}
+                                    className="text-zinc-400 dark:text-zinc-500 text-xs font-normal"
+                                  />
+                                )}
+                              </div>
+                              <div className="flex items-center gap-x-1 ml-3">
+                                <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Approve Fee:</span>
+                                <Number
+                                  value={fees.base_fee - fees.source_confirm_fee}
+                                  format="0,0.000000"
+                                  suffix={` ${fees.source_token?.symbol}`}
+                                  noTooltip={true}
+                                  className="text-xs font-medium"
+                                />
+                                {fees.source_token?.token_price?.usd > 0 > 0 && (
+                                  <Number
+                                    value={(fees.base_fee - fees.source_confirm_fee) * fees.source_token.token_price.usd}
+                                    format="0,0.00"
+                                    prefix="($"
+                                    suffix=")"
+                                    noTooltip={true}
+                                    className="text-zinc-400 dark:text-zinc-500 text-xs font-normal"
+                                  />
+                                )}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </dd>
+                    </div>
+                  )}
+                  {express_executed && fees?.express_supported && fees.express_fee > 0 && (
+                    <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
+                      <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Express Fee</dt>
+                      <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                        <div className="flex flex-col gap-y-1">
+                          <div className="flex items-center gap-x-2">
+                            <Number
+                              value={fees.express_fee}
+                              format="0,0.000000"
+                              suffix={` ${fees.source_token?.symbol}`}
+                              noTooltip={true}
+                              className="font-medium"
+                            />
+                            {fees.express_fee_usd > 0 && (
+                              <Number
+                                value={fees.express_fee_usd}
+                                format="0,0.00"
+                                prefix="($"
+                                suffix=")"
+                                noTooltip={true}
+                                className="text-zinc-400 dark:text-zinc-500 font-normal"
+                              />
+                            )}
+                          </div>
+                          {fees.source_express_fee && (
+                            <>
+                              {isNumber(fees.source_express_fee.relayer_fee) && (
+                                <div className="flex items-center gap-x-1 ml-3">
+                                  <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Relayer Fee:</span>
+                                  <Number
+                                    value={fees.source_express_fee.relayer_fee}
+                                    format="0,0.000000"
+                                    suffix={` ${fees.source_token?.symbol}`}
+                                    noTooltip={true}
+                                    className="text-xs font-medium"
+                                  />
+                                  {fees.source_express_fee.relayer_fee_usd > 0 && (
+                                    <Number
+                                      value={fees.source_express_fee.relayer_fee_usd}
+                                      format="0,0.00"
+                                      prefix="($"
+                                      suffix=")"
+                                      noTooltip={true}
+                                      className="text-zinc-400 dark:text-zinc-500 text-xs font-normal"
+                                    />
+                                  )}
+                                </div>
+                              )}
+                              {isNumber(fees.source_express_fee.express_gas_overhead_fee) && (
+                                <div className="flex items-center gap-x-1 ml-3">
+                                  <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Overhead Fee:</span>
+                                  <Number
+                                    value={fees.source_express_fee.express_gas_overhead_fee}
+                                    format="0,0.000000"
+                                    suffix={` ${fees.source_token?.symbol}`}
+                                    noTooltip={true}
+                                    className="text-xs font-medium"
+                                  />
+                                  {fees.source_express_fee.express_gas_overhead_fee_usd > 0 && (
+                                    <Number
+                                      value={fees.source_express_fee.express_gas_overhead_fee_usd}
+                                      format="0,0.00"
+                                      prefix="($"
+                                      suffix=")"
+                                      noTooltip={true}
+                                      className="text-zinc-400 dark:text-zinc-500 text-xs font-normal"
+                                    />
+                                  )}
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </dd>
+                    </div>
+                  )}
+                </>
+              }
               {messageId && (
                 <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
                   <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">messageId</dt>
