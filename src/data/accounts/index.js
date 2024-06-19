@@ -520,6 +520,12 @@ const data = [
     environment: 'mainnet',
   },
   {
+    address: '0x7718602Fb061Fc2E0a20fc76261CA02D2f03e65d',
+    name: 'Stake DAO: Ethereum State Sender',
+    image: '/logos/accounts/stakeDAO.svg',
+    environment: 'mainnet',
+  },
+  {
     address: '0xB8D85A5e0c5e3354d35d576818B57AEd0300dE16',
     name: 'Prime Protocol',
     image: '/logos/accounts/prime.svg',
