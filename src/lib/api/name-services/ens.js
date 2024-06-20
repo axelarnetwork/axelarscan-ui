@@ -5,7 +5,7 @@ import { equalsIgnoreCase } from '@/lib/string'
 import { isNumber, toNumber } from '@/lib/number'
 
 const request = async params => {
-  const response = await fetch('https://api.thegraph.com/subgraphs/name/ensdomains/ens', { method: 'POST', body: JSON.stringify(params) }).catch(error => { return null })
+  const response = await fetch('https://gateway-arbitrum.network.thegraph.com/api/44733860e4dbf89d70eee7c63bc06bf8/subgraphs/id/5XqPmWe6gjyrJtFn9cLy237i4cWw2j9HcUJEXsP5qGtH', { method: 'POST', body: JSON.stringify(params) }).catch(error => { return null })
   return response && await response.json()
 }
 
