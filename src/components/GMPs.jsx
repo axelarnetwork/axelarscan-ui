@@ -473,6 +473,12 @@ export function GMPs({ address }) {
                               <span className="text-xs">Insufficient Fee</span>
                             </div>
                           )}
+                          {d.is_invalid_gas_paid && (
+                            <div className="flex items-center text-red-600 dark:text-red-500 gap-x-1">
+                              <PiWarningCircle size={16} />
+                              <span className="text-xs">Invalid Gas Paid</span>
+                            </div>
+                          )}
                           {d.time_spent?.call_express_executed > 0 && ['express_executed', 'executed'].includes(d.status) && (
                             <div className="flex items-center text-green-600 dark:text-green-500 gap-x-1">
                               <RiTimerFlashLine size={16} />
