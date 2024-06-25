@@ -283,11 +283,21 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                           })}
                         </ol>
                       </nav>
-                      {d.is_insufficient_fee && !d.approved && (
+                      {d.is_insufficient_fee && !(d.confirm || d.approved) && (
                         <div className="flex items-center text-red-600 dark:text-red-500 gap-x-1">
                           <PiWarningCircle size={16} />
                           <span className="text-xs">Insufficient Fee</span>
                         </div>
+                      )}
+                      {d.is_invalid_gas_paid && !(d.confirm || d.approved) && (
+                        <>
+                          {d.is_invalid_gas_paid_mismatch_source_address && (
+                            <div className="flex items-center text-red-600 dark:text-red-500 gap-x-1">
+                              <PiWarningCircle size={16} />
+                              <span className="text-xs">Invalid Gas Paid (source address mismatch)</span>
+                            </div>
+                          )}
+                        </>
                       )}
                       {d.not_enough_gas_to_execute && !d.executed && !d.is_executed && (
                         <div className="flex items-center text-red-600 dark:text-red-500 gap-x-1">
@@ -1778,12 +1788,12 @@ export function GMP({ tx, lite }) {
 
   const needSwitchChain = (id, type) => id !== (type === 'cosmos' ? cosmosWalletStore?.chainId : chainId)
 
-  const { call, gas_paid, gas_paid_to_callback, confirm, confirm_failed, confirm_failed_event, approved, executed, error, gas, is_executed, is_insufficient_fee, is_call_from_relayer, is_invalid_destination_chain, is_invalid_call, not_enough_gas_to_execute } = { ...data }
+  const { call, gas_paid, gas_paid_to_callback, confirm, confirm_failed, confirm_failed_event, approved, executed, error, gas, is_executed, is_insufficient_fee, is_call_from_relayer, is_invalid_destination_chain, is_invalid_call, is_invalid_gas_paid, not_enough_gas_to_execute } = { ...data }
   const { proposal_id } = { ...call }
   const sourceChainData = getChainData(call?.chain, chains)
   const destinationChainData = getChainData(call?.returnValues?.destinationChain, chains)
 
-  const addGasButton = call && !executed && !is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) && (!(gas_paid || gas_paid_to_callback) || is_insufficient_fee || not_enough_gas_to_execute || gas?.gas_remain_amount < MIN_GAS_REMAIN_AMOUNT) && (
+  const addGasButton = call && !executed && !is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) && (!(gas_paid || gas_paid_to_callback) || is_insufficient_fee || is_invalid_gas_paid || not_enough_gas_to_execute || gas?.gas_remain_amount < MIN_GAS_REMAIN_AMOUNT) && (
     <div key="addGas" className="flex items-center gap-x-1">
       {(call.chain_type === 'cosmos' ? cosmosWalletStore?.signer : signer) && !needSwitchChain(sourceChainData?.chain_id, call.chain_type) && (
         <button
