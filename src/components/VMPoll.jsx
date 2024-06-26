@@ -25,7 +25,7 @@ const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'
 function Info({ data, id }) {
   const { chains } = useGlobalStore()
 
-  const { transaction_id, sender_chain, status, height, participants, voteOptions, created_at, updated_at } = { ...data }
+  const { transaction_id, sender_chain, status, height, initiated_txhash, participants, voteOptions, created_at, updated_at } = { ...data }
   const chainData = getChainData(sender_chain, chains)
   const { url, transaction_path } = { ...chainData?.explorer }
 
@@ -84,6 +84,20 @@ function Info({ data, id }) {
               )}
             </dd>
           </div>
+          {initiated_txhash && (
+            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Initiated TxHash</dt>
+              <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                <Link
+                  href={`/tx/${initiated_txhash}`}
+                  target="_blank"
+                  className="text-blue-600 dark:text-blue-500 font-medium"
+                >
+                  {ellipse(initiated_txhash)}
+                </Link>
+              </dd>
+            </div>
+          )}
           <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
             <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Created</dt>
             <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
@@ -129,7 +143,7 @@ function Votes({ data }) {
 
   useEffect(() => {
     if (data?.votes) {
-      const votes = toArray(data.votes).map(d => ({ ...d, verifierData: toArray(verifiers).find(v => equalsIgnoreCase(v.address, d.voter)) }))
+      const votes = toArray(data.votes).map(d => ({ ...d, verifierData: toArray(verifiers).find(v => equalsIgnoreCase(v.address, d.voter)) || { address: d.voter } }))
       setVotes(_.concat(
         votes,
         // unsubmitted
@@ -245,7 +259,7 @@ export function VMPoll({ id }) {
 
       if (d) {
         const votes = []
-        Object.entries(d).filter(([k, v]) => k.startsWith('vm')).forEach(([k, v]) => votes.push(v))
+        Object.entries(d).filter(([k, v]) => k.startsWith('axelar')).forEach(([k, v]) => votes.push(v))
 
         let voteOptions = Object.entries(_.groupBy(toArray(votes).map(v => ({ ...v, option: v.vote ? 'yes' : typeof v.vote === 'boolean' ? 'no' : 'unsubmitted' })), 'option')).map(([k, v]) => {
           return {

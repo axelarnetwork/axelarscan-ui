@@ -36,7 +36,7 @@ export function Verifiers() {
       const _data = verifiers.map(d => {
         if (verifiersVotes?.data) {
           d.total_polls = toNumber(verifiersVotes.total)
-          d.votes = { ...verifiersVotes.data[`vm${d.address}`] }
+          d.votes = { ...verifiersVotes.data[d.address] }
           d.total_votes = toNumber(d.votes.total)
 
           const getVoteCount = (vote, votes) => _.sum(Object.values({ ...votes }).map(v => toNumber(_.last(Object.entries({ ...v?.votes }).find(([k, v]) => equalsIgnoreCase(k, vote?.toString()))))))
