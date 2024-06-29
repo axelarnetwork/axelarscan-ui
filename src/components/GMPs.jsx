@@ -364,6 +364,8 @@ export function GMPs({ address }) {
               <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
                 {data.map(d => {
                   const symbol = d.call.returnValues?.symbol || d.token_sent?.symbol || d.interchain_transfer?.symbol || d.interchain_transfer_with_data?.symbol || d.token_deployed?.symbol || d.token_deployment_initialized?.tokenSymbol || d.token_manager_deployment_started?.symbol || d.interchain_token_deployment_started?.tokenSymbol
+                  const receivedTransactionHash = d.express_executed?.transactionHash || d.express_executed?.receipt?.transactionHash || d.express_executed?.receipt?.hash || d.executed?.transactionHash || d.executed?.receipt?.transactionHash || d.executed?.receipt?.hash
+
                   return (
                     <tr key={d.call.id} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
                       <td className="pl-4 sm:pl-0 pr-3 py-4 text-left">
@@ -463,9 +465,12 @@ export function GMPs({ address }) {
                       <td className="px-3 py-4 text-left">
                         <div className="flex flex-col gap-y-1.5">
                           {d.simplified_status && (
-                            <Tag className={clsx('w-fit capitalize', ['received'].includes(d.simplified_status) ? 'bg-green-600 dark:bg-green-500' : ['approved'].includes(d.simplified_status) ? 'bg-orange-500 dark:bg-orange-600' : ['failed'].includes(d.simplified_status) ? 'bg-red-600 dark:bg-red-500' : 'bg-yellow-400 dark:bg-yellow-500')}>
-                              {d.simplified_status === 'received' && getEvent(d) === 'ContractCall' ? 'Executed' : d.simplified_status}
-                            </Tag>
+                            <div className="flex items-center space-x-1.5">
+                              <Tag className={clsx('w-fit capitalize', ['received'].includes(d.simplified_status) ? 'bg-green-600 dark:bg-green-500' : ['approved'].includes(d.simplified_status) ? 'bg-orange-500 dark:bg-orange-600' : ['failed'].includes(d.simplified_status) ? 'bg-red-600 dark:bg-red-500' : 'bg-yellow-400 dark:bg-yellow-500')}>
+                                {d.simplified_status === 'received' && getEvent(d) === 'ContractCall' ? 'Executed' : d.simplified_status}
+                              </Tag>
+                              {['received'].includes(d.simplified_status) && <ExplorerLink value={receivedTransactionHash} chain={d.call.returnValues?.destinationChain} />}
+                            </div>
                           )}
                           {d.is_insufficient_fee && (
                             <div className="flex items-center text-red-600 dark:text-red-500 gap-x-1">

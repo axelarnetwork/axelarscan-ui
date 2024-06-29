@@ -413,9 +413,12 @@ export function Transfers({ address }) {
                       <td className="px-3 py-4 text-left">
                         <div className="flex flex-col gap-y-1.5">
                           {d.simplified_status && (
-                            <Tag className={clsx('w-fit capitalize', ['received'].includes(d.simplified_status) ? 'bg-green-600 dark:bg-green-500' : ['approved'].includes(d.simplified_status) ? 'bg-orange-500 dark:bg-orange-600' : ['failed'].includes(d.simplified_status) ? 'bg-red-600 dark:bg-red-500' : 'bg-yellow-400 dark:bg-yellow-500')}>
-                              {d.simplified_status}
-                            </Tag>
+                            <div className="flex items-center space-x-1.5">
+                              <Tag className={clsx('w-fit capitalize', ['received'].includes(d.simplified_status) ? 'bg-green-600 dark:bg-green-500' : ['approved'].includes(d.simplified_status) ? 'bg-orange-500 dark:bg-orange-600' : ['failed'].includes(d.simplified_status) ? 'bg-red-600 dark:bg-red-500' : 'bg-yellow-400 dark:bg-yellow-500')}>
+                                {d.simplified_status}
+                              </Tag>
+                              {['received'].includes(d.simplified_status) && <ExplorerLink value={d.unwrap?.tx_hash_unwrap || d.command?.transactionHash || d.axelar_transfer?.txhash || d.ibc_send?.recv_txhash} chain={d.send.destination_chain || d.link?.destination_chain} />}
+                            </div>
                           )}
                           {d.send.insufficient_fee && (
                             <div className="flex items-center text-red-600 dark:text-red-500 gap-x-1">
