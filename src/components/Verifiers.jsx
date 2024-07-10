@@ -100,7 +100,7 @@ export function Verifiers() {
                       </div>
                     </td>
                     <td className="table-cell pl-3 pr-4 sm:pr-0 py-4 text-left">
-                      <div className="min-w-56 max-w-64 grid grid-cols-2 lg:grid-cols-3 gap-x-2 gap-y-1">
+                      <div className="min-w-56 max-w-88 grid grid-cols-2 lg:grid-cols-3 gap-x-2 gap-y-1">
                         {toArray(chains).filter(c => c.chain_type === 'vm' && !c.deprecated).map(c => {
                           const { id, maintainer_id, name, image } = { ...c }
                           const { votes, total, total_polls } = { ...d.votes.chains[id] }
