@@ -38,6 +38,7 @@ module.exports = {
         'tvl': '7301px',
       },
       maxWidth: {
+        '88': '22rem',
         '2xl': '40rem',
       },
     },
