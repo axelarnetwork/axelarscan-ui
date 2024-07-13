@@ -101,7 +101,7 @@ export function Verifiers() {
                       </div>
                     </td>
                     <td className="table-cell pl-3 pr-4 sm:pr-0 py-4 text-left">
-                      <div className={clsx('min-w-56 grid grid-cols-2 lg:grid-cols-3 gap-x-2 gap-y-1', Object.entries({ ...verifiersByChain }).filter(([k, v]) => vmChains.findIndex(d => d.id === k) < 0 && toArray(v.addresses).length > 0).length > 0 ? 'max-w-xl' : 'max-w-88')}>
+                      <div className={clsx('grid grid-cols-2 lg:grid-cols-3 gap-x-2 gap-y-1', Object.entries({ ...verifiersByChain }).filter(([k, v]) => vmChains.findIndex(d => d.id === k) < 0 && toArray(v.addresses).length > 0).length > 0 ? 'min-w-md lg:min-w-56 max-w-xl' : 'min-w-56 max-w-88')}>
                         {_.concat(vmChains, Object.entries({ ...verifiersByChain }).filter(([k, v]) => vmChains.findIndex(d => d.id === k) < 0 && toArray(v.addresses).length > 0).map(([k, v]) => k)).map(c => {
                           const { id, maintainer_id, name, image } = { ...(typeof c === 'string' ? { id: c, maintainer_id: c, name: c } : c) }
                           const { votes, total, total_polls } = { ...d.votes.chains[id] }
