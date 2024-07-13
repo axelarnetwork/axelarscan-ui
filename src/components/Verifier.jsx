@@ -72,14 +72,17 @@ function Info({ data, address }) {
                             <tr key={i} className="align-top text-zinc-400 dark:text-zinc-500 text-xs">
                               <td className="pl-4 sm:pl-3 pr-3 py-3 text-left">
                                 <div className="flex items-center">
-                                  <Tooltip content={name} className="whitespace-nowrap">
-                                    <Image
-                                      src={image}
-                                      alt=""
-                                      width={20}
-                                      height={20}
-                                    />
-                                  </Tooltip>
+                                  {name ?
+                                    <Tooltip content={name} className="whitespace-nowrap">
+                                      <Image
+                                        src={image}
+                                        alt=""
+                                        width={20}
+                                        height={20}
+                                      />
+                                    </Tooltip> :
+                                    <span className="text-zinc-900 dark:text-zinc-100">{c}</span>
+                                  }
                                 </div>
                               </td>
                               <td className="px-3 py-3 text-right">

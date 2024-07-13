@@ -21,7 +21,7 @@ import { toNumber, numberFormat } from '@/lib/number'
 export function Verifiers() {
   const [verifiersVotes, setVerifiersVotes] = useState(null)
   const [data, setData] = useState(null)
-  const { chains, verifiers } = useGlobalStore()
+  const { chains, verifiers, verifiersByChain } = useGlobalStore()
 
   useEffect(() => {
     const getData = async () => {
@@ -51,6 +51,7 @@ export function Verifiers() {
     }
   }, [verifiersVotes, data, verifiers, setData])
 
+  const vmChains = toArray(chains).filter(c => c.chain_type === 'vm' && !c.deprecated)
   return (
     <Container className="sm:mt-8">
       {!data ? <Spinner /> :
@@ -100,9 +101,9 @@ export function Verifiers() {
                       </div>
                     </td>
                     <td className="table-cell pl-3 pr-4 sm:pr-0 py-4 text-left">
-                      <div className="min-w-56 max-w-88 grid grid-cols-2 lg:grid-cols-3 gap-x-2 gap-y-1">
-                        {toArray(chains).filter(c => c.chain_type === 'vm' && !c.deprecated).map(c => {
-                          const { id, maintainer_id, name, image } = { ...c }
+                      <div className={clsx('min-w-56 grid grid-cols-2 lg:grid-cols-3 gap-x-2 gap-y-1', Object.entries({ ...verifiersByChain }).filter(([k, v]) => vmChains.findIndex(d => d.id === k) < 0 && toArray(v.addresses).length > 0).length > 0 ? 'max-w-xl' : 'max-w-88')}>
+                        {_.concat(vmChains, Object.entries({ ...verifiersByChain }).filter(([k, v]) => vmChains.findIndex(d => d.id === k) < 0 && toArray(v.addresses).length > 0).map(([k, v]) => k)).map(c => {
+                          const { id, maintainer_id, name, image } = { ...(typeof c === 'string' ? { id: c, maintainer_id: c, name: c } : c) }
                           const { votes, total, total_polls } = { ...d.votes.chains[id] }
                           const isSupported = d.supportedChains.includes(maintainer_id)
                           const details = !isSupported ? 'Not Supported' : ['true', 'false', 'unsubmitted'].map(s => [s === 'true' ? 'Y' : s === 'false' ? 'N' : 'UN', votes?.[s]]).filter(([k, v]) => v).map(([k, v]) => `${numberFormat(v, '0,0')}${k}`).join(' / ')
@@ -111,12 +112,15 @@ export function Verifiers() {
                             <div key={id} className="flex justify-start">
                               <Tooltip content={`${name}${details ? `: ${details}` : ''}`} className="whitespace-nowrap">
                                 <div className="flex items-center gap-x-2">
-                                  <Image
-                                    src={image}
-                                    alt=""
-                                    width={20}
-                                    height={20}
-                                  />
+                                  {image ?
+                                    <Image
+                                      src={image}
+                                      alt=""
+                                      width={20}
+                                      height={20}
+                                    /> :
+                                    <span className="whitespace-nowrap text-zinc-900 dark:text-zinc-100 text-xs">{name}</span>
+                                  }
                                   {!isSupported ?
                                     <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium whitespace-nowrap">
                                       Not Supported
