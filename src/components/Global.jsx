@@ -19,6 +19,7 @@ export const useGlobalStore = create()(set => ({
   configurations: null,
   validators: null,
   verifiers: null,
+  verifiersByChain: null,
   inflationData: null,
   networkParameters: null,
   tvl: null,
@@ -30,6 +31,7 @@ export const useGlobalStore = create()(set => ({
   setConfigurations: data => set(state => ({ ...state, configurations: data })),
   setValidators: data => set(state => ({ ...state, validators: data })),
   setVerifiers: data => set(state => ({ ...state, verifiers: data })),
+  setVerifiersByChain: data => set(state => ({ ...state, verifiersByChain: data })),
   setInflationData: data => set(state => ({ ...state, inflationData: data })),
   setNetworkParameters: data => set(state => ({ ...state, networkParameters: data })),
   setTVL: data => set(state => ({ ...state, tvl: data })),
@@ -37,7 +39,7 @@ export const useGlobalStore = create()(set => ({
 }))
 
 export function Global() {
-  const { setChains, setAssets, setITSAssets, setContracts, setConfigurations, setValidators, setVerifiers, setInflationData, setNetworkParameters, setTVL, setStats } = useGlobalStore()
+  const { setChains, setAssets, setITSAssets, setContracts, setConfigurations, setValidators, setVerifiers, setVerifiersByChain, setInflationData, setNetworkParameters, setTVL, setStats } = useGlobalStore()
 
   useEffect(() => {
     const getData = async () => {
@@ -76,7 +78,9 @@ export function Global() {
             setValidators((await getValidators())?.data)
             break
           case 'verifiers':
-            setVerifiers((await getVerifiers())?.data)
+            const { data, verifiersByChain } = { ...await getVerifiers() }
+            setVerifiers(data)
+            setVerifiersByChain(verifiersByChain)
             break
           case 'inflationData':
             setInflationData(await getInflation())
@@ -189,7 +193,7 @@ export function Global() {
     getData()
     const interval = setInterval(() => getData(), 5 * 60 * 1000)
     return () => clearInterval(interval)
-  }, [setChains, setAssets, setITSAssets, setContracts, setConfigurations, setValidators, setVerifiers, setInflationData, setNetworkParameters, setTVL, setStats])
+  }, [setChains, setAssets, setITSAssets, setContracts, setConfigurations, setValidators, setVerifiers, setVerifiersByChain, setInflationData, setNetworkParameters, setTVL, setStats])
 
   return null
 }
