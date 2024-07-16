@@ -817,6 +817,24 @@ const data = [
     image: '/logos/accounts/skip.svg',
     environment: 'testnet',
   },
+  {
+    address: '0x4fa7900db5d23e85986e03b8d175a1bd9877ebe5',
+    name: 'EXR Passport',
+    image: '/logos/accounts/exr.png',
+    environment: 'mainnet',
+  },
+  {
+    address: '0x08c8690024BfBA91a1A4c578a6918F8b8e64c005',
+    name: 'EXR Race Data Controller',
+    image: '/logos/accounts/exr.png',
+    environment: 'mainnet',
+  },
+  {
+    address: '0xd98e1313e826340bb1cc127b22fe2b4509cc9cc3',
+    name: 'EXR MultiPass',
+    image: '/logos/accounts/exr.png',
+    environment: 'mainnet',
+  }, 
 ]
 
 export default data
