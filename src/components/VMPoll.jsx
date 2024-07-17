@@ -26,7 +26,7 @@ const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'
 function Info({ data, id }) {
   const { chains } = useGlobalStore()
 
-  const { contract_address, transaction_id, sender_chain, status, height, initiated_txhash, participants, voteOptions, created_at, updated_at, expires_at } = { ...data }
+  const { contract_address, transaction_id, sender_chain, status, height, initiated_txhash, expired_height, participants, voteOptions, created_at, updated_at } = { ...data }
   const chainData = getChainData(sender_chain, chains)
   const { url, transaction_path } = { ...chainData?.explorer }
 
@@ -108,6 +108,20 @@ function Info({ data, id }) {
             </div>
           )}
           <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Expires Height</dt>
+            <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+              {expired_height && (
+                <Link
+                  href={`/block/${expired_height}`}
+                  target="_blank"
+                  className="text-blue-600 dark:text-blue-500 font-medium"
+                >
+                  <Number value={expired_height} />
+                </Link>
+              )}
+            </dd>
+          </div>
+          <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
             <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Created</dt>
             <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
               {moment(created_at?.ms).format(TIME_FORMAT)}
@@ -118,14 +132,6 @@ function Info({ data, id }) {
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Updated</dt>
               <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                 {moment(updated_at.ms).format(TIME_FORMAT)}
-              </dd>
-            </div>
-          )}
-          {expires_at?.ms > 0 && (
-            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Expire</dt>
-              <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                {moment(expires_at.ms).format(TIME_FORMAT)}
               </dd>
             </div>
           )}
