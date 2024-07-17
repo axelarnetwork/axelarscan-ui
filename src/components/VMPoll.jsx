@@ -17,15 +17,16 @@ import { ExplorerLink } from '@/components/ExplorerLink'
 import { useGlobalStore } from '@/components/Global'
 import { searchVMPolls } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
-import { toArray } from '@/lib/parser'
+import { split, toArray } from '@/lib/parser'
 import { equalsIgnoreCase, capitalize, ellipse, toTitle } from '@/lib/string'
+import { timeDiff } from '@/lib/time'
 
 const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'
 
 function Info({ data, id }) {
   const { chains } = useGlobalStore()
 
-  const { transaction_id, sender_chain, status, height, initiated_txhash, participants, voteOptions, created_at, updated_at } = { ...data }
+  const { contract_address, transaction_id, sender_chain, status, height, initiated_txhash, participants, voteOptions, created_at, updated_at, expires_at } = { ...data }
   const chainData = getChainData(sender_chain, chains)
   const { url, transaction_path } = { ...chainData?.explorer }
 
@@ -33,7 +34,7 @@ function Info({ data, id }) {
     <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
       <div className="px-4 sm:px-6 py-6">
         <h3 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-7">
-          <Copy value={id}><span>{ellipse(id, 16)}</span></Copy>
+          <Copy value={data?.poll_id || id}><span>{ellipse(data?.poll_id || id, 16)}</span></Copy>
         </h3>
         <div className="max-w-2xl text-zinc-400 dark:text-zinc-500 text-sm leading-6 mt-1">
           {transaction_id && (
@@ -60,6 +61,14 @@ function Info({ data, id }) {
               <ChainProfile value={sender_chain} />
             </dd>
           </div>
+          {contract_address && (
+            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Verifier Contract</dt>
+              <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                <Copy value={contract_address} />
+              </dd>
+            </div>
+          )}
           <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
             <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Status</dt>
             <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
@@ -86,7 +95,7 @@ function Info({ data, id }) {
           </div>
           {initiated_txhash && (
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Initiated TxHash</dt>
+              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Initiated Tx Hash</dt>
               <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                 <Link
                   href={`/tx/${initiated_txhash}`}
@@ -109,6 +118,14 @@ function Info({ data, id }) {
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Updated</dt>
               <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                 {moment(updated_at.ms).format(TIME_FORMAT)}
+              </dd>
+            </div>
+          )}
+          {expires_at?.ms > 0 && (
+            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Expire</dt>
+              <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                {moment(expires_at.ms).format(TIME_FORMAT)}
               </dd>
             </div>
           )}
@@ -254,7 +271,7 @@ export function VMPoll({ id }) {
 
   useEffect(() => {
     const getData = async () => {
-      const { data } = { ...await searchVMPolls({ pollId: id }) }
+      const { data } = { ...await searchVMPolls({ verifierContractAddress: id.includes('_') ? _.head(split(id, { delimiter: '_' })) : undefined, pollId: _.last(split(id, { delimiter: '_' })) }) }
       let d = _.head(data)
 
       if (d) {
@@ -277,7 +294,7 @@ export function VMPoll({ id }) {
         const { url, transaction_path } = { ...getChainData(d.sender_chain, chains)?.explorer }
         d = {
           ...d,
-          status: d.success ? 'completed' : d.failed ? 'failed' : d.expired ? 'expired' : 'pending',
+          status: d.success ? 'completed' : d.failed ? 'failed' : d.expired || timeDiff(d.expires_at?.ms) > 0 ? 'expired' : 'pending',
           height: _.minBy(votes, 'height')?.height || d.height,
           votes: _.orderBy(votes, ['height', 'created_at'], ['desc', 'desc']),
           voteOptions,

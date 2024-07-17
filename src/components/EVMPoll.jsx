@@ -157,7 +157,7 @@ function Info({ data, id }) {
           </div>
           {initiated_txhash && (
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Initiated TxHash</dt>
+              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Initiated Tx Hash</dt>
               <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                 <Link
                   href={`/tx/${initiated_txhash}`}
