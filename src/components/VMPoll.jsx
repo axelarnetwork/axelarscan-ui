@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import clsx from 'clsx'
 import _ from 'lodash'
 import moment from 'moment'
+import { IoCheckmarkDoneCircle } from 'react-icons/io5'
 
 import { Container } from '@/components/Container'
 import { Copy } from '@/components/Copy'
@@ -26,7 +27,7 @@ const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'
 function Info({ data, id }) {
   const { chains } = useGlobalStore()
 
-  const { contract_address, transaction_id, event_index, sender_chain, status, height, initiated_txhash, completed_txhash, expired_height, participants, voteOptions, created_at, updated_at } = { ...data }
+  const { contract_address, transaction_id, event_index, sender_chain, status, height, initiated_txhash, confirmation_txhash, completed_txhash, expired_height, participants, voteOptions, created_at, updated_at } = { ...data }
   const chainData = getChainData(sender_chain, chains)
   const { url, transaction_path } = { ...chainData?.explorer }
 
@@ -105,6 +106,20 @@ function Info({ data, id }) {
                   className="text-blue-600 dark:text-blue-500 font-medium"
                 >
                   {ellipse(initiated_txhash)}
+                </Link>
+              </dd>
+            </div>
+          )}
+          {confirmation_txhash && (
+            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Confirmation Tx Hash</dt>
+              <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                <Link
+                  href={`/tx/${confirmation_txhash}`}
+                  target="_blank"
+                  className="text-blue-600 dark:text-blue-500 font-medium"
+                >
+                  {ellipse(confirmation_txhash)}
                 </Link>
               </dd>
             </div>
@@ -254,6 +269,18 @@ function Votes({ data }) {
                           {ellipse(d.id, 6)}
                         </Link>
                       </Copy>
+                      {equalsIgnoreCase(d.id, confirmation_txhash) && (
+                        <Link
+                          href={`/tx/${confirmation_txhash}`}
+                          target="_blank"
+                          className="h-6 flex items-center gap-x-1"
+                        >
+                          <IoCheckmarkDoneCircle size={18} className="text-green-600 dark:text-green-500" />
+                          <span className="text-zinc-400 dark:text-zinc-500">
+                            Confirmation
+                          </span>
+                        </Link>
+                      )}
                     </div>
                   )}
                 </td>
