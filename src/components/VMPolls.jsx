@@ -24,7 +24,7 @@ import { ExplorerLink } from '@/components/ExplorerLink'
 import { TimeAgo } from '@/components/Time'
 import { getParams, getQueryString, Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
-import { searchVMPolls } from '@/lib/api/validator'
+import { getRPCStatus, searchVMPolls } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
 import { equalsIgnoreCase, capitalize, toBoolean, ellipse, toTitle } from '@/lib/string'
@@ -59,7 +59,7 @@ function Filters() {
     { label: 'Tx Hash', name: 'transactionId' },
     { label: 'Chain', name: 'chain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).filter(d => d.chain_type === 'vm' && (!d.no_inflation || d.deprecated)).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
     { label: 'Verifier Contract Address', name: 'VerifierContractAddress' },
-    { label: 'Status', name: 'status', type: 'select', multiple: true, options: _.concat({ title: 'Any' }, ['completed', 'failed', 'expired', 'pending'].map(d => ({ value: d, title: capitalize(d) }))) },
+    { label: 'Status', name: 'status', type: 'select', multiple: true, options: _.concat({ title: 'Any' }, ['completed', 'failed', 'pending'].map(d => ({ value: d, title: capitalize(d) }))) },
     { label: 'Voter (Verifier Address)', name: 'voter' },
     params.voter && { label: 'Vote', name: 'vote', type: 'select', options: _.concat({ title: 'Any' }, ['yes', 'no', 'unsubmitted'].map(d => ({ value: d, title: capitalize(d) }))) },
     { label: 'Time', name: 'time', type: 'datetimeRange' },
@@ -234,6 +234,7 @@ export function VMPolls() {
   const [params, setParams] = useState(null)
   const [searchResults, setSearchResults] = useState(null)
   const [refresh, setRefresh] = useState(null)
+  const [blockData, setBlockData] = useState(null)
   const { chains, verifiers } = useGlobalStore()
 
   useEffect(() => {
@@ -246,7 +247,7 @@ export function VMPolls() {
 
   useEffect(() => {
     const getData = async () => {
-      if (params && toBoolean(refresh)) {
+      if (params && toBoolean(refresh) && blockData) {
         const { data, total } = { ...await searchVMPolls({ ...params, size }) }
 
         setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: {
@@ -270,7 +271,7 @@ export function VMPolls() {
             const { url, transaction_path } = { ...getChainData(d.sender_chain, chains)?.explorer }
             return {
               ...d,
-              status: d.success ? 'completed' : d.failed ? 'failed' : d.expired ? 'expired' : 'pending',
+              status: d.success ? 'completed' : d.failed ? 'failed' : d.expired || d.expired_height < blockData.latest_block_height ? 'expired' : 'pending',
               height: _.minBy(votes, 'height')?.height || d.height,
               votes: _.orderBy(votes, ['height', 'created_at'], ['desc', 'desc']),
               voteOptions,
@@ -283,7 +284,12 @@ export function VMPolls() {
       }
     }
     getData()
-  }, [chains, params, setSearchResults, refresh, setRefresh])
+  }, [chains, params, setSearchResults, refresh, setRefresh, blockData])
+
+  useEffect(() => {
+    const getData = async () => setBlockData(await getRPCStatus())
+    getData()
+  }, [setBlockData])
 
   const { data, total } = { ...searchResults?.[generateKeyFromParams(params)] }
   return (
@@ -370,14 +376,18 @@ export function VMPolls() {
                         </div>
                       </td>
                       <td className="px-3 py-4 text-left">
-                        <ChainProfile value={d.sender_chain} />
-                        {d.contract_address && (
-                          <Tooltip content="Verifier Contract" className="whitespace-nowrap">
-                            <Copy value={d.contract_address}>
-                              {ellipse(d.contract_address)}
-                            </Copy>
-                          </Tooltip>
-                        )}
+                        <div className="flex flex-col gap-y-0.5">
+                          <ChainProfile value={d.sender_chain} />
+                          {d.contract_address && (
+                            <div className="flex items-center">
+                              <Tooltip content="Verifier Contract" className="whitespace-nowrap">
+                                <Copy value={d.contract_address}>
+                                  {ellipse(d.contract_address)}
+                                </Copy>
+                              </Tooltip>
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-3 py-4 text-left">
                         {d.height && (

@@ -15,11 +15,10 @@ import { Profile, ChainProfile } from '@/components/Profile'
 import { TimeAgo } from '@/components/Time'
 import { ExplorerLink } from '@/components/ExplorerLink'
 import { useGlobalStore } from '@/components/Global'
-import { searchVMPolls } from '@/lib/api/validator'
+import { getRPCStatus, searchVMPolls } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
 import { equalsIgnoreCase, capitalize, ellipse, toTitle } from '@/lib/string'
-import { timeDiff } from '@/lib/time'
 
 const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'
 
@@ -65,7 +64,9 @@ function Info({ data, id }) {
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Verifier Contract</dt>
               <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                <Copy value={contract_address} />
+                <Copy value={contract_address}>
+                  {ellipse(contract_address)}
+                </Copy>
               </dd>
             </div>
           )}
@@ -273,46 +274,54 @@ function Votes({ data }) {
 
 export function VMPoll({ id }) {
   const [data, setData] = useState(null)
+  const [blockData, setBlockData] = useState(null)
   const { chains, verifiers } = useGlobalStore()
 
   useEffect(() => {
     const getData = async () => {
-      const { data } = { ...await searchVMPolls({ verifierContractAddress: id.includes('_') ? _.head(split(id, { delimiter: '_' })) : undefined, pollId: _.last(split(id, { delimiter: '_' })) }) }
-      let d = _.head(data)
+      if (blockData) {
+        const { data } = { ...await searchVMPolls({ verifierContractAddress: id.includes('_') ? _.head(split(id, { delimiter: '_' })) : undefined, pollId: _.last(split(id, { delimiter: '_' })) }) }
+        let d = _.head(data)
 
-      if (d) {
-        const votes = []
-        Object.entries(d).filter(([k, v]) => k.startsWith('axelar')).forEach(([k, v]) => votes.push(v))
+        if (d) {
+          const votes = []
+          Object.entries(d).filter(([k, v]) => k.startsWith('axelar')).forEach(([k, v]) => votes.push(v))
 
-        let voteOptions = Object.entries(_.groupBy(toArray(votes).map(v => ({ ...v, option: v.vote ? 'yes' : typeof v.vote === 'boolean' ? 'no' : 'unsubmitted' })), 'option')).map(([k, v]) => {
-          return {
-            option: k,
-            value: toArray(v).length,
-            voters: toArray(toArray(v).map(_v => _v.voter)),
+          let voteOptions = Object.entries(_.groupBy(toArray(votes).map(v => ({ ...v, option: v.vote ? 'yes' : typeof v.vote === 'boolean' ? 'no' : 'unsubmitted' })), 'option')).map(([k, v]) => {
+            return {
+              option: k,
+              value: toArray(v).length,
+              voters: toArray(toArray(v).map(_v => _v.voter)),
+            }
+          }).filter(v => v.value).map(v => ({ ...v, i: v.option === 'yes' ? 0 : v.option === 'no' ? 1 : 2 }))
+
+          if (toArray(d.participants).length > 0 && voteOptions.findIndex(v => v.option === 'unsubmitted') < 0 && _.sumBy(voteOptions, 'value') < d.participants.length) {
+            voteOptions.push({ option: 'unsubmitted', value: d.participants.length - _.sumBy(voteOptions, 'value') })
           }
-        }).filter(v => v.value).map(v => ({ ...v, i: v.option === 'yes' ? 0 : v.option === 'no' ? 1 : 2 }))
+          voteOptions = _.orderBy(voteOptions, ['i'], ['asc'])
 
-        if (toArray(d.participants).length > 0 && voteOptions.findIndex(v => v.option === 'unsubmitted') < 0 && _.sumBy(voteOptions, 'value') < d.participants.length) {
-          voteOptions.push({ option: 'unsubmitted', value: d.participants.length - _.sumBy(voteOptions, 'value') })
+          const { url, transaction_path } = { ...getChainData(d.sender_chain, chains)?.explorer }
+          d = {
+            ...d,
+            status: d.success ? 'completed' : d.failed ? 'failed' : d.expired || d.expired_height < blockData.latest_block_height ? 'expired' : 'pending',
+            height: _.minBy(votes, 'height')?.height || d.height,
+            votes: _.orderBy(votes, ['height', 'created_at'], ['desc', 'desc']),
+            voteOptions,
+            url: `/gmp/${d.transaction_id || ''}`,
+          }
         }
-        voteOptions = _.orderBy(voteOptions, ['i'], ['asc'])
 
-        const { url, transaction_path } = { ...getChainData(d.sender_chain, chains)?.explorer }
-        d = {
-          ...d,
-          status: d.success ? 'completed' : d.failed ? 'failed' : d.expired || timeDiff(d.expires_at?.ms) > 0 ? 'expired' : 'pending',
-          height: _.minBy(votes, 'height')?.height || d.height,
-          votes: _.orderBy(votes, ['height', 'created_at'], ['desc', 'desc']),
-          voteOptions,
-          url: `/gmp/${d.transaction_id || ''}`,
-        }
+        console.log('[data]', d)
+        setData(d)
       }
-
-      console.log('[data]', d)
-      setData(d)
     }
     getData()
-  }, [id, chains, setData])
+  }, [id, chains, setData, blockData])
+
+  useEffect(() => {
+    const getData = async () => setBlockData(await getRPCStatus())
+    getData()
+  }, [setBlockData])
 
   return (
     <Container className="sm:mt-8">
