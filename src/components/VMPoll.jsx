@@ -209,6 +209,7 @@ function Votes({ data }) {
     }
   }, [verifiers, data, setVotes])
 
+  const { confirmation_txhash } = { ...data }
   return votes && (
     <div className="overflow-x-auto lg:overflow-x-visible -mx-4 sm:-mx-0 mt-8">
       <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
@@ -269,9 +270,9 @@ function Votes({ data }) {
                           {ellipse(d.id, 6)}
                         </Link>
                       </Copy>
-                      {equalsIgnoreCase(d.id, d.confirmation_txhash) && (
+                      {equalsIgnoreCase(d.id, confirmation_txhash) && (
                         <Link
-                          href={`/tx/${d.confirmation_txhash}`}
+                          href={`/tx/${confirmation_txhash}`}
                           target="_blank"
                           className="h-6 flex items-center gap-x-1"
                         >
