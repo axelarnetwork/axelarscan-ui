@@ -33,7 +33,7 @@ function Info({ data, id }) {
     <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
       <div className="px-4 sm:px-6 py-6">
         <h3 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-7">
-          <Copy value={data?.poll_id || id}><span>{ellipse(data?.poll_id || id, 16)}</span></Copy>
+          <Copy value={data?.poll_id || id}><span>{data?.poll_id || ellipse(id, 16)}</span></Copy>
         </h3>
         <div className="max-w-2xl text-zinc-400 dark:text-zinc-500 text-sm leading-6 mt-1">
           {transaction_id && (
