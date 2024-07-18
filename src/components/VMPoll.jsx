@@ -19,13 +19,14 @@ import { getRPCStatus, searchVMPolls } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
 import { equalsIgnoreCase, capitalize, ellipse, toTitle } from '@/lib/string'
+import { isNumber } from '@/lib/number'
 
 const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'
 
 function Info({ data, id }) {
   const { chains } = useGlobalStore()
 
-  const { contract_address, transaction_id, sender_chain, status, height, initiated_txhash, expired_height, participants, voteOptions, created_at, updated_at } = { ...data }
+  const { contract_address, transaction_id, event_index, sender_chain, status, height, initiated_txhash, completed_txhash, expired_height, participants, voteOptions, created_at, updated_at } = { ...data }
   const chainData = getChainData(sender_chain, chains)
   const { url, transaction_path } = { ...chainData?.explorer }
 
@@ -44,7 +45,7 @@ function Info({ data, id }) {
                   target="_blank"
                   className="text-blue-600 dark:text-blue-500 font-semibold"
                 >
-                  {ellipse(transaction_id)}
+                  {ellipse(transaction_id)}{isNumber(event_index) ? `-${event_index}` : ''}
                 </Link>
               </Copy>
               <ExplorerLink value={transaction_id} chain={sender_chain} />
@@ -104,6 +105,20 @@ function Info({ data, id }) {
                   className="text-blue-600 dark:text-blue-500 font-medium"
                 >
                   {ellipse(initiated_txhash)}
+                </Link>
+              </dd>
+            </div>
+          )}
+          {completed_txhash && (
+            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Poll Completed Tx Hash</dt>
+              <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                <Link
+                  href={`/tx/${completed_txhash}`}
+                  target="_blank"
+                  className="text-blue-600 dark:text-blue-500 font-medium"
+                >
+                  {ellipse(completed_txhash)}
                 </Link>
               </dd>
             </div>
