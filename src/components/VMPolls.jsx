@@ -356,7 +356,7 @@ export function VMPolls() {
                               target="_blank"
                               className="text-blue-600 dark:text-blue-500 font-semibold"
                             >
-                              {ellipse(d.poll_id)}
+                              {d.poll_id}
                             </Link>
                           </Copy>
                           {d.transaction_id && (
