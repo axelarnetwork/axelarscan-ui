@@ -269,9 +269,9 @@ function Votes({ data }) {
                           {ellipse(d.id, 6)}
                         </Link>
                       </Copy>
-                      {equalsIgnoreCase(d.id, confirmation_txhash) && (
+                      {equalsIgnoreCase(d.id, d.confirmation_txhash) && (
                         <Link
-                          href={`/tx/${confirmation_txhash}`}
+                          href={`/tx/${d.confirmation_txhash}`}
                           target="_blank"
                           className="h-6 flex items-center gap-x-1"
                         >
