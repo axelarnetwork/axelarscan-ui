@@ -22,7 +22,7 @@ import { useValidatorStore } from '@/components/Validators'
 import { useGlobalStore } from '@/components/Global'
 import { getBalances } from '@/lib/api/axelarscan'
 import { getRPCStatus, searchUptimes, searchProposedBlocks, searchHeartbeats, searchPolls, getChainMaintainers, getValidatorDelegations } from '@/lib/api/validator'
-import { getChainData, getAssetData } from '@/lib/config'
+import { ENVIRONMENT, getChainData, getAssetData } from '@/lib/config'
 import { toArray } from '@/lib/parser'
 import { includesStringList } from '@/lib/operator'
 import { equalsIgnoreCase, ellipse } from '@/lib/string'
@@ -590,7 +590,7 @@ export function Validator({ address }) {
         if (_data) {
           if (_data.broadcaster_address) {
             const { data } = { ...await getBalances({ address: _data.broadcaster_address }) }
-            _data.broadcasterBalance = toArray(data).find(d => d.denom === 'uaxl')
+            _data.broadcasterBalance = toArray(data).find(d => d.denom === (ENVIRONMENT === 'devnet-verifiers' ? 'uverifiers' : ENVIRONMENT === 'devnet-amplifier' ? 'uamplifier' : 'uaxl'))
           }
           _data.supportedChains = Object.entries(maintainers).filter(([k, v]) => v.includes(_data.operator_address)).map(([k, v]) => k)
           if (!_.isEqual(_data, data)) setData(_data)
