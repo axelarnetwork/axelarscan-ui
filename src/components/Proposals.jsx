@@ -126,7 +126,7 @@ export function Proposals() {
                           </Tag>
                           {['PASSED', 'REJECTED'].includes(d.status) && (
                             <div className="flex flex-col items-end gap-y-0.5">
-                              {Object.entries({ ...d.final_tally_result }).filter(([k, v]) => toNumber(v) > 0).map(([k, v]) => (
+                              {Object.entries({ ...d.final_tally_result }).filter(([k, v]) => toNumber(v) >= 0).map(([k, v]) => (
                                 <Number
                                   key={k}
                                   value={v}

@@ -192,7 +192,7 @@ function Info({ data, end, voteOptions }) {
             <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
               <div className="flex flex-col gap-y-1">
                 {end ?
-                  Object.entries({ ...final_tally_result }).filter(([k, v]) => toNumber(v) > 0).map(([k, v]) => (
+                  Object.entries({ ...final_tally_result }).filter(([k, v]) => toNumber(v) >= 0).map(([k, v]) => (
                     <Number
                       key={k}
                       value={v}
