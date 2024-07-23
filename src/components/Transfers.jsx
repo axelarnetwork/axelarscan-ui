@@ -26,7 +26,7 @@ import { TimeAgo, TimeSpent } from '@/components/Time'
 import { getParams, getQueryString, Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
 import { searchTransfers } from '@/lib/api/token-transfer'
-import { getAssetData } from '@/lib/config'
+import { ENVIRONMENT, getAssetData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
 import { isString, equalsIgnoreCase, capitalize, toBoolean, ellipse, toTitle } from '@/lib/string'
 import { isNumber, formatUnits } from '@/lib/number'
@@ -261,8 +261,8 @@ export function Transfers({ address }) {
         delete _params.sortBy
 
         const response = await searchTransfers({ ..._params, size, sort })
-        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: { ...(response?.total || (Object.keys(_params).length > 0 && !(Object.keys(_params).length === 1 && _params.from !== undefined)) ? response : searchResults?.[generateKeyFromParams(params)]) } })
-        setRefresh(!isNumber(response?.total) && !searchResults?.[generateKeyFromParams(params)] ? true : false)
+        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: { ...(response?.total || (Object.keys(_params).length > 0 && !(Object.keys(_params).length === 1 && _params.from !== undefined)) || ENVIRONMENT !== 'mainnet' ? response : searchResults?.[generateKeyFromParams(params)]) } })
+        setRefresh(!isNumber(response?.total) && !searchResults?.[generateKeyFromParams(params)] && ENVIRONMENT === 'mainnet' ? true : false)
       }
     }
     getData()

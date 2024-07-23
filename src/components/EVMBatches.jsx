@@ -25,7 +25,7 @@ import { TimeAgo } from '@/components/Time'
 import { getParams, getQueryString, Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
 import { searchBatches } from '@/lib/api/token-transfer'
-import { getChainData, getAssetData } from '@/lib/config'
+import { ENVIRONMENT, getChainData, getAssetData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
 import { equalsIgnoreCase, capitalize, toBoolean, ellipse } from '@/lib/string'
 import { toNumber, formatUnits } from '@/lib/number'
@@ -256,7 +256,9 @@ export function EVMBatches() {
   useEffect(() => {
     const getData = async () => {
       if (params && toBoolean(refresh)) {
-        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: { ...await searchBatches({ ...params, size }) } })
+        let response = await searchBatches({ ...params, size })
+        if (response && !response.data && !['mainnet', 'testnet'].includes(ENVIRONMENT)) response = { data: [], total: 0 }
+        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: { ...response } })
         setRefresh(false)
       }
     }
