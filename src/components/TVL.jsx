@@ -242,8 +242,8 @@ export function TVL() {
                     </div>
                   </td>
                   {chainsTVL.map(c => {
-                    const { supply, total, url } = { ...d.tvl?.[c.id] }
-                    const amount = supply || total
+                    const { escrow_balance, supply, total, url } = { ...d.tvl?.[c.id] }
+                    const amount = (isNumber(escrow_balance) ? escrow_balance : supply) || total
                     const value = amount * d.price
 
                     const element = (
