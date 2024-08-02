@@ -154,7 +154,11 @@ export function TVL() {
                   <td className="sticky left-0 z-10 backdrop-blur backdrop-filter px-3 py-4 text-left">
                     <div className="flex flex-items-center gap-x-2">
                       <AssetProfile value={d.asset} ITSPossible={d.assetType === 'its'} titleClassName="font-bold" />
-                      {d.assetType === 'its' && <Tag className="w-fit bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100">ITS</Tag>}
+                      {d.assetType === 'its' && (
+                        <Tooltip content={Object.values({ ...d.tvl }).findIndex(d => d.token_manager_type?.startsWith('lockUnlock')) > -1 ? 'canonical ITS token' : 'custom ITS token'} className="whitespace-nowrap">
+                          <Tag className="w-fit bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100">ITS</Tag>
+                        </Tooltip>
+                      )}
                     </div>
                   </td>
                   <td className="px-3 py-4 text-left">
