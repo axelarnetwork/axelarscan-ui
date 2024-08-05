@@ -66,7 +66,7 @@ export function getStep(data, chains) {
       title: gas_paid || gas_paid_to_callback ? 'Gas Paid' : timeDiff(call?.block_timestamp * 1000) < 30 ? 'Checking Gas Paid' : 'Pay Gas',
       status: gas_paid || gas_paid_to_callback ? 'success' : 'pending',
       data: gas_paid || gas_paid_to_callback,
-      chainData: gas_paid_to_callback ? destinationChainData : sourceChainData,
+      chainData: gas_paid_to_callback && !gas_paid ? destinationChainData : sourceChainData,
     },
     express_executed && {
       id: 'express',
@@ -208,7 +208,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                             const { confirmation_txhash, poll_id, axelarTransactionHash, receipt, proposal_id } = { ...d.data }
                             const { url, transaction_path } = { ...d.chainData?.explorer }
                             const transactionHash = d.data?.transactionHash || receipt?.transactionHash || receipt?.hash
-
+console.log('qqqq',d.id, url, d.data.chain)
                             let stepURL
                             if (url && transaction_path) {
                               switch (d.id) {
