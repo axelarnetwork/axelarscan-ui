@@ -208,7 +208,6 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                             const { confirmation_txhash, poll_id, axelarTransactionHash, receipt, proposal_id } = { ...d.data }
                             const { url, transaction_path } = { ...d.chainData?.explorer }
                             const transactionHash = d.data?.transactionHash || receipt?.transactionHash || receipt?.hash
-console.log('qqqq',d.id, url, d.data.chain)
                             let stepURL
                             if (url && transaction_path) {
                               switch (d.id) {
