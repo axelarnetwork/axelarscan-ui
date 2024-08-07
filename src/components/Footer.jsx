@@ -31,7 +31,7 @@ export function Footer() {
               </span>
             </Link>
             <Link
-              href="https://twitter.com/axelarnetwork"
+              href="https://x.com/axelar"
               target="_blank"
               className="group"
               aria-label="Axelar Network on Twitter"
