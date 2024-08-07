@@ -1125,7 +1125,7 @@ function Details({ data }) {
         </thead>
         <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
           {steps.filter(d => d.status !== 'pending' || d.data?.axelarTransactionHash).map((d, i) => {
-            const { logIndex, _logIndex, chain_type, confirmation_txhash, poll_id, axelarTransactionHash, blockNumber, axelarBlockNumber, transaction, receipt, returnValues, error, contract_address, block_timestamp, created_at, proposal_id } = { ...(d.id === 'pay_gas' && isString(d.data) ? data.originData?.gas_paid : d.data) }
+            const { logIndex, _logIndex, chain_type, confirmation_txhash, poll_id, axelarTransactionHash, blockNumber, axelarBlockNumber, transaction, receipt, returnValues, contract_address, block_timestamp, created_at, proposal_id } = { ...(d.id === 'pay_gas' && isString(d.data) ? data.originData?.gas_paid : d.data) }
             const transactionHash = d.data?.transactionHash || receipt?.transactionHash || receipt?.hash
             const height = d.data?.blockNumber || blockNumber
             const { url, block_path, transaction_path } = { ...d.chainData?.explorer }
@@ -1249,7 +1249,8 @@ function Details({ data }) {
                     ))
                   }
 
-                  if (d.id === 'execute' && d.status === 'failed' && error) {
+                  if (d.id === 'execute' && d.status === 'failed' && data.error) {
+                    const { error } = { ...data.error }
                     const message = error?.data?.message || error?.message
                     const reason = error?.reason
                     const code = error?.code
@@ -1257,7 +1258,7 @@ function Details({ data }) {
 
                     stepMoreInfos.push((
                       <div key={stepMoreInfos.length} className="w-64 flex flex-col gap-y-1">
-                        {message && (
+                        {message && (!reason || !axelarTransactionHash) && (
                           <div className="whitespace-pre-wrap text-red-600 dark:text-red-500 text-xs font-normal">
                             {ellipse(message, 256)}
                           </div>
@@ -1403,7 +1404,7 @@ function Details({ data }) {
                       </div>
                     )}
                     {stepMoreInfos.length > 0 && (
-                      <div className="flex items-center gap-x-3">
+                      <div className="flex items-start gap-x-3">
                         {stepMoreInfos}
                       </div>
                     )}

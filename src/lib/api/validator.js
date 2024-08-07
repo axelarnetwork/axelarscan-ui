@@ -23,3 +23,7 @@ export const getChainMaintainers = async params => await request('getChainMainta
 export const getValidatorDelegations = async params => await request('getValidatorDelegations', params)
 export const getVerifiers = async params => await request('getVerifiers', params)
 export const getVerifiersVotes = async params => await request('getVerifiersVotes', params)
+export const getVerifiersRewards = async params => await request('getVerifiersRewards', params)
+export const searchRewardsDistribution = async params => await request('searchRewardsDistribution', params)
+export const searchVerifiersRewards = async params => await request('searchVerifiersRewards', params)
+export const getRewardsPool = async params => await request('getRewardsPool', params)

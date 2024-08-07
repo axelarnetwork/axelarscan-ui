@@ -4,22 +4,79 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import clsx from 'clsx'
 import _ from 'lodash'
+import { MdKeyboardDoubleArrowLeft, MdKeyboardDoubleArrowRight } from 'react-icons/md'
 
 import { Container } from '@/components/Container'
+import { Button } from '@/components/Button'
 import { Image } from '@/components/Image'
+import { Copy } from '@/components/Copy'
 import { Tooltip } from '@/components/Tooltip'
 import { Spinner } from '@/components/Spinner'
 import { Tag } from '@/components/Tag'
 import { Number } from '@/components/Number'
 import { Profile } from '@/components/Profile'
+import { TimeAgo } from '@/components/Time'
 import { useGlobalStore } from '@/components/Global'
-import { getRPCStatus, searchVMPolls } from '@/lib/api/validator'
+import { getRPCStatus, searchVMPolls, getVerifiersRewards, searchVerifiersRewards } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
 import { toArray } from '@/lib/parser'
 import { equalsIgnoreCase } from '@/lib/string'
 import { isNumber, numberFormat } from '@/lib/number'
 
-function Info({ data, address }) {
+function Pagination({ data, value = 1, maxPage = 5, sizePerPage = 25, onChange }) {
+  const [page, setPage] = useState(value)
+
+  useEffect(() => {
+    if (value) setPage(value)
+  }, [value, setPage])
+
+  useEffect(() => {
+    if (page && onChange) onChange(page)
+  }, [page, onChange])
+
+  const half = Math.floor(toNumber(maxPage) / 2)
+  const totalPage = Math.ceil(toNumber(data.length) / sizePerPage)
+  const pages = _.range(page - half, page + half + 1).filter(p => p > 0 && p <= totalPage)
+  const prev = _.min(_.range(_.head(pages) - maxPage, _.head(pages)).filter(p => p > 0))
+  const next = _.max(_.range(_.last(pages) + 1, _.last(pages) + maxPage + 1).filter(p => p <= totalPage))
+
+  return (
+    <div className="flex items-center justify-center gap-x-1">
+      {isNumber(prev) && (
+        <Button
+          color="none"
+          onClick={() => setPage(prev)}
+          className="!px-1"
+        >
+          <MdKeyboardDoubleArrowLeft size={18} />
+        </Button>
+      )}
+      {pages.map(p => (
+        <Button
+          key={p}
+          color={p === page ? 'blue' : 'default'}
+          onClick={() => setPage(p)}
+          className="!text-2xs !px-3 !py-1"
+        >
+          <Number value={p} />
+        </Button>
+      ))}
+      {isNumber(next) && (
+        <Button
+          color="none"
+          onClick={() => setPage(next)}
+          className="!px-1"
+        >
+          <MdKeyboardDoubleArrowRight size={18} />
+        </Button>
+      )}
+    </div>
+  )
+}
+
+function Info({ data, rewards, cumulativeRewards, address }) {
+  const rewardsSizePerPage = 10
+  const [rewardsPage, setRewardsPage] = useState(1)
   const { chains, verifiersByChain } = useGlobalStore()
   const { supportedChains } = { ...data }
 
@@ -67,7 +124,6 @@ function Info({ data, address }) {
                         {supportedChains.map((c, i) => {
                           const { name, image } = { ...getChainData(c, chains) }
                           const { bonding_state, authorization_state, weight } = { ...toArray(verifiersByChain?.[c]?.addresses).find(d => equalsIgnoreCase(d.address, address)) }
-                          console.log(bonding_state)
                           return (
                             <tr key={i} className="align-top text-zinc-400 dark:text-zinc-500 text-xs">
                               <td className="pl-4 sm:pl-3 pr-3 py-3 text-left">
@@ -134,6 +190,139 @@ function Info({ data, address }) {
               </div>
             </>
           )}
+          {cumulativeRewards && (
+            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Cumulative Rewards</dt>
+              <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                <Tooltip
+                  content={
+                    <div className="flex flex-col gap-y-1">
+                      {toArray(cumulativeRewards.chains).map((d, i) => (
+                        <Number
+                          key={i}
+                          value={d.amount}
+                          format="0,0.000000"
+                          prefix={`${getChainData(d.chain, chains)?.name || d.chain}: `}
+                          noTooltip={true}
+                          className="font-medium"
+                        />
+                      ))}
+                    </div>
+                  }
+                  className="whitespace-nowrap"
+                  parentClassName="!justify-start"
+                >
+                  <Number
+                    value={cumulativeRewards.total_rewards}
+                    format="0,0.00"
+                    suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
+                    noTooltip={true}
+                    className="font-medium"
+                  />
+                </Tooltip>
+              </dd>
+            </div>
+          )}
+          {rewards && (
+            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Latest Rewards Distribution</dt>
+              <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                <div className="flex flex-col gap-y-4">
+                  <div className="overflow-x-auto lg:overflow-x-visible -mx-4 sm:-mx-0">
+                    <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
+                      <thead className="sticky top-0 z-10 bg-white dark:bg-zinc-900">
+                        <tr className="text-zinc-800 dark:text-zinc-200 text-sm font-semibold">
+                          <th scope="col" className="pl-4 sm:pl-3 pr-3 py-2.5 text-left">
+                            Epoch Count
+                          </th>
+                          <th scope="col" className="px-3 py-2.5 text-left">
+                            Chain
+                          </th>
+                          <th scope="col" className="px-3 py-2.5 text-left">
+                            Height
+                          </th>
+                          <th scope="col" className="px-3 py-2.5 text-right">
+                            Payout
+                          </th>
+                          <th scope="col" className="pl-3 pr-4 sm:pr-3 px-3 py-2.5 text-right">
+                            Payout at
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
+                        {toArray(rewards).filter((d, i) => i >= (rewardsPage - 1) * rewardsSizePerPage && i < rewardsPage * rewardsSizePerPage).map((d, i) => {
+                          const { name, image } = { ...getChainData(d.chain, chains) }
+                          return (
+                            <tr key={i} className="align-top text-zinc-400 dark:text-zinc-500 text-xs">
+                              <td className="pl-4 sm:pl-3 pr-3 py-3 text-left">
+                                <Copy size={16} value={d.epoch_count}>
+                                  <Number
+                                    value={d.epoch_count}
+                                    format="0,0"
+                                    className="text-zinc-900 dark:text-zinc-100 text-xs font-medium"
+                                  />
+                                </Copy>
+                              </td>
+                              <td className="px-3 py-3">
+                                <div className="flex items-center">
+                                  {name ?
+                                    <Tooltip content={name} className="whitespace-nowrap">
+                                      <Image
+                                        src={image}
+                                        alt=""
+                                        width={20}
+                                        height={20}
+                                      />
+                                    </Tooltip> :
+                                    <span className="text-zinc-900 dark:text-zinc-100">{d.chain}</span>
+                                  }
+                                </div>
+                              </td>
+                              <td className="px-3 py-3">
+                                <div className="flex flex-col gap-y-0.5">
+                                  <Copy size={16} value={d.height}>
+                                    <Link
+                                      href={`/block/${d.height}`}
+                                      target="_blank"
+                                      className="text-blue-600 dark:text-blue-500 font-semibold"
+                                    >
+                                      <Number value={d.height} className="text-xs" />
+                                    </Link>
+                                  </Copy>
+                                </div>
+                              </td>
+                              <td className="px-3 py-3 text-right">
+                                <div className="flex items-center justify-end">
+                                  <Number
+                                    value={d.amount}
+                                    format="0,0.00"
+                                    className="text-zinc-900 dark:text-zinc-100 text-xs font-semibold"
+                                  />
+                                </div>
+                              </td>
+                              <td className="pl-3 pr-4 sm:pr-3 py-3 text-right">
+                                <div className="flex items-center justify-end">
+                                  <TimeAgo timestamp={d.created_at?.ms} />
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  {rewards.length > rewardsSizePerPage && (
+                    <Pagination
+                      data={rewards}
+                      value={rewardsPage}
+                      onChange={page => setRewardsPage(page)}
+                      sizePerPage={rewardsSizePerPage}
+                    />
+                  )}
+                </div>
+              </dd>
+            </div>
+          )}
         </dl>
       </div>
     </div>
@@ -183,7 +372,7 @@ function Votes({ data }) {
               target="_blank"
               className="w-5 h-5"
             >
-              <Tooltip content={d.id ? `Poll ID: ${d.id} (${name})` : numberFormat(d.height, '0,0')} className="whitespace-nowrap">
+              <Tooltip content={d.poll_id ? `Poll ID: ${d.poll_id} (${name})` : numberFormat(d.height, '0,0')} className="whitespace-nowrap">
                 <div className={clsx('w-4 h-4 rounded-sm m-0.5', typeof d.vote === 'boolean' ? d.vote ? 'bg-green-600 dark:bg-green-500' : 'bg-red-600 dark:bg-red-500' : 'bg-zinc-300 dark:bg-zinc-700')} />
               </Tooltip>
             </Link>
@@ -200,6 +389,8 @@ const NUM_LATEST_BLOCKS = 10000
 export function Verifier({ address }) {
   const [data, setData] = useState(null)
   const [votes, setVotes] = useState(null)
+  const [rewards, setRewards] = useState(null)
+  const [cumulativeRewards, setCumulativeRewards] = useState(null)
   const { chains, verifiers } = useGlobalStore()
 
   useEffect(() => {
@@ -219,7 +410,7 @@ export function Verifier({ address }) {
         const { latest_block_height } = { ...await getRPCStatus() }
 
         if (latest_block_height) {
-          await Promise.all(['votes'].map(d => new Promise(async resolve => {
+          await Promise.all(['votes', 'rewards', 'cumulative_rewards'].map(d => new Promise(async resolve => {
             switch (d) {
               case 'votes':
                 try {
@@ -232,6 +423,18 @@ export function Verifier({ address }) {
                       equalsIgnoreCase(k, verifierAddress) ? Object.entries({ ...v }).map(([_k, _v]) => [_k === 'id' ? 'txhash' : _k, _v]) : [[k, v]]
                     )
                   )))
+                } catch (error) {}
+                break
+              case 'rewards':
+                try {
+                  const data = verifierAddress && (await searchVerifiersRewards({ verifierAddress, fromBlock: 1, size }))?.data
+                  setRewards(toArray(data))
+                } catch (error) {}
+                break
+              case 'cumulative_rewards':
+                try {
+                  const data = verifierAddress && (await getVerifiersRewards({ verifierAddress, fromBlock: 1 }))?.data
+                  setCumulativeRewards(_.head(data))
                 } catch (error) {}
                 break
               default:
@@ -251,7 +454,12 @@ export function Verifier({ address }) {
       {!data ? <Spinner /> :
         <div className="grid md:grid-cols-3 md:gap-x-4 gap-y-4 md:gap-y-0">
           <div className="md:col-span-2">
-            <Info data={data} address={address} />
+            <Info
+              data={data}
+              rewards={rewards}
+              cumulativeRewards={cumulativeRewards}
+              address={address}
+            />
           </div>
           {!votes ? <Spinner /> :
             <div className="flex flex-col gap-y-4">
