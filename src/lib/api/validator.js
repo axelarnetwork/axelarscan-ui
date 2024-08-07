@@ -24,4 +24,6 @@ export const getValidatorDelegations = async params => await request('getValidat
 export const getVerifiers = async params => await request('getVerifiers', params)
 export const getVerifiersVotes = async params => await request('getVerifiersVotes', params)
 export const getVerifiersRewards = async params => await request('getVerifiersRewards', params)
+export const searchRewardsDistribution = async params => await request('searchRewardsDistribution', params)
 export const searchVerifiersRewards = async params => await request('searchVerifiersRewards', params)
+export const getRewardsPool = async params => await request('getRewardsPool', params)

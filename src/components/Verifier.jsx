@@ -233,7 +233,7 @@ function Info({ data, rewards, cumulativeRewards, address }) {
                       <thead className="sticky top-0 z-10 bg-white dark:bg-zinc-900">
                         <tr className="text-zinc-800 dark:text-zinc-200 text-sm font-semibold">
                           <th scope="col" className="pl-4 sm:pl-3 pr-3 py-2.5 text-left">
-                            Epoch
+                            Epoch Count
                           </th>
                           <th scope="col" className="px-3 py-2.5 text-left">
                             Chain
@@ -245,7 +245,7 @@ function Info({ data, rewards, cumulativeRewards, address }) {
                             Payout
                           </th>
                           <th scope="col" className="pl-3 pr-4 sm:pr-3 px-3 py-2.5 text-right">
-                            Payout Date
+                            Payout at
                           </th>
                         </tr>
                       </thead>

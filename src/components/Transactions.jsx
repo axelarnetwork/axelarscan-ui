@@ -28,7 +28,7 @@ import { axelarContracts, getAssetData } from '@/lib/config'
 import { getIcapAddress, getInputType, toJson, toHex, split, toArray } from '@/lib/parser'
 import { includesStringList } from '@/lib/operator'
 import { getAttributeValue } from '@/lib/cosmos'
-import { isString, equalsIgnoreCase, capitalize, removeDoubleQuote, toBoolean, lastString, ellipse } from '@/lib/string'
+import { isString, equalsIgnoreCase, capitalize, camel, removeDoubleQuote, toBoolean, lastString, ellipse } from '@/lib/string'
 import { isNumber, toNumber, formatUnits } from '@/lib/number'
 
 const size = 25
@@ -243,6 +243,7 @@ export const getType = data => {
   if (Array.isArray(types)) type = _.head(types) || type
   else {
     types = _.uniq(toArray(_.concat(
+      toArray(messages).map(d => camel(_.head(Object.keys({ ...d.msg })))),
       toArray(messages).map(d => d.inner_message?.['@type']),
       toArray(data.logs).flatMap(d => toArray(d.events).filter(e => equalsIgnoreCase(e.type, 'message')).map(e => getAttributeValue(e.attributes, 'action'))),
       toArray(messages).map(m => m['@type']),
