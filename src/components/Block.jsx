@@ -25,7 +25,7 @@ import { isNumber, toNumber, numberFormat } from '@/lib/number'
 const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'
 
 function Info({ data, validatorSets, height }) {
-  const [signedCollpased, setsignedCollpased] = useState(true)
+  const [signedCollpased, setSignedCollpased] = useState(true)
 
   const { hash } = { ...data.block_id }
   const { proposer_address, time } = { ...data.block?.header }
@@ -96,7 +96,7 @@ function Info({ data, validatorSets, height }) {
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Signer / Absent</dt>
               <dd className="text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1">
                 <div className="flex flex-col gap-y-4">
-                  <button onClick={() => setsignedCollpased(!signedCollpased)} className="cursor-pointer flex items-center text-zinc-900 hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300 gap-x-2">
+                  <button onClick={() => setSignedCollpased(!signedCollpased)} className="cursor-pointer flex items-center text-zinc-900 hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300 gap-x-2">
                     <Number
                       value={_.sumBy(signedValidatorsData, 'tokens') * 100 / _.sumBy(_.concat(signedValidatorsData, unsignedValidatorsData), 'tokens')}
                       prefix={`${signedValidatorsData.length} (`}
