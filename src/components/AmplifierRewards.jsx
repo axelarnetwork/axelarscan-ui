@@ -8,7 +8,7 @@ import { Dialog, Listbox, Transition } from '@headlessui/react'
 import clsx from 'clsx'
 import _ from 'lodash'
 import { MdOutlineRefresh, MdOutlineFilterList, MdClose, MdCheck } from 'react-icons/md'
-import { LuChevronsUpDown } from 'react-icons/lu'
+import { LuChevronsUpDown, LuChevronUp, LuChevronDown } from 'react-icons/lu'
 
 import { Container } from '@/components/Container'
 import { Overlay } from '@/components/Overlay'
@@ -378,6 +378,7 @@ export function AmplifierRewards({ chain }) {
   const [params, setParams] = useState(null)
   const [searchResults, setSearchResults] = useState(null)
   const [refresh, setRefresh] = useState(null)
+  const [distributionExpanded, setDistributionExpanded] = useState(null)
   const [rewardsPool, setRewardsPool] = useState(null)
   const [cumulativeRewards, setCumulativeRewards] = useState(null)
   const { chains } = useGlobalStore()
@@ -400,13 +401,14 @@ export function AmplifierRewards({ chain }) {
         const { data, total } = { ...await searchRewardsDistribution({ ...params, chain, size }) }
         setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: { data: toArray(data), total: total || toArray(data).length } })
         setRefresh(false)
+        setDistributionExpanded(null)
         setRewardsPool(_.head((await getRewardsPool({ chain }))?.data))
         const { aggs } = { ...await searchRewardsDistribution({ ...params, chain, aggs: { cumulativeRewards: { sum: { field: 'total_amount' } } }, size: 0 }) }
         if (isNumber(aggs?.cumulativeRewards?.value)) setCumulativeRewards(aggs.cumulativeRewards.value)
       }
     }
     getData()
-  }, [chain, chains, params, setSearchResults, refresh, setRefresh, setRewardsPool])
+  }, [chain, chains, params, setSearchResults, refresh, setRefresh, setDistributionExpanded, setRewardsPool])
 
   const chainData = getChainData(chain, chains)
   const { data, total } = { ...searchResults?.[generateKeyFromParams(params)] }
@@ -462,7 +464,7 @@ export function AmplifierRewards({ chain }) {
                     <th scope="col" className="whitespace-nowrap px-3 py-3.5 text-left">
                       Tx Hash
                     </th>
-                    <th scope="col" className="px-3 py-3.5 text-right">
+                    <th scope="col" className="px-3 py-3.5 text-left">
                       Recipients
                     </th>
                     <th scope="col" className="px-3 py-3.5 text-right">
@@ -508,14 +510,36 @@ export function AmplifierRewards({ chain }) {
                         </Copy>
                       </td>
                       <td className="px-3 py-4 text-left">
-                        <div className="flex items-center justify-end">
-                          <Number
-                            value={d.total_receivers}
-                            format="0,0"
-                            suffix=" Verifiers"
-                            noTooltip={true}
-                            className="text-zinc-900 dark:text-zinc-100 font-medium"
-                          />
+                        <div className="flex flex-col gap-y-2">
+                          <div onClick={() => setDistributionExpanded(equalsIgnoreCase(d.txhash, distributionExpanded) ? null : d.txhash)} className="flex items-center cursor-pointer gap-x-1">
+                            <Number
+                              value={d.total_receivers}
+                              format="0,0"
+                              suffix=" Verifiers"
+                              noTooltip={true}
+                              className="text-zinc-900 dark:text-zinc-100 font-medium"
+                            />
+                            {equalsIgnoreCase(d.txhash, distributionExpanded) ? <LuChevronUp size={18} /> : <LuChevronDown size={18} />}
+                          </div>
+                          {equalsIgnoreCase(d.txhash, distributionExpanded) && (
+                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4">
+                              {toArray(d.receivers).map((r, i) => (
+                                <div key={i} className="flex items-center justify-between gap-x-2">
+                                  <Profile
+                                    address={r.receiver}
+                                    width={18}
+                                    height={18}
+                                    className="text-xs"
+                                  />
+                                  <Number
+                                    value={r.amount}
+                                    noTooltip={true}
+                                    className="text-zinc-900 dark:text-zinc-100 text-xs font-medium"
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </td>
                       <td className="px-3 py-4 text-left">
