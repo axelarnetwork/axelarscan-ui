@@ -201,25 +201,23 @@ function Info({ data, id }) {
               </dd>
             </div>
           )}
-          {participants && (
-            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">{`Participants${participants.length > 1 ? ` (${participants.length})` : ''}`}</dt>
-              <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                <div className="w-fit flex items-center">
-                  {signOptions.map((s, i) => (
-                    <Number
-                      key={i}
-                      value={s.value}
-                      format="0,0"
-                      suffix={` ${toTitle(s.option.substring(0, ['unsubmitted'].includes(s.option) ? 2 : 1))}`}
-                      noTooltip={true}
-                      className={clsx('rounded-xl uppercase text-xs mr-2 px-2.5 py-1', ['signed'].includes(s.option) ? 'bg-green-600 dark:bg-green-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500')}
-                    />
-                  ))}
-                </div>
-              </dd>
-            </div>
-          )}
+          <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+            <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">{`Participants${toArray(participants).length > 1 ? ` (${toArray(participants).length})` : ''}`}</dt>
+            <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+              <div className="w-fit flex items-center">
+                {signOptions.map((s, i) => (
+                  <Number
+                    key={i}
+                    value={s.value}
+                    format="0,0"
+                    suffix={` ${toTitle(s.option.substring(0, ['unsubmitted'].includes(s.option) ? 2 : undefined))}`}
+                    noTooltip={true}
+                    className={clsx('rounded-xl uppercase text-xs mr-2 px-2.5 py-1', ['signed'].includes(s.option) ? 'bg-green-600 dark:bg-green-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500')}
+                  />
+                ))}
+              </div>
+            </dd>
+          </div>
         </dl>
       </div>
     </div>
