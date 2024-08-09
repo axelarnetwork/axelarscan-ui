@@ -30,7 +30,7 @@ import { GMPStats, GMPChart, GMPTotalVolume, GMPTotalFee, GMPTotalActiveUsers, G
 import { transfersStats, transfersChart, transfersTotalVolume, transfersTotalFee, transfersTotalActiveUsers, transfersTopUsers } from '@/lib/api/token-transfer'
 import { ENVIRONMENT, getChainData, getAssetData, getITSAssetData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
-import { equalsIgnoreCase, toBoolean, toTitle } from '@/lib/string'
+import { equalsIgnoreCase, toBoolean, headString, lastString, toTitle } from '@/lib/string'
 import { isNumber, toNumber, toFixed, numberFormat } from '@/lib/number'
 import { timeDiff } from '@/lib/time'
 import accounts from '@/data/accounts'
@@ -443,7 +443,7 @@ function StatsBarChart({
 
   const d = toArray(chartData).find(d => d.timestamp === x)
   const value = d ? d[field] : chartData ? totalValue || _.sumBy(chartData, field) : null
-  const timeString = d ? d.focusTimeString : chartData ? toArray([_.head(split(_.head(chartData.filter(d => d.timestamp))?.focusTimeString, { delimiter: ' - ' })), _.last(split(_.last(chartData.filter(d => d.timestamp))?.focusTimeString, { delimiter: ' - ' }))]).join(' - ') : null
+  const timeString = d ? d.focusTimeString : chartData ? toArray([headString(_.head(chartData.filter(d => d.timestamp))?.focusTimeString, ' - '), lastString(_.last(chartData.filter(d => d.timestamp))?.focusTimeString, ' - ')]).join(' - ') : null
 
   return (
     <div className={clsx('border-l border-r border-t border-zinc-200 dark:border-zinc-700 flex flex-col gap-y-2 px-4 sm:px-6 xl:px-8 py-8', i % 2 !== 0 ? 'sm:border-l-0' : '')}>
@@ -541,7 +541,7 @@ export function SankeyChart({
   const d = toArray(data).find(d => d.key === x)
   const value = d ? d[field] : data ? totalValue || _.sumBy(data, field) : null
   const keyString = d ? d.key : data ? null : null
-  const chartData = _.slice(_.orderBy(toArray(data).map(d => ({ source: _.head(split(d.key, { delimiter: '_' })), target: _.last(split(d.key, { delimiter: '_' })), value: parseInt(d[field]) })), ['value'], ['desc']), 0, topN).map(d => ({ ...d, source: getChainData(d.source, chains)?.name || d.source, target: `${getChainData(d.target, chains)?.name || d.target} ` }))
+  const chartData = _.slice(_.orderBy(toArray(data).map(d => ({ source: headString(d.key, '_'), target: lastString(d.key, '_'), value: parseInt(d[field]) })), ['value'], ['desc']), 0, topN).map(d => ({ ...d, source: getChainData(d.source, chains)?.name || d.source, target: `${getChainData(d.target, chains)?.name || d.target} ` }))
 
   return (
     <div className={clsx('border-zinc-200 dark:border-zinc-700 flex flex-col gap-y-2', i % 2 !== 0 ? 'sm:border-l-0' : '', !noBorder ? 'border-l border-r border-t px-4 sm:px-6 xl:px-8 py-8' : 'w-full')}>

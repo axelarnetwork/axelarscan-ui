@@ -114,7 +114,6 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
               <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                 <Number
                   value={cumulativeRewards}
-                  format="0,0.00"
                   suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
                   noTooltip={true}
                   className="font-medium"
@@ -128,7 +127,6 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
               <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                 <Number
                   value={formatUnits(balance, 6)}
-                  format="0,0.00"
                   suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
                   noTooltip={true}
                   className="font-medium"
@@ -152,7 +150,6 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
               <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                 <Number
                   value={formatUnits(rewards_per_epoch, 6)}
-                  format="0,0.00"
                   suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
                   noTooltip={true}
                   className="font-medium"
@@ -401,7 +398,7 @@ export function AmplifierRewards({ chain }) {
     const getData = async () => {
       if (chain && params && toBoolean(refresh)) {
         const { data, total } = { ...await searchRewardsDistribution({ ...params, chain, size }) }
-        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: { data, total } })
+        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: { data: toArray(data), total: total || toArray(data).length } })
         setRefresh(false)
         setRewardsPool(_.head((await getRewardsPool({ chain }))?.data))
         const { aggs } = { ...await searchRewardsDistribution({ ...params, chain, aggs: { cumulativeRewards: { sum: { field: 'total_amount' } } }, size: 0 }) }
@@ -457,13 +454,13 @@ export function AmplifierRewards({ chain }) {
                 <thead className="sticky top-0 z-10 bg-white dark:bg-zinc-900">
                   <tr className="text-zinc-800 dark:text-zinc-200 text-sm font-semibold">
                     <th scope="col" className="pl-4 sm:pl-0 pr-3 py-3.5 text-left">
-                      Epoch Count
-                    </th>
-                    <th scope="col" className="px-3 py-3.5 text-left">
-                      Tx Hash
-                    </th>
-                    <th scope="col" className="px-3 py-3.5 text-left">
                       Height
+                    </th>
+                    {/*<th scope="col" className="whitespace-nowrap px-3 py-3.5 text-left">
+                      Epoch Count
+                    </th>*/}
+                    <th scope="col" className="whitespace-nowrap px-3 py-3.5 text-left">
+                      Tx Hash
                     </th>
                     <th scope="col" className="px-3 py-3.5 text-right">
                       Recipients
@@ -471,7 +468,7 @@ export function AmplifierRewards({ chain }) {
                     <th scope="col" className="px-3 py-3.5 text-right">
                       Payout
                     </th>
-                    <th scope="col" className="pl-3 pr-4 sm:pr-0 py-3.5 text-right">
+                    <th scope="col" className="whitespace-nowrap pl-3 pr-4 sm:pr-0 py-3.5 text-right">
                       Payout at
                     </th>
                   </tr>
@@ -480,6 +477,17 @@ export function AmplifierRewards({ chain }) {
                   {data.map(d => (
                     <tr key={d.txhash} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
                       <td className="pl-4 sm:pl-0 pr-3 py-4 text-left">
+                       {d.height && (
+                          <Link
+                            href={`/block/${d.height}`}
+                            target="_blank"
+                            className="text-blue-600 dark:text-blue-500 font-medium"
+                          >
+                            <Number value={d.height} />
+                          </Link>
+                        )}
+                      </td>
+                      {/*<td className="px-3 py-4 text-left">
                         <Copy value={d.epoch_count}>
                           <Number
                             value={d.epoch_count}
@@ -487,7 +495,7 @@ export function AmplifierRewards({ chain }) {
                             className="text-zinc-900 dark:text-zinc-100 font-medium"
                           />
                         </Copy>
-                      </td>
+                      </td>*/}
                       <td className="px-3 py-4 text-left">
                         <Copy value={d.txhash}>
                           <Link
@@ -498,17 +506,6 @@ export function AmplifierRewards({ chain }) {
                             {ellipse(d.txhash)}
                           </Link>
                         </Copy>
-                      </td>
-                      <td className="px-3 py-4 text-left">
-                        {d.height && (
-                          <Link
-                            href={`/block/${d.height}`}
-                            target="_blank"
-                            className="text-blue-600 dark:text-blue-500 font-medium"
-                          >
-                            <Number value={d.height} />
-                          </Link>
-                        )}
                       </td>
                       <td className="px-3 py-4 text-left">
                         <div className="flex items-center justify-end">
@@ -525,7 +522,6 @@ export function AmplifierRewards({ chain }) {
                         <div className="flex items-center justify-end">
                           <Number
                             value={d.total_amount}
-                            format="0,0.00"
                             suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
                             noTooltip={true}
                             className="text-zinc-900 dark:text-zinc-100 font-semibold"

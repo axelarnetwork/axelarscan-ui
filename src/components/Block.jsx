@@ -99,7 +99,6 @@ function Info({ data, validatorSets, height }) {
                   <button onClick={() => setsignedCollpased(!signedCollpased)} className="cursor-pointer flex items-center text-zinc-900 hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300 gap-x-2">
                     <Number
                       value={_.sumBy(signedValidatorsData, 'tokens') * 100 / _.sumBy(_.concat(signedValidatorsData, unsignedValidatorsData), 'tokens')}
-                      format="0,0.00"
                       prefix={`${signedValidatorsData.length} (`}
                       suffix="%)"
                       noTooltip={true}

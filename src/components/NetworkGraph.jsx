@@ -371,7 +371,7 @@ export function NetworkGraph({ data, hideTable = false, setChainFocus }) {
                   <th scope="col" className="px-3 py-3.5 text-right">
                     Volume
                   </th>
-                  <th scope="col" className="pl-3 pr-4 sm:pr-0 py-3.5 text-right whitespace-nowrap">
+                  <th scope="col" className="whitespace-nowrap pl-3 pr-4 sm:pr-0 py-3.5 text-right">
                     Volume / TX
                   </th>
                 </tr>
@@ -413,7 +413,6 @@ export function NetworkGraph({ data, hideTable = false, setChainFocus }) {
                       <div className="flex items-center justify-end">
                         <Number
                           value={d.volume / d.num_txs}
-                          format="0,0.00"
                           prefix="$"
                           noTooltip={true}
                         />
