@@ -167,7 +167,6 @@ function Info({ data, address, delegations }) {
                   {isNumber(broadcasterBalance?.amount) && (
                     <Number
                       value={broadcasterBalance.amount}
-                      format="0,0.00"
                       suffix={` ${broadcasterBalance.symbol}`}
                       className={clsx('font-medium', broadcasterBalance.amount < 5 ? 'text-red-600 dark:text-red-500' : 'text-green-600 dark:text-green-500')}
                     />
@@ -309,11 +308,7 @@ function Info({ data, address, delegations }) {
                               </td>
                               <td className="px-3 py-3 text-right">
                                 <div className="flex items-center justify-end">
-                                  <Number
-                                    value={d.amount}
-                                    format="0,0.00"
-                                    className="text-zinc-900 dark:text-zinc-100 text-xs font-semibold"
-                                  />
+                                  <Number value={d.amount} className="text-zinc-900 dark:text-zinc-100 text-xs font-semibold" />
                                 </div>
                               </td>
                               <td className="pl-3 pr-4 sm:pr-3 py-3 text-right">
@@ -321,7 +316,6 @@ function Info({ data, address, delegations }) {
                                   <div className="flex items-center justify-end">
                                     <Number
                                       value={d.amount * price}
-                                      format="0,0.00"
                                       prefix="$"
                                       noTooltip={true}
                                       className="text-xs font-medium"
@@ -368,7 +362,6 @@ function Uptimes({ data }) {
         <div className="flex flex-col items-end">
           <Number
             value={data.filter(d => d.status).length * 100 / data.length}
-            format="0,0.00"
             suffix="%"
             className="text-zinc-900 dark:text-zinc-100 text-sm font-semibold leading-6"
           />
@@ -413,7 +406,6 @@ function ProposedBlocks({ data }) {
         <div className="flex flex-col items-end">
           <Number
             value={data.length * 100 / NUM_LATEST_PROPOSED_BLOCKS}
-            format="0,0.00"
             suffix="%"
             className="text-zinc-900 dark:text-zinc-100 text-sm font-semibold leading-6"
           />
@@ -458,7 +450,6 @@ function Heartbeats({ data }) {
         <div className="flex flex-col items-end">
           <Number
             value={data.filter(d => d.status).length * 100 / data.length}
-            format="0,0.00"
             suffix="%"
             className="text-zinc-900 dark:text-zinc-100 text-sm font-semibold leading-6"
           />
@@ -509,7 +500,6 @@ function Votes({ data }) {
         <div className="flex flex-col items-end">
           <Number
             value={data.filter(d => typeof d.vote === 'boolean').length * 100 / data.length}
-            format="0,0.00"
             suffix="%"
             className="text-zinc-900 dark:text-zinc-100 text-sm font-semibold leading-6"
           />

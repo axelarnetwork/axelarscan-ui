@@ -29,6 +29,8 @@ import { isNumber, formatUnits } from '@/lib/number'
 const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'
 
 function Info({ data, tx }) {
+  const { chains } = useGlobalStore()
+
   const { height, type, code, sender, timestamp, gas_used, gas_wanted } = { ...data }
   const { fee } = { ...data.tx?.auth_info }
   const { memo } = { ...data.tx?.body }
@@ -91,7 +93,7 @@ function Info({ data, tx }) {
                 <Number
                   value={formatUnits(_.head(fee.amount)?.amount, 6)}
                   format="0,0.00000000"
-                  suffix=" AXL"
+                  suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
                   noTooltip={true}
                   className="text-zinc-700 dark:text-zinc-300 font-medium"
                 />

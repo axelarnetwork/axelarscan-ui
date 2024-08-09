@@ -24,7 +24,7 @@ import { toNumber, formatUnits } from '@/lib/number'
 
 function Metrics() {
   const [blockData, setBlockData] = useState(null)
-  const { validators, inflationData, networkParameters } = useGlobalStore()
+  const { chains, validators, inflationData, networkParameters } = useGlobalStore()
 
   useEffect(() => {
     const getData = async () => setBlockData(await getRPCStatus({ avg_block_time: true }))
@@ -49,7 +49,6 @@ function Metrics() {
             {blockData.avg_block_time && (
               <Number
                 value={blockData.avg_block_time}
-                format="0,0.00"
                 prefix="("
                 suffix="s)"
                 className="text-zinc-400 dark:text-zinc-300 text-xs"
@@ -173,7 +172,7 @@ function Metrics() {
                 <Tooltip content="AXL gas fees per transaction" className="whitespace-nowrap">
                   <Number
                     value={0.0014}
-                    suffix=" AXL"
+                    suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
                     className="text-xs font-medium"
                   />
                 </Tooltip>
@@ -182,7 +181,7 @@ function Metrics() {
                 <div className="flex items-center">
                   <Number
                     value={0.0014}
-                    suffix=" AXL"
+                    suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
                     className="text-xs font-medium"
                   />
                 </div>
@@ -227,7 +226,6 @@ function Metrics() {
                 >
                   <Number
                     value={inflationData.inflation * 100 * formatUnits(networkParameters.bankSupply.amount, 6) * (1 - inflationData.communityTax) * (1 - 0.05) / formatUnits(networkParameters.stakingPool.bonded_tokens, 6)}
-                    format="0,0.00"
                     suffix="%"
                     noTooltip={true}
                     className="text-xs font-medium"
@@ -244,7 +242,6 @@ function Metrics() {
               >
                 <Number
                   value={inflationData.inflation * 100}
-                  format="0,0.00"
                   suffix="%"
                   noTooltip={true}
                   className="text-xs font-medium"

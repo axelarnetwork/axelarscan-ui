@@ -240,7 +240,7 @@ function Votes({ data }) {
             <th scope="col" className="px-3 py-3.5 text-left">
               Validator
             </th>
-            <th scope="col" className="px-3 py-3.5 text-right whitespace-nowrap">
+            <th scope="col" className="whitespace-nowrap px-3 py-3.5 text-right">
               Voting Power
             </th>
             <th scope="col" className="pl-3 pr-4 sm:pr-0 py-3.5 text-right">

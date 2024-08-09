@@ -56,7 +56,7 @@ export function Proposals() {
                   <th scope="col" className="hidden sm:table-cell px-3 py-3.5 text-left">
                     Height
                   </th>
-                  <th scope="col" className="hidden sm:table-cell px-3 py-3.5 text-left whitespace-nowrap">
+                  <th scope="col" className="hidden sm:table-cell whitespace-nowrap px-3 py-3.5 text-left">
                     Voting Period
                   </th>
                   <th scope="col" className="hidden sm:table-cell px-3 py-3.5 text-right">

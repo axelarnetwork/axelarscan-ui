@@ -19,7 +19,7 @@ import { Transactions } from '@/components/Transactions'
 import { useGlobalStore } from '@/components/Global'
 import { getAccountAmounts } from '@/lib/api/axelarscan'
 import { searchTransfers, searchDepositAddresses } from '@/lib/api/token-transfer'
-import { axelarContracts, getAssetData } from '@/lib/config'
+import { axelarContracts, getChainData, getAssetData } from '@/lib/config'
 import { getInputType, toArray } from '@/lib/parser'
 import { includesStringList } from '@/lib/operator'
 import { equalsIgnoreCase, ellipse } from '@/lib/string'
@@ -112,7 +112,7 @@ function Info({ data, address }) {
                       <Number
                         value={_.head(rewards.total).amount}
                         format="0,0.000000"
-                        suffix=" AXL"
+                        suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
                         className="text-zinc-700 dark:text-zinc-300 font-medium"
                       />
                     </div>
@@ -128,7 +128,7 @@ function Info({ data, address }) {
                         <Number
                           value={_.head(commissions).amount}
                           format="0,0.000000"
-                          suffix=" AXL"
+                          suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
                           className="text-zinc-700 dark:text-zinc-300 font-medium"
                         />
                       )}
@@ -144,7 +144,7 @@ function Info({ data, address }) {
                       <Number
                         value={_.sumBy(delegations.data, 'amount')}
                         format="0,0.000000"
-                        suffix=" AXL"
+                        suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
                         className="text-zinc-700 dark:text-zinc-300 font-medium"
                       />
                     )}
@@ -159,7 +159,7 @@ function Info({ data, address }) {
                       <Number
                         value={_.sumBy(redelegations.data, 'amount')}
                         format="0,0.000000"
-                        suffix=" AXL"
+                        suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
                         className="text-zinc-700 dark:text-zinc-300 font-medium"
                       />
                     </div>
@@ -174,7 +174,7 @@ function Info({ data, address }) {
                       <Number
                         value={_.sumBy(unbondings.data, 'amount')}
                         format="0,0.000000"
-                        suffix=" AXL"
+                        suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
                         className="text-zinc-700 dark:text-zinc-300 font-medium"
                       />
                     )}
@@ -295,7 +295,6 @@ function Balances({ data }) {
                           {price > 0 && (
                             <Number
                               value={price}
-                              format="0,0.00"
                               maxDecimals={2}
                               prefix="$"
                               className="text-zinc-400 dark:text-zinc-500 text-xs"
@@ -307,11 +306,7 @@ function Balances({ data }) {
                   </td>
                   <td className="px-3 py-4 text-right">
                     <div className="flex items-center justify-end">
-                      <Number
-                        value={d.amount}
-                        format="0,0.00"
-                        className="text-zinc-900 dark:text-zinc-100 text-xs font-semibold"
-                      />
+                      <Number value={d.amount} className="text-zinc-900 dark:text-zinc-100 text-xs font-semibold" />
                     </div>
                   </td>
                   <td className="pl-3 pr-4 sm:pr-0 py-4 text-right">
@@ -319,7 +314,6 @@ function Balances({ data }) {
                       {price > 0 && (
                         <Number
                           value={d.amount * price}
-                          format="0,0.00"
                           prefix="$"
                           noTooltip={true}
                           className="text-xs font-medium"
@@ -413,7 +407,7 @@ function Delegations({ data }) {
                 Amount
               </th>
               {tab === 'unstakings' && (
-                <th scope="col" className="pl-3 pr-4 sm:pr-0 py-2 text-right whitespace-nowrap">
+                <th scope="col" className="whitespace-nowrap pl-3 pr-4 sm:pr-0 py-2 text-right">
                   Available at
                 </th>
               )}
@@ -440,11 +434,7 @@ function Delegations({ data }) {
                   </td>
                   <td className={clsx('text-right', tab === 'unstakings' ? 'px-3 py-4' : 'pl-3 pr-4 sm:pr-0 py-4')}>
                     <div className="flex items-center justify-end">
-                      <Number
-                        value={d.amount}
-                        format="0,0.00"
-                        className="text-zinc-900 dark:text-zinc-100 text-xs font-semibold"
-                      />
+                      <Number value={d.amount} className="text-zinc-900 dark:text-zinc-100 text-xs font-semibold" />
                     </div>
                   </td>
                   {tab === 'unstakings' && (

@@ -82,7 +82,7 @@ export function TVL() {
                     />
                   </div>
                 </th>
-                <th scope="col" className="px-3 py-4 text-left whitespace-nowrap">
+                <th scope="col" className="whitespace-nowrap px-3 py-4 text-left">
                   <div className="flex flex-col gap-y-0.5">
                     <span className="whitespace-nowrap">Native Chain</span>
                     <div className="h-4" />

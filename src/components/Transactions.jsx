@@ -24,7 +24,7 @@ import { getParams, getQueryString, Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
 import { searchTransactions, getTransactions } from '@/lib/api/validator'
 import { searchDepositAddresses } from '@/lib/api/token-transfer'
-import { axelarContracts, getAssetData } from '@/lib/config'
+import { axelarContracts, getChainData, getAssetData } from '@/lib/config'
 import { getIcapAddress, getInputType, toJson, toHex, split, toArray } from '@/lib/parser'
 import { includesStringList } from '@/lib/operator'
 import { getAttributeValue } from '@/lib/cosmos'
@@ -638,7 +638,7 @@ export function Transactions({ height, address }) {
             <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
               <thead className="sticky top-0 z-10 bg-white dark:bg-zinc-900">
                 <tr className="text-zinc-800 dark:text-zinc-200 text-sm font-semibold">
-                  <th scope="col" className="pl-4 sm:pl-0 pr-3 py-3.5 text-left whitespace-nowrap">
+                  <th scope="col" className="whitespace-nowrap pl-4 sm:pl-0 pr-3 py-3.5 text-left">
                     Tx Hash
                   </th>
                   {!height && (
@@ -729,7 +729,7 @@ export function Transactions({ height, address }) {
                           <Number
                             value={formatUnits(_.head(d.tx?.auth_info.fee.amount)?.amount, 6)}
                             format="0,0.00000000"
-                            suffix=" AXL"
+                            suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
                             noTooltip={true}
                             className="text-zinc-700 dark:text-zinc-300 text-xs font-medium"
                           />

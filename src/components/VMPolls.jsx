@@ -235,7 +235,7 @@ export function VMPolls() {
   const [searchResults, setSearchResults] = useState(null)
   const [refresh, setRefresh] = useState(null)
   const [blockData, setBlockData] = useState(null)
-  const { chains, verifiers } = useGlobalStore()
+  const { chains } = useGlobalStore()
 
   useEffect(() => {
     const _params = getParams(searchParams, size)

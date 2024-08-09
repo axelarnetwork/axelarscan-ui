@@ -17,7 +17,7 @@ import { Number } from '@/components/Number'
 import { Profile } from '@/components/Profile'
 import { TimeAgo } from '@/components/Time'
 import { useGlobalStore } from '@/components/Global'
-import { getRPCStatus, searchVMPolls, getVerifiersRewards, searchVerifiersRewards } from '@/lib/api/validator'
+import { getRPCStatus, searchVMPolls, searchVMProofs, getVerifiersSigns, getVerifiersRewards, searchVerifiersRewards } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
 import { toArray } from '@/lib/parser'
 import { equalsIgnoreCase } from '@/lib/string'
@@ -149,7 +149,6 @@ function Info({ data, rewards, cumulativeRewards, address }) {
                                       {isNumber(v.amount) && (
                                         <Number
                                           value={v.amount}
-                                          format="0,0.00"
                                           prefix=": "
                                           noTooltip={true}
                                           className="text-xs font-medium"
@@ -173,7 +172,6 @@ function Info({ data, rewards, cumulativeRewards, address }) {
                                   <div className="flex items-center justify-end">
                                     <Number
                                       value={weight}
-                                      format="0,0.00"
                                       noTooltip={true}
                                       className="text-xs font-medium"
                                     />
@@ -214,7 +212,6 @@ function Info({ data, rewards, cumulativeRewards, address }) {
                 >
                   <Number
                     value={cumulativeRewards.total_rewards}
-                    format="0,0.00"
                     suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
                     noTooltip={true}
                     className="font-medium"
@@ -233,18 +230,18 @@ function Info({ data, rewards, cumulativeRewards, address }) {
                       <thead className="sticky top-0 z-10 bg-white dark:bg-zinc-900">
                         <tr className="text-zinc-800 dark:text-zinc-200 text-sm font-semibold">
                           <th scope="col" className="pl-4 sm:pl-3 pr-3 py-2.5 text-left">
-                            Epoch Count
+                            Height
                           </th>
+                          {/*<th scope="col" className="whitespace-nowrap px-3 py-2.5 text-left">
+                            Epoch Count
+                          </th>*/}
                           <th scope="col" className="px-3 py-2.5 text-left">
                             Chain
-                          </th>
-                          <th scope="col" className="px-3 py-2.5 text-left">
-                            Height
                           </th>
                           <th scope="col" className="px-3 py-2.5 text-right">
                             Payout
                           </th>
-                          <th scope="col" className="pl-3 pr-4 sm:pr-3 px-3 py-2.5 text-right">
+                          <th scope="col" className="whitespace-nowrap pl-3 pr-4 sm:pr-3 px-3 py-2.5 text-right">
                             Payout at
                           </th>
                         </tr>
@@ -255,6 +252,19 @@ function Info({ data, rewards, cumulativeRewards, address }) {
                           return (
                             <tr key={i} className="align-top text-zinc-400 dark:text-zinc-500 text-xs">
                               <td className="pl-4 sm:pl-3 pr-3 py-3 text-left">
+                                <div className="flex flex-col gap-y-0.5">
+                                  <Copy size={16} value={d.height}>
+                                    <Link
+                                      href={`/block/${d.height}`}
+                                      target="_blank"
+                                      className="text-blue-600 dark:text-blue-500 font-semibold"
+                                    >
+                                      <Number value={d.height} className="text-xs" />
+                                    </Link>
+                                  </Copy>
+                                </div>
+                              </td>
+                              {/*<td className="px-3 py-3">
                                 <Copy size={16} value={d.epoch_count}>
                                   <Number
                                     value={d.epoch_count}
@@ -262,7 +272,7 @@ function Info({ data, rewards, cumulativeRewards, address }) {
                                     className="text-zinc-900 dark:text-zinc-100 text-xs font-medium"
                                   />
                                 </Copy>
-                              </td>
+                              </td>*/}
                               <td className="px-3 py-3">
                                 <div className="flex items-center">
                                   {name ?
@@ -278,26 +288,9 @@ function Info({ data, rewards, cumulativeRewards, address }) {
                                   }
                                 </div>
                               </td>
-                              <td className="px-3 py-3">
-                                <div className="flex flex-col gap-y-0.5">
-                                  <Copy size={16} value={d.height}>
-                                    <Link
-                                      href={`/block/${d.height}`}
-                                      target="_blank"
-                                      className="text-blue-600 dark:text-blue-500 font-semibold"
-                                    >
-                                      <Number value={d.height} className="text-xs" />
-                                    </Link>
-                                  </Copy>
-                                </div>
-                              </td>
                               <td className="px-3 py-3 text-right">
                                 <div className="flex items-center justify-end">
-                                  <Number
-                                    value={d.amount}
-                                    format="0,0.00"
-                                    className="text-zinc-900 dark:text-zinc-100 text-xs font-semibold"
-                                  />
+                                  <Number value={d.amount} className="text-zinc-900 dark:text-zinc-100 text-xs font-semibold" />
                                 </div>
                               </td>
                               <td className="pl-3 pr-4 sm:pr-3 py-3 text-right">
@@ -344,13 +337,12 @@ function Votes({ data }) {
             VM Votes
           </h3>
           <p className="text-zinc-400 dark:text-zinc-500 text-xs leading-5">
-            Latest {numberFormat(size, '0,0')} Polls ({numberFormat(NUM_LATEST_BLOCKS, '0,0')} Blocks)
+            Latest {numberFormat(size, '0,0')} Polls{/* ({numberFormat(NUM_LATEST_BLOCKS, '0,0')} Blocks)*/}
           </p>
         </div>
         <div className="flex flex-col items-end">
           <Number
             value={data.filter(d => typeof d.vote === 'boolean').length * 100 / data.length}
-            format="0,0.00"
             suffix="%"
             className="text-zinc-900 dark:text-zinc-100 text-sm font-semibold leading-6"
           />
@@ -383,12 +375,65 @@ function Votes({ data }) {
   )
 }
 
+function Signs({ data }) {
+  const { chains } = useGlobalStore()
+  const totalSigned = toArray(data).filter(d => typeof d.sign === 'boolean' && d.sign).length
+  const totalUN = toArray(data).filter(d => typeof d.sign !== 'boolean').length
+  const totalSigns = Object.fromEntries(Object.entries({ S: totalSigned, UN: totalUN }).filter(([k, v]) => v || k === 'S'))
+
+  return data?.length > 0 && (
+    <div className="flex flex-col gap-y-2 my-2.5">
+      <div className="flex justify-between gap-x-4 pr-1">
+        <div className="flex flex-col">
+          <h3 className="text-zinc-900 dark:text-zinc-100 text-sm font-semibold leading-6">
+            VM Signings
+          </h3>
+          <p className="text-zinc-400 dark:text-zinc-500 text-xs leading-5">
+            Latest {numberFormat(size, '0,0')} Signings{/* ({numberFormat(NUM_LATEST_BLOCKS, '0,0')} Blocks)*/}
+          </p>
+        </div>
+        <div className="flex flex-col items-end">
+          <Number
+            value={data.filter(d => typeof d.sign === 'boolean').length * 100 / data.length}
+            suffix="%"
+            className="text-zinc-900 dark:text-zinc-100 text-sm font-semibold leading-6"
+          />
+          <Number
+            value={data.length}
+            format="0,0"
+            prefix={`${Object.keys(totalSigns).length > 1 ? '(' : ''}${Object.entries(totalSigns).map(([k, v]) => `${numberFormat(v, '0,0')}${k === 'S' ? '' : k}`).join(' : ')}${Object.keys(totalSigns).length > 1 ? ')' : ''}/`}
+            className="text-zinc-400 dark:text-zinc-500 text-xs leading-5"
+          />
+        </div>
+      </div>
+      <div className="flex flex-wrap">
+        {data.map((d, i) => {
+          const { name } = { ...getChainData(d.chain || d.destination_chain, chains) }
+          return (
+            <Link
+              key={i}
+              href={d.id ? `/vm-proof/${d.id}` : `/block/${d.height}`}
+              target="_blank"
+              className="w-5 h-5"
+            >
+              <Tooltip content={d.session_id ? `Session ID: ${d.session_id} (${name})` : numberFormat(d.height, '0,0')} className="whitespace-nowrap">
+                <div className={clsx('w-4 h-4 rounded-sm m-0.5', typeof d.sign === 'boolean' ? d.sign ? 'bg-green-600 dark:bg-green-500' : 'bg-red-600 dark:bg-red-500' : 'bg-zinc-300 dark:bg-zinc-700')} />
+              </Tooltip>
+            </Link>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 const size = 200
 const NUM_LATEST_BLOCKS = 10000
 
 export function Verifier({ address }) {
   const [data, setData] = useState(null)
   const [votes, setVotes] = useState(null)
+  const [signs, setSigns] = useState(null)
   const [rewards, setRewards] = useState(null)
   const [cumulativeRewards, setCumulativeRewards] = useState(null)
   const { chains, verifiers } = useGlobalStore()
@@ -410,15 +455,28 @@ export function Verifier({ address }) {
         const { latest_block_height } = { ...await getRPCStatus() }
 
         if (latest_block_height) {
-          await Promise.all(['votes', 'rewards', 'cumulative_rewards'].map(d => new Promise(async resolve => {
+          await Promise.all(['votes', 'signs', 'rewards', 'cumulative_rewards'].map(d => new Promise(async resolve => {
             switch (d) {
               case 'votes':
                 try {
                   const toBlock = latest_block_height - 1
-                  const fromBlock = toBlock - NUM_LATEST_BLOCKS
+                  const fromBlock = 1 // toBlock - NUM_LATEST_BLOCKS
 
                   const data = verifierAddress && (await searchVMPolls({ voter: verifierAddress, fromBlock, toBlock, size }))?.data
                   setVotes(toArray(data).map(d => Object.fromEntries(
+                    Object.entries(d).filter(([k, v]) => !k.startsWith('axelar') || equalsIgnoreCase(k, verifierAddress)).flatMap(([k, v]) =>
+                      equalsIgnoreCase(k, verifierAddress) ? Object.entries({ ...v }).map(([_k, _v]) => [_k === 'id' ? 'txhash' : _k, _v]) : [[k, v]]
+                    )
+                  )))
+                } catch (error) {}
+                break
+              case 'signs':
+                try {
+                  const toBlock = latest_block_height - 1
+                  const fromBlock = 1 // toBlock - NUM_LATEST_BLOCKS
+
+                  const data = verifierAddress && (await searchVMProofs({ signer: verifierAddress, fromBlock, toBlock, size }))?.data
+                  setSigns(toArray(data).map(d => Object.fromEntries(
                     Object.entries(d).filter(([k, v]) => !k.startsWith('axelar') || equalsIgnoreCase(k, verifierAddress)).flatMap(([k, v]) =>
                       equalsIgnoreCase(k, verifierAddress) ? Object.entries({ ...v }).map(([_k, _v]) => [_k === 'id' ? 'txhash' : _k, _v]) : [[k, v]]
                     )
@@ -461,9 +519,10 @@ export function Verifier({ address }) {
               address={address}
             />
           </div>
-          {!votes ? <Spinner /> :
+          {!(votes || signs) ? <Spinner /> :
             <div className="flex flex-col gap-y-4">
               <Votes data={votes} />
+              <Signs data={signs} />
             </div>
           }
         </div>

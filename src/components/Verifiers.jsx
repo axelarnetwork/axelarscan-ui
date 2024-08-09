@@ -12,7 +12,7 @@ import { Spinner } from '@/components/Spinner'
 import { Number } from '@/components/Number'
 import { Profile } from '@/components/Profile'
 import { useGlobalStore } from '@/components/Global'
-import { getVerifiersVotes } from '@/lib/api/validator'
+import { getVerifiersVotes, getVerifiersSigns } from '@/lib/api/validator'
 import { ENVIRONMENT } from '@/lib/config'
 import { toArray } from '@/lib/parser'
 import { equalsIgnoreCase } from '@/lib/string'
@@ -20,6 +20,7 @@ import { toNumber, numberFormat } from '@/lib/number'
 
 export function Verifiers() {
   const [verifiersVotes, setVerifiersVotes] = useState(null)
+  const [verifiersSigns, setVerifiersSigns] = useState(null)
   const [data, setData] = useState(null)
   const { chains, verifiers, verifiersByChain } = useGlobalStore()
 
@@ -32,7 +33,15 @@ export function Verifiers() {
   }, [setVerifiersVotes])
 
   useEffect(() => {
-    if (verifiersVotes && verifiers) {
+    const getData = async () => {
+      const response = await getVerifiersSigns()
+      if (response?.data) setVerifiersSigns(response)
+    }
+    getData()
+  }, [setVerifiersSigns])
+
+  useEffect(() => {
+    if (verifiersVotes && verifiersSigns && verifiers) {
       const _data = verifiers.map(d => {
         if (verifiersVotes?.data) {
           d.total_polls = toNumber(verifiersVotes.total)
@@ -44,12 +53,27 @@ export function Verifiers() {
           d.total_no_votes = getVoteCount(false, d.votes.chains)
           d.total_unsubmitted_votes = getVoteCount('unsubmitted', d.votes.chains)
         }
-        return { ...d, votes: d.votes && { ...d.votes, chains: Object.fromEntries(Object.entries({ ...d.votes.chains }).filter(([k, v]) => toArray(d.supportedChains).includes(k))) } }
+
+        if (verifiersSigns?.data) {
+          d.total_proofs = toNumber(verifiersSigns.total)
+          d.signs = { ...verifiersSigns.data[d.address] }
+          d.total_signs = toNumber(d.signs.total)
+
+          const getSignCount = (sign, signs) => _.sum(Object.values({ ...signs }).map(v => toNumber(_.last(Object.entries({ ...v?.signs }).find(([k, v]) => equalsIgnoreCase(k, sign?.toString()))))))
+          d.total_signed_signs = getSignCount(true, d.signs.chains)
+          d.total_unsubmitted_signs = getSignCount('unsubmitted', d.signs.chains)
+        }
+
+        return {
+          ...d,
+          votes: d.votes && { ...d.votes, chains: Object.fromEntries(Object.entries({ ...d.votes.chains }).filter(([k, v]) => toArray(d.supportedChains).includes(k))) },
+          signs: d.signs && { ...d.signs, chains: Object.fromEntries(Object.entries({ ...d.signs.chains }).filter(([k, v]) => toArray(d.supportedChains).includes(k))) },
+        }
       })
 
       if (!_.isEqual(_data, data)) setData(_data)
     }
-  }, [verifiersVotes, data, verifiers, setData])
+  }, [verifiersVotes, verifiersSigns, data, verifiers, setData])
 
   const vmChains = toArray(chains).filter(c => c.chain_type === 'vm' && !c.deprecated)
   return (
@@ -84,7 +108,7 @@ export function Verifiers() {
                   <th scope="col" className="px-3 py-3.5 text-left">
                     Verifier
                   </th>
-                  <th scope="col" className="pl-3 pr-4 sm:pr-0 py-3.5 text-left whitespace-nowrap">
+                  <th scope="col" className="whitespace-nowrap pl-3 pr-4 sm:pr-0 py-3.5 text-left">
                     VM Supported
                   </th>
                 </tr>
@@ -101,17 +125,17 @@ export function Verifiers() {
                       </div>
                     </td>
                     <td className="table-cell pl-3 pr-4 sm:pr-0 py-4 text-left">
-                      <div className={clsx('grid grid-cols-2 lg:grid-cols-3 gap-x-2 gap-y-1', Object.entries({ ...verifiersByChain }).filter(([k, v]) => vmChains.findIndex(d => d.id === k) < 0 && toArray(v.addresses).length > 0).length > 0 ? 'min-w-md lg:min-w-56 max-w-xl' : 'min-w-56 max-w-88')}>
+                      <div className={clsx('grid grid-cols-2 lg:grid-cols-3 gap-x-2 gap-y-1', Object.entries({ ...verifiersByChain }).filter(([k, v]) => vmChains.findIndex(d => d.id === k) < 0 && toArray(v.addresses).length > 0).length > 0 ? 'min-w-md lg:min-w-56 max-w-xl' : 'min-w-56 max-w-3xl')}>
                         {_.concat(vmChains, Object.entries({ ...verifiersByChain }).filter(([k, v]) => vmChains.findIndex(d => d.id === k) < 0 && toArray(v.addresses).length > 0).map(([k, v]) => k)).map(c => {
                           const { id, maintainer_id, name, image } = { ...(typeof c === 'string' ? { id: c, maintainer_id: c, name: c } : c) }
                           const { votes, total, total_polls } = { ...d.votes.chains[id] }
+                          const { signs, total_proofs } = { ...d.signs.chains[id] }
                           const isSupported = d.supportedChains.includes(maintainer_id)
-                          const details = !isSupported ? 'Not Supported' : ['true', 'false', 'unsubmitted'].map(s => [s === 'true' ? 'Y' : s === 'false' ? 'N' : 'UN', votes?.[s]]).filter(([k, v]) => v).map(([k, v]) => `${numberFormat(v, '0,0')}${k}`).join(' / ')
 
                           return (
                             <div key={id} className="flex justify-start">
-                              <Tooltip content={`${name}${details ? `: ${details}` : ''}`} className="whitespace-nowrap">
-                                <div className="flex items-center gap-x-2">
+                              <div className="flex items-center gap-x-2">
+                                <Tooltip content={`${name}${!isSupported ? `: Not Supported` : ''}`} className="whitespace-nowrap">
                                   {image ?
                                     <Image
                                       src={image}
@@ -121,28 +145,51 @@ export function Verifiers() {
                                     /> :
                                     <span className="whitespace-nowrap text-zinc-900 dark:text-zinc-100 text-xs">{name}</span>
                                   }
-                                  {!isSupported ?
-                                    <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium whitespace-nowrap">
-                                      Not Supported
-                                    </span> :
-                                    <div className="flex items-center gap-x-1">
-                                      <Number
-                                        value={total || 0}
-                                        format="0,0.0a"
-                                        noTooltip={true}
-                                        className={clsx('text-xs font-medium', total < total_polls ? 'text-zinc-400 dark:text-zinc-500' : 'text-zinc-900 dark:text-zinc-100')}
-                                      />
-                                      <Number
-                                        value={total_polls || 0}
-                                        format="0,0.0a"
-                                        prefix=" / "
-                                        noTooltip={true}
-                                        className="text-zinc-900 dark:text-zinc-100 text-xs font-medium"
-                                      />
-                                    </div>
-                                  }
-                                </div>
-                              </Tooltip>
+                                </Tooltip>
+                                {!isSupported ?
+                                  <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium whitespace-nowrap">
+                                    Not Supported
+                                  </span> :
+                                  <div className="flex items-center gap-x-4">
+                                    <Tooltip content={['true', 'false', 'unsubmitted'].map(s => [s === 'true' ? 'Y' : s === 'false' ? 'N' : 'UN', votes?.[s]]).map(([k, v]) => `${numberFormat(v, '0,0')}${k}`).join(' / ')} className="whitespace-nowrap">
+                                      <div className="flex items-center gap-x-1">
+                                        <Number
+                                          value={total || 0}
+                                          format="0,0.0a"
+                                          prefix="Voting: "
+                                          noTooltip={true}
+                                          className={clsx('text-xs font-medium', total < total_polls ? 'text-zinc-400 dark:text-zinc-500' : 'text-zinc-900 dark:text-zinc-100')}
+                                        />
+                                        <Number
+                                          value={total_polls || 0}
+                                          format="0,0.0a"
+                                          prefix=" / "
+                                          noTooltip={true}
+                                          className="text-zinc-900 dark:text-zinc-100 text-xs font-medium"
+                                        />
+                                      </div>
+                                    </Tooltip>
+                                    <Tooltip content={['true', 'unsubmitted'].map(s => [s === 'true' ? ' Signed' : 'UN', signs?.[s]]).map(([k, v]) => `${numberFormat(v, '0,0')}${k}`).join(' / ')} className="whitespace-nowrap">
+                                      <div className="flex items-center gap-x-1">
+                                        <Number
+                                          value={d.signs.chains[id]?.total || 0}
+                                          format="0,0.0a"
+                                          prefix="Signing: "
+                                          noTooltip={true}
+                                          className={clsx('text-xs font-medium', d.signs.chains[id]?.total < total_proofs ? 'text-zinc-400 dark:text-zinc-500' : 'text-zinc-900 dark:text-zinc-100')}
+                                        />
+                                        <Number
+                                          value={total_proofs || 0}
+                                          format="0,0.0a"
+                                          prefix=" / "
+                                          noTooltip={true}
+                                          className="text-zinc-900 dark:text-zinc-100 text-xs font-medium"
+                                        />
+                                      </div>
+                                    </Tooltip>
+                                  </div>
+                                }
+                              </div>
                             </div>
                           )
                         })}

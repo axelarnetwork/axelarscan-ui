@@ -543,7 +543,6 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                   {(data.originData?.fees || fees)?.source_token?.token_price?.usd > 0 && (
                     <Number
                       value={((data.originData?.gas || gas).gas_paid_amount - ((data.originData?.refunded || refunded)?.receipt?.status ? isNumber((data.originData?.refunded || refunded).amount) ? (data.originData?.refunded || refunded).amount : (data.originData?.gas || gas).gas_remain_amount : 0)) * (data.originData?.fees || fees).source_token.token_price.usd}
-                      format="0,0.00"
                       prefix="($"
                       suffix=")"
                       noTooltip={true}
@@ -571,7 +570,6 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                       {(data.originData?.fees || fees)?.source_token?.token_price?.usd > 0 && (
                         <Number
                           value={(data.originData ? data.originData.gas?.gas_paid_amount : gas_paid ? gas.gas_paid_amount : gas_paid_to_callback * fees.source_token.gas_price) * (data.originData?.fees || fees).source_token.token_price.usd}
-                          format="0,0.00"
                           prefix="($"
                           suffix=")"
                           noTooltip={true}
@@ -602,7 +600,6 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                       {(data.originData?.fees || fees)?.source_token?.token_price?.usd > 0 && (
                         <Number
                           value={(data.originData?.gas || gas).gas_used_amount * (data.originData?.fees || fees).source_token.token_price.usd}
-                          format="0,0.00"
                           prefix="($"
                           suffix=")"
                           noTooltip={true}
@@ -635,7 +632,6 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                   {d.fees.base_fee_usd > 0 && (
                                     <Number
                                       value={d.fees.base_fee_usd}
-                                      format="0,0.00"
                                       prefix="($"
                                       suffix=")"
                                       noTooltip={true}
@@ -657,7 +653,6 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                       {d.fees.source_token?.token_price?.usd > 0 > 0 && (
                                         <Number
                                           value={d.fees.source_confirm_fee * d.fees.source_token.token_price.usd}
-                                          format="0,0.00"
                                           prefix="($"
                                           suffix=")"
                                           noTooltip={true}
@@ -677,7 +672,6 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                       {d.fees.source_token?.token_price?.usd > 0 > 0 && (
                                         <Number
                                           value={(d.fees.base_fee - d.fees.source_confirm_fee) * d.fees.source_token.token_price.usd}
-                                          format="0,0.00"
                                           prefix="($"
                                           suffix=")"
                                           noTooltip={true}
@@ -714,7 +708,6 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                   {d.fees.express_fee_usd > 0 && (
                                     <Number
                                       value={d.fees.express_fee_usd}
-                                      format="0,0.00"
                                       prefix="($"
                                       suffix=")"
                                       noTooltip={true}
@@ -737,7 +730,6 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                         {d.fees.source_express_fee.relayer_fee_usd > 0 && (
                                           <Number
                                             value={d.fees.source_express_fee.relayer_fee_usd}
-                                            format="0,0.00"
                                             prefix="($"
                                             suffix=")"
                                             noTooltip={true}
@@ -759,7 +751,6 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                         {d.fees.source_express_fee.express_gas_overhead_fee_usd > 0 && (
                                           <Number
                                             value={d.fees.source_express_fee.express_gas_overhead_fee_usd}
-                                            format="0,0.00"
                                             prefix="($"
                                             suffix=")"
                                             noTooltip={true}
@@ -795,7 +786,6 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                             {fees.base_fee_usd > 0 && (
                               <Number
                                 value={fees.base_fee_usd}
-                                format="0,0.00"
                                 prefix="($"
                                 suffix=")"
                                 noTooltip={true}
@@ -817,7 +807,6 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                 {fees.source_token?.token_price?.usd > 0 > 0 && (
                                   <Number
                                     value={fees.source_confirm_fee * fees.source_token.token_price.usd}
-                                    format="0,0.00"
                                     prefix="($"
                                     suffix=")"
                                     noTooltip={true}
@@ -837,7 +826,6 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                 {fees.source_token?.token_price?.usd > 0 > 0 && (
                                   <Number
                                     value={(fees.base_fee - fees.source_confirm_fee) * fees.source_token.token_price.usd}
-                                    format="0,0.00"
                                     prefix="($"
                                     suffix=")"
                                     noTooltip={true}
@@ -890,7 +878,6 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                   {fees.source_express_fee.relayer_fee_usd > 0 && (
                                     <Number
                                       value={fees.source_express_fee.relayer_fee_usd}
-                                      format="0,0.00"
                                       prefix="($"
                                       suffix=")"
                                       noTooltip={true}
@@ -912,7 +899,6 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                   {fees.source_express_fee.express_gas_overhead_fee_usd > 0 && (
                                     <Number
                                       value={fees.source_express_fee.express_gas_overhead_fee_usd}
-                                      format="0,0.00"
                                       prefix="($"
                                       suffix=")"
                                       noTooltip={true}

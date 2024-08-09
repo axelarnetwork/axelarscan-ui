@@ -7,29 +7,27 @@ import { useForm } from 'react-hook-form'
 import { Dialog, Listbox, Transition } from '@headlessui/react'
 import clsx from 'clsx'
 import _ from 'lodash'
-import { MdOutlineRefresh, MdOutlineFilterList, MdClose, MdCheck, MdOutlineTimer } from 'react-icons/md'
+import { MdOutlineRefresh, MdOutlineFilterList, MdClose, MdCheck } from 'react-icons/md'
 import { LuChevronsUpDown } from 'react-icons/lu'
-import { PiWarningCircle } from 'react-icons/pi'
 
 import { Container } from '@/components/Container'
 import { Overlay } from '@/components/Overlay'
 import { Button } from '@/components/Button'
 import { DateRangePicker } from '@/components/DateRangePicker'
-import { Image } from '@/components/Image'
 import { Copy } from '@/components/Copy'
+import { Tooltip } from '@/components/Tooltip'
 import { Spinner } from '@/components/Spinner'
 import { Tag } from '@/components/Tag'
 import { Number } from '@/components/Number'
-import { Profile, ChainProfile } from '@/components/Profile'
+import { ChainProfile } from '@/components/Profile'
 import { ExplorerLink } from '@/components/ExplorerLink'
-import { TimeAgo, TimeSpent } from '@/components/Time'
+import { TimeAgo } from '@/components/Time'
 import { getParams, getQueryString, Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
-import { searchTransfers } from '@/lib/api/token-transfer'
-import { ENVIRONMENT, getAssetData } from '@/lib/config'
+import { getRPCStatus, searchVMProofs } from '@/lib/api/validator'
+import { getChainData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
-import { isString, equalsIgnoreCase, capitalize, toBoolean, ellipse, toTitle } from '@/lib/string'
-import { isNumber, formatUnits } from '@/lib/number'
+import { equalsIgnoreCase, capitalize, toBoolean, headString, ellipse, toTitle } from '@/lib/string'
 
 const size = 25
 
@@ -40,7 +38,7 @@ function Filters() {
   const [open, setOpen] = useState(false)
   const [params, setParams] = useState(getParams(searchParams, size))
   const { handleSubmit } = useForm()
-  const { chains, assets } = useGlobalStore()
+  const { chains } = useGlobalStore()
 
   const onSubmit = (e1, e2, _params) => {
     _params = _params || params
@@ -56,19 +54,17 @@ function Filters() {
     setParams(getParams(searchParams, size))
   }
 
-  const attributes = [
-    { label: 'Tx Hash', name: 'txHash' },
-    { label: 'Source Chain', name: 'sourceChain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
-    { label: 'Destination Chain', name: 'destinationChain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
-    { label: 'From / To Chain', name: 'chain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
-    { label: 'Asset', name: 'asset', type: 'select', multiple: true, options: _.orderBy(toArray(assets).map(d => ({ value: d.id, title: d.symbol })), ['title'], ['asc']) },
-    { label: 'Type', name: 'type', type: 'select', options: _.concat({ title: 'Any' }, [{ value: 'deposit_address', title: 'Deposit Address' }, { value: 'send_token', title: 'Send Token' }, { value: 'wrap', title: 'Wrap' }, { value: 'unwrap', title: 'Unwrap' }, { value: 'erc20_transfer', title: 'ERC20 Transfer' }]) },
-    { label: 'Status', name: 'status', type: 'select', options: _.concat({ title: 'Any' }, ['executed', 'failed'].map(d => ({ value: d, title: capitalize(d) }))) },
-    { label: 'Sender', name: 'senderAddress' },
-    { label: 'Recipient', name: 'recipientAddress' },
+  const attributes = toArray([
+    { label: 'Session ID', name: 'sessionId' },
+    { label: 'Message ID', name: 'messageId' },
+    { label: 'Chain', name: 'chain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).filter(d => d.chain_type === 'vm' && (!d.no_inflation || d.deprecated)).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
+    { label: 'Multisig Prover Contract Address', name: 'multisigProverContractAddress' },
+    { label: 'Multisig Contract Address', name: 'multisigContractAddress' },
+    { label: 'Status', name: 'status', type: 'select', multiple: true, options: _.concat({ title: 'Any' }, ['completed', 'failed', 'pending'].map(d => ({ value: d, title: capitalize(d) }))) },
+    { label: 'Signer (Verifier Address)', name: 'signer' },
+    params.signer && { label: 'Sign', name: 'sign', type: 'select', options: _.concat({ title: 'Any' }, ['signed', 'unsubmitted'].map(d => ({ value: d, title: capitalize(d) }))) },
     { label: 'Time', name: 'time', type: 'datetimeRange' },
-    { label: 'Sort By', name: 'sortBy', type: 'select', options: _.concat({ title: 'Any' }, [{ value: 'time', title: 'Transfer Time' }, { value: 'value', title: 'Transfer Value' }]) },
-  ]
+  ])
 
   const filtered = Object.keys(params).filter(k => !['from'].includes(k)).length > 0
   return (
@@ -232,46 +228,67 @@ function Filters() {
   )
 }
 
-export const normalizeType = type => ['wrap', 'unwrap', 'erc20_transfer'].includes(type) ? 'deposit_service' : type || 'deposit_address'
-
 const generateKeyFromParams = params => JSON.stringify(params)
 
-export function Transfers({ address }) {
+export function VMProofs() {
   const searchParams = useSearchParams()
   const [params, setParams] = useState(null)
   const [searchResults, setSearchResults] = useState(null)
   const [refresh, setRefresh] = useState(null)
-  const { assets } = useGlobalStore()
+  const [blockData, setBlockData] = useState(null)
+  const { chains } = useGlobalStore()
 
   useEffect(() => {
     const _params = getParams(searchParams, size)
-    if (address) _params.address = address
     if (!_.isEqual(_params, params)) {
       setParams(_params)
       setRefresh(true)
     }
-  }, [address, searchParams, params, setParams])
+  }, [searchParams, params, setParams])
 
   useEffect(() => {
     const getData = async () => {
-      if (params && toBoolean(refresh)) {
-        const sort = params.sortBy === 'value' ? { 'send.value': 'desc' } : undefined
-        if (params.from === 0) delete params.from
-        const _params = _.cloneDeep(params)
-        delete _params.sortBy
+      if (params && toBoolean(refresh) && blockData) {
+        const { data, total } = { ...await searchVMProofs({ ...params, size }) }
 
-        const response = await searchTransfers({ ..._params, size, sort })
-        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: { ...(response?.total || (Object.keys(_params).length > 0 && !(Object.keys(_params).length === 1 && _params.from !== undefined)) || ENVIRONMENT !== 'mainnet' ? response : searchResults?.[generateKeyFromParams(params)]) } })
-        setRefresh(!isNumber(response?.total) && !searchResults?.[generateKeyFromParams(params)] && ENVIRONMENT === 'mainnet' ? true : false)
+        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: {
+          data: _.orderBy(toArray(data).map(d => {
+            const signs = []
+            Object.entries(d).filter(([k, v]) => k.startsWith('axelar')).forEach(([k, v]) => signs.push(v))
+
+            let signOptions = Object.entries(_.groupBy(toArray(signs).map(s => ({ ...s, option: s.sign ? 'signed' : 'unsubmitted' })), 'option')).map(([k, v]) => {
+              return {
+                option: k,
+                value: toArray(v).length,
+                signers: toArray(toArray(v).map(_v => _v.signer)),
+              }
+            }).filter(v => v.value).map(v => ({ ...v, i: v.option === 'signed' ? 0 : 1 }))
+
+            if (toArray(d.participants).length > 0 && signOptions.findIndex(s => s.option === 'unsubmitted') < 0 && _.sumBy(signOptions, 'value') < d.participants.length) {
+              signOptions.push({ option: 'unsubmitted', value: d.participants.length - _.sumBy(signOptions, 'value') })
+            }
+            signOptions = _.orderBy(signOptions, ['i'], ['asc'])
+
+            return {
+              ...d,
+              status: d.success ? 'completed' : d.failed ? 'failed' : d.expired || d.expired_height < blockData.latest_block_height ? 'expired' : 'pending',
+              height: _.minBy(signs, 'height')?.height || d.height,
+              signs: _.orderBy(signs, ['height', 'created_at'], ['desc', 'desc']),
+              signOptions,
+            }
+          }), ['created_at.ms'], ['desc']),
+          total,
+        } })
+        setRefresh(false)
       }
     }
     getData()
-  }, [params, setSearchResults, refresh, setRefresh])
+  }, [params, setSearchResults, refresh, setRefresh, blockData])
 
   useEffect(() => {
-    const interval = setInterval(() => setRefresh('true'), 0.5 * 60 * 1000)
-    return () => clearInterval(interval)
-  }, [])
+    const getData = async () => setBlockData(await getRPCStatus())
+    getData()
+  }, [setBlockData])
 
   const { data, total } = { ...searchResults?.[generateKeyFromParams(params)] }
   return (
@@ -280,14 +297,14 @@ export function Transfers({ address }) {
         <div>
           <div className="flex items-center justify-between gap-x-4">
             <div className="sm:flex-auto">
-              <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">Token Transfers</h1>
+              <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">VM Proofs</h1>
               <p className="mt-2 text-zinc-400 dark:text-zinc-500 text-sm">
                 <Number value={total} suffix={` result${total > 1 ? 's' : ''}`} /> 
               </p>
             </div>
             <div className="flex items-center gap-x-2">
-              {!address && <Filters />}
-              {refresh && refresh !== 'true' ? <Spinner /> :
+              <Filters />
+              {refresh ? <Spinner /> :
                 <Button
                   color="default"
                   circle="true"
@@ -298,144 +315,132 @@ export function Transfers({ address }) {
               }
             </div>
           </div>
-          {refresh && refresh !== 'true' && <Overlay />}
+          {refresh && <Overlay />}
           <div className="overflow-x-auto lg:overflow-x-visible -mx-4 sm:-mx-0 mt-4">
             <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
               <thead className="sticky top-0 z-10 bg-white dark:bg-zinc-900">
                 <tr className="text-zinc-800 dark:text-zinc-200 text-sm font-semibold">
                   <th scope="col" className="whitespace-nowrap pl-4 sm:pl-0 pr-3 py-3.5 text-left">
-                    Tx Hash
+                    Session ID
                   </th>
                   <th scope="col" className="px-3 py-3.5 text-left">
-                    Method
+                    Messages
                   </th>
                   <th scope="col" className="px-3 py-3.5 text-left">
-                    Source
-                  </th>
-                  <th scope="col" className="px-3 py-3.5 text-left">
-                    Destination
+                    Height
                   </th>
                   <th scope="col" className="px-3 py-3.5 text-left">
                     Status
                   </th>
-                  <th scope="col" className="whitespace-nowrap pl-3 pr-4 sm:pr-0 py-3.5 text-right">
-                    Created at
+                  <th scope="col" className="px-3 py-3.5 text-left">
+                    Participations
+                  </th>
+                  <th scope="col" className="pl-3 pr-4 sm:pr-0 py-3.5 text-right">
+                    Time
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
                 {data.map(d => {
-                  const assetData = getAssetData(d.send.denom, assets)
-                  const { addresses } = { ...assetData }
-                  let { symbol, image } = { ...addresses?.[d.send.source_chain] }
-                  symbol = symbol || assetData?.symbol
-                  image = image || assetData?.image
-
-                  if (symbol) {
-                    switch (d.type) {
-                      case 'wrap':
-                        const WRAP_PREFIXES = ['w', 'axl']
-                        const index = WRAP_PREFIXES.findIndex(p => symbol.toLowerCase().startsWith(p) && !equalsIgnoreCase(p, symbol))
-                        if (index > -1) symbol = symbol.substring(WRAP_PREFIXES[index].length)
-                        break
-                      default:
-                        break
-                    }
-                  }
-
-                  const senderAddress = d.wrap?.sender_address || d.erc20_transfer?.sender_address || d.send?.sender_address
-                  const recipientAddress = d.unwrap?.recipient_address || d.link?.recipient_address
-
+                  const chain = d.chain || d.destination_chain
                   return (
-                    <tr key={d.send.txhash} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
+                    <tr key={d.id} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
                       <td className="pl-4 sm:pl-0 pr-3 py-4 text-left">
-                        <div className="flex items-center gap-x-1">
-                          <Copy value={d.send.txhash}>
+                        <div className="flex flex-col gap-y-0.5">
+                          <Copy value={`${chain}-${d.session_id}`}>
                             <Link
-                              href={`/transfer/${d.send.txhash}`}
+                              href={`/vm-proof/${d.id}`}
                               target="_blank"
                               className="text-blue-600 dark:text-blue-500 font-semibold"
                             >
-                              {ellipse(d.send.txhash, 4, '0x')}
+                              {chain}-{d.session_id}
                             </Link>
                           </Copy>
-                          <ExplorerLink value={d.send.txhash} chain={d.send.source_chain} />
-                        </div>
-                      </td>
-                      <td className="px-3 py-4 text-left">
-                        <div className="flex flex-col gap-y-1.5">
-                          <Tag className={clsx('w-fit capitalize')}>
-                            {toTitle(normalizeType(d.type))}
-                          </Tag>
-                          {symbol && (
-                            <div className="w-fit h-6 bg-zinc-100 dark:bg-zinc-800 rounded-xl flex items-center gap-x-1.5 px-2.5 py-1">
-                              <Image
-                                src={image}
-                                alt=""
-                                width={16}
-                                height={16}
-                              />
-                              {isNumber(d.send.amount) && assets ?
-                                <Number
-                                  value={isString(d.send.amount) ? formatUnits(d.send.amount, assetData?.decimals) : d.send.amount}
-                                  format="0,0.000000"
-                                  suffix={` ${symbol}`}
-                                  className="text-zinc-900 dark:text-zinc-100 text-xs font-medium"
-                                /> :
-                                <span className="text-zinc-900 dark:text-zinc-100 text-xs font-medium">
-                                  {symbol}
-                                </span>
-                              }
+                          {d.multisig_prover_contract_address && (
+                            <div className="flex items-center">
+                              <Tooltip content="Multisig Prover Contract" className="whitespace-nowrap">
+                                <Copy value={d.multisig_prover_contract_address}>
+                                  {ellipse(d.multisig_prover_contract_address)}
+                                </Copy>
+                              </Tooltip>
+                            </div>
+                          )}
+                          {d.multisig_contract_address && (
+                            <div className="flex items-center">
+                              <Tooltip content="Multisig Contract" className="whitespace-nowrap">
+                                <Copy value={d.multisig_contract_address}>
+                                  {ellipse(d.multisig_contract_address)}
+                                </Copy>
+                              </Tooltip>
                             </div>
                           )}
                         </div>
+                      </td>
+                      <td className="px-3 py-4 text-left">
+                        <div className="flex flex-col gap-y-0.5">
+                          {toArray(d.message_ids || { id: d.message_id, chain: d.source_chain }).map((m, i) => {
+                            const chainData = getChainData(m.chain, chains)
+                            const { url, transaction_path } = { ...chainData?.explorer }
+                            return (
+                              <div key={i} className="flex items-center gap-x-4">
+                                <ChainProfile value={m.chain} />
+                                <div className="flex items-center gap-x-1">
+                                  <Copy value={m.id}>
+                                      <Link
+                                        href={`${url}${transaction_path?.replace('{tx}', headString(m.id))}`}
+                                        target="_blank"
+                                        className="text-blue-600 dark:text-blue-500 font-semibold"
+                                      >
+                                        {ellipse(m.id)}
+                                      </Link>
+                                    </Copy>
+                                  <ExplorerLink value={headString(m.id)} chain={m.chain} />
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </td>
+                      <td className="px-3 py-4 text-left">
+                        {d.height && (
+                          <Link
+                            href={`/block/${d.height}`}
+                            target="_blank"
+                            className="text-blue-600 dark:text-blue-500 font-medium"
+                          >
+                            <Number value={d.height} />
+                          </Link>
+                        )}
                       </td>
                       <td className="px-3 py-4 text-left">
                         <div className="flex flex-col gap-y-1">
-                          <ChainProfile
-                            value={d.send.source_chain}
-                            className="h-6"
-                            titleClassName="font-semibold"
-                          />
-                          <Profile address={senderAddress} chain={d.send.source_chain} />
+                          {d.status && (
+                            <Tag className={clsx('w-fit capitalize', ['completed'].includes(d.status) ? 'bg-green-600 dark:bg-green-500' : ['failed'].includes(d.status) ? 'bg-red-600 dark:bg-red-500' : ['expired'].includes(d.status) ? 'bg-zinc-400 dark:bg-zinc-500' : 'bg-yellow-400 dark:bg-yellow-500')}>
+                              {d.status}
+                            </Tag>
+                          )}
                         </div>
                       </td>
                       <td className="px-3 py-4 text-left">
-                        <div className="flex flex-col gap-y-1">
-                          <ChainProfile
-                            value={d.send.destination_chain || d.link?.destination_chain}
-                            className="h-6"
-                            titleClassName="font-semibold"
-                          />
-                          <Profile address={recipientAddress} chain={d.send.destination_chain || d.link?.destination_chain} />
-                        </div>
-                      </td>
-                      <td className="px-3 py-4 text-left">
-                        <div className="flex flex-col gap-y-1.5">
-                          {d.simplified_status && (
-                            <div className="flex items-center space-x-1.5">
-                              <Tag className={clsx('w-fit capitalize', ['received'].includes(d.simplified_status) ? 'bg-green-600 dark:bg-green-500' : ['approved'].includes(d.simplified_status) ? 'bg-orange-500 dark:bg-orange-600' : ['failed'].includes(d.simplified_status) ? 'bg-red-600 dark:bg-red-500' : 'bg-yellow-400 dark:bg-yellow-500')}>
-                                {d.simplified_status}
-                              </Tag>
-                              {['received'].includes(d.simplified_status) && <ExplorerLink value={d.unwrap?.tx_hash_unwrap || d.command?.transactionHash || d.axelar_transfer?.txhash || d.ibc_send?.recv_txhash} chain={d.send.destination_chain || d.link?.destination_chain} />}
-                            </div>
-                          )}
-                          {d.send.insufficient_fee && (
-                            <div className="flex items-center text-red-600 dark:text-red-500 gap-x-1">
-                              <PiWarningCircle size={16} />
-                              <span className="text-xs">Insufficient Fee</span>
-                            </div>
-                          )}
-                          {d.time_spent?.total > 0 && ['received'].includes(d.simplified_status) && (
-                            <div className="flex items-center text-zinc-400 dark:text-zinc-500 gap-x-1">
-                              <MdOutlineTimer size={16} />
-                              <TimeSpent fromTimestamp={0} toTimestamp={d.time_spent.total * 1000} className="text-xs" />
-                            </div>
-                          )}
-                        </div>
+                        <Link
+                          href={`/vm-proof/${d.id}`}
+                          target="_blank"
+                          className="w-fit flex items-center"
+                        >
+                          {d.signOptions.map((s, i) => (
+                            <Number
+                              key={i}
+                              value={s.value}
+                              format="0,0"
+                              suffix={` ${toTitle(s.option.substring(0, ['unsubmitted'].includes(s.option) ? 2 : undefined))}`}
+                              noTooltip={true}
+                              className={clsx('rounded-xl uppercase text-xs mr-2 px-2.5 py-1', ['signed'].includes(s.option) ? 'bg-green-600 dark:bg-green-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500')}
+                            />
+                          ))}
+                        </Link>
                       </td>
                       <td className="pl-3 pr-4 sm:pr-0 py-4 flex items-center justify-end text-right">
-                        <TimeAgo timestamp={d.send.created_at?.ms} />
+                        <TimeAgo timestamp={d.created_at?.ms} />
                       </td>
                     </tr>
                   )

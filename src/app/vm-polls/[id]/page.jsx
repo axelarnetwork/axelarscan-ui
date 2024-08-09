@@ -1,5 +1,5 @@
 import { VMPoll } from '@/components/VMPoll'
 
-export default function PollPage({ params }) {
+export default function VMPollPage({ params }) {
   return <VMPoll {...params} />
 }

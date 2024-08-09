@@ -186,7 +186,7 @@ export function Validators({ status }) {
                       )}
                     </div>
                   </th>
-                  <th scope="col" onClick={() => orderBy('tokens')} className="px-3 py-3.5 text-left whitespace-nowrap cursor-pointer">
+                  <th scope="col" onClick={() => orderBy('tokens')} className="whitespace-nowrap px-3 py-3.5 text-left cursor-pointer">
                     <div className="flex items-center">
                       <span>{status === 'active' ? 'Consensus Power' : 'Staking'}</span>
                       {order[0] === 'tokens' && (
@@ -199,7 +199,7 @@ export function Validators({ status }) {
                     </div>
                   </th>
                   {status === 'active' && (
-                    <th scope="col" onClick={() => orderBy('quadratic_voting_power')} className="px-3 py-3.5 text-left whitespace-nowrap cursor-pointer">
+                    <th scope="col" onClick={() => orderBy('quadratic_voting_power')} className="whitespace-nowrap px-3 py-3.5 text-left cursor-pointer">
                       <div className="flex items-center">
                         <span>Quadratic Power</span>
                         {order[0] === 'quadratic_voting_power' && (
@@ -236,7 +236,7 @@ export function Validators({ status }) {
                       )}
                     </div>
                   </th>
-                  <th scope="col" className="pl-3 pr-4 sm:pr-0 py-3.5 text-left whitespace-nowrap">
+                  <th scope="col" className="whitespace-nowrap pl-3 pr-4 sm:pr-0 py-3.5 text-left">
                     EVM Supported
                   </th>
                 </tr>

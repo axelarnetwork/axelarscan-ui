@@ -60,7 +60,7 @@ export function Blocks({ height }) {
                   <th scope="col" className="px-3 py-3.5 text-left">
                     Proposer
                   </th>
-                  <th scope="col" className="px-3 py-3.5 text-right whitespace-nowrap">
+                  <th scope="col" className="whitespace-nowrap px-3 py-3.5 text-right">
                     No. Transactions
                   </th>
                   <th scope="col" className="pl-3 pr-4 sm:pr-0 py-3.5 text-right">
