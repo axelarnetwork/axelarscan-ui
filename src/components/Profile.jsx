@@ -452,7 +452,7 @@ export function Profile({
   customURL,
   className,
 }) {
-  const { chains, contracts, configurations, validators } = useGlobalStore()
+  const { chains, contracts, configurations, validators, verifiers } = useGlobalStore()
   const { validatorImages, setValidatorImages } = useValidatorImagesStore()
 
   address = Array.isArray(address) ? toHex(address) : address
@@ -471,15 +471,23 @@ export function Profile({
   // custom
   let { name, image } = { ...toArray(_.concat(accounts, itss, gateways, gasServices, executorRelayers, expressRelayers)).find(d => equalsIgnoreCase(d.address, address) && (!d.environment || equalsIgnoreCase(d.environment, ENVIRONMENT))) }
 
-  // validator
+  // validator & verifier
   let isValidator
-  if (address?.startsWith('axelar') && !name && validators) {
-    const { broadcaster_address, operator_address, description } = { ...validators.find(d => includesStringList(address, toArray([d.broadcaster_address, d.operator_address, d.delegator_address, d.consensus_address], { toCase: 'lower' }))) }
-    const { moniker } = { ...description }
+  let isVerifier
+  if (address?.startsWith('axelar')) {
+    if (!name && validators) {
+      const { broadcaster_address, operator_address, description } = { ...validators.find(d => includesStringList(address, toArray([d.broadcaster_address, d.operator_address, d.delegator_address, d.consensus_address], { toCase: 'lower' }))) }
+      const { moniker } = { ...description }
 
-    if (moniker) name = `${moniker}${equalsIgnoreCase(address, broadcaster_address) ? `: Proxy` : ''}`
-    image = validatorImages[operator_address]?.image || image
-    isValidator = true
+      if (moniker) name = `${moniker}${equalsIgnoreCase(address, broadcaster_address) ? `: Proxy` : ''}`
+      image = validatorImages[operator_address]?.image || image
+      isValidator = !!operator_address
+    }
+
+    if (verifiers) {
+      const { address } = { ...verifiers.find(d => includesStringList(address, toArray([d.address], { toCase: 'lower' }))) }
+      isVerifier = !!address
+    }
   }
 
   // Icap address format for EVM
@@ -541,7 +549,7 @@ export function Profile({
       }
       <div className="flex items-center gap-x-1">
         <Link
-          href={url || `/${address.startsWith('axelar') ? prefix === 'axelarvaloper' ? 'validator' : 'account' : 'address'}/${address}`}
+          href={url || `/${address.startsWith('axelar') ? prefix === 'axelarvaloper' ? 'validator' : isVerifier ? 'verifier' : 'account' : 'address'}/${address}`}
           target="_blank"
           className="text-blue-600 dark:text-blue-500 font-medium"
         >
