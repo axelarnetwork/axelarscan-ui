@@ -485,8 +485,8 @@ export function Profile({
     }
 
     if (verifiers) {
-      const { address } = { ...verifiers.find(d => includesStringList(address, toArray([d.address], { toCase: 'lower' }))) }
-      isVerifier = !!address
+      const verifierData = verifiers.find(d => includesStringList(address, toArray([d.address], { toCase: 'lower' })))
+      isVerifier = !!verifierData?.address
     }
   }
 
