@@ -524,7 +524,7 @@ export function Profile({
   }, [address, validators, setValidatorImages])
 
   const { explorer } = { ...getChainData(chain, chains) }
-  const url = customURL || (explorer ? `${explorer.url}${explorer.address_path?.replace('{address}', address)}` : undefined)
+  const url = customURL || (explorer ? `${explorer.url}${explorer.address_path?.replace('{address}', address).replace(prefix === 'axelarvaloper' || isVerifier ? '/account' : '', prefix === 'axelarvaloper' ? '/validator' : isVerifier ? '/verifier' : '')}` : undefined)
 
   return address && (name ?
     <div className={clsx('min-w-max flex items-center', width < 24 ? 'gap-x-1.5' : 'gap-x-2 3xl:gap-x-3', className)}>
@@ -571,7 +571,7 @@ export function Profile({
       url ?
         <div className={clsx('flex items-center gap-x-1', className)}>
           <Link
-            href={url || `/${address.startsWith('axelar') ? prefix === 'axelarvaloper' ? 'validator' : 'account' : 'address'}/${address}`}
+            href={url || `/${address.startsWith('axelar') ? prefix === 'axelarvaloper' ? 'validator' : isVerifier ? 'verifier' : 'account' : 'address'}/${address}`}
             target="_blank"
             className="text-blue-600 dark:text-blue-500 font-medium"
           >
