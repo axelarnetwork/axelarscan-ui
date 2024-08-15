@@ -1140,7 +1140,7 @@ function Details({ data }) {
                   stepMoreInfos.push((
                     <Copy size={16} key={stepMoreInfos.length} value={poll_id}>
                       <Link
-                        href={chain_type === 'vm' ? `/vm-poll/${contract_address}_${poll_id}` : `/evm-poll/${poll_id}`}
+                        href={contract_address ? `/vm-poll/${contract_address}_${poll_id}` : `/evm-poll/${poll_id}`}
                         target="_blank"
                         className="text-blue-600 dark:text-blue-500 text-xs underline"
                       >
