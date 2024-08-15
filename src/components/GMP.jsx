@@ -205,7 +205,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                       <nav aria-label="Progress" className="h-20 overflow-x-auto">
                         <ol role="list" className="flex items-center">
                           {steps.map((d, i) => {
-                            const { confirmation_txhash, poll_id, axelarTransactionHash, receipt, proposal_id } = { ...d.data }
+                            const { confirmation_txhash, contract_address, poll_id, axelarTransactionHash, receipt, proposal_id } = { ...d.data }
                             const { url, transaction_path } = { ...d.chainData?.explorer }
                             const transactionHash = d.data?.transactionHash || receipt?.transactionHash || receipt?.hash
                             let stepURL
@@ -216,6 +216,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                   break
                                 case 'confirm':
                                   if (confirmation_txhash) stepURL = `/tx/${confirmation_txhash}`
+                                  else if (contract_address && poll_id) stepURL = `/vm-poll/${contract_address}_${poll_id}`
                                   else if (poll_id) stepURL = `/evm-poll/${poll_id}`
                                   else if (d.title === 'Waiting for Finality') {
                                     const finalityTime = estimatedTimeSpent?.confirm ? estimatedTimeSpent.confirm + 15 : 600
@@ -1111,7 +1112,7 @@ function Details({ data }) {
         </thead>
         <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
           {steps.filter(d => d.status !== 'pending' || d.data?.axelarTransactionHash).map((d, i) => {
-            const { logIndex, _logIndex, chain_type, confirmation_txhash, poll_id, axelarTransactionHash, blockNumber, axelarBlockNumber, transaction, receipt, returnValues, contract_address, block_timestamp, created_at, proposal_id } = { ...(d.id === 'pay_gas' && isString(d.data) ? data.originData?.gas_paid : d.data) }
+            const { logIndex, _logIndex, chain_type, confirmation_txhash, contract_address, poll_id, axelarTransactionHash, blockNumber, axelarBlockNumber, transaction, receipt, returnValues, contract_address, block_timestamp, created_at, proposal_id } = { ...(d.id === 'pay_gas' && isString(d.data) ? data.originData?.gas_paid : d.data) }
             const transactionHash = d.data?.transactionHash || receipt?.transactionHash || receipt?.hash
             const height = d.data?.blockNumber || blockNumber
             const { url, block_path, transaction_path } = { ...d.chainData?.explorer }
@@ -1126,6 +1127,10 @@ function Details({ data }) {
                   stepTX = confirmation_txhash
                   stepURL = `/tx/${confirmation_txhash}`
                 }
+                else if (contract_address && poll_id) {
+                  stepTX = poll_id
+                  stepURL = `/vm-poll/${contract_address}_${poll_id}`
+                }
                 else if (poll_id) {
                   stepTX = poll_id
                   stepURL = `/evm-poll/${poll_id}`
@@ -1135,7 +1140,7 @@ function Details({ data }) {
                   stepMoreInfos.push((
                     <Copy size={16} key={stepMoreInfos.length} value={poll_id}>
                       <Link
-                        href={`/evm-poll/${poll_id}`}
+                        href={chain_type === 'vm' ? `/vm-poll/${contract_address}_${poll_id}` : `/evm-poll/${poll_id}`}
                         target="_blank"
                         className="text-blue-600 dark:text-blue-500 text-xs underline"
                       >
