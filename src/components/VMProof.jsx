@@ -69,23 +69,27 @@ function Info({ data, id }) {
             <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Messages</dt>
             <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
               <div className="flex flex-col gap-y-0.5">
-                {toArray(message_ids || { id: data?.message_id, chain: data?.source_chain }).map((m, i) => {
-                  const chainData = getChainData(m.chain, chains)
+                {toArray(message_ids || { message_id: data?.message_id, source_chain: data?.source_chain }).map((m, i) => {
+                  m.message_id = m.message_id || m.id
+                  m.source_chain = m.source_chain || m.chain
+
+                  const chainData = getChainData(m.source_chain, chains)
                   const { url, transaction_path } = { ...chainData?.explorer }
+
                   return (
                     <div key={i} className="flex items-center gap-x-4">
-                      <ChainProfile value={m.chain} />
+                      <ChainProfile value={m.source_chain} />
                       <div className="flex items-center gap-x-1">
-                        <Copy value={m.id}>
+                        <Copy value={m.message_id}>
                             <Link
-                              href={`${url}${transaction_path?.replace('{tx}', headString(m.id))}`}
+                              href={`${url}${transaction_path?.replace('{tx}', headString(m.message_id))}`}
                               target="_blank"
                               className="text-blue-600 dark:text-blue-500 font-semibold"
                             >
-                              {ellipse(m.id)}
+                              {ellipse(m.message_id)}
                             </Link>
                           </Copy>
-                        <ExplorerLink value={headString(m.id)} chain={m.chain} />
+                        <ExplorerLink value={headString(m.message_id)} chain={m.source_chain} />
                       </div>
                     </div>
                   )

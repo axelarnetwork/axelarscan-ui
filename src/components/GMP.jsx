@@ -1229,13 +1229,18 @@ function Details({ data }) {
                   if (d.id === 'approve' && returnValues?.commandId) {
                     stepMoreInfos.push((
                       <Copy key={stepMoreInfos.length} size={16} value={returnValues.commandId}>
-                        <Link
-                          href={`/evm-batches?commandId=${returnValues.commandId}`}
-                          target="_blank"
-                          className="text-blue-600 dark:text-blue-500 text-xs underline"
-                        >
-                          Command ID
-                        </Link>
+                        {chain_type === 'vm' ?
+                          <span className="text-xs">
+                            Command ID
+                          </span> :
+                          <Link
+                            href={`/evm-batches?commandId=${returnValues.commandId}`}
+                            target="_blank"
+                            className="text-blue-600 dark:text-blue-500 text-xs underline"
+                          >
+                            Command ID
+                          </Link>
+                        }
                       </Copy>
                     ))
                   }
