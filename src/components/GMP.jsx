@@ -82,9 +82,9 @@ export function getStep(data, chains) {
       data: confirm || confirm_failed_event,
       chainData: axelarChainData,
     },
-    destinationChainData?.chain_type === 'evm' && {
+    ['evm', 'vm'].includes(destinationChainData?.chain_type) && {
       id: 'approve',
-      title: approved ? 'Approved' : confirm && (sourceChainData?.chain_type === 'cosmos' || confirm.poll_id !== confirm_failed_event?.poll_id) ? 'Approving' : 'Approve',
+      title: approved ? 'Approved' : confirm && (['cosmos', 'vm'].includes(sourceChainData?.chain_type) || confirm.poll_id !== confirm_failed_event?.poll_id) ? 'Approving' : 'Approve',
       status: approved ? 'success' : 'pending',
       data: approved,
       chainData: destinationChainData,
@@ -154,9 +154,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                     target="_blank"
                     className="text-blue-600 dark:text-blue-500 font-semibold"
                   >
-                    {ellipse(txhash)}{call.chain_type === 'evm' && call.receipt ? isNumber(call._logIndex) ? `-${call._logIndex}` : isNumber(call.logIndex) ? `:${call.logIndex}` : '' : call.chain_type === 'cosmos' && isNumber(call.messageIdIndex) ? `-${call.messageIdIndex}` : ''}
+                    {ellipse(txhash)}{call.chain_type === 'evm' && call.receipt ? isNumber(call._logIndex) ? `-${call._logIndex}` : isNumber(call.logIndex) ? `:${call.logIndex}` : '' : ['cosmos', 'vm'].includes(call.chain_type) && isNumber(call.messageIdIndex) ? `-${call.messageIdIndex}` : ''}
                   </Link> :
-                  `${ellipse(txhash)}${call.chain_type === 'evm' && call.receipt ? isNumber(call._logIndex) ? `-${call._logIndex}` : isNumber(call.logIndex) ? `:${call.logIndex}` : '' : call.chain_type === 'cosmos' && isNumber(call.messageIdIndex) ? `-${call.messageIdIndex}` : ''}`
+                  `${ellipse(txhash)}${call.chain_type === 'evm' && call.receipt ? isNumber(call._logIndex) ? `-${call._logIndex}` : isNumber(call.logIndex) ? `:${call.logIndex}` : '' : ['cosmos', 'vm'].includes(call.chain_type) && isNumber(call.messageIdIndex) ? `-${call.messageIdIndex}` : ''}`
                 }
               </Copy>
               {!proposal_id && <ExplorerLink value={txhash} chain={sourceChain} hasEventLog={call.chain_type === 'evm' && isNumber(call.logIndex)} />}
@@ -1112,7 +1112,7 @@ function Details({ data }) {
         </thead>
         <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
           {steps.filter(d => d.status !== 'pending' || d.data?.axelarTransactionHash).map((d, i) => {
-            const { logIndex, _logIndex, chain_type, confirmation_txhash, contract_address, poll_id, axelarTransactionHash, blockNumber, axelarBlockNumber, transaction, receipt, returnValues, contract_address, block_timestamp, created_at, proposal_id } = { ...(d.id === 'pay_gas' && isString(d.data) ? data.originData?.gas_paid : d.data) }
+            const { logIndex, _logIndex, chain_type, confirmation_txhash, poll_id, axelarTransactionHash, blockNumber, axelarBlockNumber, transaction, receipt, returnValues, contract_address, block_timestamp, created_at, proposal_id } = { ...(d.id === 'pay_gas' && isString(d.data) ? data.originData?.gas_paid : d.data) }
             const transactionHash = d.data?.transactionHash || receipt?.transactionHash || receipt?.hash
             const height = d.data?.blockNumber || blockNumber
             const { url, block_path, transaction_path } = { ...d.chainData?.explorer }
@@ -1784,7 +1784,7 @@ export function GMP({ tx, lite }) {
   const sourceChainData = getChainData(call?.chain, chains)
   const destinationChainData = getChainData(call?.returnValues?.destinationChain, chains)
 
-  const addGasButton = call && !executed && !is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) && (!(gas_paid || gas_paid_to_callback) || is_insufficient_fee || is_invalid_gas_paid || not_enough_gas_to_execute || gas?.gas_remain_amount < MIN_GAS_REMAIN_AMOUNT) && (
+  const addGasButton = call && !['vm'].includes(call.chain_type) && !executed && !is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) && (!(gas_paid || gas_paid_to_callback) || is_insufficient_fee || is_invalid_gas_paid || not_enough_gas_to_execute || gas?.gas_remain_amount < MIN_GAS_REMAIN_AMOUNT) && (
     <div key="addGas" className="flex items-center gap-x-1">
       {(call.chain_type === 'cosmos' ? cosmosWalletStore?.signer : signer) && !needSwitchChain(sourceChainData?.chain_id, call.chain_type) && (
         <button
@@ -1800,7 +1800,7 @@ export function GMP({ tx, lite }) {
   )
 
   const finalityTime = estimatedTimeSpent?.confirm ? estimatedTimeSpent.confirm + 15 : 600
-  const approveButton = call && !(call.destination_chain_type === 'cosmos' ? confirm && (sourceChainData?.chain_type === 'cosmos' || confirm.poll_id !== confirm_failed_event?.poll_id) : approved) && (!executed || (error && executed.axelarTransactionHash && !executed.transactionHash)) && !is_executed && (confirm || confirm_failed || timeDiff(call.block_timestamp * 1000) >= finalityTime) && timeDiff((confirm || call).block_timestamp * 1000) >= 60 && !(is_invalid_destination_chain || is_invalid_call || is_insufficient_fee || (!gas?.gas_remain_amount && !gas_paid_to_callback && !is_call_from_relayer && !proposal_id)) && (
+  const approveButton = call && !['vm'].includes(call.chain_type) && !(call.destination_chain_type === 'cosmos' ? confirm && (sourceChainData?.chain_type === 'cosmos' || confirm.poll_id !== confirm_failed_event?.poll_id) : approved) && (!executed || (error && executed.axelarTransactionHash && !executed.transactionHash)) && !is_executed && (confirm || confirm_failed || timeDiff(call.block_timestamp * 1000) >= finalityTime) && timeDiff((confirm || call).block_timestamp * 1000) >= 60 && !(is_invalid_destination_chain || is_invalid_call || is_insufficient_fee || (!gas?.gas_remain_amount && !gas_paid_to_callback && !is_call_from_relayer && !proposal_id)) && (
     <div key="approve" className="flex items-center gap-x-1">
       <button
         disabled={processing}
@@ -1812,7 +1812,7 @@ export function GMP({ tx, lite }) {
     </div>
   )
 
-  const executeButton = call && (call.destination_chain_type === 'cosmos' ? confirm : approved) && !executed?.transactionHash && !is_executed && (error || timeDiff(((call.destination_chain_type === 'cosmos' ? confirm?.block_timestamp : approved.block_timestamp) || call.block_timestamp) * 1000) >= (call.destination_chain_type === 'cosmos' ? 300 : 120)) && call.returnValues?.payload && (
+  const executeButton = call && !['vm'].includes(call.chain_type) && (call.destination_chain_type === 'cosmos' ? confirm : approved) && !executed?.transactionHash && !is_executed && (error || timeDiff(((call.destination_chain_type === 'cosmos' ? confirm?.block_timestamp : approved.block_timestamp) || call.block_timestamp) * 1000) >= (call.destination_chain_type === 'cosmos' ? 300 : 120)) && call.returnValues?.payload && (
     <div key="execute" className="flex items-center gap-x-1">
       {(call.destination_chain_type === 'cosmos' || (signer && !needSwitchChain(destinationChainData?.chain_id, call.destination_chain_type))) && (
         <button
