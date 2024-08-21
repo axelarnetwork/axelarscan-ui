@@ -109,7 +109,7 @@ function Metrics() {
               <div className="hidden lg:block">
                 <Tooltip content="Base inflation rate + Additional chain rewards" className="whitespace-nowrap">
                   <Number
-                    value={0.3}
+                    value={0.2}
                     prefix="1% base + "
                     suffix="% / EVM chain"
                     className="text-xs font-medium"
@@ -119,7 +119,7 @@ function Metrics() {
               <div className="block lg:hidden">
                 <div className="flex items-center">
                   <Number
-                    value={0.3}
+                    value={0.2}
                     prefix="1% base + "
                     suffix="% / EVM chain"
                     className="text-xs font-medium"
