@@ -20,7 +20,7 @@ import { GMPStats, GMPTotalVolume } from '@/lib/api/gmp'
 import { transfersStats, transfersTotalVolume } from '@/lib/api/token-transfer'
 import { getChainData } from '@/lib/config'
 import { toArray } from '@/lib/parser'
-import { toNumber, formatUnits } from '@/lib/number'
+import { isNumber, toNumber, formatUnits } from '@/lib/number'
 
 function Metrics() {
   const [blockData, setBlockData] = useState(null)
@@ -32,6 +32,9 @@ function Metrics() {
     const interval = setInterval(() => getData(), 6 * 1000)
     return () => clearInterval(interval)
   }, [setBlockData])
+
+  const { externalChainVotingInflationRate } = { ...inflationData }
+  const evmRewardPercent = isNumber(externalChainVotingInflationRate) ? externalChainVotingInflationRate * 100 : 0.2
 
   return blockData && (
     <div className="w-full overflow-x-auto border border-zinc-100 dark:border-zinc-800 lg:inline-table">
@@ -109,7 +112,7 @@ function Metrics() {
               <div className="hidden lg:block">
                 <Tooltip content="Base inflation rate + Additional chain rewards" className="whitespace-nowrap">
                   <Number
-                    value={0.2}
+                    value={evmRewardPercent}
                     prefix="1% base + "
                     suffix="% / EVM chain"
                     className="text-xs font-medium"
@@ -119,7 +122,7 @@ function Metrics() {
               <div className="block lg:hidden">
                 <div className="flex items-center">
                   <Number
-                    value={0.2}
+                    value={evmRewardPercent}
                     prefix="1% base + "
                     suffix="% / EVM chain"
                     className="text-xs font-medium"
