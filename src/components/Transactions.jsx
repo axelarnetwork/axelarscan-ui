@@ -34,7 +34,7 @@ import { isNumber, toNumber, formatUnits } from '@/lib/number'
 const size = 25
 const sizePerPage = 10
 
-function Filters() {
+function Filters({ address }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -65,13 +65,13 @@ function Filters() {
     setParams(getParams(searchParams, size))
   }
 
-  const attributes = [
+  const attributes = toArray([
     { label: 'Tx Hash', name: 'txHash' },
     { label: 'Type', name: 'type', type: 'select', options: _.concat({ title: 'Any' }, _.orderBy(types.map(d => ({ value: d, title: d })), ['title'], ['asc'])) },
     { label: 'Status', name: 'status', type: 'select', options: _.concat({ title: 'Any' }, ['success', 'failed'].map(d => ({ value: d, title: capitalize(d) }))) },
-    { label: 'Address', name: 'address' },
+    !address && { label: 'Address', name: 'address' },
     { label: 'Time', name: 'time', type: 'datetimeRange' },
-  ]
+  ])
 
   const filtered = Object.keys(params).filter(k => !['from'].includes(k)).length > 0
   return (
@@ -621,7 +621,7 @@ export function Transactions({ height, address }) {
               )}
             </div>
             <div className="flex items-center gap-x-2">
-              {!(height || address) && <Filters />}
+              {!(height/* || address*/) && <Filters address={address} />}
               {refresh ? <Spinner /> :
                 <Button
                   color="default"
