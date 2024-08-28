@@ -26,7 +26,7 @@ import { TimeAgo } from '@/components/Time'
 import { getParams, getQueryString, Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
 import { searchPolls } from '@/lib/api/validator'
-import { getChainData, getAssetData } from '@/lib/config'
+import { ENVIRONMENT, getChainData, getAssetData } from '@/lib/config'
 import { toJson, split, toArray } from '@/lib/parser'
 import { includesStringList } from '@/lib/operator'
 import { equalsIgnoreCase, capitalize, toBoolean, ellipse, toTitle } from '@/lib/string'
@@ -331,7 +331,17 @@ export function EVMPolls() {
         <div>
           <div className="flex items-center justify-between gap-x-4">
             <div className="sm:flex-auto">
-              <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">EVM Polls</h1>
+              <div className="flex items-center space-x-2">
+                <h1 className="underline text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">EVM Polls</h1>
+                {!['mainnet'].includes(ENVIRONMENT) && (
+                  <>
+                    <span className="text-zinc-400 dark:text-zinc-500">|</span>
+                    <Link href="/vm-polls" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
+                      VM Polls
+                    </Link>
+                  </>
+                )}
+              </div>
               <p className="mt-2 text-zinc-400 dark:text-zinc-500 text-sm">
                 <Number value={total} suffix={` result${total > 1 ? 's' : ''}`} /> 
               </p>
