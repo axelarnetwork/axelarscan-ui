@@ -834,7 +834,19 @@ const data = [
     name: 'EXR MultiPass',
     image: '/logos/accounts/exr.png',
     environment: 'mainnet',
-  }, 
+  },
+  {
+    address: '0x723aead29acee7e9281c32d11ea4ed0070c41b13',
+    name: 'Lido wstETH: AxelarTransceiver',
+    image: '/logos/accounts/lido.svg',
+    environment: 'mainnet',
+  },
+  {
+    address: '0xaa8267908e8d2BEfeB601f88A7Cf3ec148039423',
+    name: 'Lido wstETH: AxelarTransceiver',
+    image: '/logos/accounts/lido.svg',
+    environment: 'testnet',
+  },
 ]
 
 export default data
