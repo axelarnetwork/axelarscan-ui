@@ -246,7 +246,7 @@ export function TVL() {
                     </div>
                   </td>
                   {chainsTVL.map(c => {
-                    const { escrow_balance, supply, total, url } = { ...d.tvl?.[c.id] }
+                    const { escrow_balance, supply, total, url, custom_contracts_balance, custom_tokens_supply } = { ...d.tvl?.[c.id] }
                     const amount = (isNumber(escrow_balance) && c.id !== 'axelarnet' ? escrow_balance : supply) || total
                     const value = amount * d.price
 
@@ -260,25 +260,56 @@ export function TVL() {
 
                     return (
                       <td key={c.id} className="px-3 py-4 text-right">
-                        <div className="flex flex-col items-end gap-y-0.5">
-                          {url ?
-                            <Link
-                              href={url}
-                              target="_blank"
-                              className="contents text-blue-600 dark:text-blue-500"
-                            >
-                              {element}
-                            </Link> :
-                            element
-                          }
-                          {value > 0 && (
-                            <Number
-                              value={value}
-                              format="0,0.0a"
-                              prefix="$"
-                              className="text-zinc-400 dark:text-zinc-500 text-xs font-medium"
-                            />
-                          )}
+                        <div className="flex flex-col items-end gap-y-1">
+                          <div className="flex flex-col items-end gap-y-0.5">
+                            {url ?
+                              <Link
+                                href={url}
+                                target="_blank"
+                                className="contents text-blue-600 dark:text-blue-500"
+                              >
+                                {element}
+                              </Link> :
+                              element
+                            }
+                            {value > 0 && (
+                              <Number
+                                value={value}
+                                format="0,0.0a"
+                                prefix="$"
+                                className="text-zinc-400 dark:text-zinc-500 text-xs font-medium"
+                              />
+                            )}
+                          </div>
+                          {toArray(_.concat(custom_contracts_balance, custom_tokens_supply)).map((c, i) => {
+                            const { balance, supply, url } = { ...c }
+                            const amount = isNumber(balance) ? balance : supply
+                            const value = amount * d.price
+
+                            const element = (
+                              <Number
+                                value={value}
+                                format="+0,0.0a"
+                                prefix="$"
+                                className={clsx('text-2xs font-semibold', !url && 'text-zinc-700 dark:text-zinc-300')}
+                              />
+                            )
+
+                            return (
+                              <div key={i} className="flex flex-col items-end">
+                                {url ?
+                                  <Link
+                                    href={url}
+                                    target="_blank"
+                                    className="contents text-blue-600 dark:text-blue-500"
+                                  >
+                                    {element}
+                                  </Link> :
+                                  element
+                                }
+                              </div>
+                            )
+                          })}
                         </div>
                       </td>
                     )
