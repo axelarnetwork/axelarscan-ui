@@ -24,10 +24,10 @@ import { ExplorerLink } from '@/components/ExplorerLink'
 import { TimeAgo } from '@/components/Time'
 import { getParams, getQueryString, Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
-import { getRPCStatus, searchVMProofs } from '@/lib/api/validator'
+import { getRPCStatus, searchVMPolls } from '@/lib/api/validator'
 import { ENVIRONMENT, getChainData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
-import { equalsIgnoreCase, capitalize, toBoolean, headString, ellipse, toTitle } from '@/lib/string'
+import { equalsIgnoreCase, capitalize, toBoolean, ellipse, toTitle } from '@/lib/string'
 
 const size = 25
 
@@ -55,14 +55,13 @@ function Filters() {
   }
 
   const attributes = toArray([
-    { label: 'Session ID', name: 'sessionId' },
-    { label: 'Message ID', name: 'messageId' },
+    { label: 'Poll ID', name: 'pollId' },
+    { label: 'Tx Hash', name: 'transactionId' },
     { label: 'Chain', name: 'chain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).filter(d => d.chain_type === 'vm' && (!d.no_inflation || d.deprecated)).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
-    { label: 'Multisig Prover Contract Address', name: 'multisigProverContractAddress' },
-    { label: 'Multisig Contract Address', name: 'multisigContractAddress' },
+    { label: 'Verifier Contract Address', name: 'VerifierContractAddress' },
     { label: 'Status', name: 'status', type: 'select', multiple: true, options: _.concat({ title: 'Any' }, ['completed', 'failed', 'pending'].map(d => ({ value: d, title: capitalize(d) }))) },
-    { label: 'Signer (Verifier Address)', name: 'signer' },
-    params.signer && { label: 'Sign', name: 'sign', type: 'select', options: _.concat({ title: 'Any' }, ['signed', 'unsubmitted'].map(d => ({ value: d, title: capitalize(d) }))) },
+    { label: 'Voter (Verifier Address)', name: 'voter' },
+    params.voter && { label: 'Vote', name: 'vote', type: 'select', options: _.concat({ title: 'Any' }, ['yes', 'no', 'unsubmitted'].map(d => ({ value: d, title: capitalize(d) }))) },
     { label: 'Time', name: 'time', type: 'datetimeRange' },
   ])
 
@@ -230,7 +229,7 @@ function Filters() {
 
 const generateKeyFromParams = params => JSON.stringify(params)
 
-export function VMProofs() {
+export function AmplifierPolls() {
   const searchParams = useSearchParams()
   const [params, setParams] = useState(null)
   const [searchResults, setSearchResults] = useState(null)
@@ -249,32 +248,34 @@ export function VMProofs() {
   useEffect(() => {
     const getData = async () => {
       if (params && toBoolean(refresh) && blockData) {
-        const { data, total } = { ...await searchVMProofs({ ...params, size }) }
+        const { data, total } = { ...await searchVMPolls({ ...params, size }) }
 
         setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: {
           data: _.orderBy(toArray(data).map(d => {
-            const signs = []
-            Object.entries(d).filter(([k, v]) => k.startsWith('axelar')).forEach(([k, v]) => signs.push(v))
+            const votes = []
+            Object.entries(d).filter(([k, v]) => k.startsWith('axelar')).forEach(([k, v]) => votes.push(v))
 
-            let signOptions = Object.entries(_.groupBy(toArray(signs).map(s => ({ ...s, option: s.sign ? 'signed' : 'unsubmitted' })), 'option')).map(([k, v]) => {
+            let voteOptions = Object.entries(_.groupBy(toArray(votes).map(v => ({ ...v, option: v.vote ? 'yes' : typeof v.vote === 'boolean' ? 'no' : 'unsubmitted' })), 'option')).map(([k, v]) => {
               return {
                 option: k,
                 value: toArray(v).length,
-                signers: toArray(toArray(v).map(_v => _v.signer)),
+                voters: toArray(toArray(v).map(_v => _v.voter)),
               }
-            }).filter(v => v.value).map(v => ({ ...v, i: v.option === 'signed' ? 0 : 1 }))
+            }).filter(v => v.value).map(v => ({ ...v, i: v.option === 'yes' ? 0 : v.option === 'no' ? 1 : 2 }))
 
-            if (toArray(d.participants).length > 0 && signOptions.findIndex(s => s.option === 'unsubmitted') < 0 && _.sumBy(signOptions, 'value') < d.participants.length) {
-              signOptions.push({ option: 'unsubmitted', value: d.participants.length - _.sumBy(signOptions, 'value') })
+            if (toArray(d.participants).length > 0 && voteOptions.findIndex(v => v.option === 'unsubmitted') < 0 && _.sumBy(voteOptions, 'value') < d.participants.length) {
+              voteOptions.push({ option: 'unsubmitted', value: d.participants.length - _.sumBy(voteOptions, 'value') })
             }
-            signOptions = _.orderBy(signOptions, ['i'], ['asc'])
+            voteOptions = _.orderBy(voteOptions, ['i'], ['asc'])
 
+            const { url, transaction_path } = { ...getChainData(d.sender_chain, chains)?.explorer }
             return {
               ...d,
               status: d.success ? 'completed' : d.failed ? 'failed' : d.expired || d.expired_height < blockData.latest_block_height ? 'expired' : 'pending',
-              height: _.minBy(signs, 'height')?.height || d.height,
-              signs: _.orderBy(signs, ['height', 'created_at'], ['desc', 'desc']),
-              signOptions,
+              height: _.minBy(votes, 'height')?.height || d.height,
+              votes: _.orderBy(votes, ['height', 'created_at'], ['desc', 'desc']),
+              voteOptions,
+              url: `/gmp/${d.transaction_id || ''}`,
             }
           }), ['created_at.ms'], ['desc']),
           total,
@@ -283,7 +284,7 @@ export function VMProofs() {
       }
     }
     getData()
-  }, [params, setSearchResults, refresh, setRefresh, blockData])
+  }, [chains, params, setSearchResults, refresh, setRefresh, blockData])
 
   useEffect(() => {
     const getData = async () => setBlockData(await getRPCStatus())
@@ -300,13 +301,13 @@ export function VMProofs() {
               <div className="flex items-center space-x-2">
                 {!['mainnet'].includes(ENVIRONMENT) && (
                   <>
-                    <Link href="/evm-batches" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
-                      EVM Batches
+                    <Link href="/evm-polls" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
+                      EVM Polls
                     </Link>
                     <span className="text-zinc-400 dark:text-zinc-500">|</span>
                   </>
                 )}
-                <h1 className="underline text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">VM Proofs</h1>
+                <h1 className="underline text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">Amplifier Polls</h1>
               </div>
               <p className="mt-2 text-zinc-400 dark:text-zinc-500 text-sm">
                 <Number value={total} suffix={` result${total > 1 ? 's' : ''}`} /> 
@@ -330,11 +331,11 @@ export function VMProofs() {
             <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
               <thead className="sticky top-0 z-10 bg-white dark:bg-zinc-900">
                 <tr className="text-zinc-800 dark:text-zinc-200 text-sm font-semibold">
-                  <th scope="col" className="whitespace-nowrap pl-4 sm:pl-0 pr-3 py-3.5 text-left">
-                    Session ID
+                  <th scope="col" className="pl-4 sm:pl-0 pr-3 py-3.5 text-left">
+                    ID
                   </th>
                   <th scope="col" className="px-3 py-3.5 text-left">
-                    Messages
+                    Chain
                   </th>
                   <th scope="col" className="px-3 py-3.5 text-left">
                     Height
@@ -352,67 +353,50 @@ export function VMProofs() {
               </thead>
               <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
                 {data.map(d => {
-                  const chain = d.chain || d.destination_chain
+                  const chainData = getChainData(d.sender_chain, chains)
+                  const { url, transaction_path } = { ...chainData?.explorer }
+
                   return (
                     <tr key={d.id} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
                       <td className="pl-4 sm:pl-0 pr-3 py-4 text-left">
                         <div className="flex flex-col gap-y-0.5">
-                          <Copy value={`${chain}-${d.session_id}`}>
+                          <Copy value={d.poll_id}>
                             <Link
-                              href={`/vm-proof/${d.id}`}
+                              href={`/amplifier-poll/${d.id}`}
                               target="_blank"
                               className="text-blue-600 dark:text-blue-500 font-semibold"
                             >
-                              {chain}-{d.session_id}
+                              {d.poll_id}
                             </Link>
                           </Copy>
-                          {d.multisig_prover_contract_address && (
-                            <div className="flex items-center">
-                              <Tooltip content="Multisig Prover Contract" className="whitespace-nowrap">
-                                <Copy value={d.multisig_prover_contract_address}>
-                                  {ellipse(d.multisig_prover_contract_address)}
-                                </Copy>
-                              </Tooltip>
-                            </div>
-                          )}
-                          {d.multisig_contract_address && (
-                            <div className="flex items-center">
-                              <Tooltip content="Multisig Contract" className="whitespace-nowrap">
-                                <Copy value={d.multisig_contract_address}>
-                                  {ellipse(d.multisig_contract_address)}
-                                </Copy>
-                              </Tooltip>
+                          {d.transaction_id && (
+                            <div className="flex items-center gap-x-1">
+                              <Copy value={d.transaction_id}>
+                                <Link
+                                  href={`${url}${transaction_path?.replace('{tx}', d.transaction_id)}`}
+                                  target="_blank"
+                                  className="text-blue-600 dark:text-blue-500 font-semibold"
+                                >
+                                  {ellipse(d.transaction_id)}
+                                </Link>
+                              </Copy>
+                              <ExplorerLink value={d.transaction_id} chain={d.sender_chain} />
                             </div>
                           )}
                         </div>
                       </td>
                       <td className="px-3 py-4 text-left">
                         <div className="flex flex-col gap-y-0.5">
-                          {toArray(d.message_ids || { message_id: d.message_id, source_chain: d.source_chain }).map((m, i) => {
-                            m.message_id = m.message_id || m.id
-                            m.source_chain = m.source_chain || m.chain
-
-                            const chainData = getChainData(m.source_chain, chains)
-                            const { url, transaction_path } = { ...chainData?.explorer }
-
-                            return (
-                              <div key={i} className="flex items-center gap-x-4">
-                                <ChainProfile value={m.source_chain} />
-                                <div className="flex items-center gap-x-1">
-                                  <Copy value={m.message_id}>
-                                      <Link
-                                        href={`${url}${transaction_path?.replace('{tx}', headString(m.message_id))}`}
-                                        target="_blank"
-                                        className="text-blue-600 dark:text-blue-500 font-semibold"
-                                      >
-                                        {ellipse(m.message_id)}
-                                      </Link>
-                                    </Copy>
-                                  <ExplorerLink value={headString(m.message_id)} chain={m.source_chain} />
-                                </div>
-                              </div>
-                            )
-                          })}
+                          <ChainProfile value={d.sender_chain} />
+                          {d.contract_address && (
+                            <div className="flex items-center">
+                              <Tooltip content="Verifier Contract" className="whitespace-nowrap">
+                                <Copy value={d.contract_address}>
+                                  {ellipse(d.contract_address)}
+                                </Copy>
+                              </Tooltip>
+                            </div>
+                          )}
                         </div>
                       </td>
                       <td className="px-3 py-4 text-left">
@@ -437,18 +421,18 @@ export function VMProofs() {
                       </td>
                       <td className="px-3 py-4 text-left">
                         <Link
-                          href={`/vm-proof/${d.id}`}
+                          href={`/amplifier-poll/${d.id}`}
                           target="_blank"
                           className="w-fit flex items-center"
                         >
-                          {d.signOptions.map((s, i) => (
+                          {d.voteOptions.map((v, i) => (
                             <Number
                               key={i}
-                              value={s.value}
+                              value={v.value}
                               format="0,0"
-                              suffix={` ${toTitle(s.option.substring(0, ['unsubmitted'].includes(s.option) ? 2 : undefined))}`}
+                              suffix={` ${toTitle(v.option.substring(0, ['unsubmitted'].includes(v.option) ? 2 : 1))}`}
                               noTooltip={true}
-                              className={clsx('rounded-xl uppercase text-xs mr-2 px-2.5 py-1', ['signed'].includes(s.option) ? 'bg-green-600 dark:bg-green-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500')}
+                              className={clsx('rounded-xl uppercase text-xs mr-2 px-2.5 py-1', ['no'].includes(v.option) ? 'bg-red-600 dark:bg-red-500 text-white' : ['yes'].includes(v.option) ? 'bg-green-600 dark:bg-green-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500')}
                             />
                           ))}
                         </Link>

@@ -336,8 +336,8 @@ export function EVMPolls() {
                 {!['mainnet'].includes(ENVIRONMENT) && (
                   <>
                     <span className="text-zinc-400 dark:text-zinc-500">|</span>
-                    <Link href="/vm-polls" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
-                      VM Polls
+                    <Link href="/amplifier-polls" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
+                      Amplifier Polls
                     </Link>
                   </>
                 )}

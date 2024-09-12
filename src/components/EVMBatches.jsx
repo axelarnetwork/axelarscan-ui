@@ -277,8 +277,8 @@ export function EVMBatches() {
                 {!['mainnet'].includes(ENVIRONMENT) && (
                   <>
                     <span className="text-zinc-400 dark:text-zinc-500">|</span>
-                    <Link href="/vm-proofs" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
-                      VM Proofs
+                    <Link href="/amplifier-proofs" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
+                      Amplifier Proofs
                     </Link>
                   </>
                 )}

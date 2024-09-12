@@ -109,7 +109,7 @@ export function Verifiers() {
                     Verifier
                   </th>
                   <th scope="col" className="whitespace-nowrap pl-3 pr-4 sm:pr-0 py-3.5 text-left">
-                    VM Supported
+                    Amplifier Supported
                   </th>
                 </tr>
               </thead>

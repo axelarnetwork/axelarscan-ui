@@ -100,7 +100,7 @@ function Info({ data, rewards, cumulativeRewards, address }) {
                 </dd>
               </div>
               <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">VM Supported</dt>
+                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Amplifier Supported</dt>
                 <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                   <div className="overflow-x-auto lg:overflow-x-visible -mx-4 sm:-mx-0">
                     <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
@@ -334,7 +334,7 @@ function Votes({ data }) {
       <div className="flex justify-between gap-x-4 pr-1">
         <div className="flex flex-col">
           <h3 className="text-zinc-900 dark:text-zinc-100 text-sm font-semibold leading-6">
-            VM Votes
+            Amplifier Votes
           </h3>
           <p className="text-zinc-400 dark:text-zinc-500 text-xs leading-5">
             Latest {numberFormat(size, '0,0')} Polls{/* ({numberFormat(NUM_LATEST_BLOCKS, '0,0')} Blocks)*/}
@@ -360,7 +360,7 @@ function Votes({ data }) {
           return (
             <Link
               key={i}
-              href={d.id ? `/vm-poll/${d.id}` : `/block/${d.height}`}
+              href={d.id ? `/amplifier-poll/${d.id}` : `/block/${d.height}`}
               target="_blank"
               className="w-5 h-5"
             >
@@ -386,7 +386,7 @@ function Signs({ data }) {
       <div className="flex justify-between gap-x-4 pr-1">
         <div className="flex flex-col">
           <h3 className="text-zinc-900 dark:text-zinc-100 text-sm font-semibold leading-6">
-            VM Signings
+            Amplifier Signings
           </h3>
           <p className="text-zinc-400 dark:text-zinc-500 text-xs leading-5">
             Latest {numberFormat(size, '0,0')} Signings{/* ({numberFormat(NUM_LATEST_BLOCKS, '0,0')} Blocks)*/}
@@ -412,7 +412,7 @@ function Signs({ data }) {
           return (
             <Link
               key={i}
-              href={d.id ? `/vm-proof/${d.id}` : `/block/${d.height}`}
+              href={d.id ? `/amplifier-proof/${d.id}` : `/block/${d.height}`}
               target="_blank"
               className="w-5 h-5"
             >
