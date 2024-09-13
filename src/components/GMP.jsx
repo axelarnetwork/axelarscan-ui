@@ -216,7 +216,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                   break
                                 case 'confirm':
                                   if (confirmation_txhash) stepURL = `/tx/${confirmation_txhash}`
-                                  else if (contract_address && poll_id) stepURL = `/vm-poll/${contract_address}_${poll_id}`
+                                  else if (contract_address && poll_id) stepURL = `/amplifier-poll/${contract_address}_${poll_id}`
                                   else if (poll_id) stepURL = `/evm-poll/${poll_id}`
                                   else if (d.title === 'Waiting for Finality') {
                                     const finalityTime = estimatedTimeSpent?.confirm ? estimatedTimeSpent.confirm + 15 : 600
@@ -1129,7 +1129,7 @@ function Details({ data }) {
                 }
                 else if (contract_address && poll_id) {
                   stepTX = poll_id
-                  stepURL = `/vm-poll/${contract_address}_${poll_id}`
+                  stepURL = `/amplifier-poll/${contract_address}_${poll_id}`
                 }
                 else if (poll_id) {
                   stepTX = poll_id
@@ -1140,7 +1140,7 @@ function Details({ data }) {
                   stepMoreInfos.push((
                     <Copy size={16} key={stepMoreInfos.length} value={poll_id}>
                       <Link
-                        href={contract_address ? `/vm-poll/${contract_address}_${poll_id}` : `/evm-poll/${poll_id}`}
+                        href={contract_address ? `/amplifier-poll/${contract_address}_${poll_id}` : `/evm-poll/${poll_id}`}
                         target="_blank"
                         className="text-blue-600 dark:text-blue-500 text-xs underline"
                       >

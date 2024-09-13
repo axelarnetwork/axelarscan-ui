@@ -24,7 +24,7 @@ const chainTypes = toArray([
   { label: 'All', value: undefined },
   { label: 'EVM', value: 'evm' },
   { label: 'Cosmos', value: 'cosmos' },
-  !['mainnet'].includes(ENVIRONMENT) && { label: 'VM', value: 'vm' },
+  !['mainnet'].includes(ENVIRONMENT) && { label: 'Amplifier', value: 'vm' },
 ])
 
 const assetTypes = [
