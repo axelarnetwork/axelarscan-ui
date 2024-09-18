@@ -27,10 +27,10 @@ export function TVL() {
   useEffect(() => {
     if (chains && assets && itsAssets && tvl?.data && tvl.data.length > (assets.length + itsAssets.length) / 2) {
       setData(_.orderBy(tvl.data.map((d, j) => {
-        const { asset, assetType, total_on_evm, total_on_cosmos, total } = { ...d }
+        const { asset, assetType, total_on_evm, total_on_cosmos, total_on_contracts, total_on_tokens, total } = { ...d }
         let { price } = { ...d }
 
-        const assetData = assetType === 'its' ? getITSAssetData(asset, itsAssets) : getAssetData(asset, assets)
+        const assetData = assetType === 'its' ? getITSAssetData(asset, itsAssets) : getAssetData(asset, assets) || (total_on_contracts > 0 || total_on_tokens > 0 ? { ...Object.values({ ...d.tvl }).find(d => d.contract_data?.is_custom)?.contract_data } : undefined)
         price = toNumber(isNumber(price) ? price : isNumber(assetData?.price) ? assetData.price : -1)
 
         return {
@@ -153,7 +153,12 @@ export function TVL() {
                 <tr key={d.asset} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
                   <td className="sticky left-0 z-10 backdrop-blur backdrop-filter px-3 py-4 text-left">
                     <div className="flex flex-items-center gap-x-2">
-                      <AssetProfile value={d.asset} ITSPossible={d.assetType === 'its'} titleClassName="font-bold" />
+                      <AssetProfile
+                        value={d.asset}
+                        customAssetData={d.assetData}
+                        ITSPossible={d.assetType === 'its'}
+                        titleClassName="font-bold"
+                      />
                       {d.assetType === 'its' && (
                         <Tooltip content={Object.values({ ...d.tvl }).findIndex(d => d.token_manager_type?.startsWith('lockUnlock')) > -1 ? 'canonical ITS token' : 'custom ITS token'} className="whitespace-nowrap">
                           <Tag className="w-fit bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100">ITS</Tag>

@@ -613,6 +613,7 @@ export function AssetProfile({
   chain,
   amount,
   addressOrDenom,
+  customAssetData,
   ITSPossible = false,
   onlyITS = false,
   isLink = false,
@@ -623,7 +624,7 @@ export function AssetProfile({
 }) {
   const { chains, assets, itsAssets } = useGlobalStore()
 
-  const assetData = (!onlyITS && getAssetData(addressOrDenom || value, assets)) || (ITSPossible && getITSAssetData(addressOrDenom || value, _.concat(itsAssets, its)))
+  const assetData = (!onlyITS && getAssetData(addressOrDenom || value, assets)) || (ITSPossible && getITSAssetData(addressOrDenom || value, _.concat(itsAssets, its))) || customAssetData
   const { addresses } = { ...assetData }
   let { symbol, image } = { ...assetData }
 
