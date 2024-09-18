@@ -289,9 +289,9 @@ export function TVL() {
                             const element = (
                               <Number
                                 value={value}
-                                format="+0,0.0a"
-                                prefix="$"
-                                className={clsx('text-2xs font-semibold', !url && 'text-zinc-700 dark:text-zinc-300')}
+                                format="0,0.0a"
+                                prefix="+$"
+                                className={clsx('!text-2xs font-semibold', !url && 'text-zinc-700 dark:text-zinc-300')}
                               />
                             )
 
@@ -301,7 +301,7 @@ export function TVL() {
                                   <Link
                                     href={url}
                                     target="_blank"
-                                    className="contents text-blue-600 dark:text-blue-500"
+                                    className="contents text-green-600 dark:text-green-500"
                                   >
                                     {element}
                                   </Link> :
