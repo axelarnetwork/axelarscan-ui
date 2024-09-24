@@ -26,8 +26,11 @@ const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'
 function Info({ data, id }) {
   const { chains } = useGlobalStore()
 
-  const { session_id, multisig_prover_contract_address, multisig_contract_address, message_ids, status, height, initiated_txhash, confirmation_txhash, completed_txhash, expired_height, completed_height, participants, signOptions, created_at, updated_at } = { ...data }
+  const { session_id, multisig_prover_contract_address, multisig_contract_address, message_ids, status, height, initiated_txhash, confirmation_txhash, completed_txhash, expired_height, completed_height, gateway_txhash, participants, signOptions, created_at, updated_at } = { ...data }
   const chain = data?.chain || data?.destination_chain
+  const chainData = getChainData(chain, chains)
+  const { url, transaction_path } = { ...chainData?.explorer }
+
   return (
     <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
       <div className="px-4 sm:px-6 py-6">
@@ -121,6 +124,20 @@ function Info({ data, id }) {
               )}
             </dd>
           </div>
+          {gateway_txhash && (
+            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Gateway Tx Hash</dt>
+              <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                <Link
+                  href={`${url}${transaction_path?.replace('{tx}', gateway_txhash)}`}
+                  target="_blank"
+                  className="text-blue-600 dark:text-blue-500 font-medium"
+                >
+                  {ellipse(gateway_txhash)}
+                </Link>
+              </dd>
+            </div>
+          )}
           {initiated_txhash && (
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Initiated Tx Hash</dt>
