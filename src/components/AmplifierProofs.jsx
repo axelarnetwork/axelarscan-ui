@@ -357,15 +357,18 @@ export function AmplifierProofs() {
                     <tr key={d.id} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
                       <td className="pl-4 sm:pl-0 pr-3 py-4 text-left">
                         <div className="flex flex-col gap-y-0.5">
-                          <Copy value={`${chain}-${d.session_id}`}>
-                            <Link
-                              href={`/amplifier-proof/${d.id}`}
-                              target="_blank"
-                              className="text-blue-600 dark:text-blue-500 font-semibold"
-                            >
-                              {chain}-{d.session_id}
-                            </Link>
-                          </Copy>
+                          <div className="flex items-center gap-x-1">
+                            <Copy value={`${chain}-${d.session_id}`}>
+                              <Link
+                                href={`/amplifier-proof/${d.id}`}
+                                target="_blank"
+                                className="text-blue-600 dark:text-blue-500 font-semibold"
+                              >
+                                {chain}-{d.session_id}
+                              </Link>
+                            </Copy>
+                            {d.gateway_txhash && <ExplorerLink value={d.gateway_txhash} chain={d.chain} />}
+                          </div>
                           {d.multisig_prover_contract_address && (
                             <div className="flex items-center">
                               <Tooltip content="Multisig Prover Contract" className="whitespace-nowrap">
