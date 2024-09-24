@@ -19,6 +19,7 @@ import { getLENS } from '@/lib/api/name-services/lens'
 import { getSpaceID } from '@/lib/api/name-services/spaceid'
 import { getUnstoppable } from '@/lib/api/name-services/unstoppable'
 import { getSlug } from '@/lib/navigation'
+import { getITSAssetData } from '@/lib/config'
 import { getInputType, split, toArray } from '@/lib/parser'
 import { equalsIgnoreCase } from '@/lib/string'
 
@@ -29,7 +30,7 @@ export function Search() {
   const [input, setInput] = useState('')
   const [searching, setSearching] = useState(false)
   const { handleSubmit } = useForm()
-  const { chains } = useGlobalStore()
+  const { chains, itsAssets } = useGlobalStore()
   const { ens, lens, spaceID, unstoppable, setENS, setLENS, setSpaceID, setUnstoppable } = useNameServicesStore()
 
   const onSubmit = async () => {
@@ -77,6 +78,13 @@ export function Search() {
       }
 
       if (_input && type === 'address') {
+        if (getITSAssetData(_input, itsAssets)) {
+          type = 'gmp'
+          _input = `search?assetType=its&itsTokenAddress=${_input}`
+        }
+      }
+
+      if (_input && type === 'address') {
         await Promise.all(['ens', 'lens', 'spaceid', 'unstoppable'].map(k => new Promise(async resolve => {
           const addresses = toArray(_input, { toCase: 'lower' })
           switch (k) {
@@ -110,7 +118,7 @@ export function Search() {
   const address = getSlug(pathname, 'address')
   const searchable = !searching && input && toArray([tx, address]).findIndex(s => equalsIgnoreCase(s, input)) < 0
 
-  return (
+  return itsAssets && (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className="relative flex items-center">
         <input
