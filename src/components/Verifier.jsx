@@ -80,6 +80,7 @@ function Info({ data, rewards, cumulativeRewards, address }) {
   const { chains, verifiersByChain } = useGlobalStore()
   const { supportedChains } = { ...data }
 
+  const { bonding_state, authorization_state, weight } = { ...Object.values(verifiersByChain).flatMap(d => toArray(d?.addresses)).find(d => equalsIgnoreCase(d.address, address)) }
   return (
     <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
       <div className="px-4 sm:px-6 py-6">
@@ -93,96 +94,52 @@ function Info({ data, rewards, cumulativeRewards, address }) {
             <>
               <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
                 <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Status</dt>
-                <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                <dd className="sm:col-span-2 flex flex-col text-zinc-700 dark:text-zinc-300 text-sm leading-6 space-y-2 mt-1 sm:mt-0">
                   <Tag className={clsx('w-fit', supportedChains.length > 0 ? 'bg-green-600 dark:bg-green-500' : 'bg-red-600 dark:bg-red-500')}>
                     {supportedChains.length > 0 ? 'Active' : 'Inactive'}
                   </Tag>
+                  {isNumber(bonding_state?.Bonded?.amount) && (
+                    <div className="flex items-center space-x-2">
+                      <span className="font-semibold">Bonding State:</span>
+                      <Number
+                        value={bonding_state.Bonded.amount}
+                        suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
+                        noTooltip={true}
+                      />
+                    </div>
+                  )}
+                  {authorization_state && (
+                    <div className="flex items-center space-x-2">
+                      <span className="font-semibold">Authorization State:</span>
+                      <span>{authorization_state}</span>
+                    </div>
+                  )}
+                  {isNumber(weight) && (
+                    <div className="flex items-center space-x-2">
+                      <span className="font-semibold">Weight:</span>
+                      <Number value={weight} noTooltip={true} />
+                    </div>
+                  )}
                 </dd>
               </div>
               <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
                 <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Amplifier Supported</dt>
                 <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                  <div className="overflow-x-auto lg:overflow-x-visible -mx-4 sm:-mx-0">
-                    <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
-                      <thead className="sticky top-0 z-10 bg-white dark:bg-zinc-900">
-                        <tr className="text-zinc-800 dark:text-zinc-200 text-sm font-semibold">
-                          <th scope="col" className="pl-4 sm:pl-3 pr-3 py-2.5 text-left">
-                            Chain
-                          </th>
-                          <th scope="col" className="whitespace-nowrap px-3 py-2.5 text-right">
-                            Bonding State
-                          </th>
-                          <th scope="col" className="whitespace-nowrap px-3 py-2.5 text-right">
-                            Authorization State
-                          </th>
-                          <th scope="col" className="pl-3 pr-4 sm:pr-3 px-3 py-2.5 text-right">
-                            Weight
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
-                        {supportedChains.map((c, i) => {
-                          const { name, image } = { ...getChainData(c, chains) }
-                          const { bonding_state, authorization_state, weight } = { ...toArray(verifiersByChain?.[c]?.addresses).find(d => equalsIgnoreCase(d.address, address)) }
-                          return (
-                            <tr key={i} className="align-top text-zinc-400 dark:text-zinc-500 text-xs">
-                              <td className="pl-4 sm:pl-3 pr-3 py-3 text-left">
-                                <div className="flex items-center">
-                                  {name ?
-                                    <Tooltip content={name} className="whitespace-nowrap">
-                                      <Image
-                                        src={image}
-                                        alt=""
-                                        width={20}
-                                        height={20}
-                                      />
-                                    </Tooltip> :
-                                    <span className="text-zinc-900 dark:text-zinc-100">{c}</span>
-                                  }
-                                </div>
-                              </td>
-                              <td className="px-3 py-3 text-right">
-                                {Object.entries({ ...bonding_state }).map(([k, v]) => (
-                                  <div key={k} className="flex items-center justify-end">
-                                    <Tag className={clsx('w-fit', k === 'Bonded' ? 'bg-green-600 dark:bg-green-500' : 'bg-red-600 dark:bg-red-500')}>
-                                      {k}
-                                      {isNumber(v.amount) && (
-                                        <Number
-                                          value={v.amount}
-                                          prefix=": "
-                                          noTooltip={true}
-                                          className="text-xs font-medium"
-                                        />
-                                      )}
-                                    </Tag>
-                                  </div>
-                                ))}
-                              </td>
-                              <td className="px-3 py-3 text-right">
-                                {authorization_state && (
-                                  <div className="flex items-center justify-end">
-                                    <Tag className={clsx('w-fit', authorization_state === 'Authorized' ? 'bg-green-600 dark:bg-green-500' : 'bg-red-600 dark:bg-red-500')}>
-                                      {authorization_state}
-                                    </Tag>
-                                  </div>
-                                )}
-                              </td>
-                              <td className="pl-3 pr-4 sm:pr-3 py-3 text-right">
-                                {isNumber(weight) && (
-                                  <div className="flex items-center justify-end">
-                                    <Number
-                                      value={weight}
-                                      noTooltip={true}
-                                      className="text-xs font-medium"
-                                    />
-                                  </div>
-                                )}
-                              </td>
-                            </tr>
-                          )
-                        })}
-                      </tbody>
-                    </table>
+                  <div className="flex flex-wrap">
+                    {supportedChains.map((c, i) => {
+                      const { name, image } = { ...getChainData(c, chains) }
+                      return (
+                        <Tooltip key={i} content={name} className="whitespace-nowrap">
+                          <Image
+                            src={image}
+                            alt=""
+                            width={20}
+                            height={20}
+                            className="mr-1.5 mb-1.5"
+                          />
+                        </Tooltip>
+                      )
+                    })}
                   </div>
                 </dd>
               </div>
