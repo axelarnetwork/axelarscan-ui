@@ -21,7 +21,7 @@ import { getRPCStatus, searchVMPolls, searchVMProofs, getVerifiersSigns, getVeri
 import { getChainData } from '@/lib/config'
 import { toArray } from '@/lib/parser'
 import { equalsIgnoreCase } from '@/lib/string'
-import { isNumber, numberFormat } from '@/lib/number'
+import { isNumber, toNumber, numberFormat } from '@/lib/number'
 
 function Pagination({ data, value = 1, maxPage = 5, sizePerPage = 25, onChange }) {
   const [page, setPage] = useState(value)
