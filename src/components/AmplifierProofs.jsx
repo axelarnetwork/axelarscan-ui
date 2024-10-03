@@ -298,7 +298,7 @@ export function AmplifierProofs() {
           <div className="flex items-center justify-between gap-x-4">
             <div className="sm:flex-auto">
               <div className="flex items-center space-x-2">
-                {!['mainnet'].includes(ENVIRONMENT) && (
+                {![].includes(ENVIRONMENT) && (
                   <>
                     <Link href="/evm-batches" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
                       EVM Batches

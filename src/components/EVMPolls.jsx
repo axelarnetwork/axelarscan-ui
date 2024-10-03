@@ -333,7 +333,7 @@ export function EVMPolls() {
             <div className="sm:flex-auto">
               <div className="flex items-center space-x-2">
                 <h1 className="underline text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">EVM Polls</h1>
-                {!['mainnet'].includes(ENVIRONMENT) && (
+                {![].includes(ENVIRONMENT) && (
                   <>
                     <span className="text-zinc-400 dark:text-zinc-500">|</span>
                     <Link href="/amplifier-polls" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
