@@ -15,7 +15,7 @@ import { Tag } from '@/components/Tag'
 import { AddMetamask } from '@/components/Metamask'
 import { ValueBox } from '@/components/ValueBox'
 import { useGlobalStore } from '@/components/Global'
-import { ENVIRONMENT, getChainData } from '@/lib/config'
+import { ENABLE_AMPLIFIER_DISPLAY, getChainData } from '@/lib/config'
 import { getIBCDenomBase64, split, toArray } from '@/lib/parser'
 import { includesStringList } from '@/lib/operator'
 import { equalsIgnoreCase, ellipse } from '@/lib/string'
@@ -24,7 +24,7 @@ const chainTypes = toArray([
   { label: 'All', value: undefined },
   { label: 'EVM', value: 'evm' },
   { label: 'Cosmos', value: 'cosmos' },
-  ![].includes(ENVIRONMENT) && { label: 'Amplifier', value: 'vm' },
+  ENABLE_AMPLIFIER_DISPLAY && { label: 'Amplifier', value: 'vm' },
 ])
 
 const assetTypes = [

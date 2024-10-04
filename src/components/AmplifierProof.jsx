@@ -407,7 +407,7 @@ export function AmplifierProof({ id }) {
         }
 
         console.log('[data]', d)
-        setData(d)
+        setData({ ...d })
       }
     }
     getData()
