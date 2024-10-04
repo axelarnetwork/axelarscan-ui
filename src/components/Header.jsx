@@ -16,7 +16,7 @@ import { ThemeToggle } from '@/components/ThemeToggle'
 import { Tag } from '@/components/Tag'
 import { Number } from '@/components/Number'
 import { useGlobalStore } from '@/components/Global'
-import { ENVIRONMENT, getAssetData, getITSAssetData } from '@/lib/config'
+import { ENVIRONMENT, ENABLE_AMPLIFIER_DISPLAY, getAssetData, getITSAssetData } from '@/lib/config'
 import { toArray } from '@/lib/parser'
 import { isNumber, toNumber } from '@/lib/number'
 
@@ -33,14 +33,14 @@ const navigations = [
     title: 'Network',
     children: toArray([
       { title: 'Validators', href: '/validators' },
-      ![].includes(ENVIRONMENT) && { title: 'Verifiers', href: '/verifiers' },
-      ![].includes(ENVIRONMENT) && { title: 'Amplifier Rewards', href: '/amplifier-rewards' },
+      ENABLE_AMPLIFIER_DISPLAY && { title: 'Verifiers', href: '/verifiers' },
+      ENABLE_AMPLIFIER_DISPLAY && { title: 'Amplifier Rewards', href: '/amplifier-rewards' },
       { title: 'Blocks', href: '/blocks' },
       { title: 'Transactions', href: '/transactions' },
       { title: 'External Chain Polls', href: '/evm-polls' },
-      // ![].includes(ENVIRONMENT) && { title: 'Amplifier Polls', href: '/amplifier-polls' },
+      // ENABLE_AMPLIFIER_DISPLAY && { title: 'Amplifier Polls', href: '/amplifier-polls' },
       { title: 'External Chain Signings', href: '/evm-batches' },
-      // ![].includes(ENVIRONMENT) && { title: 'Amplifier Proofs', href: '/amplifier-proofs' },
+      // ENABLE_AMPLIFIER_DISPLAY && { title: 'Amplifier Proofs', href: '/amplifier-proofs' },
       { title: 'Proposals', href: '/proposals' },
     ]),
   },

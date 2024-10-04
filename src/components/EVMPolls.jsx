@@ -26,7 +26,7 @@ import { TimeAgo } from '@/components/Time'
 import { getParams, getQueryString, Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
 import { searchPolls } from '@/lib/api/validator'
-import { ENVIRONMENT, getChainData, getAssetData } from '@/lib/config'
+import { ENABLE_AMPLIFIER_DISPLAY, getChainData, getAssetData } from '@/lib/config'
 import { toJson, split, toArray } from '@/lib/parser'
 import { includesStringList } from '@/lib/operator'
 import { equalsIgnoreCase, capitalize, toBoolean, ellipse, toTitle } from '@/lib/string'
@@ -333,7 +333,7 @@ export function EVMPolls() {
             <div className="sm:flex-auto">
               <div className="flex items-center space-x-2">
                 <h1 className="underline text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">EVM Polls</h1>
-                {![].includes(ENVIRONMENT) && (
+                {ENABLE_AMPLIFIER_DISPLAY && (
                   <>
                     <span className="text-zinc-400 dark:text-zinc-500">|</span>
                     <Link href="/amplifier-polls" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">

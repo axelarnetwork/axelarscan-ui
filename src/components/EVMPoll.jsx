@@ -484,7 +484,7 @@ export function EVMPoll({ id }) {
       }
 
       console.log('[data]', d)
-      setData(d)
+      setData({ ...d })
     }
     getData()
   }, [id, chains, setData])
