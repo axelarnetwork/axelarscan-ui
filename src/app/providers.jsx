@@ -4,6 +4,7 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { ThemeProvider, useTheme } from 'next-themes'
 import TagManager from 'react-gtm-module'
+import { IntercomProvider } from 'react-use-intercom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { useWeb3ModalTheme } from '@web3modal/wagmi/react'
 
@@ -60,13 +61,15 @@ export function Providers({ children }) {
 
   return (
     <ThemeProvider attribute="class" disableTransitionOnChange>
-      <ThemeWatcher />
-      <Global />
-      <QueryClientProvider client={client}>
-        <WagmiConfigProvider>
-          {children}
-        </WagmiConfigProvider>
-      </QueryClientProvider>
+      <IntercomProvider appId={process.env.NEXT_PUBLIC_INTERCOM_APP_ID} autoBoot={true}>
+        <ThemeWatcher />
+        <Global />
+        <QueryClientProvider client={client}>
+          <WagmiConfigProvider>
+            {children}
+          </WagmiConfigProvider>
+        </QueryClientProvider>
+      </IntercomProvider>
     </ThemeProvider>
   )
 }
