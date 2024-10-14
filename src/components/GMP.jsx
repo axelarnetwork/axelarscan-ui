@@ -148,7 +148,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
           {txhash && (
             <div className="flex items-center gap-x-1">
               <Copy value={txhash}>
-                {url ?
+                {url && (proposal_id || call?.transactionHash) ?
                   <Link
                     href={proposal_id ? `/proposal/${proposal_id}` : `${url}${transaction_path?.replace('{tx}', txhash)}`}
                     target="_blank"
@@ -156,10 +156,10 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                   >
                     {ellipse(txhash)}{call.chain_type === 'evm' && call.receipt ? isNumber(call._logIndex) ? `-${call._logIndex}` : isNumber(call.logIndex) ? `:${call.logIndex}` : '' : ['cosmos', 'vm'].includes(call.chain_type) && isNumber(call.messageIdIndex) ? `-${call.messageIdIndex}` : ''}
                   </Link> :
-                  `${ellipse(txhash)}${call.chain_type === 'evm' && call.receipt ? isNumber(call._logIndex) ? `-${call._logIndex}` : isNumber(call.logIndex) ? `:${call.logIndex}` : '' : ['cosmos', 'vm'].includes(call.chain_type) && isNumber(call.messageIdIndex) ? `-${call.messageIdIndex}` : ''}`
+                  `${ellipse(txhash)}${call.chain_type === 'evm' && call.receipt ? isNumber(call._logIndex) ? `-${call._logIndex}` : isNumber(call.logIndex) ? `:${call.logIndex}` : '' : ['cosmos', 'vm'].includes(call.chain_type) && isNumber(call.messageIdIndex) && call?.transactionHash ? `-${call.messageIdIndex}` : ''}`
                 }
               </Copy>
-              {!proposal_id && <ExplorerLink value={txhash} chain={sourceChain} hasEventLog={call.chain_type === 'evm' && isNumber(call.logIndex)} />}
+              {!proposal_id && call?.transactionHash && <ExplorerLink value={txhash} chain={sourceChain} hasEventLog={call.chain_type === 'evm' && isNumber(call.logIndex)} />}
             </div>
           )}
         </div>
@@ -1789,7 +1789,7 @@ export function GMP({ tx, lite }) {
   const sourceChainData = getChainData(call?.chain, chains)
   const destinationChainData = getChainData(call?.returnValues?.destinationChain, chains)
 
-  const addGasButton = call && !['vm'].includes(call.chain_type) && !executed && !is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) && (!(gas_paid || gas_paid_to_callback) || is_insufficient_fee || is_invalid_gas_paid || not_enough_gas_to_execute || gas?.gas_remain_amount < MIN_GAS_REMAIN_AMOUNT) && (
+  const addGasButton = call && !['vm'].includes(call.chain_type) && !(call.chain === 'axelarnet' && ['vm'].includes(call.destination_chain_type)) && !executed && !is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) && (!(gas_paid || gas_paid_to_callback) || is_insufficient_fee || is_invalid_gas_paid || not_enough_gas_to_execute || gas?.gas_remain_amount < MIN_GAS_REMAIN_AMOUNT) && (
     <div key="addGas" className="flex items-center gap-x-1">
       {(call.chain_type === 'cosmos' ? cosmosWalletStore?.signer : signer) && !needSwitchChain(sourceChainData?.chain_id, call.chain_type) && (
         <button
