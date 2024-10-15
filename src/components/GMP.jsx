@@ -75,7 +75,7 @@ export function getStep(data, chains) {
       data: express_executed,
       chainData: destinationChainData,
     },
-    (confirm || !approved || !(executed || is_executed || error)) && {
+    (confirm || !approved || !(executed || is_executed || error)) && destinationChainData?.chain_type !== 'vm' && {
       id: 'confirm',
       title: (confirm && (sourceChainData?.chain_type === 'cosmos' || confirm.poll_id !== confirm_failed_event?.poll_id)) || approved || executed || is_executed || error ? 'Confirmed' : is_invalid_call ? 'Invalid Call' : confirm_failed ? 'Failed to Confirm' : gas_paid || gas_paid_to_callback || express_executed ? 'Waiting for Finality' : 'Confirm',
       status: (confirm && (sourceChainData?.chain_type === 'cosmos' || confirm.poll_id !== confirm_failed_event?.poll_id)) || approved || executed || is_executed || error ? 'success' : is_invalid_call || confirm_failed ? 'failed' : 'pending',
