@@ -5,7 +5,7 @@ import { equalsIgnoreCase, removeDoubleQuote } from '@/lib/string'
 
 export const ENVIRONMENT = process.env.NEXT_PUBLIC_ENVIRONMENT
 
-export const ENABLE_AMPLIFIER_DISPLAY = !['mainnet'].includes(ENVIRONMENT)
+export const ENABLE_AMPLIFIER_DISPLAY = ![].includes(ENVIRONMENT)
 
 export const axelarContracts = ['axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5', 'axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5s']
 
