@@ -1520,11 +1520,25 @@ export function GMP({ tx, lite }) {
           d.callbackData = toArray(data).find(_d => equalsIgnoreCase(_d.call?.transactionHash, d.executed.transactionHash))
           d.callbackData = await customData(d.callbackData)
         }
+        else if (d.callback?.messageIdHash) {
+          const messageId = `${d.callback.messageIdHash}-${d.callback.messageIdIndex}`
+          const { data } = { ...await searchGMP({ messageId }) }
+          d.callbackData = toArray(data).find(_d => equalsIgnoreCase(_d.call?.returnValues?.messageId, messageId))
+          d.callbackData = await customData(d.callbackData)
+        }
+        else if (toArray(d.executed?.childMessageIDs) > 0) {
+          const { data } = { ...await searchGMP({ messageId: _.head(d.executed.childMessageIDs) }) }
+          d.callbackData = toArray(data).find(_d => equalsIgnoreCase(_d.call?.returnValues?.messageId, _.head(d.executed.childMessageIDs)))
+          d.callbackData = await customData(d.callbackData)
+        }
 
         // origin
         if (d.call && (d.gas_paid_to_callback || d.is_call_from_relayer)) {
-          const { data } = { ...await searchGMP({ txHash: d.call.transactionHash }) }
-          d.originData = toArray(data).find(_d => toArray([_d.express_executed?.transactionHash, _d.executed?.transactionHash]).findIndex(tx => equalsIgnoreCase(tx, d.call.transactionHash)) > -1)
+          const { data } = { ...await searchGMP(d.call.transactionHash ? { txHash: d.call.transactionHash } : { messageId: d.call.parentMessageID }) }
+          d.originData = toArray(data).find(_d => d.call.transactionHash ?
+            toArray([_d.express_executed?.transactionHash, _d.executed?.transactionHash]).findIndex(tx => equalsIgnoreCase(tx, d.call.transactionHash)) > -1 :
+            toArray([_d.express_executed?.messageId, _d.executed?.messageId]).findIndex(id => equalsIgnoreCase(id, d.call.parentMessageID)) > -1
+          )
           d.originData = await customData(d.originData)
         }
 
