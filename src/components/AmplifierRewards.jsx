@@ -24,7 +24,7 @@ import { useGlobalStore } from '@/components/Global'
 import { searchRewardsDistribution, getRewardsPool } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
-import { equalsIgnoreCase, toBoolean, ellipse } from '@/lib/string'
+import { equalsIgnoreCase, toBoolean, ellipse, toTitle } from '@/lib/string'
 import { isNumber, formatUnits } from '@/lib/number'
 
 function Info({ chain, rewardsPool, cumulativeRewards }) {
@@ -32,146 +32,170 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
   const pathname = usePathname()
   const { chains, verifiers } = useGlobalStore()
 
-  const { id, multisig_prover, voting_verifier } = { ...getChainData(chain, chains) }
-  const { balance, epoch_duration, rewards_per_epoch, last_distribution_epoch } = { ...rewardsPool }
+  const { id, multisig_prover } = { ...getChainData(chain, chains) }
+  const { voting_verifier, multisig } = { ...rewardsPool }
 
   return (
-    <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
-      <div className="px-4 sm:px-6 py-6">
-        <h3 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-7">
-          <Listbox value={id} onChange={v => router.push(`${pathname.replace(chain, v)}`)} className="w-48">
-            {({ open }) => {
-              const isSelected = v => v === id || equalsIgnoreCase(v, chain)
-              const selectedValue = toArray(chains).find(d => isSelected(d.id))
+    <>
+      <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
+        <div className="px-4 sm:px-6 py-6">
+          <h3 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-7">
+            <Listbox value={id} onChange={v => router.push(`${pathname.replace(chain, v)}`)} className="w-56">
+              {({ open }) => {
+                const isSelected = v => v === id || equalsIgnoreCase(v, chain)
+                const selectedValue = toArray(chains).find(d => isSelected(d.id))
 
-              return (
-                <div className="relative">
-                  <Listbox.Button className="relative w-full cursor-pointer rounded-md shadow-sm border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 sm:text-sm sm:leading-6 text-left pl-3 pr-10 py-1.5">
-                    <span className="block truncate">{selectedValue?.name}</span>
-                    <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                      <LuChevronsUpDown size={20} className="text-zinc-400" />
-                    </span>
-                  </Listbox.Button>
-                  <Transition
-                    show={open}
-                    as={Fragment}
-                    leave="transition ease-in duration-100"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                  >
-                    <Listbox.Options className="absolute z-10 w-full max-h-60 bg-white overflow-auto rounded-md shadow-lg text-base sm:text-sm mt-1 py-1">
-                      {toArray(chains).filter(d => d.chain_type === 'vm').map((d, j) => (
-                        <Listbox.Option key={j} value={d.id} className={({ active }) => clsx('relative cursor-default select-none pl-3 pr-9 py-2', active ? 'bg-blue-600 text-white' : 'text-zinc-900')}>
-                          {({ selected, active }) => (
-                            <>
-                              <span className={clsx('block truncate', selected ? 'font-semibold' : 'font-normal')}>
-                                {d.name}
-                              </span>
-                              {selected && (
-                                <span className={clsx('absolute inset-y-0 right-0 flex items-center pr-4', active ? 'text-white' : 'text-blue-600')}>
-                                  <MdCheck size={20} />
+                return (
+                  <div className="relative">
+                    <Listbox.Button className="relative w-full cursor-pointer rounded-md shadow-sm border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 sm:text-sm sm:leading-6 text-left pl-3 pr-10 py-1.5">
+                      <span className="block truncate">{selectedValue?.name}</span>
+                      <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                        <LuChevronsUpDown size={20} className="text-zinc-400" />
+                      </span>
+                    </Listbox.Button>
+                    <Transition
+                      show={open}
+                      as={Fragment}
+                      leave="transition ease-in duration-100"
+                      leaveFrom="opacity-100"
+                      leaveTo="opacity-0"
+                    >
+                      <Listbox.Options className="absolute z-10 w-full max-h-60 bg-white overflow-auto rounded-md shadow-lg text-base sm:text-sm mt-1 py-1">
+                        {toArray(chains).filter(d => d.chain_type === 'vm').map((d, j) => (
+                          <Listbox.Option key={j} value={d.id} className={({ active }) => clsx('relative cursor-default select-none pl-3 pr-9 py-2', active ? 'bg-blue-600 text-white' : 'text-zinc-900')}>
+                            {({ selected, active }) => (
+                              <>
+                                <span className={clsx('block truncate', selected ? 'font-semibold' : 'font-normal')}>
+                                  {d.name}
                                 </span>
-                              )}
-                            </>
-                          )}
-                        </Listbox.Option>
-                      ))}
-                    </Listbox.Options>
-                  </Transition>
-                </div>
-              )
-            }}
-          </Listbox>
-        </h3>
-      </div>
-      <div className="border-t border-zinc-200 dark:border-zinc-700">
-        <div className="grid sm:grid-cols-2 gap-4">
-          <dl className="divide-y divide-zinc-100 dark:divide-zinc-800">
-            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Voting Verifier address</dt>
-              <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                <Profile address={voting_verifier?.address} />
-              </dd>
-            </div>
-            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Multisig Prover address</dt>
-              <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                <Profile address={multisig_prover?.address} />
-              </dd>
-            </div>
-            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">No. Verifiers</dt>
-              <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                <Number
-                  value={toArray(verifiers).filter(d => toArray(d.supportedChains).includes(id)).length}
-                  format="0,0"
-                  className="font-medium"
-                />
-              </dd>
-            </div>
-            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Cumulative Rewards</dt>
-              <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                <Number
-                  value={cumulativeRewards}
-                  suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
-                  noTooltip={true}
-                  className="font-medium"
-                />
-              </dd>
-            </div>
-          </dl>
-          <dl className="divide-y divide-zinc-100 dark:divide-zinc-800">
-            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Reward pool balance</dt>
-              <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                <Number
-                  value={formatUnits(balance, 6)}
-                  suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
-                  noTooltip={true}
-                  className="font-medium"
-                />
-              </dd>
-            </div>
-            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Epoch duration (blocks)</dt>
-              <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                {isNumber(epoch_duration) ?
+                                {selected && (
+                                  <span className={clsx('absolute inset-y-0 right-0 flex items-center pr-4', active ? 'text-white' : 'text-blue-600')}>
+                                    <MdCheck size={20} />
+                                  </span>
+                                )}
+                              </>
+                            )}
+                          </Listbox.Option>
+                        ))}
+                      </Listbox.Options>
+                    </Transition>
+                  </div>
+                )
+              }}
+            </Listbox>
+          </h3>
+        </div>
+        <div className="border-t border-zinc-200 dark:border-zinc-700">
+          <div className="grid sm:grid-cols-2 gap-y-4">
+            <dl className="divide-y divide-zinc-100 dark:divide-zinc-800">
+              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">No. Verifiers</dt>
+                <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                   <Number
-                    value={epoch_duration}
+                    value={toArray(verifiers).filter(d => toArray(d.supportedChains).includes(id)).length}
                     format="0,0"
                     className="font-medium"
-                  /> : '-'
-                }
-              </dd>
-            </div>
-            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Rewards per epoch</dt>
-              <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                <Number
-                  value={formatUnits(rewards_per_epoch, 6)}
-                  suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
-                  noTooltip={true}
-                  className="font-medium"
-                />
-              </dd>
-            </div>
-            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Last distribution epoch</dt>
-              <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                {isNumber(epoch_duration) ?
+                  />
+                </dd>
+              </div>
+              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Multisig prover address</dt>
+                <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                  <Profile address={multisig_prover?.address} />
+                </dd>
+              </div>
+            </dl>
+            <dl className="divide-y divide-zinc-100 dark:divide-zinc-800">
+              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Total reward pool balance</dt>
+                <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                   <Number
-                    value={last_distribution_epoch}
-                    format="0,0"
+                    value={formatUnits(rewardsPool?.balance, 6)}
+                    suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
+                    noTooltip={true}
                     className="font-medium"
-                  /> : '-'
-                }
-              </dd>
-            </div>
-          </dl>
+                  />
+                </dd>
+              </div>
+              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Cumulative rewards</dt>
+                <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                  <Number
+                    value={cumulativeRewards}
+                    suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
+                    noTooltip={true}
+                    className="font-medium"
+                  />
+                </dd>
+              </div>
+            </dl>
+          </div>
         </div>
       </div>
-    </div>
+      <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
+        <div className="grid sm:grid-cols-2 gap-y-4">
+          {Object.entries({ voting_verifier, multisig }).filter(([k, v]) => v).map(([k, { address, balance, epoch_duration, rewards_per_epoch, last_distribution_epoch }]) => (
+            <dl key={k} className="divide-y divide-zinc-100 dark:divide-zinc-800">
+              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                <dt className="capitalize text-zinc-900 dark:text-zinc-100 text-base font-bold">{toTitle(k)}</dt>
+              </div>
+              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Address</dt>
+                <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                  <Profile address={address} />
+                </dd>
+              </div>
+              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Reward pool balance</dt>
+                <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                  <Number
+                    value={formatUnits(balance, 6)}
+                    suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
+                    noTooltip={true}
+                    className="font-medium"
+                  />
+                </dd>
+              </div>
+              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Epoch duration (blocks)</dt>
+                <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                  {isNumber(epoch_duration) ?
+                    <Number
+                      value={epoch_duration}
+                      format="0,0"
+                      className="font-medium"
+                    /> : '-'
+                  }
+                </dd>
+              </div>
+              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Rewards per epoch</dt>
+                <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                  <Number
+                    value={formatUnits(rewards_per_epoch, 6)}
+                    suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
+                    noTooltip={true}
+                    className="font-medium"
+                  />
+                </dd>
+              </div>
+              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Last distribution epoch</dt>
+                <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                  {isNumber(epoch_duration) ?
+                    <Number
+                      value={last_distribution_epoch}
+                      format="0,0"
+                      className="font-medium"
+                    /> : '-'
+                  }
+                </dd>
+              </div>
+            </dl>
+          ))}          
+        </div>
+      </div>
+    </>
   )
 }
 
