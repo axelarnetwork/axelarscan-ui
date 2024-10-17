@@ -179,18 +179,20 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
                   />
                 </dd>
               </div>
-              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Last distribution epoch</dt>
-                <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                  {isNumber(epoch_duration) ?
-                    <Number
-                      value={last_distribution_epoch}
-                      format="0,0"
-                      className="font-medium"
-                    /> : '-'
-                  }
-                </dd>
-              </div>
+              {!!last_distribution_epoch && (
+                <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Last distribution epoch</dt>
+                  <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                    {isNumber(epoch_duration) ?
+                      <Number
+                        value={last_distribution_epoch}
+                        format="0,0"
+                        className="font-medium"
+                      /> : '-'
+                    }
+                  </dd>
+                </div>
+              )}
             </dl>
           ))}          
         </div>
