@@ -75,7 +75,7 @@ export function getStep(data, chains) {
       data: express_executed,
       chainData: destinationChainData,
     },
-    (confirm || !approved || !(executed || is_executed || error)) && destinationChainData?.chain_type !== 'vm' && {
+    (confirm || !approved || !(executed || is_executed || error)) && sourceChain !== 'axelarnet' && {
       id: 'confirm',
       title: (confirm && (sourceChainData?.chain_type === 'cosmos' || confirm.poll_id !== confirm_failed_event?.poll_id)) || approved || executed || is_executed || error ? 'Confirmed' : is_invalid_call ? 'Invalid Call' : confirm_failed ? 'Failed to Confirm' : gas_paid || gas_paid_to_callback || express_executed ? 'Waiting for Finality' : 'Confirm',
       status: (confirm && (sourceChainData?.chain_type === 'cosmos' || confirm.poll_id !== confirm_failed_event?.poll_id)) || approved || executed || is_executed || error ? 'success' : is_invalid_call || confirm_failed ? 'failed' : 'pending',
@@ -1826,7 +1826,7 @@ export function GMP({ tx, lite }) {
         onClick={() => approve(data)}
         className={clsx('h-6 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1', processing ? 'pointer-events-none bg-blue-400 dark:bg-blue-400' : 'bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600')}
       >
-        {!confirm ? 'Confirm' : 'Approv'}{processing ? 'ing...' : !confirm ? '' : 'e'}
+        {!confirm && call.chain !== 'axelarnet' ? 'Confirm' : 'Approv'}{processing ? 'ing...' : !confirm && call.chain !== 'axelarnet' ? '' : 'e'}
       </button>
     </div>
   )
@@ -1857,7 +1857,7 @@ export function GMP({ tx, lite }) {
             executeData={executeData}
             buttons={Object.fromEntries(Object.entries({
               pay_gas: addGasButton,
-              [!confirm ? 'confirm' : 'approve']: approveButton,
+              [!confirm && call.chain !== 'axelarnet' ? 'confirm' : 'approve']: approveButton,
               execute: executeButton,
             }).filter(([k, v]) => v))}
             tx={tx}
