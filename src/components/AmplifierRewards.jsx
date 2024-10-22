@@ -99,14 +99,6 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
                 </dd>
               </div>
               <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Multisig prover address</dt>
-                <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                  <Profile address={multisig_prover?.address} />
-                </dd>
-              </div>
-            </dl>
-            <dl className="divide-y divide-zinc-100 dark:divide-zinc-800">
-              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
                 <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Total reward pool balance</dt>
                 <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                   <Number
@@ -129,18 +121,26 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
                 </dd>
               </div>
             </dl>
+            <dl className="divide-y divide-zinc-100 dark:divide-zinc-800">
+              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Multisig prover address</dt>
+                <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                  <Profile address={multisig_prover?.address} />
+                </dd>
+              </div>
+            </dl>
           </div>
         </div>
       </div>
       <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
         <div className="grid sm:grid-cols-2 gap-y-4">
-          {Object.entries({ voting_verifier, multisig }).filter(([k, v]) => v).map(([k, { address, balance, epoch_duration, rewards_per_epoch, last_distribution_epoch }]) => (
+          {Object.entries({ voting_verifier: { ...voting_verifier, title: 'Verification' }, multisig: { ...multisig, title: 'Signing' } }).filter(([k, v]) => v).map(([k, { title, address, balance, epoch_duration, rewards_per_epoch, last_distribution_epoch }]) => (
             <dl key={k} className="divide-y divide-zinc-100 dark:divide-zinc-800">
-              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="capitalize text-zinc-900 dark:text-zinc-100 text-base font-bold">{toTitle(k)}</dt>
+              <div className="border-b border-zinc-200 dark:border-zinc-700 px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+                <dt className="text-zinc-900 dark:text-zinc-100 text-base font-bold">{title}</dt>
               </div>
               <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Address</dt>
+                <dt className="capitalize text-zinc-900 dark:text-zinc-100 text-sm font-medium">{toTitle(k)} Address</dt>
                 <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                   <Profile address={address} />
                 </dd>
