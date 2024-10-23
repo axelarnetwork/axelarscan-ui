@@ -208,23 +208,21 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
                     case 'address':
                       element = (
                         <div className="flex flex-col gap-y-4">
-                          {toArray([
-                            d.id === 'multisig' && multisig_prover?.address && (
-                              <div className="inline-flex items-center space-x-2">
-                                <Profile address={multisig_prover.address} />
-                                <span>{name} Prover</span>
-                              </div>
-                            ),
+                          {d.id === 'multisig' && multisig_prover?.address && (
                             <div className="inline-flex items-center space-x-2">
-                              <Profile address={d.address} />
-                              {d.id === 'voting_verifier' ?
-                                <span>{name} Voting Verifier</span> :
-                                <Tooltip content="The global Multisig contract is used for the rewards pool for signing" className="whitespace-nowrap">
-                                  <span>Global Multisig</span>
-                                </Tooltip>
-                              }
-                            </div>,
-                          ])}
+                              <Profile address={multisig_prover.address} />
+                              <span>{name} Prover</span>
+                            </div>
+                          )}
+                          <div className="inline-flex items-center space-x-2">
+                            <Profile address={d.address} />
+                            {d.id === 'voting_verifier' ?
+                              <span>{name} Voting Verifier</span> :
+                              <Tooltip content="The global Multisig contract is used for the rewards pool for signing" className="whitespace-nowrap">
+                                <span>Global Multisig</span>
+                              </Tooltip>
+                            }
+                          </div>
                         </div>
                       )
                       break
