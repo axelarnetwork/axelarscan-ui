@@ -909,6 +909,7 @@ const data = [
   {address:'axelar15k8d4hqgytdxmcx3lhph2qagvt0r7683cchglj',name:'Stakin',environment:'mainnet'},
   {address:'axelar1eu4zvmhum66mz7sd82sfnp6w2vfqj06gd4t8f5',name:'Validatrium',environment:'mainnet'},
   {address:'axelar1ensvyl4p5gkdmjcezgjd5se5ykxmdqagl67xgm',name:'Whispernode',environment:'mainnet'},
+  {address:'axelar1p0z7ff4wru5yq0v2ny5h6vx5e6ceg06kqnhfpg',name:'Axelar',environment:'mainnet'},
 ]
 
 export default data
