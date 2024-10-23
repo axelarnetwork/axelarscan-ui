@@ -228,7 +228,7 @@ function Filters() {
   const attributes = toArray([
     { label: 'Epoch', name: 'epochCount' },
     { label: 'Tx Hash', name: 'txHash' },
-    { label: 'Multisig Contract', name: 'multisigContractAddress' },
+    { label: 'Contract', name: 'contractAddress' },
     { label: 'Rewards Contract', name: 'rewardsContractAddress' },
     { label: 'Time', name: 'time', type: 'datetimeRange' },
   ])
