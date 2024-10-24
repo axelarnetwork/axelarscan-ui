@@ -218,7 +218,7 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
                             <Profile address={d.address} />
                             {d.id === 'voting_verifier' ?
                               <span>{name} Voting Verifier</span> :
-                              <Tooltip content="The global Multisig contract is used for the rewards pool for signing" className="whitespace-nowrap">
+                              <Tooltip content="The global Multisig contract is used for the rewards pool for signing" className="whitespace-nowrap text-xs">
                                 <span>Global Multisig</span>
                               </Tooltip>
                             }
