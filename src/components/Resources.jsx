@@ -2,10 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
+import { Listbox, Transition } from '@headlessui/react'
 import clsx from 'clsx'
 import _ from 'lodash'
-import { LuFileSearch2 } from 'react-icons/lu'
+import { MdCheck } from 'react-icons/md'
+import { LuFileSearch2, LuChevronsUpDown } from 'react-icons/lu'
 import { GoDotFill } from 'react-icons/go'
 
 import { Container } from '@/components/Container'
@@ -306,7 +308,7 @@ export function Resources({ resource }) {
       default:
         if (!rendered) setRendered(true)
         else if (resource) {
-          router.push(`/resources/${resource}`)
+          router.push(`/resources/${resource}${Object.keys(getParams(searchParams)).length > 0 ? `?${getQueryString(getParams(searchParams))}` : ''}`)
           setInput('')
           if (resource !== 'assets') setAssetFocusID(null)
         }
@@ -319,17 +321,21 @@ export function Resources({ resource }) {
     if (!_.isEqual(_params, params)) setParams(_params)
   }, [searchParams, params, setParams])
 
+  const attributes = toArray([
+    params.type === 'its' && { label: 'Chain', name: 'chain', type: 'select', options: _.concat({ title: 'Any' }, _.orderBy(toArray(chains).filter(d => !d.deprecated && (params.type !== 'its' || d.chain_type === 'evm')), ['name'], ['asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` }))) },
+  ])
+
   const filter = (resource, params) => {
-    const { type } = { ...params }
+    const { type, chain } = { ...params }
     const words = split(input, { delimiter: ' ', toCase: 'lower' })
 
     switch (resource) {
       case 'chains':
-        return toArray(chains).filter(d => !type || d.chain_type === type).filter(d => !d.no_inflation || d.deprecated).filter(d => !input || includesStringList(_.uniq(toArray(['id', 'chain_id', 'chain_name', 'name'].map(f => d[f]?.toString()), { toCase: 'lower' })), words))
+        return toArray(chains).filter(d => (!type || d.chain_type === type) && (!chain || equalsIgnoreCase(d.id, chain))).filter(d => !d.no_inflation || d.deprecated).filter(d => !input || includesStringList(_.uniq(toArray(['id', 'chain_id', 'chain_name', 'name'].map(f => d[f]?.toString()), { toCase: 'lower' })), words))
       case 'assets':
         return _.concat(
-          toArray(!type || type === 'gateway' ? assets : []).filter(d => !input || includesStringList(_.uniq(toArray(_.concat(['denom', 'name', 'symbol'].map(f => d[f]), d.denoms, Object.values({ ...d.addresses }).flatMap(a => toArray([!equalsIgnoreCase(input, 'axl') && a.symbol, a.address, a.ibc_denom]))), { toCase: 'lower' })), words)),
-          toArray(!type || type === 'its' ? itsAssets : []).filter(d => !input || includesStringList(_.uniq(toArray(_.concat(['name', 'symbol'].map(f => d[f]), Object.values({ ...d.chains }).flatMap(a => toArray([!equalsIgnoreCase(input, 'axl') && a.symbol, a.tokenAddress]))), { toCase: 'lower' })), words)).map(d => ({ ...d, type: 'its' })),
+          toArray(!type || type === 'gateway' ? assets : []).filter(d => !chain || d.addresses?.[chain]).filter(d => !input || includesStringList(_.uniq(toArray(_.concat(['denom', 'name', 'symbol'].map(f => d[f]), d.denoms, Object.values({ ...d.addresses }).flatMap(a => toArray([!equalsIgnoreCase(input, 'axl') && a.symbol, a.address, a.ibc_denom]))), { toCase: 'lower' })), words)),
+          toArray(!type || type === 'its' ? itsAssets : []).filter(d => !chain || d.chains?.[chain]).filter(d => !input || includesStringList(_.uniq(toArray(_.concat(['name', 'symbol'].map(f => d[f]), Object.values({ ...d.chains }).flatMap(a => toArray([!equalsIgnoreCase(input, 'axl') && a.symbol, a.tokenAddress]))), { toCase: 'lower' })), words)).map(d => ({ ...d, type: 'its' })),
         )
       default:
         return null
@@ -368,7 +374,7 @@ export function Resources({ resource }) {
                 d === resource ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300' : 'text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-400',
               )}
             >
-              {d}
+              {d}{d === resource && ((resource === 'chains' && chains) || (resource === 'assets' && assets)) ? ` (${filter(resource, params).length})` : ''}
             </Link>
           ))}
         </nav>
@@ -396,6 +402,101 @@ export function Resources({ resource }) {
               )
             })}
           </div>
+          {attributes.length > 0 && (
+            <div className="flex flex-1 flex-col justify-between gap-y-2 mt-2">
+              {attributes.map((d, i) => (
+                <div key={i} className="flex items-center gap-x-4">
+                  <label htmlFor={d.name} className="text-zinc-900 text-sm font-medium leading-6">
+                    {d.label}
+                  </label>
+                  <div className="w-48">
+                    {d.type === 'select' ?
+                      <Listbox
+                        value={d.multiple ? split(params[d.name]) : params[d.name]}
+                        onChange={v => {
+                          const _params = { ...params, [d.name]: d.multiple ? v.join(',') : v }
+                          router.push(`/resources/${resource}${Object.keys(_params).length > 0 ? `?${getQueryString(_params)}` : ''}`)
+                        }}
+                        multiple={d.multiple}
+                      >
+                        {({ open }) => {
+                          const isSelected = v => d.multiple ? split(params[d.name]).includes(v) : v === params[d.name] || equalsIgnoreCase(v, params[d.name])
+                          const selectedValue = d.multiple ? toArray(d.options).filter(o => isSelected(o.value)) : toArray(d.options).find(o => isSelected(o.value))
+
+                          return (
+                            <div className="relative">
+                              <Listbox.Button className="relative w-full cursor-pointer rounded-md shadow-sm border border-zinc-200 text-zinc-900 sm:text-sm sm:leading-6 text-left pl-3 pr-10 py-1.5">
+                                {d.multiple ?
+                                  <div className={clsx('flex flex-wrap', selectedValue.length !== 0 && 'my-1')}>
+                                    {selectedValue.length === 0 ?
+                                      <span className="block truncate">Any</span> :
+                                      selectedValue.map((v, j) => (
+                                        <div
+                                          key={j}
+                                          onClick={() => {
+                                            const _params = { ...params, [d.name]: selectedValue.filter(_v => _v.value !== v.value).map(_v => _v.value).join(',') }
+                                            router.push(`/resources/${resource}${Object.keys(_params).length > 0 ? `?${getQueryString(_params)}` : ''}`)
+                                          }}
+                                          className="min-w-fit h-6 bg-zinc-100 rounded-xl flex items-center text-zinc-900 mr-2 my-1 px-2.5 py-1"
+                                        >
+                                          {v.title}
+                                        </div>
+                                      ))
+                                    }
+                                  </div> :
+                                  <span className="block truncate">{selectedValue?.title}</span>
+                                }
+                                <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                  <LuChevronsUpDown size={20} className="text-zinc-400" />
+                                </span>
+                              </Listbox.Button>
+                              <Transition
+                                show={open}
+                                as={Fragment}
+                                leave="transition ease-in duration-100"
+                                leaveFrom="opacity-100"
+                                leaveTo="opacity-0"
+                              >
+                                <Listbox.Options className="absolute z-10 w-full max-h-60 bg-white overflow-auto rounded-md shadow-lg text-base sm:text-sm mt-1 py-1">
+                                  {toArray(d.options).map((o, j) => (
+                                    <Listbox.Option key={j} value={o.value} className={({ active }) => clsx('relative cursor-default select-none pl-3 pr-9 py-2', active ? 'bg-blue-600 text-white' : 'text-zinc-900')}>
+                                      {({ selected, active }) => (
+                                        <>
+                                          <span className={clsx('block truncate', selected ? 'font-semibold' : 'font-normal')}>
+                                            {o.title}
+                                          </span>
+                                          {selected && (
+                                            <span className={clsx('absolute inset-y-0 right-0 flex items-center pr-4', active ? 'text-white' : 'text-blue-600')}>
+                                              <MdCheck size={20} />
+                                            </span>
+                                          )}
+                                        </>
+                                      )}
+                                    </Listbox.Option>
+                                  ))}
+                                </Listbox.Options>
+                              </Transition>
+                            </div>
+                          )
+                        }}
+                      </Listbox> :
+                      <input
+                        type={d.type || 'text'}
+                        name={d.name}
+                        placeholder={d.label}
+                        value={params[d.name]}
+                        onChange={e => {
+                          const _params = { ...params, [d.name]: e.target.value }
+                          router.push(`/resources/${resource}${Object.keys(_params).length > 0 ? `?${getQueryString(_params)}` : ''}`)
+                        }}
+                        className="w-full rounded-md shadow-sm border border-zinc-200 focus:border-blue-600 focus:ring-0 text-zinc-900 placeholder:text-zinc-400 sm:text-sm sm:leading-6 py-1.5"
+                      />
+                    }
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       {render(resource)}
