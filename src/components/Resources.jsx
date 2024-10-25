@@ -406,7 +406,7 @@ export function Resources({ resource }) {
             <div className="flex flex-1 flex-col justify-between gap-y-2 mt-2">
               {attributes.map((d, i) => (
                 <div key={i} className="flex items-center gap-x-4">
-                  <label htmlFor={d.name} className="text-zinc-900 text-sm font-medium leading-6">
+                  <label htmlFor={d.name} className="text-zinc-900 dark:text-zinc-500 text-sm font-medium leading-6">
                     {d.label}
                   </label>
                   <div className="w-48">
@@ -425,7 +425,7 @@ export function Resources({ resource }) {
 
                           return (
                             <div className="relative">
-                              <Listbox.Button className="relative w-full cursor-pointer rounded-md shadow-sm border border-zinc-200 text-zinc-900 sm:text-sm sm:leading-6 text-left pl-3 pr-10 py-1.5">
+                              <Listbox.Button className="relative w-full cursor-pointer rounded-md shadow-sm border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 sm:text-sm sm:leading-6 text-left pl-3 pr-10 py-1.5">
                                 {d.multiple ?
                                   <div className={clsx('flex flex-wrap', selectedValue.length !== 0 && 'my-1')}>
                                     {selectedValue.length === 0 ?
@@ -437,7 +437,7 @@ export function Resources({ resource }) {
                                             const _params = { ...params, [d.name]: selectedValue.filter(_v => _v.value !== v.value).map(_v => _v.value).join(',') }
                                             router.push(`/resources/${resource}${Object.keys(_params).length > 0 ? `?${getQueryString(_params)}` : ''}`)
                                           }}
-                                          className="min-w-fit h-6 bg-zinc-100 rounded-xl flex items-center text-zinc-900 mr-2 my-1 px-2.5 py-1"
+                                          className="min-w-fit h-6 bg-zinc-100 rounded-xl flex items-center text-zinc-900 dark:text-zinc-100 mr-2 my-1 px-2.5 py-1"
                                         >
                                           {v.title}
                                         </div>
