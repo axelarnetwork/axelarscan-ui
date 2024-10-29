@@ -15,7 +15,9 @@ import { Overlay } from '@/components/Overlay'
 import { Button } from '@/components/Button'
 import { DateRangePicker } from '@/components/DateRangePicker'
 import { Copy } from '@/components/Copy'
+import { Tooltip } from '@/components/Tooltip'
 import { Spinner } from '@/components/Spinner'
+import { Tag } from '@/components/Tag'
 import { Number } from '@/components/Number'
 import { Profile } from '@/components/Profile'
 import { TimeAgo } from '@/components/Time'
@@ -32,8 +34,20 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
   const pathname = usePathname()
   const { chains, verifiers } = useGlobalStore()
 
-  const { id, multisig_prover } = { ...getChainData(chain, chains) }
+  const { id, name, multisig_prover } = { ...getChainData(chain, chains) }
   const { voting_verifier, multisig } = { ...rewardsPool }
+
+  const contracts = [
+    { ...voting_verifier, id: 'voting_verifier', title: 'Verification' },
+    { ...multisig, id: 'multisig', title: 'Signing' },
+  ]
+  const contractsFields = [
+    { id: 'balance', title: 'Reward pool balance'},
+    { id: 'epoch_duration', title: 'Epoch duration (blocks)'},
+    { id: 'rewards_per_epoch', title: 'Rewards per epoch'},
+    { id: 'last_distribution_epoch', title: 'Last distribution epoch'},
+    { id: 'address', title: 'Contract addresses'},
+  ]
 
   return (
     <>
@@ -99,9 +113,14 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
                 </dd>
               </div>
               <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Multisig prover address</dt>
+                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Cumulative rewards</dt>
                 <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                  <Profile address={multisig_prover?.address} />
+                  <Number
+                    value={cumulativeRewards}
+                    suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
+                    noTooltip={true}
+                    className="font-medium"
+                  />
                 </dd>
               </div>
             </dl>
@@ -118,14 +137,8 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
                 </dd>
               </div>
               <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Cumulative rewards</dt>
+                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium"></dt>
                 <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                  <Number
-                    value={cumulativeRewards}
-                    suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
-                    noTooltip={true}
-                    className="font-medium"
-                  />
                 </dd>
               </div>
             </dl>
@@ -133,69 +146,102 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
         </div>
       </div>
       <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
-        <div className="grid sm:grid-cols-2 gap-y-4">
-          {Object.entries({ voting_verifier, multisig }).filter(([k, v]) => v).map(([k, { address, balance, epoch_duration, rewards_per_epoch, last_distribution_epoch }]) => (
-            <dl key={k} className="divide-y divide-zinc-100 dark:divide-zinc-800">
-              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="capitalize text-zinc-900 dark:text-zinc-100 text-base font-bold">{toTitle(k)}</dt>
-              </div>
-              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Address</dt>
-                <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                  <Profile address={address} />
-                </dd>
-              </div>
-              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Reward pool balance</dt>
-                <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                  <Number
-                    value={formatUnits(balance, 6)}
-                    suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
-                    noTooltip={true}
-                    className="font-medium"
-                  />
-                </dd>
-              </div>
-              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Epoch duration (blocks)</dt>
-                <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                  {isNumber(epoch_duration) ?
-                    <Number
-                      value={epoch_duration}
-                      format="0,0"
-                      className="font-medium"
-                    /> : '-'
+        <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
+          <thead className="sticky top-0 z-10">
+            <tr className="text-zinc-800 dark:text-zinc-200 text-base font-semibold">
+              <th scope="col" className="px-4 sm:px-6 py-6 text-left">
+              </th>
+              {contracts.map(({ id, title }) => (
+                <th key={id} scope="col" className="px-4 sm:px-6 py-6 text-left">
+                  {title}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800 ">
+            {contractsFields.map(f => (
+              <tr key={f.id} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
+                <td className="px-4 sm:px-6 py-6 text-left">
+                  <div className="text-zinc-900 dark:text-zinc-100 font-medium">
+                    {f.title}
+                  </div>
+                </td>
+                {contracts.map(d => {
+                  let element
+                  switch (f.id) {
+                    case 'balance':
+                      element = (
+                        <Number
+                          value={formatUnits(d.balance, 6)}
+                          suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
+                          noTooltip={true}
+                          className="font-medium"
+                        />
+                      )
+                      break
+                    case 'epoch_duration':
+                      element = isNumber(d.epoch_duration) ?
+                        <Number
+                          value={d.epoch_duration}
+                          format="0,0"
+                          className="font-medium"
+                        /> : '-'
+                      break
+                    case 'rewards_per_epoch':
+                      element = (
+                        <Number
+                          value={formatUnits(d.rewards_per_epoch, 6)}
+                          suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
+                          noTooltip={true}
+                          className="font-medium"
+                        />
+                      )
+                      break
+                    case 'last_distribution_epoch':
+                      element = isNumber(d.epoch_duration) && d.last_distribution_epoch ?
+                        <Number
+                          value={d.last_distribution_epoch}
+                          format="0,0"
+                          className="font-medium"
+                        /> : '-'
+                      break
+                    case 'address':
+                      element = (
+                        <div className="flex flex-col gap-y-4">
+                          {d.id === 'multisig' && multisig_prover?.address && (
+                            <div className="inline-flex items-center space-x-2">
+                              <Profile address={multisig_prover.address} />
+                              <span>{name} Prover</span>
+                            </div>
+                          )}
+                          <div className="inline-flex items-center space-x-2">
+                            <Profile address={d.address} />
+                            {d.id === 'voting_verifier' ?
+                              <span>{name} Voting Verifier</span> :
+                              <Tooltip content="The global Multisig contract is used for the rewards pool for signing" className="whitespace-nowrap text-xs">
+                                <span>Global Multisig</span>
+                              </Tooltip>
+                            }
+                          </div>
+                        </div>
+                      )
+                      break
+                    default:
+                      break
                   }
-                </dd>
-              </div>
-              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Rewards per epoch</dt>
-                <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                  <Number
-                    value={formatUnits(rewards_per_epoch, 6)}
-                    suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
-                    noTooltip={true}
-                    className="font-medium"
-                  />
-                </dd>
-              </div>
-              {!!last_distribution_epoch && (
-                <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-                  <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Last distribution epoch</dt>
-                  <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                    {isNumber(epoch_duration) ?
-                      <Number
-                        value={last_distribution_epoch}
-                        format="0,0"
-                        className="font-medium"
-                      /> : '-'
-                    }
-                  </dd>
-                </div>
-              )}
-            </dl>
-          ))}          
-        </div>
+
+                  return (
+                    <td key={`${d.id}_${f.id}`} className="px-4 sm:px-6 py-6 text-left">
+                      <div className="text-zinc-800 dark:text-zinc-200 text-sm">
+                        {element}
+                      </div>
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </>
   )
@@ -228,7 +274,7 @@ function Filters() {
   const attributes = toArray([
     { label: 'Epoch', name: 'epochCount' },
     { label: 'Tx Hash', name: 'txHash' },
-    { label: 'Multisig Contract', name: 'multisigContractAddress' },
+    { label: 'Contract', name: 'contractAddress' },
     { label: 'Rewards Contract', name: 'rewardsContractAddress' },
     { label: 'Time', name: 'time', type: 'datetimeRange' },
   ])
@@ -424,8 +470,9 @@ export function AmplifierRewards({ chain }) {
   useEffect(() => {
     const getData = async () => {
       if (chain && params && toBoolean(refresh)) {
+        const { voting_verifier } = { ...getChainData(chain, chains) }
         const { data, total } = { ...await searchRewardsDistribution({ ...params, chain, size }) }
-        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: { data: toArray(data), total: total || toArray(data).length } })
+        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: { data: toArray(data).map(d => ({ ...d, pool_type: equalsIgnoreCase(d.contract_address || d.multisig_contract_address, voting_verifier?.address) ? 'verification' : 'signing' })), total: total || toArray(data).length } })
         setRefresh(false)
         setDistributionExpanded(null)
         setRewardsPool(_.head((await getRewardsPool({ chain }))?.data))
@@ -491,6 +538,9 @@ export function AmplifierRewards({ chain }) {
                       Tx Hash
                     </th>
                     <th scope="col" className="px-3 py-3.5 text-left">
+                      Pool
+                    </th>
+                    <th scope="col" className="px-3 py-3.5 text-left">
                       Recipients
                     </th>
                     <th scope="col" className="px-3 py-3.5 text-right">
@@ -534,6 +584,11 @@ export function AmplifierRewards({ chain }) {
                             {ellipse(d.txhash)}
                           </Link>
                         </Copy>
+                      </td>
+                      <td className="px-3 py-4 text-left">
+                        <Tag className="w-fit bg-green-600 dark:bg-green-500 capitalize text-white">
+                          {toTitle(d.pool_type)}
+                        </Tag>
                       </td>
                       <td className="px-3 py-4 text-left">
                         <div className="flex flex-col gap-y-2">
