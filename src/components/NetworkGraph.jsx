@@ -312,7 +312,7 @@ export function NetworkGraph({ data, hideTable = false, setChainFocus }) {
   const { nodes, edges } = { ...graphData }
   const imagesUrl = useMemo(() => toArray(nodes).map(d => d.image), [nodes])
   const images = useImagePreloader(toArray(imagesUrl))
-  const imagesLoaded = chains && Object.keys({ ...images }).length / chains.length >= 0.75
+  const imagesLoaded = chains && Object.keys({ ...images }).length / chains.length >= 0.5
   const nodeCanvasObject = useNodeCanvasObject(selectedNode, edges, images, resolvedTheme)
   const linkCanvasObject = useLinkCanvasObject(selectedNode, resolvedTheme)
 
