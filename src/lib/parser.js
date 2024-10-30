@@ -3,6 +3,12 @@ const { base64, getAddress, hexlify, toUtf8String } = { ...utils }
 const decodeBase64 = base64.decode
 import _ from 'lodash'
 
+export const objToQS = obj => {
+  const qs = Object.entries({ ...obj }).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&')
+  if (!qs) return ''
+  return `?${qs}`
+}
+
 export const getIcapAddress = string => {
   try {
     return string?.startsWith('0x') ? getAddress(string) : string
