@@ -375,7 +375,6 @@ function Delegations({ data }) {
                 return toArray(delegations?.data).length > 0
               case 'redelegations':
                 return toArray(redelegations?.data).length > 0
-                break
               case 'unstakings':
                 return toArray(unbondings?.data).length > 0
               default:
