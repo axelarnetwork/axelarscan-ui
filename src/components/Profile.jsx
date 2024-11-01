@@ -450,6 +450,7 @@ export function Profile({
   height = 24,
   noCopy = false,
   customURL,
+  useContractLink,
   className,
 }) {
   const { chains, contracts, configurations, validators, verifiers } = useGlobalStore()
@@ -524,7 +525,8 @@ export function Profile({
   }, [address, validators, setValidatorImages])
 
   const { explorer } = { ...getChainData(chain, chains) }
-  const url = customURL || (explorer ? `${explorer.url}${explorer.address_path?.replace('{address}', address).replace(prefix === 'axelarvaloper' || isVerifier ? '/account' : '', prefix === 'axelarvaloper' ? '/validator' : isVerifier ? '/verifier' : '')}` : undefined)
+  const path = useContractLink && explorer?.cannot_link_contract_via_address_path && explorer.contract_path ? explorer.contract_path : explorer?.address_path
+  const url = customURL || (explorer ? `${explorer.url}${path?.replace('{address}', address).replace(prefix === 'axelarvaloper' || isVerifier ? '/account' : '', prefix === 'axelarvaloper' ? '/validator' : isVerifier ? '/verifier' : '')}` : undefined)
 
   return address && (name ?
     <div className={clsx('min-w-max flex items-center', width < 24 ? 'gap-x-1.5' : 'gap-x-2 3xl:gap-x-3', className)}>
