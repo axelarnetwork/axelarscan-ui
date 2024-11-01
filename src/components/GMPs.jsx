@@ -451,7 +451,11 @@ export function GMPs({ address }) {
                             </div> :
                             <>
                               <Tooltip content="Destination Contract" parentClassName="!justify-start">
-                                <Profile address={d.call.returnValues?.destinationContractAddress} chain={d.call.returnValues?.destinationChain} />
+                                <Profile
+                                  address={d.call.returnValues?.destinationContractAddress}
+                                  chain={d.call.returnValues?.destinationChain}
+                                  useContractLink={true}
+                                />
                               </Tooltip>
                               {d.customValues?.recipientAddress && (
                                 <Tooltip content={`${d.customValues.projectName ? d.customValues.projectName : 'Final User'} Recipient`} parentClassName="!justify-start">

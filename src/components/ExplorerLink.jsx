@@ -14,6 +14,7 @@ export function ExplorerLink({
   type = 'tx',
   customURL,
   hasEventLog,
+  useContractLink,
   title,
   iconOnly = true,
   width = 16,
@@ -24,14 +25,14 @@ export function ExplorerLink({
 }) {
   const { chains } = useGlobalStore()
   const { explorer } = { ...getChainData(chain, chains) }
-  const { url, name, address_path, contract_path, contract_0_path, transaction_path, icon } = { ...explorer }
+  const { url, name, address_path, contract_path, contract_0_path, transaction_path, icon, no_0x, cannot_link_contract_via_address_path } = { ...explorer }
   if (type === 'tx' && getInputType(value, chains) === 'evmAddress') type = 'address'
 
   let path
   let field = type
   switch (type) {
     case 'address':
-      path = address_path
+      path = useContractLink && cannot_link_contract_via_address_path && contract_path ? contract_path : address_path
       break
     case 'contract':
       path = (value === ZeroAddress && contract_0_path) || contract_path
@@ -39,6 +40,7 @@ export function ExplorerLink({
       break
     case 'tx':
       path = transaction_path
+      value = no_0x && value?.startsWith('0x') ? value.substring(2) : value
       break
     default:
       break

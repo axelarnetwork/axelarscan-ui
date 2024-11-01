@@ -418,7 +418,11 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
             <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Contract</dt>
             <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
               <div className="flex flex-col gap-y-2">
-                <Profile address={data.callbackData?.call?.returnValues?.destinationContractAddress || contractAddress} chain={data.callbackData?.call?.returnValues?.destinationChain || destinationChain} />
+                <Profile
+                  address={data.callbackData?.call?.returnValues?.destinationContractAddress || contractAddress}
+                  chain={data.callbackData?.call?.returnValues?.destinationChain || destinationChain}
+                  useContractLink={true}
+                />
                 {data.callbackData?.is_invalid_contract_address || is_invalid_contract_address && (
                   <div className="h-6 flex items-center text-red-600 dark:text-red-500 gap-x-1.5">
                     <PiWarningCircle size={20} />
