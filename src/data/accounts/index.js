@@ -847,6 +847,12 @@ const data = [
     image: '/logos/accounts/lido.svg',
     environment: 'testnet',
   },
+  {
+    address: '0x19247618D79E3fc4d4866169789E4B8eEDef52E6',
+    name: 'ChasmAI',
+    image: '/logos/accounts/chasm.svg',
+    environment: 'mainnet',
+  },
   {address:'axelar1y2a43qhk7clgy0aa8fuul8746mqed379kv84u6',name:'0base.vc',environment:'testnet'},
   {address:'axelar1afj2uhx69pjclgcspfufj9dq9x87zfv0avf6we',name:'4SV',environment:'testnet'},
   {address:'axelar1lg0d9rt4syalck9ux0hhmeeayq7njmjjdguxd6',name:'AlexZ',environment:'testnet'},
