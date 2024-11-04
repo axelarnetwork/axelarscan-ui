@@ -469,7 +469,7 @@ export function AmplifierRewards({ chain }) {
 
   useEffect(() => {
     const getData = async () => {
-      if (chain && params && toBoolean(refresh)) {
+      if (chain && chains && params && toBoolean(refresh)) {
         const { voting_verifier } = { ...getChainData(chain, chains) }
         const { data, total } = { ...await searchRewardsDistribution({ ...params, chain, size }) }
         setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: { data: toArray(data).map(d => ({ ...d, pool_type: equalsIgnoreCase(d.contract_address || d.multisig_contract_address, voting_verifier?.address) ? 'verification' : 'signing' })), total: total || toArray(data).length } })
