@@ -891,7 +891,7 @@ const data = [
   {address:'axelar104jgwmkat4xn2800r6yd44djjhgw2ejrjvqkaj',name:'B-Harvest',environment:'mainnet'},
   {address:'axelar15jgwuakp87hjr0z24f5dhurhas6hdy9h64jfrc',name:'Bokoblinet',environment:'mainnet'},
   {address:'axelar1zhazt54ewqhva5pujhfyhr7sf39hm7myatmjtd',name:'Brightlystake',environment:'mainnet'},
-  {address:'axelar19f26mhy2x488my9pc6wr5x74t4gde8l8scq34g',name:'BwareLabs',environment:'mainnet'},
+  {address:'axelar19f26mhy2x488my9pc6wr5x74t4gde8l8scq34g',name:'BlockHunters',environment:'mainnet'},
   {address:'axelar18mrzfgk63sv455c84gx0p70kl2e329gxnsmgsu',name:'Chainlayer',environment:'mainnet'},
   {address:'axelar1nrk5wk4446342lgcdpjllen4ydc2f2c35h9ynf',name:'Chainode Tech',environment:'mainnet'},
   {address:'axelar1dqqeuwvpvn2dr7gw7clayshzdemgu7j9cluehl',name:'ContributionDAO',environment:'mainnet'},
