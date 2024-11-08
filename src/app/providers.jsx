@@ -7,11 +7,14 @@ import TagManager from 'react-gtm-module'
 import { IntercomProvider } from 'react-use-intercom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { useWeb3ModalTheme } from '@web3modal/wagmi/react'
+import { createNetworkConfig, SuiClientProvider, WalletProvider } from '@mysten/dapp-kit'
+import { getFullnodeUrl } from '@mysten/sui/client'
 
 import { Global } from '@/components/Global'
 import WagmiConfigProvider from '@/lib/provider/WagmiConfigProvider'
 import { queryClient } from '@/lib/provider/wagmi'
 import * as ga from '@/lib/ga'
+import { ENVIRONMENT } from '@/lib/config'
 
 function ThemeWatcher() {
   const { resolvedTheme, setTheme } = useTheme()
@@ -59,6 +62,11 @@ export function Providers({ children }) {
     }
   }, [pathname, searchParams])
 
+  const { networkConfig } = createNetworkConfig({
+    testnet: { url: getFullnodeUrl('testnet') },
+    mainnet: { url: getFullnodeUrl('mainnet') },
+  })
+
   return (
     <ThemeProvider attribute="class" disableTransitionOnChange>
       <IntercomProvider appId={process.env.NEXT_PUBLIC_INTERCOM_APP_ID} autoBoot={true}>
@@ -66,7 +74,11 @@ export function Providers({ children }) {
         <Global />
         <QueryClientProvider client={client}>
           <WagmiConfigProvider>
-            {children}
+            <SuiClientProvider networks={networkConfig} defaultNetwork={ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}>
+              <WalletProvider>
+                {children}
+              </WalletProvider>
+            </SuiClientProvider>
           </WagmiConfigProvider>
         </QueryClientProvider>
       </IntercomProvider>
