@@ -1005,7 +1005,7 @@ function Tops({ data, types, params }) {
             <>
               <Top
                 i={0}
-                data={getTopData(transfersUsers, 'num_txs', 10)}
+                data={getTopData(transfersUsers, 'num_txs', 100)}
                 type="address"
                 hasTransfers={hasTransfers}
                 hasGMP={hasGMP}
@@ -1013,10 +1013,11 @@ function Tops({ data, types, params }) {
                 transfersType="transfers"
                 title="Top Users"
                 description="Top users by token transfers transactions"
+                className="h-96"
               />
               <Top
                 i={1}
-                data={getTopData(transfersUsersByVolume, 'volume', 10)}
+                data={getTopData(transfersUsersByVolume, 'volume', 100)}
                 type="address"
                 hasTransfers={hasTransfers}
                 hasGMP={hasGMP}
@@ -1026,6 +1027,7 @@ function Tops({ data, types, params }) {
                 title="Top Users"
                 description="Top users by token transfers volume"
                 prefix="$"
+                className="h-96"
               />
             </>
           )}
@@ -1033,22 +1035,24 @@ function Tops({ data, types, params }) {
             <>
               <Top
                 i={2}
-                data={getTopData(contracts, 'num_txs', 10)}
+                data={getTopData(contracts, 'num_txs', 100)}
                 type="contract"
                 hasTransfers={hasTransfers}
                 hasGMP={hasGMP}
                 title="Top Contracts"
                 description="Top contracts by GMP transactions"
+                className="h-96"
               />
               <Top
                 i={3}
-                data={getTopData(GMPUsers, 'num_txs', 10)}
+                data={getTopData(GMPUsers, 'num_txs', 100)}
                 type="address"
                 hasTransfers={hasTransfers}
                 hasGMP={hasGMP}
                 transfersType="gmp"
                 title="Top GMP Users"
                 description="Top users by GMP transactions"
+                className="h-96"
               />
             </>
           )}
@@ -1057,39 +1061,43 @@ function Tops({ data, types, params }) {
           <div className={clsx('grid sm:grid-cols-2 lg:grid-cols-4', !hasTransfers && 'lg:col-span-2')}>
             <Top
               i={0}
-              data={getTopData(ITSUsers, 'num_txs', 10)}
+              data={getTopData(ITSUsers, 'num_txs', 100)}
               type="address"
               transfersType="gmp"
               title="Top ITS Users"
               description="Top users by ITS transactions"
+              className="h-96"
             />
             <Top
               i={1}
-              data={getTopData(ITSUsersByVolume, 'volume', 10)}
+              data={getTopData(ITSUsersByVolume, 'volume', 100)}
               type="address"
               transfersType="gmp"
               field="volume"
               title="Top ITS Users"
               description="Top users by ITS volume"
               prefix="$"
+              className="h-96"
             />
             <Top
               i={2}
-              data={getTopData(ITSAssets, 'num_txs', 10)}
+              data={getTopData(ITSAssets, 'num_txs', 100)}
               type="asset"
               transfersType="gmp"
               title="Top ITS Assets"
               description="Top assets by ITS transactions"
+              className="h-96"
             />
             <Top
               i={3}
-              data={getTopData(ITSAssetsByVolume, 'volume', 10)}
+              data={getTopData(ITSAssetsByVolume, 'volume', 100)}
               type="asset"
               transfersType="gmp"
               field="volume"
               title="Top ITS Assets"
               description="Top assets by ITS volume"
               prefix="$"
+              className="h-96"
             />
           </div>
         )}
