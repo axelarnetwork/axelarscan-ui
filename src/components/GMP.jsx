@@ -1498,6 +1498,7 @@ export function GMP({ tx, lite }) {
   const { chainId, address, provider, signer } = useEVMWalletStore()
   const cosmosWalletStore = useCosmosWalletStore()
   const suiWalletStore = useSuiWalletStore()
+  const { signAndExecuteTransaction } = useSignAndExecuteTransaction()
 
   const getData = useCallback(async () => {
     const { commandId } = { ...getParams(searchParams) }
@@ -1728,7 +1729,6 @@ export function GMP({ tx, lite }) {
               await sdk.addNativeGas(chain, transactionHash, gasLimit, { evmWalletDetails: { useWindowEthereum: true, provider, signer }, destChain: destinationChain, logIndex, refundAddress: address })
 
         if (headString(chain) === 'sui' && response && suiWalletStore.address) {
-          const { signAndExecuteTransaction } = useSignAndExecuteTransaction()
           response = await signAndExecuteTransaction({ transaction: response, chain: `sui:${ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}`, options: { showEffects: true, showEvents: true, showObjectChanges: true } })
         }
 
