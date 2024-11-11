@@ -1498,7 +1498,7 @@ export function GMP({ tx, lite }) {
   const { chainId, address, provider, signer } = useEVMWalletStore()
   const cosmosWalletStore = useCosmosWalletStore()
   const suiWalletStore = useSuiWalletStore()
-  const { signAndExecuteTransaction } = useSignAndExecuteTransaction()
+  const { mutate: signAndExecuteTransaction } = useSignAndExecuteTransaction()
 
   const getData = useCallback(async () => {
     const { commandId } = { ...getParams(searchParams) }
