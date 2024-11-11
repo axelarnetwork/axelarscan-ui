@@ -1711,7 +1711,7 @@ export function GMP({ tx, lite }) {
       try {
         const { chain, chain_type, destination_chain_type, transactionHash, logIndex } = { ...data.call }
         const { destinationChain, messageId } = { ...data.call.returnValues }
-        const { base_fee, express_fee, source_token, destination_native_token } = { ...data.fees }
+        const { base_fee, express_fee, source_token } = { ...data.fees }
 
         // cosmos
         const token = 'autocalculate'
@@ -1722,8 +1722,8 @@ export function GMP({ tx, lite }) {
         }
 
         const gasLimit = estimatedGasUsed || 700000
-        const tokenPriceRate = source_token?.token_price?.usd && destination_native_token?.token_price?.usd ? destination_native_token.token_price.usd / source_token.token_price.usd : headString(chain) === 'sui' ? 10 : 1
-        const gasAddedAmount = toBigNumber(BigInt(parseUnits(base_fee + express_fee, source_token?.decimals || (headString(chain) === 'sui' ? 9 : 18))) + BigInt(toBigNumber(gasLimit * tokenPriceRate)))
+        const sourceTokenDecimals = source_token?.decimals || (headString(chain) === 'sui' ? 9 : 18)
+        const gasAddedAmount = toBigNumber(BigInt(parseUnits(base_fee + express_fee, sourceTokenDecimals)) + BigInt(parseUnits(gasLimit * source_token?.gas_price, sourceTokenDecimals)))
         console.log('[addGas request]', { chain, destinationChain, transactionHash, logIndex, messageId, estimatedGasUsed: gasLimit, gasAddedAmount, refundAddress: headString(chain) === 'sui' ? suiWalletStore.address : address, token, sendOptions })
 
         let response = chain_type === 'cosmos' ?
@@ -1837,7 +1837,7 @@ export function GMP({ tx, lite }) {
   const sourceChainData = getChainData(call?.chain, chains)
   const destinationChainData = getChainData(call?.returnValues?.destinationChain, chains)
 
-  const addGasButton = call && (headString(call.chain) === 'sui' || !['vm'].includes(call.chain_type)) && !(call.chain === 'axelarnet' && ['vm'].includes(call.destination_chain_type)) && !executed && !is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) && (!(gas_paid || gas_paid_to_callback) || is_insufficient_fee || is_invalid_gas_paid || not_enough_gas_to_execute || gas?.gas_remain_amount < MIN_GAS_REMAIN_AMOUNT) && (
+  const addGasButton = call && (headString(call.chain) === 'sui' || !['vm'].includes(call.chain_type)) && !(call.chain === 'axelarnet' && ['vm'].includes(call.destination_chain_type)) && executed && !is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) && (!(gas_paid || gas_paid_to_callback) || is_insufficient_fee || is_invalid_gas_paid || not_enough_gas_to_execute || gas?.gas_remain_amount < MIN_GAS_REMAIN_AMOUNT) && (
     <div key="addGas" className="flex items-center gap-x-1">
       {(call.chain_type === 'cosmos' ? cosmosWalletStore?.signer : headString(call.chain) === 'sui' ? suiWalletStore?.address : signer) && !needSwitchChain(sourceChainData?.chain_id || sourceChainData?.id, call.chain_type) && (
         <button
