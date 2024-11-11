@@ -1739,7 +1739,7 @@ export function GMP({ tx, lite }) {
           setResponse({
             status: response?.error ? 'failed' : 'success',
             message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
-            hash: response?.txhash,
+            hash: response?.digest,
             chain,
           })
         }

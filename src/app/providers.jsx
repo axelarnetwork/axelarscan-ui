@@ -63,8 +63,8 @@ export function Providers({ children }) {
   }, [pathname, searchParams])
 
   const { networkConfig } = createNetworkConfig({
-    testnet: { url: getFullnodeUrl('testnet') },
-    mainnet: { url: getFullnodeUrl('mainnet') },
+    testnet: { url: 'https://sui-testnet-rpc.publicnode.com' || getFullnodeUrl('testnet') },
+    mainnet: { url: 'https://sui-rpc.publicnode.com' || getFullnodeUrl('mainnet') },
   })
 
   return (
