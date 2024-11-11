@@ -36,7 +36,7 @@ import { ENVIRONMENT, getChainData, getAssetData } from '@/lib/config'
 import { split, toArray, parseError } from '@/lib/parser'
 import { sleep } from '@/lib/operator'
 import { isString, equalsIgnoreCase, headString, ellipse, toTitle } from '@/lib/string'
-import { isNumber, toNumber, toBigNumber, numberFormat } from '@/lib/number'
+import { isNumber, toNumber, toBigNumber, parseUnits, numberFormat } from '@/lib/number'
 import { timeDiff } from '@/lib/time'
 import IAxelarExecutable from '@/data/contract/interfaces/gmp/IAxelarExecutable.json'
 
@@ -1711,7 +1711,9 @@ export function GMP({ tx, lite }) {
       try {
         const { chain, chain_type, destination_chain_type, transactionHash, logIndex } = { ...data.call }
         const { destinationChain, messageId } = { ...data.call.returnValues }
+        const { base_fee, express_fee, source_token, destination_native_token } = { ...data.fees }
 
+        // cosmos
         const token = 'autocalculate'
         const sendOptions = chain_type === 'cosmos' && {
           environment: ENVIRONMENT,
@@ -1720,12 +1722,14 @@ export function GMP({ tx, lite }) {
         }
 
         const gasLimit = estimatedGasUsed || 700000
-        console.log('[addGas request]', { chain, destinationChain, transactionHash, logIndex, messageId, estimatedGasUsed: gasLimit, refundAddress: headString(chain) === 'sui' ? suiWalletStore.address : address, token, sendOptions })
+        const tokenPriceRate = source_token?.token_price?.usd && destination_native_token?.token_price?.usd ? destination_native_token.token_price.usd / source_token.token_price.usd : headString(chain) === 'sui' ? 10 : 1
+        const gasAddedAmount = toBigNumber(BigInt(parseUnits(base_fee + express_fee, source_token?.decimals || (headString(chain) === 'sui' ? 9 : 18))) + BigInt(toBigNumber(gasLimit * tokenPriceRate)))
+        console.log('[addGas request]', { chain, destinationChain, transactionHash, logIndex, messageId, estimatedGasUsed: gasLimit, gasAddedAmount, refundAddress: headString(chain) === 'sui' ? suiWalletStore.address : address, token, sendOptions })
 
         let response = chain_type === 'cosmos' ?
           await sdk.addGasToCosmosChain({ txHash: transactionHash, messageId, gasLimit, chain, token, sendOptions }) :
             headString(chain) === 'sui' ?
-              await sdk.addGasToSuiChain({ messageId, gasParams: '0x', refundAddress: suiWalletStore.address }) :
+              await sdk.addGasToSuiChain({ messageId, amount: gasAddedAmount, gasParams: '0x', refundAddress: suiWalletStore.address }) :
               await sdk.addNativeGas(chain, transactionHash, gasLimit, { evmWalletDetails: { useWindowEthereum: true, provider, signer }, destChain: destinationChain, logIndex, refundAddress: address })
 
         if (headString(chain) === 'sui' && response && suiWalletStore.address) {
