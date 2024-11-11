@@ -1722,33 +1722,47 @@ export function GMP({ tx, lite }) {
         const gasLimit = estimatedGasUsed || 700000
         console.log('[addGas request]', { chain, destinationChain, transactionHash, logIndex, messageId, estimatedGasUsed: gasLimit, refundAddress: headString(chain) === 'sui' ? suiWalletStore.address : address, token, sendOptions })
 
-        let response = chain_type === 'cosmos' ?
+        const response = chain_type === 'cosmos' ?
           await sdk.addGasToCosmosChain({ txHash: transactionHash, messageId, gasLimit, chain, token, sendOptions }) :
             headString(chain) === 'sui' ?
               await sdk.addGasToSuiChain({ messageId, gasParams: '0x', refundAddress: suiWalletStore.address }) :
               await sdk.addNativeGas(chain, transactionHash, gasLimit, { evmWalletDetails: { useWindowEthereum: true, provider, signer }, destChain: destinationChain, logIndex, refundAddress: address })
 
         if (headString(chain) === 'sui' && response && suiWalletStore.address) {
-          response = await signAndExecuteTransaction({ transaction: response, chain: `sui:${ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}`, options: { showEffects: true, showEvents: true, showObjectChanges: true } })
+          signAndExecuteTransaction(
+            { transaction: response, chain: `sui:${ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}`, options: { showEffects: true, showEvents: true, showObjectChanges: true } },
+            {
+              onSuccess: response => {
+                setResponse({ status: 'success', message: 'Pay gas successful', hash: response?.txhash, chain })
+                setProcessing(false)
+              },
+              onError: error => {
+                setResponse({ status: 'failed', message: parseError(error)?.message || error, chain })
+                setProcessing(false)
+              },
+            },
+          )
         }
+        else {
+          console.log('[addGas response]', response)
 
-        console.log('[addGas response]', response)
+          const { success, error, transaction, broadcastResult } = { ...response }
+          if (success) await sleep(1 * 1000)
+          setResponse({
+            status: success ? 'success' : 'failed',
+            message: parseError(error)?.message || error || 'Pay gas successful',
+            hash: (chain_type === 'cosmos' ? broadcastResult : transaction)?.transactionHash,
+            chain,
+          })
 
-        const { success, error, transaction, broadcastResult } = { ...response }
-        if (success) await sleep(1 * 1000)
-        setResponse({
-          status: success ? 'success' : 'failed',
-          message: parseError(error)?.message || error || 'Pay gas successful',
-          hash: (chain_type === 'cosmos' ? broadcastResult : transaction)?.transactionHash,
-          chain,
-        })
-
-        const _data = success && await getData()
-        if (_data && success && !broadcastResult?.code && (destination_chain_type === 'cosmos' ? !data.executed && !_data.executed : !data.approved && !_data.approved)) await approve(_data, true)
+          const _data = success && await getData()
+          if (_data && success && !broadcastResult?.code && (destination_chain_type === 'cosmos' ? !data.executed && !_data.executed : !data.approved && !_data.approved)) await approve(_data, true)
+          setProcessing(false)
+        }
       } catch (error) {
         setResponse({ status: 'failed', ...parseError(error) })
+        setProcessing(false)
       }
-      setProcessing(false)
     }
   }
 
