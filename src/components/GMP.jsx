@@ -1498,7 +1498,7 @@ export function GMP({ tx, lite }) {
   const { chainId, address, provider, signer } = useEVMWalletStore()
   const cosmosWalletStore = useCosmosWalletStore()
   const suiWalletStore = useSuiWalletStore()
-  const { mutate: signAndExecuteTransaction } = useSignAndExecuteTransaction()
+  const { mutateAsync: signAndExecuteTransaction } = useSignAndExecuteTransaction()
 
   const getData = useCallback(async () => {
     const { commandId } = { ...getParams(searchParams) }
@@ -1722,26 +1722,26 @@ export function GMP({ tx, lite }) {
         const gasLimit = estimatedGasUsed || 700000
         console.log('[addGas request]', { chain, destinationChain, transactionHash, logIndex, messageId, estimatedGasUsed: gasLimit, refundAddress: headString(chain) === 'sui' ? suiWalletStore.address : address, token, sendOptions })
 
-        const response = chain_type === 'cosmos' ?
+        let response = chain_type === 'cosmos' ?
           await sdk.addGasToCosmosChain({ txHash: transactionHash, messageId, gasLimit, chain, token, sendOptions }) :
             headString(chain) === 'sui' ?
               await sdk.addGasToSuiChain({ messageId, gasParams: '0x', refundAddress: suiWalletStore.address }) :
               await sdk.addNativeGas(chain, transactionHash, gasLimit, { evmWalletDetails: { useWindowEthereum: true, provider, signer }, destChain: destinationChain, logIndex, refundAddress: address })
 
         if (headString(chain) === 'sui' && response && suiWalletStore.address) {
-          signAndExecuteTransaction(
-            { transaction: response, chain: `sui:${ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}`, options: { showEffects: true, showEvents: true, showObjectChanges: true } },
-            {
-              onSuccess: response => {
-                setResponse({ status: 'success', message: 'Pay gas successful', hash: response?.txhash, chain })
-                setProcessing(false)
-              },
-              onError: error => {
-                setResponse({ status: 'failed', message: parseError(error)?.message || error, chain })
-                setProcessing(false)
-              },
-            },
-          )
+          response = await signAndExecuteTransaction({
+            transaction: response,
+            chain: `sui:${ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}`,
+            options: { showEffects: true, showEvents: true, showObjectChanges: true },
+          })
+          console.log('[addGas response]', response)
+
+          setResponse({
+            status: response?.error ? 'failed' : 'success',
+            message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
+            hash: response?.txhash,
+            chain,
+          })
         }
         else {
           console.log('[addGas response]', response)
@@ -1757,12 +1757,11 @@ export function GMP({ tx, lite }) {
 
           const _data = success && await getData()
           if (_data && success && !broadcastResult?.code && (destination_chain_type === 'cosmos' ? !data.executed && !_data.executed : !data.approved && !_data.approved)) await approve(_data, true)
-          setProcessing(false)
         }
       } catch (error) {
         setResponse({ status: 'failed', ...parseError(error) })
-        setProcessing(false)
       }
+      setProcessing(false)
     }
   }
 
