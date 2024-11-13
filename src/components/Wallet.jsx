@@ -2,12 +2,15 @@ import { useEffect, useState } from 'react'
 import { useWeb3Modal } from '@web3modal/wagmi/react'
 import { usePublicClient, useChainId, useSwitchChain, useWalletClient, useAccount, useDisconnect, useSignMessage } from 'wagmi'
 import { hashMessage, parseAbiItem, verifyMessage } from 'viem'
+import { ConnectButton, useCurrentAccount } from '@mysten/dapp-kit'
 import { providers } from 'ethers'
 // import { BrowserProvider, FallbackProvider, JsonRpcProvider, JsonRpcSigner } from 'ethers'
 import { create } from 'zustand'
 import clsx from 'clsx'
 
 import { ENVIRONMENT } from '@/lib/config'
+
+import '@mysten/dapp-kit/dist/index.css'
 
 const publicClientToProvider = publicClient => {
   const { chain, transport } = { ...publicClient }
@@ -140,7 +143,7 @@ export const useCosmosWalletStore = create()(set => ({
 }))
 
 export function CosmosWallet({ connectChainId, children, className }) {
-  const { chainId, provider, setChainId, setAddress, setProvider, setSigner } = useCosmosWalletStore()
+  const { chainId, provider, signer, setChainId, setAddress, setProvider, setSigner } = useCosmosWalletStore()
 
   useEffect(() => {
     if (chainId && signer && address) {
@@ -229,6 +232,47 @@ export function CosmosWallet({ connectChainId, children, className }) {
       </button> :
     <button onClick={() => connect(connectChainId)} className={clsx(className)}>
       {children || (
+        <div className="h-6 bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1">
+          Connect
+        </div>
+      )}
+    </button>
+}
+
+export const useSuiWalletStore = create()(set => ({
+  address: null,
+  setAddress: data => set(state => ({ ...state, address: data })),
+}))
+
+export function SuiWallet({ children, className }) {
+  const { address, setAddress } = useSuiWalletStore()
+  const account = useCurrentAccount()
+
+  useEffect(() => {
+    const address = account?.address
+    if (address) setAddress(address)
+    else setAddress(null)
+  }, [account, setAddress])
+
+  const connect = () => {
+    const address = account?.address
+    if (address) setAddress(address)
+  }
+
+  const disconnect = () => {
+    setAddress(null)
+  }
+
+  return address ?
+    <button onClick={() => disconnect()} className={clsx(className)}>
+      {children || <ConnectButton /> || (
+        <div className="h-6 bg-red-600 hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-600 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1">
+          Disconnect
+        </div>
+      )}
+    </button> :
+    <button onClick={() => connect()} className={clsx(className)}>
+      {children || <ConnectButton /> || (
         <div className="h-6 bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1">
           Connect
         </div>
