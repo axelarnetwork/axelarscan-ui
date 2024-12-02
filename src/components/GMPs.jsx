@@ -241,8 +241,8 @@ function Filters() {
 }
 
 export const getEvent = data => {
-  const { call, token_sent, token_deployment_initialized, token_deployed, token_manager_deployment_started, interchain_token_deployment_started, interchain_transfer, interchain_transfer_with_data } = { ...data }
-  if (token_sent || interchain_transfer || interchain_transfer_with_data) return 'InterchainTransfer'
+  const { call, token_sent, token_deployment_initialized, token_deployed, token_manager_deployment_started, interchain_token_deployment_started, interchain_transfer, interchain_transfer_with_data, interchain_transfers } = { ...data }
+  if (token_sent || interchain_transfer || interchain_transfer_with_data || interchain_transfers) return 'InterchainTransfer'
   if (token_deployment_initialized) return 'TokenDeploymentInitialized'
   if (token_deployed) return 'TokenDeployed'
   if (token_manager_deployment_started) return 'TokenManagerDeployment'
@@ -252,7 +252,7 @@ export const getEvent = data => {
 export const normalizeEvent = event => event?.replace('ContractCall', 'callContract')
 
 export const customData = async data => {
-  const { call, interchain_transfer } = { ...data }
+  const { call, interchain_transfer, interchain_transfers } = { ...data }
   const { destinationContractAddress, payload } = { ...call?.returnValues }
   if (!(destinationContractAddress && isString(payload))) return data
 
@@ -269,6 +269,10 @@ export const customData = async data => {
 
     // interchain transfer
     if (interchain_transfer?.destinationAddress && !data.customValues?.recipientAddress) data.customValues = { ...data.customValues, recipientAddress: interchain_transfer.destinationAddress, projectId: 'its', projectName: 'ITS' }
+
+    // interchain transfers
+    if (toArray(interchain_transfers).length > 0 && !data.customValues?.recipientAddresses)
+      data.customValues = { ...data.customValues, recipientAddresses: interchain_transfers.map(d => ({ recipientAddress: d.recipient, chain: d.destinationChain })) }
   } catch (error) {}
   return data
 }
@@ -410,6 +414,23 @@ export function GMPs({ address }) {
                                 className="w-fit text-xs"
                               />
                             </Tooltip>
+                          )}
+                          {toArray(d.interchain_transfers).length > 0 && (
+                            <div className="flex flex-col gap-y-1.5">
+                              {d.interchain_transfers.filter(_d => _d.symbol).map((_d, i) => (
+                                <AssetProfile
+                                  key={i}
+                                  value={_d.symbol}
+                                  chain={_d.destinationChain}
+                                  amount={_d.amount}
+                                  ITSPossible={true}
+                                  width={16}
+                                  height={16}
+                                  className="w-fit h-6 bg-zinc-100 dark:bg-zinc-800 rounded-xl px-2.5 py-1"
+                                  titleClassName="text-xs"
+                                />
+                              ))}
+                            </div>
                           )}
                         </div>
                       </td>
