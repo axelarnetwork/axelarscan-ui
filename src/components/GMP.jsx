@@ -1732,7 +1732,7 @@ export function GMP({ tx, lite }) {
           await sdk.addGasToCosmosChain({ txHash: transactionHash, messageId, gasLimit, chain, token, sendOptions }) :
             headString(chain) === 'sui' ?
               await sdk.addGasToSuiChain({ messageId, amount: gasAddedAmount, gasParams: '0x', refundAddress: suiWalletStore.address }) :
-              headString(chain) === 'sui' ?
+              headString(chain) === 'stellar' ?
                 await sdk.addGasToStellarChain({ senderAddress: sender, messageId, tokenAmount: gasAddedAmount, refundAddress: stellarWalletStore.address }) :
                 await sdk.addNativeGas(chain, transactionHash, gasLimit, { evmWalletDetails: { useWindowEthereum: true, provider, signer }, destChain: destinationChain, logIndex, refundAddress: address })
 
