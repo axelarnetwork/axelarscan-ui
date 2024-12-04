@@ -853,6 +853,18 @@ const data = [
     image: '/logos/accounts/chasm.svg',
     environment: 'mainnet',
   },
+  {
+    address: '0xcbBA104B6CB4960a70E5dfc48E76C536A1f19609',
+    name: 'Nya Bridge',
+    image: '/logos/accounts/nya.svg',
+    environment: 'mainnet',
+  },
+  {
+    address: '0x3A455607Def92819a2c541fAA4525522905A7c2C',
+    name: 'Nya NFT Bridge',
+    image: '/logos/accounts/nya.svg',
+    environment: 'mainnet',
+  },
   {address:'axelar1y2a43qhk7clgy0aa8fuul8746mqed379kv84u6',name:'0base.vc',environment:'testnet'},
   {address:'axelar1afj2uhx69pjclgcspfufj9dq9x87zfv0avf6we',name:'4SV',environment:'testnet'},
   {address:'axelar1lg0d9rt4syalck9ux0hhmeeayq7njmjjdguxd6',name:'AlexZ',environment:'testnet'},
