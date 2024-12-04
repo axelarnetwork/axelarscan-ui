@@ -856,13 +856,13 @@ const data = [
   {
     address: '0xcbBA104B6CB4960a70E5dfc48E76C536A1f19609',
     name: 'Nya Bridge',
-    image: '/logos/accounts/nya.svg',
+    image: '/logos/accounts/nya.png',
     environment: 'mainnet',
   },
   {
     address: '0x3A455607Def92819a2c541fAA4525522905A7c2C',
     name: 'Nya NFT Bridge',
-    image: '/logos/accounts/nya.svg',
+    image: '/logos/accounts/nya.png',
     environment: 'mainnet',
   },
   {address:'axelar1y2a43qhk7clgy0aa8fuul8746mqed379kv84u6',name:'0base.vc',environment:'testnet'},
