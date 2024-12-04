@@ -262,6 +262,7 @@ export function Summary({ data, params }) {
     ))), 'key')
   ).map(([k, v]) => ({ key: k, chains: _.uniq(v.map(d => d.chain)), num_txs: _.sumBy(v, 'num_txs'), volume: _.sumBy(v, 'volume') })), ['num_txs', 'volume', 'key'], ['desc', 'desc', 'asc'])
   const chains = params?.contractAddress ? _.uniq(contracts.flatMap(d => d.chains)) : toArray(globalStore.chains).filter(d => !d.deprecated && (!d.maintainer_id || globalStore.contracts?.gateway_contracts?.[d.id]?.address))
+  const tvlData = toArray(globalStore.tvl?.data)
   console.log('[destinationContracts]', contracts.map(d => d.key))
 
   return (
@@ -322,34 +323,64 @@ export function Summary({ data, params }) {
             />
           </dd>
         </div>
-        <div className="border-t lg:border-t-0 border-l lg:border-l-0 border-r border-zinc-200 dark:border-zinc-700 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 px-4 sm:px-6 xl:px-8 py-8">
-          <dt className="text-zinc-400 dark:text-zinc-500 text-sm font-medium leading-6">Average Volume / Transaction</dt>
-          <dd className="w-full flex-none">
-            <Number
-              value={(toNumber(GMPTotalVolume) + toNumber(transfersTotalVolume)) / (toNumber(_.sumBy(GMPStats?.messages, 'num_txs')) + toNumber(transfersStats?.total) || 1)}
-              format="0,0"
-              prefix="$"
-              noTooltip={true}
-              className="text-zinc-900 dark:text-zinc-100 !text-3xl font-medium leading-10 tracking-tight"
-            />
-          </dd>
-          <dd className="w-full grid grid-cols-2 gap-x-2 mt-1">
-            <Number
-              value={toNumber(GMPTotalVolume) / (toNumber(_.sumBy(GMPStats?.messages, 'num_txs')) || 1)}
-              format="0,0.00a"
-              prefix="GMP: $"
-              noTooltip={true}
-              className="text-zinc-400 dark:text-zinc-500 text-xs"
-            />
-            <Number
-              value={toNumber(transfersTotalVolume) / (toNumber(transfersStats?.total) || 1)}
-              format="0,0.00a"
-              prefix="Transfer: $"
-              noTooltip={true}
-              className="text-zinc-400 dark:text-zinc-500 text-xs"
-            />
-          </dd>
-        </div>
+        {ENVIRONMENT === 'mainnet' && tvlData.length > 0 ?
+          <div className="border-t lg:border-t-0 border-l lg:border-l-0 border-r border-zinc-200 dark:border-zinc-700 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 px-4 sm:px-6 xl:px-8 py-8">
+            <dt className="text-zinc-400 dark:text-zinc-500 text-sm font-medium leading-6">Total Value Locked</dt>
+            <dd className="w-full flex-none">
+              <Number
+                value={_.sumBy(tvlData.filter(d => d.value > 0), 'value')}
+                format="0,0.00a"
+                prefix="$"
+                noTooltip={true}
+                className="text-zinc-900 dark:text-zinc-100 !text-3xl font-medium leading-10 tracking-tight"
+              />
+            </dd>
+            <dd className="w-full grid grid-cols-2 gap-x-2 mt-1">
+              <Number
+                value={_.sumBy(tvlData.filter(d => d.value > 0 && d.assetType !== 'its'), 'value')}
+                format="0,0.00a"
+                prefix="Gateway: $"
+                noTooltip={true}
+                className="text-zinc-400 dark:text-zinc-500 text-xs"
+              />
+              <Number
+                value={_.sumBy(tvlData.filter(d => d.value > 0 && d.assetType === 'its'), 'value')}
+                format="0,0.00a"
+                prefix="ITS: $"
+                noTooltip={true}
+                className="text-zinc-400 dark:text-zinc-500 text-xs"
+              />
+            </dd>
+          </div> :
+          <div className="border-t lg:border-t-0 border-l lg:border-l-0 border-r border-zinc-200 dark:border-zinc-700 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 px-4 sm:px-6 xl:px-8 py-8">
+            <dt className="text-zinc-400 dark:text-zinc-500 text-sm font-medium leading-6">Average Volume / Transaction</dt>
+            <dd className="w-full flex-none">
+              <Number
+                value={(toNumber(GMPTotalVolume) + toNumber(transfersTotalVolume)) / (toNumber(_.sumBy(GMPStats?.messages, 'num_txs')) + toNumber(transfersStats?.total) || 1)}
+                format="0,0"
+                prefix="$"
+                noTooltip={true}
+                className="text-zinc-900 dark:text-zinc-100 !text-3xl font-medium leading-10 tracking-tight"
+              />
+            </dd>
+            <dd className="w-full grid grid-cols-2 gap-x-2 mt-1">
+              <Number
+                value={toNumber(GMPTotalVolume) / (toNumber(_.sumBy(GMPStats?.messages, 'num_txs')) || 1)}
+                format="0,0.00a"
+                prefix="GMP: $"
+                noTooltip={true}
+                className="text-zinc-400 dark:text-zinc-500 text-xs"
+              />
+              <Number
+                value={toNumber(transfersTotalVolume) / (toNumber(transfersStats?.total) || 1)}
+                format="0,0.00a"
+                prefix="Transfer: $"
+                noTooltip={true}
+                className="text-zinc-400 dark:text-zinc-500 text-xs"
+              />
+            </dd>
+          </div>
+        }
         <div className="border-t lg:border-t-0 border-l sm:border-l-0 border-r border-zinc-200 dark:border-zinc-700 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 px-4 sm:px-6 xl:px-8 py-8">
           <dt className="text-zinc-400 dark:text-zinc-500 text-sm font-medium leading-6">GMP Contracts</dt>
           <dd className="w-full flex-none">
