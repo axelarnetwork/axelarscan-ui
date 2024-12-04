@@ -1721,7 +1721,7 @@ export function GMP({ tx, lite }) {
           txFee: { gas: '250000', amount: [{ denom: getChainData(chain, chains)?.native_token?.denom, amount: '30000' }] },
         }
 
-        const gasLimit = estimatedGasUsed || 700000
+        const gasLimit = isNumber(estimatedGasUsed) ? estimatedGasUsed : 700000
         const sourceTokenDecimals = source_token?.decimals || (headString(chain) === 'sui' ? 9 : 18)
         const gasAddedAmount = toBigNumber(BigInt(parseUnits(base_fee + express_fee, sourceTokenDecimals)) + BigInt(parseUnits(gasLimit * source_token?.gas_price, sourceTokenDecimals)))
         console.log('[addGas request]', { chain, destinationChain, transactionHash, logIndex, messageId, estimatedGasUsed: gasLimit, gasAddedAmount, refundAddress: headString(chain) === 'sui' ? suiWalletStore.address : address, token, sendOptions })
