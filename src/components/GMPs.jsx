@@ -417,10 +417,10 @@ export function GMPs({ address }) {
                           )}
                           {toArray(d.interchain_transfers).length > 0 && (
                             <div className="flex flex-col gap-y-1.5">
-                              {d.interchain_transfers.filter(_d => _d.symbol).map((_d, i) => (
+                              {d.interchain_transfers.map((_d, i) => (
                                 <AssetProfile
                                   key={i}
-                                  value={_d.symbol}
+                                  value={_d.symbol || _d.contract_address}
                                   chain={_d.destinationChain}
                                   amount={_d.amount}
                                   ITSPossible={true}
