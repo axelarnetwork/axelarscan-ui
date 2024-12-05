@@ -3,6 +3,7 @@ import { useWeb3Modal } from '@web3modal/wagmi/react'
 import { usePublicClient, useChainId, useSwitchChain, useWalletClient, useAccount, useDisconnect, useSignMessage } from 'wagmi'
 import { hashMessage, parseAbiItem, verifyMessage } from 'viem'
 import { ConnectButton, useCurrentAccount } from '@mysten/dapp-kit'
+import freighter from '@stellar/freighter-api'
 import { providers } from 'ethers'
 // import { BrowserProvider, FallbackProvider, JsonRpcProvider, JsonRpcSigner } from 'ethers'
 import { create } from 'zustand'
@@ -273,6 +274,63 @@ export function SuiWallet({ children, className }) {
     </button> :
     <button onClick={() => connect()} className={clsx(className)}>
       {children || <ConnectButton /> || (
+        <div className="h-6 bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1">
+          Connect
+        </div>
+      )}
+    </button>
+}
+
+export const useStellarWalletStore = create()(set => ({
+  address: null,
+  provider: null,
+  setAddress: data => set(state => ({ ...state, address: data })),
+  setProvider: data => set(state => ({ ...state, provider: data })),
+}))
+
+export function StellarWallet({ children, className }) {
+  const { address, provider, setAddress, setProvider } = useStellarWalletStore()
+
+  useEffect(() => {
+    if (address) {
+      setAddress(address)
+      setProvider(window?.freighter)
+    }
+    else {
+      setAddress(null)
+      setProvider(null)
+    }
+  }, [setAddress, setProvider])
+
+  const getAddress = async () => {
+    const { address } = { ...await freighter.getAddress() }
+    return address
+  }
+
+  const connect = async () => {
+    await freighter.setAllowed()
+    const address = await getAddress()
+    if (address) {
+      setAddress(address)
+      setProvider(window?.freighter)
+    }
+  }
+
+  const disconnect = () => {
+    setAddress(null)
+    setProvider(null)
+  }
+
+  return address ?
+    <button onClick={() => disconnect()} className={clsx(className)}>
+      {children || (
+        <div className="h-6 bg-red-600 hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-600 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1">
+          Disconnect
+        </div>
+      )}
+    </button> :
+    <button onClick={() => connect()} className={clsx(className)}>
+      {children || (
         <div className="h-6 bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1">
           Connect
         </div>
