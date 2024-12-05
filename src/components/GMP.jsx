@@ -1854,7 +1854,7 @@ export function GMP({ tx, lite }) {
 
   const addGasButton = call && (['sui', 'stellar'].includes(headString(call.chain)) || !['vm'].includes(call.chain_type)) && !(call.chain === 'axelarnet' && ['vm'].includes(call.destination_chain_type)) && !executed && !is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) && (!(gas_paid || gas_paid_to_callback) || is_insufficient_fee || is_invalid_gas_paid || not_enough_gas_to_execute || gas?.gas_remain_amount < MIN_GAS_REMAIN_AMOUNT) && (
     <div key="addGas" className="flex items-center gap-x-1">
-      {(call.chain_type === 'cosmos' ? cosmosWalletStore?.signer : headString(call.chain) === 'sui' ? suiWalletStore?.address : signer) && !needSwitchChain(sourceChainData?.chain_id || sourceChainData?.id, call.chain_type) && (
+      {(call.chain_type === 'cosmos' ? cosmosWalletStore?.signer : headString(call.chain) === 'sui' ? suiWalletStore?.address : headString(call.chain) === 'stellar' ? stellarWalletStore?.address : signer) && !needSwitchChain(sourceChainData?.chain_id || sourceChainData?.id, call.chain_type) && (
         <button
           disabled={processing}
           onClick={() => addGas(data)}
