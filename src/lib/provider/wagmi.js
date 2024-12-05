@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/react-query'
 import { defaultWagmiConfig } from '@web3modal/wagmi/react/config'
 import { createWeb3Modal } from '@web3modal/wagmi/react'
-import { mainnet, goerli, sepolia, bsc, bscTestnet, polygon, polygonMumbai, polygonAmoy, polygonZkEvm, polygonZkEvmTestnet, avalanche, avalancheFuji, fantom, fantomTestnet, moonbeam, moonbaseAlpha, aurora, auroraTestnet, arbitrum, arbitrumGoerli, arbitrumSepolia, optimism, optimismGoerli, optimismSepolia, base, baseGoerli, baseSepolia, mantle, mantleTestnet, mantleSepoliaTestnet, celo, celoAlfajores, kava, kavaTestnet, filecoin, filecoinHyperspace, filecoinCalibration, linea, lineaTestnet, lineaSepolia, scroll, scrollSepolia, immutableZkEvm, immutableZkEvmTestnet, fraxtal, fraxtalTestnet, blast, blastSepolia } from 'wagmi/chains'
+import { mainnet, goerli, sepolia, bsc, bscTestnet, polygon, polygonMumbai, polygonAmoy, polygonZkEvm, polygonZkEvmTestnet, avalanche, avalancheFuji, fantom, fantomTestnet, moonbeam, moonbaseAlpha, aurora, auroraTestnet, arbitrum, arbitrumGoerli, arbitrumSepolia, optimism, optimismGoerli, optimismSepolia, base, baseGoerli, baseSepolia, mantle, mantleTestnet, mantleSepoliaTestnet, celo, celoAlfajores, kava, kavaTestnet, filecoin, filecoinHyperspace, filecoinCalibration, linea, lineaTestnet, lineaSepolia, scroll, scrollSepolia, immutableZkEvm, immutableZkEvmTestnet, fraxtal, fraxtalTestnet, blast, blastSepolia, flowMainnet, flowTestnet, hedera, hederaTestnet } from 'wagmi/chains'
 
 import { toArray } from '@/lib/parser'
 
@@ -28,15 +28,21 @@ export const CHAINS = toArray(process.env.NEXT_PUBLIC_ENVIRONMENT === 'mainnet' 
     { _id: 'immutable', ...immutableZkEvm },
     { _id: 'fraxtal', ...fraxtal },
     { _id: 'blast', ...blast },
+    { _id: 'flow', ...flowMainnet },
+    { _id: 'hedera', ...hedera },
   ] :
   [
     { _id: 'ethereum-sepolia', ...sepolia },
+    { _id: 'eth-sepolia', ...sepolia },
+    { _id: 'test-sepolia', ...sepolia },
     // { _id: 'ethereum-2', ...goerli },
     { _id: 'binance', ...bscTestnet },
     // { _id: 'polygon', ...polygonMumbai },
     { _id: 'polygon-sepolia', ...polygonAmoy },
     { _id: 'polygon-zkevm', ...polygonZkEvmTestnet },
+    { _id: 'avalanche-fuji', ...avalancheFuji },
     { _id: 'avalanche', ...avalancheFuji },
+    { _id: 'test-avalanche', ...avalancheFuji },
     { _id: 'fantom', ...fantomTestnet },
     { _id: 'moonbeam', ...moonbaseAlpha },
     { _id: 'aurora', ...auroraTestnet },
@@ -44,6 +50,7 @@ export const CHAINS = toArray(process.env.NEXT_PUBLIC_ENVIRONMENT === 'mainnet' 
     { _id: 'arbitrum-sepolia', ...arbitrumSepolia },
     // { _id: 'optimism', ...optimismGoerli },
     { _id: 'optimism-sepolia', ...optimismSepolia },
+    { _id: 'op-sepolia', ...optimismSepolia },
     // { _id: 'base', ...baseGoerli },
     { _id: 'base-sepolia', ...baseSepolia },
     // { _id: 'mantle', ...mantleTestnet },
@@ -61,6 +68,9 @@ export const CHAINS = toArray(process.env.NEXT_PUBLIC_ENVIRONMENT === 'mainnet' 
     process.env.NEXT_PUBLIC_ENVIRONMENT !== 'testnet' && { _id: 'immutable-devnet', id: 15003, network: 'immutable', name: 'Immutable', nativeCurrency: { name: 'ImmutableX', symbol: 'tIMX', decimals: 18 }, rpcUrls: { default: { http: ['https://rpc.dev.immutable.com'] } }, blockExplorers: { default: { name: 'Immutable', url: 'https://explorer.testnet.immutable.com' } }, testnet: true },
     { _id: 'fraxtal', ...fraxtalTestnet },
     { _id: 'blast-sepolia', ...blastSepolia },
+    { _id: 'flow', ...flowTestnet },
+    { _id: 'hedera', ...hederaTestnet },
+    { _id: 'hedera-testnet', ...hederaTestnet },
   ]
 )
 
