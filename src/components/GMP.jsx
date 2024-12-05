@@ -405,7 +405,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                     return (
                       <div key={i} className="flex items-center gap-x-1">
                         <AssetProfile
-                          value={d.symbol}
+                          value={d.symbol || d.contract_address}
                           chain={d.destinationChain}
                           amount={d.amount}
                           ITSPossible={true}
