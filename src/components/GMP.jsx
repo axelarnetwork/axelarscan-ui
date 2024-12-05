@@ -111,7 +111,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
   const [seeMore, setSeeMore] = useState(false)
   const { chains, assets } = useGlobalStore()
 
-  const { call, gas_paid, gas_paid_to_callback, express_executed, confirm, approved, executed, error, refunded, token_sent, token_deployment_initialized, token_deployed, interchain_transfer, interchain_transfer_with_data, token_manager_deployment_started, interchain_token_deployment_started, is_executed, amount, fees, gas, is_insufficient_fee, is_invalid_destination_chain, is_invalid_source_address, is_invalid_contract_address, not_enough_gas_to_execute, status, simplified_status, time_spent, callbackData, originData } = { ...data }
+  const { call, gas_paid, gas_paid_to_callback, express_executed, confirm, approved, executed, error, refunded, token_sent, token_deployment_initialized, token_deployed, interchain_transfer, interchain_transfer_with_data, interchain_transfers, token_manager_deployment_started, interchain_token_deployment_started, is_executed, amount, fees, gas, is_insufficient_fee, is_invalid_destination_chain, is_invalid_source_address, is_invalid_contract_address, not_enough_gas_to_execute, status, simplified_status, time_spent, callbackData, originData } = { ...data }
   const { proposal_id } = { ...call }
   const txhash = call?.transactionHash || tx
 
@@ -392,6 +392,49 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Token Address</dt>
               <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                 <Profile address={interchain_transfer.contract_address} chain={data.originData?.call?.chain || sourceChain} />
+              </dd>
+            </div>
+          )}
+          {toArray(interchain_transfers).length > 0 && (
+            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
+              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Events</dt>
+              <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                <div className="flex flex-col gap-y-1.5">
+                  {interchain_transfers.map((d, i) => {
+                    const destinationChainData = getChainData(d.destinationChain, chains)
+                    return (
+                      <div key={i} className="flex items-center gap-x-1">
+                        <AssetProfile
+                          value={d.symbol || d.contract_address}
+                          chain={d.destinationChain}
+                          amount={d.amount}
+                          ITSPossible={true}
+                          width={16}
+                          height={16}
+                          className="w-fit h-6 bg-zinc-100 dark:bg-zinc-800 rounded-xl px-2.5 py-1"
+                          titleClassName="text-xs"
+                        />
+                        <MdKeyboardArrowRight size={20} className="text-zinc-700 dark:text-zinc-300" />
+                        {destinationChainData && d.recipient && (
+                          <Tooltip content={destinationChainData.name} className="whitespace-nowrap">
+                            <Image
+                              src={destinationChainData.image}
+                              alt=""
+                              width={20}
+                              height={20}
+                            />
+                          </Tooltip>
+                        )}
+                        <Profile
+                          address={d.recipient}
+                          chain={d.destinationChain}
+                          width={20}
+                          height={20}
+                        />
+                      </div>
+                    )
+                  })}
+                </div>
               </dd>
             </div>
           )}
