@@ -1800,7 +1800,7 @@ export function GMP({ tx, lite }) {
           if (response?.signedTxXdr && stellarWalletStore.network?.sorobanRpcUrl) {
             const server = new StellarSDK.rpc.Server(stellarWalletStore.network.sorobanRpcUrl)
             console.log('[stellar sendTransaction]', { ...response, network: stellarWalletStore.network })
-            response = await server.sendTransaction(StellarSDK.TransactionBuilder.fromXDR(response.signedTxXdr, stellarWalletStore.network.networkPassphrase))
+            response = await server.sendTransaction(StellarSDK.TransactionBuilder.fromXDR(response.signedTxXdr, stellarWalletStore.network.network))
 
             try {
               response.error = JSON.parse(JSON.stringify(response.errorResult))._attributes.result._switch.name
