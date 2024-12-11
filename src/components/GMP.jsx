@@ -1794,13 +1794,12 @@ export function GMP({ tx, lite }) {
           })
         }
         else if (headString(chain) === 'stellar' && response && stellarWalletStore.provider) {
-          response = await stellarWalletStore.provider.signTransaction(response)
+          response = await stellarWalletStore.provider.signTransaction(response, { networkPassphrase: stellarWalletStore.networkPassphrase })
           console.log('[addGas response]', response)
 
           setResponse({
             status: response?.error ? 'failed' : 'success',
             message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
-            hash: response?.signedTxXdr,
             chain,
           })
         }
