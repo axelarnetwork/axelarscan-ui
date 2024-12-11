@@ -294,7 +294,7 @@ export function StellarWallet({ children, className }) {
   useEffect(() => {
     if (address) {
       setAddress(address)
-      setProvider(window?.freighter)
+      setProvider(freighter)
     }
     else {
       setAddress(null)
@@ -312,7 +312,7 @@ export function StellarWallet({ children, className }) {
     const address = await getAddress()
     if (address) {
       setAddress(address)
-      setProvider(window?.freighter)
+      setProvider(freighter)
     }
   }
 
