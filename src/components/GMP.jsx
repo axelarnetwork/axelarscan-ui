@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { AxelarGMPRecoveryAPI } from '@axelar-network/axelarjs-sdk'
 import { useSignAndExecuteTransaction } from '@mysten/dapp-kit'
+import * as StellarSDK from '@stellar/stellar-sdk'
 import { Contract } from 'ethers'
 import clsx from 'clsx'
 import _ from 'lodash'
@@ -1794,12 +1795,23 @@ export function GMP({ tx, lite }) {
           })
         }
         else if (headString(chain) === 'stellar' && response && stellarWalletStore.provider) {
-          response = await stellarWalletStore.provider.signTransaction(response, { networkPassphrase: stellarWalletStore.networkPassphrase })
+          response = await stellarWalletStore.provider.signTransaction(response, stellarWalletStore.network.network)
+
+          if (response?.signedTxXdr && stellarWalletStore.network?.sorobanRpcUrl) {
+            const server = new StellarSDK.rpc.Server(stellarWalletStore.network.sorobanRpcUrl)
+            console.log('[stellar sendTransaction]', { ...response, network: stellarWalletStore.network })
+            response = await server.sendTransaction(StellarSDK.TransactionBuilder.fromXDR(response.signedTxXdr, stellarWalletStore.network.networkPassphrase))
+
+            try {
+              response.error = JSON.parse(JSON.stringify(response.errorResult))._attributes.result._switch.name
+            } catch (error) {}
+          }
           console.log('[addGas response]', response)
 
           setResponse({
-            status: response?.error ? 'failed' : 'success',
+            status: response?.error || response?.status === 'ERROR' ? 'failed' : 'success',
             message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
+            hash: response?.hash,
             chain,
           })
         }

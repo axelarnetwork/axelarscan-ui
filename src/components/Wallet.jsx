@@ -284,14 +284,14 @@ export function SuiWallet({ children, className }) {
 export const useStellarWalletStore = create()(set => ({
   address: null,
   provider: null,
-  networkPassphrase: null,
+  network: null,
   setAddress: data => set(state => ({ ...state, address: data })),
   setProvider: data => set(state => ({ ...state, provider: data })),
-  setNetworkPassphrase: data => set(state => ({ ...state, networkPassphrase: data })),
+  setNetwork: data => set(state => ({ ...state, network: data })),
 }))
 
 export function StellarWallet({ children, className }) {
-  const { address, provider, networkPassphrase, setAddress, setProvider, setNetworkPassphrase } = useStellarWalletStore()
+  const { address, provider, setAddress, setProvider, setNetwork } = useStellarWalletStore()
 
   useEffect(() => {
     const getData = async () => {
@@ -303,20 +303,17 @@ export function StellarWallet({ children, className }) {
         setAddress(null)
         setProvider(null)
       }
-      setNetworkPassphrase(await getNetworkPassphrase())
+      setNetwork(await getNetwork())
     }
     getData()
-  }, [setAddress, setProvider, setNetworkPassphrase])
+  }, [setAddress, setProvider, setNetwork])
 
   const getAddress = async () => {
     const { address } = { ...await freighter.getAddress() }
     return address
   }
 
-  const getNetworkPassphrase = async () => {
-    const { networkPassphrase } = { ...await freighter.getNetwork() }
-    return networkPassphrase
-  }
+  const getNetwork = async () => await freighter.getNetworkDetails()
 
   const connect = async () => {
     await freighter.setAllowed()
@@ -324,14 +321,14 @@ export function StellarWallet({ children, className }) {
     if (address) {
       setAddress(address)
       setProvider(freighter)
-      setNetworkPassphrase(await getNetworkPassphrase())
+      setNetwork(await getNetwork())
     }
   }
 
   const disconnect = () => {
     setAddress(null)
     setProvider(null)
-    setNetworkPassphrase(null)
+    setNetwork(null)
   }
 
   return address ?
