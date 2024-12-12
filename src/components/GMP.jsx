@@ -1794,11 +1794,12 @@ export function GMP({ tx, lite }) {
             chain,
           })
         }
-        else if (headString(chain) === 'stellar' && response && stellarWalletStore.provider) {
-          response = await stellarWalletStore.provider.signTransaction(response, stellarWalletStore.network.network)
+        else if (headString(chain) === 'stellar' && response && stellarWalletStore.provider && stellarWalletStore.network?.sorobanRpcUrl) {
+          const server = new StellarSDK.rpc.Server(stellarWalletStore.network.sorobanRpcUrl)
+          const preparedTransaction = await server.prepareTransaction(StellarSDK.TransactionBuilder.fromXDR(response, stellarWalletStore.network.network))
+          response = await stellarWalletStore.provider.signTransaction(preparedTransaction.toXDR(), stellarWalletStore.network.network)
 
-          if (response?.signedTxXdr && stellarWalletStore.network?.sorobanRpcUrl) {
-            const server = new StellarSDK.rpc.Server(stellarWalletStore.network.sorobanRpcUrl)
+          if (response?.signedTxXdr) {
             console.log('[stellar sendTransaction]', { ...response, network: stellarWalletStore.network })
             response = await server.sendTransaction(StellarSDK.TransactionBuilder.fromXDR(response.signedTxXdr, stellarWalletStore.network.network))
 
