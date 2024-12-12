@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { AxelarGMPRecoveryAPI } from '@axelar-network/axelarjs-sdk'
 import { useSignAndExecuteTransaction } from '@mysten/dapp-kit'
+import * as StellarSDK from '@stellar/stellar-sdk'
 import { Contract } from 'ethers'
 import clsx from 'clsx'
 import _ from 'lodash'
@@ -26,7 +27,7 @@ import { Number } from '@/components/Number'
 import { Profile, ChainProfile, AssetProfile } from '@/components/Profile'
 import { TimeAgo, TimeSpent, TimeUntil } from '@/components/Time'
 import { ExplorerLink } from '@/components/ExplorerLink'
-import { useEVMWalletStore, EVMWallet, useCosmosWalletStore, CosmosWallet, useSuiWalletStore, SuiWallet } from '@/components/Wallet'
+import { useEVMWalletStore, EVMWallet, useCosmosWalletStore, CosmosWallet, useSuiWalletStore, SuiWallet, useStellarWalletStore, StellarWallet } from '@/components/Wallet'
 import { getParams } from '@/components/Pagination'
 import { getEvent, normalizeEvent, customData } from '@/components/GMPs'
 import { useGlobalStore } from '@/components/Global'
@@ -1541,6 +1542,7 @@ export function GMP({ tx, lite }) {
   const { chainId, address, provider, signer } = useEVMWalletStore()
   const cosmosWalletStore = useCosmosWalletStore()
   const suiWalletStore = useSuiWalletStore()
+  const stellarWalletStore = useStellarWalletStore()
   const { mutateAsync: signAndExecuteTransaction } = useSignAndExecuteTransaction()
 
   const getData = useCallback(async () => {
@@ -1748,12 +1750,12 @@ export function GMP({ tx, lite }) {
   }, [response, chains])
 
   const addGas = async data => {
-    if (data?.call && sdk && (data.call.chain_type === 'cosmos' ? cosmosWalletStore?.signer : headString(data.call.chain) === 'sui' ? suiWalletStore?.address : signer)) {
+    if (data?.call && sdk && (data.call.chain_type === 'cosmos' ? cosmosWalletStore?.signer : headString(data.call.chain) === 'sui' ? suiWalletStore?.address : headString(data.call.chain) === 'stellar' ? stellarWalletStore?.address : signer)) {
       setProcessing(true)
       setResponse({ status: 'pending', message: 'Adding gas...' })
       try {
         const { chain, chain_type, destination_chain_type, transactionHash, logIndex } = { ...data.call }
-        const { destinationChain, messageId } = { ...data.call.returnValues }
+        const { sender, destinationChain, messageId } = { ...data.call.returnValues }
         const { base_fee, express_fee, source_token } = { ...data.fees }
 
         // cosmos
@@ -1767,13 +1769,15 @@ export function GMP({ tx, lite }) {
         const gasLimit = isNumber(estimatedGasUsed) ? estimatedGasUsed : 700000
         const sourceTokenDecimals = source_token?.decimals || (headString(chain) === 'sui' ? 9 : 18)
         const gasAddedAmount = toBigNumber(BigInt(parseUnits(base_fee + express_fee, sourceTokenDecimals)) + BigInt(parseUnits(gasLimit * source_token?.gas_price, sourceTokenDecimals)))
-        console.log('[addGas request]', { chain, destinationChain, transactionHash, logIndex, messageId, estimatedGasUsed: gasLimit, gasAddedAmount, refundAddress: headString(chain) === 'sui' ? suiWalletStore.address : address, token, sendOptions })
+        console.log('[addGas request]', { chain, destinationChain, transactionHash, logIndex, messageId, estimatedGasUsed: gasLimit, gasAddedAmount, refundAddress: headString(chain) === 'sui' ? suiWalletStore.address : headString(chain) === 'stellar' ? stellarWalletStore.address : address, token, sendOptions })
 
         let response = chain_type === 'cosmos' ?
           await sdk.addGasToCosmosChain({ txHash: transactionHash, messageId, gasLimit, chain, token, sendOptions }) :
             headString(chain) === 'sui' ?
               await sdk.addGasToSuiChain({ messageId, amount: gasAddedAmount, gasParams: '0x', refundAddress: suiWalletStore.address }) :
-              await sdk.addNativeGas(chain, transactionHash, gasLimit, { evmWalletDetails: { useWindowEthereum: true, provider, signer }, destChain: destinationChain, logIndex, refundAddress: address })
+              headString(chain) === 'stellar' ?
+                await sdk.addGasToStellarChain({ senderAddress: sender, messageId, amount: gasAddedAmount, spender: stellarWalletStore.address, contractAddress: ENVIRONMENT === 'mainnet' ? undefined : 'CB3TOUCHMEICNYVRZWBXWLYQF453RNSEQWVG7RII55GHORI3ZWQLDMRT' }) :
+                await sdk.addNativeGas(chain, transactionHash, gasLimit, { evmWalletDetails: { useWindowEthereum: true, provider, signer }, destChain: destinationChain, logIndex, refundAddress: address })
 
         if (headString(chain) === 'sui' && response && suiWalletStore.address) {
           response = await signAndExecuteTransaction({
@@ -1787,6 +1791,28 @@ export function GMP({ tx, lite }) {
             status: response?.error ? 'failed' : 'success',
             message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
             hash: response?.digest,
+            chain,
+          })
+        }
+        else if (headString(chain) === 'stellar' && response && stellarWalletStore.provider && stellarWalletStore.network?.sorobanRpcUrl) {
+          const server = new StellarSDK.rpc.Server(stellarWalletStore.network.sorobanRpcUrl)
+          const preparedTransaction = await server.prepareTransaction(StellarSDK.TransactionBuilder.fromXDR(response, stellarWalletStore.network.network))
+          response = await stellarWalletStore.provider.signTransaction(preparedTransaction.toXDR(), stellarWalletStore.network.network)
+
+          if (response?.signedTxXdr) {
+            console.log('[stellar sendTransaction]', { ...response, network: stellarWalletStore.network })
+            response = await server.sendTransaction(StellarSDK.TransactionBuilder.fromXDR(response.signedTxXdr, stellarWalletStore.network.network))
+
+            try {
+              response.error = JSON.parse(JSON.stringify(response.errorResult))._attributes.result._switch.name
+            } catch (error) {}
+          }
+          console.log('[addGas response]', response)
+
+          setResponse({
+            status: response?.error || response?.status === 'ERROR' ? 'failed' : 'success',
+            message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
+            hash: response?.hash,
             chain,
           })
         }
@@ -1873,16 +1899,16 @@ export function GMP({ tx, lite }) {
     }
   }
 
-  const needSwitchChain = (id, type) => id !== (type === 'cosmos' ? cosmosWalletStore?.chainId : headString(id) === 'sui' ? id : chainId)
+  const needSwitchChain = (id, type) => id !== (type === 'cosmos' ? cosmosWalletStore?.chainId : ['sui', 'stellar'].includes(headString(id)) ? id : chainId)
 
   const { call, gas_paid, gas_paid_to_callback, confirm, confirm_failed, confirm_failed_event, approved, executed, error, gas, is_executed, is_insufficient_fee, is_call_from_relayer, is_invalid_destination_chain, is_invalid_call, is_invalid_gas_paid, not_enough_gas_to_execute } = { ...data }
   const { proposal_id } = { ...call }
   const sourceChainData = getChainData(call?.chain, chains)
   const destinationChainData = getChainData(call?.returnValues?.destinationChain, chains)
 
-  const addGasButton = call && (headString(call.chain) === 'sui' || !['vm'].includes(call.chain_type)) && !(call.chain === 'axelarnet' && ['vm'].includes(call.destination_chain_type)) && !executed && !is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) && (!(gas_paid || gas_paid_to_callback) || is_insufficient_fee || is_invalid_gas_paid || not_enough_gas_to_execute || gas?.gas_remain_amount < MIN_GAS_REMAIN_AMOUNT) && (
+  const addGasButton = call && (['sui', 'stellar'].includes(headString(call.chain)) || !['vm'].includes(call.chain_type)) && !(call.chain === 'axelarnet' && ['vm'].includes(call.destination_chain_type)) && !executed && !is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) && (!(gas_paid || gas_paid_to_callback) || is_insufficient_fee || is_invalid_gas_paid || not_enough_gas_to_execute || gas?.gas_remain_amount < MIN_GAS_REMAIN_AMOUNT) && (
     <div key="addGas" className="flex items-center gap-x-1">
-      {(call.chain_type === 'cosmos' ? cosmosWalletStore?.signer : headString(call.chain) === 'sui' ? suiWalletStore?.address : signer) && !needSwitchChain(sourceChainData?.chain_id || sourceChainData?.id, call.chain_type) && (
+      {(call.chain_type === 'cosmos' ? cosmosWalletStore?.signer : headString(call.chain) === 'sui' ? suiWalletStore?.address : headString(call.chain) === 'stellar' ? stellarWalletStore?.address : signer) && !needSwitchChain(sourceChainData?.chain_id || sourceChainData?.id, call.chain_type) && (
         <button
           disabled={processing}
           onClick={() => addGas(data)}
@@ -1895,7 +1921,9 @@ export function GMP({ tx, lite }) {
         <CosmosWallet connectChainId={sourceChainData?.chain_id} /> :
         headString(call.chain) === 'sui' ?
           <SuiWallet /> :
-          <EVMWallet connectChainId={sourceChainData?.chain_id} />
+          headString(call.chain) === 'stellar' ?
+            <StellarWallet /> :
+            <EVMWallet connectChainId={sourceChainData?.chain_id} />
       }
     </div>
   )
