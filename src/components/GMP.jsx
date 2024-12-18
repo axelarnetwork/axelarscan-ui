@@ -44,7 +44,7 @@ import IAxelarExecutable from '@/data/contract/interfaces/gmp/IAxelarExecutable.
 const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'
 
 export function getStep(data, chains) {
-  const { call, gas_paid, gas_paid_to_callback, express_executed, confirm, confirm_failed, confirm_failed_event, approved, executed, error, refunded, is_executed, is_invalid_call } = { ...data }
+  const { call, gas_paid, gas_paid_to_callback, express_executed, confirm, confirm_failed, confirm_failed_event, approved, executed, error, refunded, is_executed, is_invalid_call, originData } = { ...data }
   const { proposal_id } = { ...call }
 
   const sourceChain = call?.chain
@@ -53,6 +53,7 @@ export function getStep(data, chains) {
   const sourceChainData = getChainData(sourceChain, chains)
   const destinationChainData = getChainData(destinationChain, chains)
   const axelarChainData = getChainData('axelarnet', chains)
+  const gasPaidChainData = getChainData(originData?.call?.chain, chains) || destinationChainData
 
   const errored = error && timeDiff((error?.block_timestamp || approved?.block_timestamp || confirm?.block_timestamp) * 1000) > 120
   return toArray([
@@ -68,7 +69,7 @@ export function getStep(data, chains) {
       title: gas_paid || gas_paid_to_callback ? 'Gas Paid' : timeDiff(call?.block_timestamp * 1000) < 30 ? 'Checking Gas Paid' : 'Pay Gas',
       status: gas_paid || gas_paid_to_callback ? 'success' : 'pending',
       data: gas_paid || gas_paid_to_callback,
-      chainData: gas_paid_to_callback && !gas_paid ? destinationChainData : sourceChainData,
+      chainData: gas_paid_to_callback && !gas_paid ? gasPaidChainData : sourceChainData,
     },
     express_executed && {
       id: 'express',
