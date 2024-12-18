@@ -1590,7 +1590,7 @@ export function GMP({ tx, lite }) {
           const { data } = { ...await searchGMP(d.call.transactionHash ? { txHash: d.call.transactionHash } : { messageId: d.call.parentMessageID }) }
           d.originData = toArray(data).find(_d => d.call.transactionHash ?
             toArray([_d.express_executed?.transactionHash, _d.executed?.transactionHash]).findIndex(tx => equalsIgnoreCase(tx, d.call.transactionHash)) > -1 :
-            toArray([_d.express_executed?.messageId, _d.executed?.messageId]).findIndex(id => equalsIgnoreCase(id, d.call.parentMessageID)) > -1
+            toArray([_d.express_executed?.messageId, _d.executed?.messageId, _d.executed?.returnValues?.messageId]).findIndex(id => equalsIgnoreCase(id, d.call.parentMessageID)) > -1
           )
           d.originData = await customData(d.originData)
         }
