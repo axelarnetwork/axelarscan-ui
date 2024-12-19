@@ -89,7 +89,7 @@ export function Global() {
             setNetworkParameters(await getNetworkParameters())
             break
           case 'tvl':
-            setTVL(await getTVL())
+            setTVL(ENVIRONMENT === 'mainnet' ? await getTVL() : {})
             break
           case 'stats':
             const metrics = ['GMPStats', 'GMPChart', 'GMPTotalVolume', 'GMPTotalFee', 'GMPTotalActiveUsers', 'GMPTopUsers', 'GMPTopITSUsers', 'GMPTopITSUsersByVolume', 'GMPTopITSAssets', 'GMPTopITSAssetsByVolume', 'transfersStats', 'transfersChart', 'transfersTotalVolume', 'transfersTotalFee', 'transfersTotalActiveUsers', 'transfersTopUsers', 'transfersTopUsersByVolume']
