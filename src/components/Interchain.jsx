@@ -248,6 +248,7 @@ function Filters() {
 }
 
 export function Summary({ data, params }) {
+  const pathname = usePathname()
   const globalStore = useGlobalStore()
 
   if (!data) return null
@@ -323,7 +324,7 @@ export function Summary({ data, params }) {
             />
           </dd>
         </div>
-        {ENVIRONMENT === 'mainnet' && tvlData.length > 0 ?
+        {ENVIRONMENT === 'mainnet' && tvlData.length > 0 && ['/'].includes(pathname) ?
           <div className="border-t lg:border-t-0 border-l lg:border-l-0 border-r border-zinc-200 dark:border-zinc-700 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 px-4 sm:px-6 xl:px-8 py-8">
             <dt className="text-zinc-400 dark:text-zinc-500 text-sm font-medium leading-6">Total Value Locked</dt>
             <dd className="w-full flex-none">
