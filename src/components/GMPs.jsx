@@ -420,9 +420,10 @@ export function GMPs({ address }) {
                               {d.interchain_transfers.map((_d, i) => (
                                 <AssetProfile
                                   key={i}
-                                  value={_d.symbol || _d.contract_address}
+                                  value={_d.contract_address || _d.symbol}
                                   chain={_d.destinationChain}
                                   amount={_d.amount}
+                                  customAssetData={_d}
                                   ITSPossible={true}
                                   width={16}
                                   height={16}

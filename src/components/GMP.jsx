@@ -407,9 +407,10 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                     return (
                       <div key={i} className="flex items-center gap-x-1">
                         <AssetProfile
-                          value={d.symbol || d.contract_address}
+                          value={d.contract_address || d.symbol}
                           chain={d.destinationChain}
                           amount={d.amount}
+                          customAssetData={d}
                           ITSPossible={true}
                           width={16}
                           height={16}
