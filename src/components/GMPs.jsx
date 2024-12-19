@@ -268,7 +268,7 @@ export const customData = async data => {
     }
 
     // interchain transfer
-    if (interchain_transfer?.destinationAddress && !data.customValues?.recipientAddress) data.customValues = { ...data.customValues, recipientAddress: interchain_transfer.destinationAddress, projectId: 'its', projectName: 'ITS' }
+    if (interchain_transfer?.destinationAddress && !data.customValues?.recipientAddress) data.customValues = { ...data.customValues, recipientAddress: interchain_transfer.destinationAddress, destinationChain: interchain_transfer.destinationChain, projectId: 'its', projectName: 'ITS' }
 
     // interchain transfers
     if (toArray(interchain_transfers).length > 0 && !data.customValues?.recipientAddresses)
@@ -480,7 +480,7 @@ export function GMPs({ address }) {
                               </Tooltip>
                               {d.customValues?.recipientAddress && (
                                 <Tooltip content={`${d.customValues.projectName ? d.customValues.projectName : 'Final User'} Recipient`} parentClassName="!justify-start">
-                                  <Profile address={d.customValues.recipientAddress} chain={d.call.returnValues?.destinationChain} />
+                                  <Profile address={d.customValues.recipientAddress} chain={d.customValues.destinationChain || d.call.returnValues?.destinationChain} />
                                 </Tooltip>
                               )}
                             </>
