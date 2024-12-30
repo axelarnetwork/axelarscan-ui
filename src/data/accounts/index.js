@@ -865,6 +865,12 @@ const data = [
     image: '/logos/accounts/nya.png',
     environment: 'mainnet',
   },
+  {
+    address: '0x473F4068073Cd5b2aB0E4Cc8E146F9EDC6fb52CC',
+    name: 'Nutcoin',
+    image: '/logos/accounts/nut.svg',
+    environment: 'mainnet',
+  },
   {address:'axelar1y2a43qhk7clgy0aa8fuul8746mqed379kv84u6',name:'0base.vc',environment:'testnet'},
   {address:'axelar1afj2uhx69pjclgcspfufj9dq9x87zfv0avf6we',name:'4SV',environment:'testnet'},
   {address:'axelar1lg0d9rt4syalck9ux0hhmeeayq7njmjjdguxd6',name:'AlexZ',environment:'testnet'},
