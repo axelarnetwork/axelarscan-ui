@@ -1,5 +1,7 @@
-const request = async (method, params) => {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_TOKEN_TRANSFER_API_URL}/${method}`, { method: 'POST', body: JSON.stringify(params) }).catch(error => { return null })
+import { objToQS } from '@/lib/parser'
+
+const request = async (method, params, requestMethod = 'GET') => {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_TOKEN_TRANSFER_API_URL}/${method}${requestMethod === 'GET' ? objToQS(params) : ''}`, { method: requestMethod, body: requestMethod === 'GET' ? undefined : JSON.stringify(params) }).catch(error => { return null })
   return response && await response.json()
 }
 
@@ -12,4 +14,4 @@ export const transfersTotalActiveUsers = async params => await request('transfer
 export const transfersTopUsers = async params => await request('transfersTopUsers', params)
 export const searchDepositAddresses = async params => await request('searchDepositAddresses', params)
 export const searchBatches = async params => await request('searchBatches', params)
-export const getBatch = async (chain, batchId) => await request('lcd', { path: `/axelar/evm/v1beta1/batched_commands/${chain}/${batchId}` })
+export const getBatch = async (chain, batchId) => await request('lcd', { path: `/axelar/evm/v1beta1/batched_commands/${chain}/${batchId}` }, 'POST')
