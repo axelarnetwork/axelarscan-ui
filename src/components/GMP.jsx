@@ -113,7 +113,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
   const [seeMore, setSeeMore] = useState(false)
   const { chains, assets } = useGlobalStore()
 
-  const { call, gas_paid, gas_paid_to_callback, express_executed, confirm, approved, executed, error, refunded, token_sent, token_deployment_initialized, token_deployed, interchain_transfer, interchain_transfer_with_data, interchain_transfers, token_manager_deployment_started, interchain_token_deployment_started, is_executed, amount, fees, gas, is_insufficient_fee, is_invalid_destination_chain, is_invalid_source_address, is_invalid_contract_address, not_enough_gas_to_execute, status, simplified_status, time_spent, callbackData, originData } = { ...data }
+  const { call, gas_paid, gas_paid_to_callback, express_executed, confirm, approved, executed, error, refunded, token_sent, token_deployment_initialized, token_deployed, interchain_transfer, interchain_transfer_with_data, token_manager_deployment_started, interchain_token_deployment_started, settlement_forwarded_events, settlement_filled_events, interchain_transfers, is_executed, amount, fees, gas, is_insufficient_fee, is_invalid_destination_chain, is_invalid_source_address, is_invalid_contract_address, not_enough_gas_to_execute, status, simplified_status, time_spent, callbackData, originData, settlementForwardedData, settlementFilledData } = { ...data }
   const { proposal_id } = { ...call }
   const txhash = call?.transactionHash || tx
 
@@ -329,6 +329,116 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
               </dd>
             </div>
           )}
+          {((settlement_forwarded_events && executed) || (settlement_filled_events && data.settlementForwardedData)) && (
+            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
+              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Settlement Status</dt>
+              <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                <div className="overflow-x-auto sm:grid sm:grid-cols-4 gap-x-4">
+                  <div className="flex justify-between gap-x-4">
+                    <div className="flex flex-col gap-y-4">
+                      <span className="text-blue-600 dark:text-blue-500 text-2xs font-medium whitespace-nowrap">Settlement Forwarded</span>
+                      <div className="flex flex-col gap-y-3">
+                        {settlement_forwarded_events ?
+                          <ExplorerLink
+                            value={txhash}
+                            chain={sourceChain}
+                            title={ellipse(txhash, 6, '0x')}
+                            iconOnly={false}
+                          /> :
+                          toArray(data.settlementForwardedData).map((d, i) => (
+                            <ExplorerLink
+                              key={i}
+                              value={d.call.transactionHash}
+                              chain="axelarnet"
+                              customURL={`/gmp/${d.message_id}`}
+                              title={ellipse(d.call.transactionHash, 6, '0x')}
+                              iconOnly={false}
+                            />
+                          ))
+                        }
+                      </div>
+                    </div>
+                    <MdKeyboardArrowRight size={24} />
+                  </div>
+                  <div className="flex justify-between gap-x-4">
+                    <div className="flex flex-col gap-y-4">
+                      <span className="text-blue-600 dark:text-blue-500 text-2xs font-medium whitespace-nowrap">Settlement Processed</span>
+                      <div className="flex flex-col gap-y-3">
+                        {settlement_forwarded_events ?
+                          <ExplorerLink
+                            value={executed.transactionHash}
+                            chain={destinationChain}
+                            title={ellipse(executed.transactionHash, 6, '0x')}
+                            iconOnly={false}
+                          /> :
+                          toArray(data.settlementForwardedData).map((d, i) => (
+                            <ExplorerLink
+                              key={i}
+                              value={d.executed.transactionHash}
+                              chain={d.executed.chain}
+                              title={ellipse(d.executed.transactionHash, 6, '0x')}
+                              iconOnly={false}
+                            />
+                          ))
+                        }
+                      </div>
+                    </div>
+                    <MdKeyboardArrowRight size={24} />
+                  </div>
+                  <div className="flex justify-between gap-x-4">
+                    <div className="flex flex-col gap-y-4">
+                      <span className="text-blue-600 dark:text-blue-500 text-2xs font-medium whitespace-nowrap">Settlement Filled</span>
+                      <div className="flex flex-col gap-y-3">
+                        {settlement_filled_events ?
+                          <ExplorerLink
+                            value={txhash}
+                            chain={sourceChain}
+                            title={ellipse(txhash, 6, '0x')}
+                            iconOnly={false}
+                          /> :
+                          toArray(data.settlementFilledData).map((d, i) => (
+                            <ExplorerLink
+                              key={i}
+                              value={d.call.transactionHash}
+                              chain="axelarnet"
+                              customURL={`/gmp/${d.message_id}`}
+                              title={ellipse(d.call.transactionHash, 6, '0x')}
+                              iconOnly={false}
+                            />
+                          ))
+                        }
+                      </div>
+                    </div>
+                    <MdKeyboardArrowRight size={24} />
+                  </div>
+                  <div className="flex justify-between gap-x-4">
+                    <div className="flex flex-col gap-y-4">
+                      <span className="text-blue-600 dark:text-blue-500 text-2xs font-medium whitespace-nowrap">Tokens Released</span>
+                      <div className="flex flex-col gap-y-3">
+                        {settlement_filled_events ?
+                          <ExplorerLink
+                            value={executed.transactionHash}
+                            chain={destinationChain}
+                            title={ellipse(executed.transactionHash, 6, '0x')}
+                            iconOnly={false}
+                          /> :
+                          toArray(data.settlementFilledData).map((d, i) => (
+                            <ExplorerLink
+                              key={i}
+                              value={d.executed.transactionHash}
+                              chain={d.executed.chain}
+                              title={ellipse(d.executed.transactionHash, 6, '0x')}
+                              iconOnly={false}
+                            />
+                          ))
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </dd>
+            </div>
+          )}
           {isMultihop ?
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Path</dt>
@@ -399,7 +509,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
           )}
           {toArray(interchain_transfers).length > 0 && (
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
-              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Events</dt>
+              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Settlement Filled</dt>
               <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                 <div className="flex flex-col gap-y-1.5">
                   {interchain_transfers.map((d, i) => {
@@ -1594,6 +1704,48 @@ export function GMP({ tx, lite }) {
             toArray([_d.express_executed?.messageId, _d.executed?.messageId, _d.executed?.returnValues?.messageId]).findIndex(id => equalsIgnoreCase(id, d.call.parentMessageID)) > -1
           )
           d.originData = await customData(d.originData)
+        }
+
+        // settlement filled
+        if (d.settlement_forwarded_events) {
+          const size = 10
+          let i = 0
+          let from = 0
+          let total
+          let data = []
+
+          while ((!isNumber(total) || total > data.length || from < total) && i < 10) {
+            const response = { ...await searchGMP({ event: 'SquidCoralSettlementFilled', squidCoralOrderHash: d.settlement_forwarded_events.map(e => e.orderHash), from, size }) }
+            if (isNumber(response.total)) total = response.total
+            if (response.data) {
+              data = _.uniqBy(_.concat(data, response.data), 'id')
+              from = data.length
+            }
+            else break
+            i++
+          }
+          if (data.length > 0) d.settlementFilledData = data
+        }
+
+        // settlement forwarded
+        if (d.settlement_filled_events) {
+          const size = 10
+          let i = 0
+          let from = 0
+          let total
+          let data = []
+
+          while ((!isNumber(total) || total > data.length || from < total) && i < 10) {
+            const response = { ...await searchGMP({ event: 'SquidCoralSettlementForwarded', squidCoralOrderHash: d.settlement_filled_events.map(e => e.orderHash), from, size }) }
+            if (isNumber(response.total)) total = response.total
+            if (response.data) {
+              data = _.uniqBy(_.concat(data, response.data), 'id')
+              from = data.length
+            }
+            else break
+            i++
+          }
+          if (data.length > 0) d.settlementForwardedData = data
         }
 
         console.log('[data]', d)
