@@ -472,6 +472,18 @@ const data = [
     environment: 'mainnet',
   },
   {
+    address: '0xA4cE01bD7Dd91DA968a7C4A8D04282a3f5eA06bB',
+    name: 'Squid Coral',
+    image: '/logos/accounts/squid.svg',
+    environment: 'mainnet',
+  },
+  {
+    address: '0x3A394B6678D24C5680E845EEb8e1cbdb7815E247',
+    name: 'Squid CoralHub',
+    image: '/logos/accounts/squid.svg',
+    environment: 'mainnet',
+  },
+  {
     address: '0x66423a1b45e14EaB8B132665FebC7Ec86BfcBF44',
     name: 'The Junkyard',
     image: '/logos/accounts/junkyard.png',
