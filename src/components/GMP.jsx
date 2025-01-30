@@ -332,7 +332,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
           {((settlement_forwarded_events && executed) || (settlement_filled_events && data.settlementForwardedData)) && (
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Settlement Status</dt>
-              <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+              <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-1.5">
                 <div className="overflow-x-auto sm:grid sm:grid-cols-4 gap-x-4">
                   <div className="flex justify-between gap-x-4">
                     <div className="flex flex-col gap-y-4">
@@ -358,7 +358,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                         }
                       </div>
                     </div>
-                    <MdKeyboardArrowRight size={24} />
+                    <MdKeyboardArrowRight size={14} />
                   </div>
                   <div className="flex justify-between gap-x-4">
                     <div className="flex flex-col gap-y-4">
@@ -383,7 +383,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                         }
                       </div>
                     </div>
-                    <MdKeyboardArrowRight size={24} />
+                    <MdKeyboardArrowRight size={14} />
                   </div>
                   <div className="flex justify-between gap-x-4">
                     <div className="flex flex-col gap-y-4">
@@ -409,7 +409,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                         }
                       </div>
                     </div>
-                    <MdKeyboardArrowRight size={24} />
+                    <MdKeyboardArrowRight size={14} />
                   </div>
                   <div className="flex justify-between gap-x-4">
                     <div className="flex flex-col gap-y-4">
