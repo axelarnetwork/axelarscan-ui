@@ -735,7 +735,7 @@ function Charts({ data, granularity }) {
           granularity={granularity}
           valuePrefix="$"
         />
-        <StatsBarChart
+        {/*<StatsBarChart
           i={2}
           data={chartData}
           totalValue={toNumber(GMPTotalActiveUsers) + toNumber(transfersTotalActiveUsers)}
@@ -745,7 +745,7 @@ function Charts({ data, granularity }) {
           dateFormat={TIME_FORMAT}
           granularity={granularity}
         />
-        {/*<StatsBarChart
+        <StatsBarChart
           i={3}
           data={chartData}
           totalValue={toNumber(GMPTotalFee) + toNumber(transfersTotalFee)}
@@ -755,7 +755,7 @@ function Charts({ data, granularity }) {
           dateFormat={TIME_FORMAT}
           granularity={granularity}
           valuePrefix="$"
-        />*/}
+        />
         <StatsBarChart
           i={3}
           data={[]}
@@ -766,7 +766,7 @@ function Charts({ data, granularity }) {
           dateFormat={null}
           granularity={null}
           valuePrefix=""
-        />
+        />*/}
         <SankeyChart
           i={4}
           data={chainPairs}
