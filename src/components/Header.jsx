@@ -165,7 +165,7 @@ function MobileNavigation() {
   )
 }
 
-function EnvirontmentLink({ name, href, children }) {
+function EnvironmentLink({ name, href, children }) {
   return (
     <Link
       href={href}
@@ -299,7 +299,7 @@ export function Header() {
                 >
                   <Popover.Panel className="absolute left-1/2 z-10 flex w-screen max-w-min -translate-x-1/2">
                     <div className="shrink rounded-xl bg-white dark:bg-zinc-800 p-2 text-sm shadow-lg ring-1 ring-zinc-900/5">
-                      {environments.map((d, i) => <EnvirontmentLink key={i} {...d}>{d.name}</EnvirontmentLink>)}
+                      {environments.map((d, i) => <EnvironmentLink key={i} {...d}>{d.name}</EnvironmentLink>)}
                     </div>
                   </Popover.Panel>
                 </Transition>
