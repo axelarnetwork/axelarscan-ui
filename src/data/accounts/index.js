@@ -478,7 +478,31 @@ const data = [
     environment: 'mainnet',
   },
   {
+    address: '0xDdDDD043bD7A886a26C1231e4305582faB219667',
+    name: 'Squid Coral',
+    image: '/logos/accounts/squid.svg',
+    environment: 'mainnet',
+  },
+  {
+    address: '0x83077a68EA6955f2948520Eca1a2Fa2943925685',
+    name: 'Squid Coral',
+    image: '/logos/accounts/squid.svg',
+    environment: 'mainnet',
+  },
+  {
     address: '0x3A394B6678D24C5680E845EEb8e1cbdb7815E247',
+    name: 'Squid CoralHub',
+    image: '/logos/accounts/squid.svg',
+    environment: 'mainnet',
+  },
+  {
+    address: '0xAC12f4fCFd3b73b8D9613dDD5136b4aA28A76248',
+    name: 'Squid CoralHub',
+    image: '/logos/accounts/squid.svg',
+    environment: 'mainnet',
+  },
+  {
+    address: '0xe6B3949F9bBF168f4E3EFc82bc8FD849868CC6d8',
     name: 'Squid CoralHub',
     image: '/logos/accounts/squid.svg',
     environment: 'mainnet',
