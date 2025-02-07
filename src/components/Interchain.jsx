@@ -796,7 +796,7 @@ function Top({
 }) {
   const { chains } = useGlobalStore()
   return (
-    <div className={clsx('border-l border-r border-t border-zinc-200 dark:border-zinc-700 flex flex-col gap-y-3 px-4 sm:px-6', type === 'chain' ? i % 3 !== 0 ? 'sm:border-l-0' : i % 6 !== 0 ? 'lg:border-l-0' : '' : !hasTransfers || !hasGMP || i % 4 !== 0 ? 'sm:border-l-0' : '', type === 'chain' ? 'xl:px-4 py-4' : 'xl:px-8 py-8')}>
+    <div className={clsx('border-l border-r border-t border-zinc-200 dark:border-zinc-700 flex flex-col gap-y-3 px-4 sm:px-6', type === 'chain' ? i % 3 !== 0 ? 'sm:border-l-0' : i % (hasTransfers ? 6 : 3) !== 0 ? 'lg:border-l-0' : '' : !hasTransfers || !hasGMP || i % 4 !== 0 ? 'sm:border-l-0' : '', type === 'chain' ? 'xl:px-4 py-4' : 'xl:px-8 py-8')}>
       <div className="flex flex-col gap-y-0.5">
         <span className="text-zinc-900 dark:text-zinc-100 text-sm font-semibold">
           {title}
@@ -981,6 +981,7 @@ function Tops({ data, types, params }) {
           <Top
             i={0}
             data={getTopData(chainPairs, 'num_txs', 100)}
+            hasTransfers={hasTransfers}
             hasGMP={hasGMP}
             title="Top Paths"
             description="by transactions"
@@ -989,6 +990,7 @@ function Tops({ data, types, params }) {
           <Top
             i={1}
             data={getTopData(sourceChains, 'num_txs', 100)}
+            hasTransfers={hasTransfers}
             hasGMP={hasGMP}
             title="Top Sources"
             description="by transactions"
@@ -997,6 +999,7 @@ function Tops({ data, types, params }) {
           <Top
             i={2}
             data={getTopData(destionationChains, 'num_txs', 100)}
+            hasTransfers={hasTransfers}
             hasGMP={hasGMP}
             title="Top Destinations"
             description="by transactions"
@@ -1005,6 +1008,7 @@ function Tops({ data, types, params }) {
           <Top
             i={3}
             data={getTopData(chainPairs, 'volume', 100)}
+            hasTransfers={hasTransfers}
             hasGMP={hasGMP}
             field="volume"
             title="Top Paths"
@@ -1015,6 +1019,7 @@ function Tops({ data, types, params }) {
           <Top
             i={4}
             data={getTopData(sourceChains, 'volume', 100)}
+            hasTransfers={hasTransfers}
             hasGMP={hasGMP}
             field="volume"
             title="Top Sources"
@@ -1025,6 +1030,7 @@ function Tops({ data, types, params }) {
           <Top
             i={5}
             data={getTopData(destionationChains, 'volume', 100)}
+            hasTransfers={hasTransfers}
             hasGMP={hasGMP}
             field="volume"
             title="Top Destinations"
@@ -1090,7 +1096,7 @@ function Tops({ data, types, params }) {
             </>
           )}
         </div>
-        {hasITS && (
+        {hasITS && !equalsIgnoreCase(params?.contractMethod, 'SquidCoral') && (
           <div className={clsx('grid sm:grid-cols-2 lg:grid-cols-4', !hasTransfers && 'lg:col-span-2')}>
             <Top
               i={0}
@@ -1434,6 +1440,16 @@ export function Interchain() {
                     className="text-xs"
                   />
                 ))}
+                {!contractAddress && equalsIgnoreCase(contractMethod, 'SquidCoral') && (
+                  <Profile
+                    address={accounts.find(d => equalsIgnoreCase(d.name, 'Squid Coral'))?.address}
+                    width={18}
+                    height={18}
+                    noCopy={true}
+                    customURL={`/gmp/search?contractMethod=${contractMethod}`}
+                    className="text-xs"
+                  />
+                )}
               </div>
               <div className="max-w-xl flex flex-wrap items-center mt-2">
                 {timeShortcuts.map((d, i) => {
