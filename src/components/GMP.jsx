@@ -209,8 +209,10 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                         <ol role="list" className="flex items-center">
                           {steps.map((d, i) => {
                             const { confirmation_txhash, contract_address, poll_id, axelarTransactionHash, receipt, proposal_id } = { ...d.data }
-                            const { url, transaction_path } = { ...d.chainData?.explorer }
+                            const { url, block_path, transaction_path } = { ...d.chainData?.explorer }
                             const transactionHash = d.data?.transactionHash || receipt?.transactionHash || receipt?.hash
+                            const height = d.data?.blockNumber || receipt?.blockNumber
+
                             let stepURL
                             if (url && transaction_path) {
                               switch (d.id) {
@@ -227,11 +229,17 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                   }
                                   break
                                 case 'executed':
-                                  if (transactionHash || axelarTransactionHash) stepURL = `${url}${transaction_path.replace('{tx}', transactionHash || axelarTransactionHash)}`
+                                  if (transactionHash || axelarTransactionHash) {
+                                    if (block_path && isNumber(transactionHash || axelarTransactionHash) && isNumber(height) && toNumber(transactionHash || axelarTransactionHash) === toNumber(height)) stepURL = `${url}${block_path.replace('{block}', transactionHash || axelarTransactionHash)}`
+                                    else stepURL = `${url}${transaction_path.replace('{tx}', transactionHash || axelarTransactionHash)}`
+                                  }
                                   break
                                 default:
                                   if (proposal_id) stepURL = `/proposal/${proposal_id}`
-                                  else if (transactionHash) stepURL = `${url}${transaction_path.replace('{tx}', transactionHash)}`
+                                  else if (transactionHash) {
+                                    if (block_path && isNumber(transactionHash) && isNumber(height) && toNumber(transactionHash) === toNumber(height)) stepURL = `${url}${block_path.replace('{block}', transactionHash)}`
+                                    else stepURL = `${url}${transaction_path.replace('{tx}', transactionHash)}`
+                                  }
                                   break
                               }
                             }
@@ -1319,7 +1327,10 @@ function Details({ data }) {
                 else {
                   if (transactionHash) {
                     stepTX = transactionHash
-                    if (url && transaction_path) stepURL = `${url}${transaction_path.replace('{tx}', transactionHash)}`
+                    if (url) {
+                      if (transaction_path) stepURL = `${url}${transaction_path.replace('{tx}', transactionHash)}`
+                      if (block_path && isNumber(transactionHash) && isNumber(height) && toNumber(transactionHash) === toNumber(height)) stepURL = `${url}${block_path.replace('{block}', transactionHash)}`
+                    }
                   }
                   else if (axelarTransactionHash && axelarChainData?.explorer?.url) {
                     stepTX = axelarTransactionHash
