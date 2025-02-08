@@ -7,6 +7,8 @@ import { Image } from '@/components/Image'
 import { useGlobalStore } from '@/components/Global'
 import { getChainData } from '@/lib/config'
 import { getInputType } from '@/lib/parser'
+import { isString } from '@/lib/string'
+import { isNumber } from '@/lib/number'
 
 export function ExplorerLink({
   value,
@@ -25,8 +27,19 @@ export function ExplorerLink({
 }) {
   const { chains } = useGlobalStore()
   const { explorer } = { ...getChainData(chain, chains) }
-  const { url, name, address_path, contract_path, contract_0_path, transaction_path, icon, no_0x, cannot_link_contract_via_address_path } = { ...explorer }
-  if (type === 'tx' && getInputType(value, chains) === 'evmAddress') type = 'address'
+  const { url, name, block_path, address_path, contract_path, contract_0_path, transaction_path, icon, no_0x, cannot_link_contract_via_address_path } = { ...explorer }
+  if (type === 'tx') {
+    switch (getInputType(value, chains)) {
+      case 'evmAddress':
+        type = 'address'
+        break
+      case 'block':
+        type = isNumber(value) && (!isString(value) || !value.startsWith('0x')) ? 'block' : type
+        break
+      default:
+        break
+    }
+  }
 
   let path
   let field = type
@@ -41,6 +54,9 @@ export function ExplorerLink({
     case 'tx':
       path = transaction_path
       value = no_0x && value?.startsWith('0x') ? value.substring(2) : value
+      break
+    case 'block':
+      path = block_path
       break
     default:
       break
