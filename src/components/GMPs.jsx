@@ -68,7 +68,8 @@ function Filters() {
     { label: 'Asset Type', name: 'assetType', type: 'select', options: _.concat({ title: 'Any' }, [{ value: 'gateway', title: 'Gateway Token' }, { value: 'its', title: 'ITS Token' }]) },
     { label: 'Asset', name: 'asset', type: 'select', multiple: true, options: _.orderBy(toArray(_.concat(params.assetType !== 'its' && toArray(assets).map(d => ({ value: d.id, title: `${d.symbol} (${d.id})` })), params.assetType !== 'gateway' && toArray(itsAssets).map(d => ({ value: d.symbol, title: `${d.symbol} (ITS)` })))), ['title'], ['asc']) },
     params.assetType === 'its' && { label: 'ITS Token Address', name: 'itsTokenAddress' },
-    { label: 'Method', name: 'contractMethod', type: 'select', options: _.concat({ title: 'Any' }, [{ value: 'callContract', title: 'CallContract' }, { value: 'callContractWithToken', title: 'CallContractWithToken' }, { value: 'InterchainTransfer', title: 'InterchainTransfer' }, { value: 'InterchainTokenDeployment', title: 'InterchainTokenDeployment' }, { value: 'TokenManagerDeployment', title: 'TokenManagerDeployment' }]) },
+    { label: 'Method', name: 'contractMethod', type: 'select', options: _.concat({ title: 'Any' }, [{ value: 'callContract', title: 'CallContract' }, { value: 'callContractWithToken', title: 'CallContractWithToken' }, { value: 'InterchainTransfer', title: 'InterchainTransfer' }, { value: 'InterchainTokenDeployment', title: 'InterchainTokenDeployment' }, { value: 'TokenManagerDeployment', title: 'TokenManagerDeployment' }, { value: 'SquidCoral', title: 'SquidCoral' }, { value: 'SquidCoralSettlementForwarded', title: 'SquidCoralSettlementForwarded' }, { value: 'SquidCoralSettlementFilled', title: 'SquidCoralSettlementFilled' }]) },
+    params.contractMethod?.startsWith('SquidCoral') && { label: 'Squid Coral OrderHash', name: 'squidCoralOrderHash' },
     { label: 'Status', name: 'status', type: 'select', options: _.concat({ title: 'Any' }, [{ value: 'called', title: 'Called' }, { value: 'confirming', title: 'Wait for Confirmation' }, { value: 'express_executed', title: 'Express Executed' }, { value: 'approving', title: 'Wait for Approval' }, { value: 'approved', title: 'Approved' }, { value: 'executing', title: 'Executing' }, { value: 'executed', title: 'Executed' }, { value: 'error', title: 'Error Execution' }, { value: 'insufficient_fee', title: 'Insufficient Fee' }, { value: 'not_enough_gas_to_execute', title: 'Not Enough Gas' }]) },
     { label: 'Sender', name: 'senderAddress' },
     { label: 'Contract', name: 'contractAddress' },
@@ -241,12 +242,14 @@ function Filters() {
 }
 
 export const getEvent = data => {
-  const { call, token_sent, token_deployment_initialized, token_deployed, token_manager_deployment_started, interchain_token_deployment_started, interchain_transfer, interchain_transfer_with_data, interchain_transfers } = { ...data }
-  if (token_sent || interchain_transfer || interchain_transfer_with_data || interchain_transfers) return 'InterchainTransfer'
+  const { call, token_sent, token_deployment_initialized, token_deployed, token_manager_deployment_started, interchain_token_deployment_started, interchain_transfer, interchain_transfer_with_data, settlement_forwarded_events, settlement_filled_events, interchain_transfers } = { ...data }
+  if (token_sent || interchain_transfer || interchain_transfer_with_data) return 'InterchainTransfer'
   if (token_deployment_initialized) return 'TokenDeploymentInitialized'
   if (token_deployed) return 'TokenDeployed'
   if (token_manager_deployment_started) return 'TokenManagerDeployment'
   if (interchain_token_deployment_started) return 'InterchainTokenDeployment'
+  if (settlement_forwarded_events) return 'SquidCoralSettlementForwarded'
+  if (settlement_filled_events || interchain_transfers) return 'SquidCoralSettlementFilled'
   return call?.event
 }
 export const normalizeEvent = event => event?.replace('ContractCall', 'callContract')
