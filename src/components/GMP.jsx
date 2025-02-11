@@ -150,16 +150,16 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
         <div className="max-w-2xl text-zinc-400 dark:text-zinc-500 text-sm leading-6 mt-1">
           {txhash && (
             <div className="flex items-center gap-x-1">
-              <Copy value={txhash}>
+              <Copy value={messageId || txhash}>
                 {url && (proposal_id || call?.transactionHash) ?
                   <Link
                     href={proposal_id ? `/proposal/${proposal_id}` : `${url}${transaction_path?.replace('{tx}', txhash)}`}
                     target="_blank"
                     className="text-blue-600 dark:text-blue-500 font-semibold"
                   >
-                    {ellipse(txhash)}{call.chain_type === 'evm' && call.receipt ? isNumber(call._logIndex) ? `-${call._logIndex}` : isNumber(call.logIndex) ? `:${call.logIndex}` : '' : ['cosmos', 'vm'].includes(call.chain_type) && isNumber(call.messageIdIndex) ? `-${call.messageIdIndex}` : ''}
+                    {ellipse(messageId, 12) || `${ellipse(txhash)}${call.chain_type === 'evm' && call.receipt ? isNumber(call._logIndex) ? `-${call._logIndex}` : isNumber(call.logIndex) ? `:${call.logIndex}` : '' : ['cosmos', 'vm'].includes(call.chain_type) && isNumber(call.messageIdIndex) ? `-${call.messageIdIndex}` : ''}`}
                   </Link> :
-                  `${ellipse(txhash)}${call.chain_type === 'evm' && call.receipt ? isNumber(call._logIndex) ? `-${call._logIndex}` : isNumber(call.logIndex) ? `:${call.logIndex}` : '' : ['cosmos', 'vm'].includes(call.chain_type) && isNumber(call.messageIdIndex) && call?.transactionHash ? `-${call.messageIdIndex}` : ''}`
+                  ellipse(messageId, 12) || `${ellipse(txhash)}${call.chain_type === 'evm' && call.receipt ? isNumber(call._logIndex) ? `-${call._logIndex}` : isNumber(call.logIndex) ? `:${call.logIndex}` : '' : ['cosmos', 'vm'].includes(call.chain_type) && isNumber(call.messageIdIndex) && call?.transactionHash ? `-${call.messageIdIndex}` : ''}`
                 }
               </Copy>
               {!proposal_id && call?.transactionHash && <ExplorerLink value={txhash} chain={sourceChain} hasEventLog={call.chain_type === 'evm' && isNumber(call.logIndex)} />}
