@@ -86,7 +86,7 @@ export function getStep(data, chains) {
       data: confirm || confirm_failed_event,
       chainData: axelarChainData,
     },
-    (['evm', 'vm'].includes(destinationChainData?.chain_type) || (sourceChainData?.chain_type === 'vm' && isAxelar(destinationChain))) && {
+    (['evm', 'vm'].includes(destinationChainData?.chain_type) || (sourceChainData?.chain_type === 'vm' && isAxelar(destinationChain))) && (approved || (!executed && !error)) && {
       id: 'approve',
       title: approved ? 'Approved' : confirm && (['cosmos', 'vm'].includes(sourceChainData?.chain_type) || confirm.poll_id !== confirm_failed_event?.poll_id) ? 'Approving' : 'Approve',
       status: approved ? 'success' : 'pending',
