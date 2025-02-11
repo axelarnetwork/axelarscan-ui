@@ -32,6 +32,7 @@ import { getParams } from '@/components/Pagination'
 import { getEvent, normalizeEvent, customData } from '@/components/GMPs'
 import { useGlobalStore } from '@/components/Global'
 import { searchGMP, estimateTimeSpent } from '@/lib/api/gmp'
+import { isAxelar } from '@/lib/chain'
 import { getProvider } from '@/lib/chain/evm'
 import { ENVIRONMENT, getChainData, getAssetData } from '@/lib/config'
 import { split, toArray, parseError } from '@/lib/parser'
@@ -78,14 +79,14 @@ export function getStep(data, chains) {
       data: express_executed,
       chainData: destinationChainData,
     },
-    (confirm || !approved || !(executed || is_executed || error)) && !['axelarnet', 'axelar'].includes(sourceChain) && {
+    (confirm || !approved || !(executed || is_executed || error)) && !isAxelar(sourceChain) && {
       id: 'confirm',
       title: (confirm && (sourceChainData?.chain_type === 'cosmos' || confirm.poll_id !== confirm_failed_event?.poll_id)) || approved || executed || is_executed || error ? 'Confirmed' : is_invalid_call ? 'Invalid Call' : confirm_failed ? 'Failed to Confirm' : gas_paid || gas_paid_to_callback || express_executed ? 'Waiting for Finality' : 'Confirm',
       status: (confirm && (sourceChainData?.chain_type === 'cosmos' || confirm.poll_id !== confirm_failed_event?.poll_id)) || approved || executed || is_executed || error ? 'success' : is_invalid_call || confirm_failed ? 'failed' : 'pending',
       data: confirm || confirm_failed_event,
       chainData: axelarChainData,
     },
-    (['evm', 'vm'].includes(destinationChainData?.chain_type) || (sourceChainData?.chain_type === 'vm' && ['axelarnet', 'axelar'].includes(destinationChain))) && {
+    (['evm', 'vm'].includes(destinationChainData?.chain_type) || (sourceChainData?.chain_type === 'vm' && isAxelar(destinationChain))) && (approved || (!executed && !error)) && {
       id: 'approve',
       title: approved ? 'Approved' : confirm && (['cosmos', 'vm'].includes(sourceChainData?.chain_type) || confirm.poll_id !== confirm_failed_event?.poll_id) ? 'Approving' : 'Approve',
       status: approved ? 'success' : 'pending',
@@ -2006,7 +2007,7 @@ export function GMP({ tx, lite }) {
   const approve = async (data, afterPayGas = false) => {
     if (data?.call && sdk) {
       setProcessing(true)
-      if (!afterPayGas) setResponse({ status: 'pending', message: !data.confirm ? 'Confirming...' : data.call.destination_chain_type === 'cosmos' ? 'Executing...' : 'Approving...' })
+      if (!afterPayGas) setResponse({ status: 'pending', message: !data.confirm && data.call.chain_type !== 'cosmos' ? 'Confirming...' : data.call.destination_chain_type === 'cosmos' ? 'Executing...' : 'Approving...' })
       try {
         const { destination_chain_type, transactionHash, logIndex, _logIndex } = { ...data.call }
         let { messageId } = { ...data.call.returnValues }
@@ -2071,7 +2072,7 @@ export function GMP({ tx, lite }) {
   const sourceChainData = getChainData(call?.chain, chains)
   const destinationChainData = getChainData(call?.returnValues?.destinationChain, chains)
 
-  const addGasButton = call && (['sui', 'stellar'].includes(headString(call.chain)) || !['vm'].includes(call.chain_type) || isNumber(sourceChainData?.chain_id)) && !(['axelarnet', 'axelar'].includes(call.chain) && ['vm'].includes(call.destination_chain_type)) && !executed && !is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) && (!(gas_paid || gas_paid_to_callback) || is_insufficient_fee || is_invalid_gas_paid || not_enough_gas_to_execute || gas?.gas_remain_amount < MIN_GAS_REMAIN_AMOUNT) && (
+  const addGasButton = call && (['sui', 'stellar'].includes(headString(call.chain)) || !['vm'].includes(call.chain_type) || isNumber(sourceChainData?.chain_id)) && !(isAxelar(call.chain) && ['vm'].includes(call.destination_chain_type)) && !executed && !is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) && (!(gas_paid || gas_paid_to_callback) || is_insufficient_fee || is_invalid_gas_paid || not_enough_gas_to_execute || gas?.gas_remain_amount < MIN_GAS_REMAIN_AMOUNT) && (
     <div key="addGas" className="flex items-center gap-x-1">
       {(call.chain_type === 'cosmos' ? cosmosWalletStore?.signer : headString(call.chain) === 'sui' ? suiWalletStore?.address : headString(call.chain) === 'stellar' ? stellarWalletStore?.address : signer) && !needSwitchChain(sourceChainData?.chain_id || sourceChainData?.id, call.chain_type) && (
         <button
@@ -2094,14 +2095,14 @@ export function GMP({ tx, lite }) {
   )
 
   const finalityTime = estimatedTimeSpent?.confirm ? estimatedTimeSpent.confirm + 15 : 600
-  const approveButton = call && !['vm'].includes(call.chain_type) && !(call.destination_chain_type === 'cosmos' ? confirm && (sourceChainData?.chain_type === 'cosmos' || confirm.poll_id !== confirm_failed_event?.poll_id) : approved) && (!executed || (error && executed.axelarTransactionHash && !executed.transactionHash)) && !is_executed && (confirm || confirm_failed || timeDiff(call.block_timestamp * 1000) >= finalityTime) && timeDiff((confirm || call).block_timestamp * 1000) >= 60 && !(is_invalid_destination_chain || is_invalid_call || is_insufficient_fee || (!gas?.gas_remain_amount && !gas_paid_to_callback && !is_call_from_relayer && !proposal_id)) && (
+  const approveButton = call && !['vm'].includes(call.chain_type) && !(call.destination_chain_type === 'cosmos' ? (sourceChainData?.chain_type === 'cosmos' && executed?.transactionHash) || (confirm && confirm.poll_id !== confirm_failed_event?.poll_id) : approved) && (!executed || ((error || timeDiff(executed.block_timestamp * 1000) >= 3600) && executed.axelarTransactionHash && !executed.transactionHash)) && !is_executed && (confirm || confirm_failed || timeDiff(call.block_timestamp * 1000) >= finalityTime) && timeDiff((confirm || call).block_timestamp * 1000) >= 60 && !(is_invalid_destination_chain || is_invalid_call || is_insufficient_fee || (!gas?.gas_remain_amount && !gas_paid_to_callback && !is_call_from_relayer && !proposal_id)) && (
     <div key="approve" className="flex items-center gap-x-1">
       <button
         disabled={processing}
         onClick={() => approve(data)}
         className={clsx('h-6 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1', processing ? 'pointer-events-none bg-blue-400 dark:bg-blue-400' : 'bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600')}
       >
-        {!confirm && !['axelarnet', 'axelar'].includes(call.chain) ? 'Confirm' : 'Approv'}{processing ? 'ing...' : !confirm && !['axelarnet', 'axelar'].includes(call.chain) ? '' : 'e'}
+        {!confirm && !isAxelar(call.chain) && sourceChainData?.chain_type !== 'cosmos' ? 'Confirm' : sourceChainData?.chain_type === 'cosmos' ? 'Execut' : 'Approv'}{processing ? 'ing...' : !confirm && !isAxelar(call.chain) && sourceChainData?.chain_type !== 'cosmos' ? '' : 'e'}
       </button>
     </div>
   )
@@ -2132,8 +2133,8 @@ export function GMP({ tx, lite }) {
             executeData={executeData}
             buttons={Object.fromEntries(Object.entries({
               pay_gas: addGasButton,
-              [!confirm && !['axelarnet', 'axelar'].includes(call.chain) ? 'confirm' : 'approve']: approveButton,
               execute: executeButton,
+              [!confirm && !isAxelar(call.chain) && sourceChainData?.chain_type !== 'cosmos' ? 'confirm' : sourceChainData?.chain_type === 'cosmos' ? 'execute' : 'approve']: approveButton,
             }).filter(([k, v]) => v))}
             tx={tx}
             lite={lite}

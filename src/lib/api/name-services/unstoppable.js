@@ -47,6 +47,7 @@ const getDomains = async params => {
 }
 
 export const getUnstoppable = async addresses => {
+  return null // subgraph unavailable
   if (addresses) {
     addresses = _.uniq(toArray(addresses, { toCase: 'lower' }))
 
