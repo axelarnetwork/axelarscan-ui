@@ -426,9 +426,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                       <div className="flex flex-col gap-y-3">
                         {settlement_filled_events ?
                           <ExplorerLink
-                            value={executed.transactionHash}
+                            value={executed?.transactionHash}
                             chain={destinationChain}
-                            title={ellipse(executed.transactionHash, 6, '0x')}
+                            title={ellipse(executed?.transactionHash, 6, '0x')}
                             iconOnly={false}
                           /> :
                           toArray(data.settlementFilledData).map((d, i) => (
