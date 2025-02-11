@@ -41,6 +41,7 @@ const getDomains = async params => {
 }
 
 export const getLENS = async addresses => {
+  return null // api unavailable
   if (addresses) {
     addresses = _.uniq(toArray(addresses, { toCase: 'lower' }))
 
