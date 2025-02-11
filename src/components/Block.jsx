@@ -18,7 +18,7 @@ import { Profile } from '@/components/Profile'
 import { Transactions } from '@/components/Transactions'
 import { useGlobalStore } from '@/components/Global'
 import { getBlock, getValidatorSets } from '@/lib/api/validator'
-import { toHex, split, toArray } from '@/lib/parser'
+import { toJson, toHex, split, toArray } from '@/lib/parser'
 import { equalsIgnoreCase, removeDoubleQuote, lastString, ellipse, toTitle } from '@/lib/string'
 import { isNumber, toNumber, numberFormat } from '@/lib/number'
 
@@ -235,7 +235,7 @@ export function Block({ height }) {
         if (isNumber(round)) d.round = round
         if (validators) d.validators = validators
         for (const f of ['begin_block_events', 'end_block_events']) {
-          if (d[f]) d[f] = Object.entries(_.groupBy(d[f], 'type')).map(([k, v]) => ({ type: k, data: toArray(v).map(e => Object.fromEntries(toArray(e.attributes).map(a => [a.key, removeDoubleQuote(toHex(a.value))]))) }))
+          if (d[f]) d[f] = Object.entries(_.groupBy(d[f], 'type')).map(([k, v]) => ({ type: k, data: toArray(v).map(e => Object.fromEntries(toArray(e.attributes).map(a => [a.key, removeDoubleQuote(toJson(a.value) || toHex(a.value))]))) }))
         }
 
         console.log('[data]', d)
