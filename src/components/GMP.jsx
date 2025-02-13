@@ -2134,7 +2134,7 @@ export function GMP({ tx, lite }) {
             buttons={Object.fromEntries(Object.entries({
               pay_gas: addGasButton,
               execute: executeButton,
-              [!confirm && !isAxelar(call.chain) && sourceChainData?.chain_type !== 'cosmos' ? 'confirm' : sourceChainData?.chain_type === 'cosmos' ? 'execute' : 'approve']: approveButton,
+              [!confirm && !isAxelar(call.chain) && sourceChainData?.chain_type !== 'cosmos' ? 'confirm' : sourceChainData?.chain_type === 'cosmos' && !executeButton ? 'execute' : 'approve']: approveButton,
             }).filter(([k, v]) => v))}
             tx={tx}
             lite={lite}
