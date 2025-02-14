@@ -4,7 +4,7 @@ const decodeBase64 = base64.decode
 import _ from 'lodash'
 
 export const objToQS = obj => {
-  const qs = Object.entries({ ...obj }).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&')
+  const qs = Object.entries({ ...obj }).filter(([k, v]) => ![undefined, null].includes(v)).map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&')
   if (!qs) return ''
   return `?${qs}`
 }
