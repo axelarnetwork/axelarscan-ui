@@ -17,7 +17,7 @@ export function Image({ src, alt = '', className, ...props }) {
       unoptimized
       className={clsx(className, !isString(src) ? '' :
         includesStringList(src, ['/immutable', '/ropsten']) ? 'bg-white rounded-full' :
-        includesStringList(src, ['/dymension', '/saga', '/moonbase']) ? 'bg-white rounded-full p-0.5' :
+        includesStringList(src, ['/dymension', '/saga', '/moonbase', '/moonbeam', '/stellar', '/allora']) ? 'bg-white rounded-full p-0.5' :
         includesStringList(src, ['/blast']) ? 'bg-zinc-900 rounded-full p-0.5' : ''
       )}
     />
