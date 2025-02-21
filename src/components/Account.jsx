@@ -270,7 +270,9 @@ function Balances({ data }) {
           </thead>
           <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
             {data.filter((d, i) => i >= (page - 1) * size && i < page * size).map((d, i) => {
-              const { symbol, image, price } = { ...getAssetData(d.denom, assets) }
+              const burnedPrefix = 'burned-'
+              const isBurned = d.denom?.startsWith(burnedPrefix)
+              const { symbol, image, price } = { ...getAssetData(d.denom?.replace(burnedPrefix, ''), assets) }
               return (
                 <tr key={i} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
                   <td className="pl-4 sm:pl-0 pr-3 py-4 text-left text-xs">
@@ -288,7 +290,7 @@ function Balances({ data }) {
                         <div className="flex items-center gap-x-2">
                           <div className="flex items-center gap-x-1">
                             <span className="text-zinc-900 dark:text-zinc-100 text-xs font-medium">
-                              {ellipse(symbol || d.denom, 6, 'ibc/')}
+                              {isBurned ? 'Burned ' : ''}{ellipse(symbol || d.denom, 6, 'ibc/')}
                             </span>
                             {!symbol && <Copy size={16} value={d.denom} />}
                           </div>
