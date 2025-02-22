@@ -51,7 +51,7 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
 
   return (
     <>
-      <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
+      <div className="overflow-auto bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
         <div className="px-4 sm:px-6 py-6">
           <h3 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-7">
             <Listbox value={id} onChange={v => router.push(`${pathname.replace(chain, v)}`)} className="w-56">
