@@ -12,7 +12,7 @@ export const CHAINS = toArray(process.env.NEXT_PUBLIC_ENVIRONMENT === 'mainnet' 
     { _id: 'polygon', ...polygon },
     { _id: 'polygon-zkevm', ...polygonZkEvm },
     { _id: 'avalanche', ...avalanche },
-    { _id: 'fantom', ...fantom },
+    { _id: 'fantom', ...fantom, rpcUrls: { default: { http: ['https://rpc.ftm.tools'] } } },
     { _id: 'moonbeam', ...moonbeam },
     { _id: 'aurora', ...aurora },
     { _id: 'arbitrum', ...arbitrum },
