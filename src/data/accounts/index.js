@@ -472,6 +472,12 @@ const data = [
     environment: 'mainnet',
   },
   {
+    address: '0xdf4fFDa22270c12d0b5b3788F1669D709476111E',
+    name: 'Squid Coral',
+    image: '/logos/accounts/squid.svg',
+    environment: 'mainnet',
+  },
+  {
     address: '0xA4cE01bD7Dd91DA968a7C4A8D04282a3f5eA06bB',
     name: 'Squid Coral',
     image: '/logos/accounts/squid.svg',
