@@ -341,10 +341,10 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
           {((settlement_forwarded_events && executed) || (settlement_filled_events && data.settlementForwardedData)) && (
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Settlement Status</dt>
-              <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-1.5">
-                <div className="overflow-x-auto sm:grid sm:grid-cols-4 gap-x-4">
+              <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-4 sm:mt-1.5">
+                <div className="overflow-x-auto flex flex-col sm:grid sm:grid-cols-4 gap-y-6 sm:gap-y-0 sm:gap-x-4">
                   <div className="flex justify-between gap-x-4">
-                    <div className="flex flex-col gap-y-4">
+                    <div className="flex flex-col gap-y-2 sm:gap-y-4">
                       <span className="text-blue-600 dark:text-blue-500 text-2xs font-medium whitespace-nowrap">Settlement Forwarded</span>
                       <div className="flex flex-col gap-y-3">
                         {settlement_forwarded_events ?
@@ -370,7 +370,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                     <MdKeyboardArrowRight size={14} />
                   </div>
                   <div className="flex justify-between gap-x-4">
-                    <div className="flex flex-col gap-y-4">
+                    <div className="flex flex-col gap-y-2 sm:gap-y-4">
                       <span className="text-blue-600 dark:text-blue-500 text-2xs font-medium whitespace-nowrap">Settlement Processed</span>
                       <div className="flex flex-col gap-y-3">
                         {settlement_forwarded_events ?
@@ -395,7 +395,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                     <MdKeyboardArrowRight size={14} />
                   </div>
                   <div className="flex justify-between gap-x-4">
-                    <div className="flex flex-col gap-y-4">
+                    <div className="flex flex-col gap-y-2 sm:gap-y-4">
                       <span className="text-blue-600 dark:text-blue-500 text-2xs font-medium whitespace-nowrap">Settlement Filled</span>
                       <div className="flex flex-col gap-y-3">
                         {settlement_filled_events ?
@@ -421,7 +421,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                     <MdKeyboardArrowRight size={14} />
                   </div>
                   <div className="flex justify-between gap-x-4">
-                    <div className="flex flex-col gap-y-4">
+                    <div className="flex flex-col gap-y-2 sm:gap-y-4">
                       <span className="text-blue-600 dark:text-blue-500 text-2xs font-medium whitespace-nowrap">Tokens Released</span>
                       <div className="flex flex-col gap-y-3">
                         {settlement_filled_events ?
