@@ -1569,7 +1569,7 @@ function Details({ data }) {
                             ellipse(stepTX)
                           }
                         </Copy>
-                        {!proposal_id && <ExplorerLink value={stepTX} chain={d.chainData?.id} />}
+                        {!proposal_id && <ExplorerLink value={stepTX} chain={d.chainData?.id} customURL={stepURL} />}
                       </div>
                     )}
                     {stepMoreInfos.length > 0 && (
