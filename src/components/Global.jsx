@@ -46,7 +46,7 @@ export function Global() {
       await Promise.all(['chains', 'assets', 'itsAssets', 'contracts', 'configurations', 'validators', 'verifiers', 'inflationData', 'networkParameters', 'tvl', 'stats'].map(k => new Promise(async resolve => {
         switch (k) {
           case 'chains':
-            setChains(toArray(await getChains()).filter(d => d.chain_type !== 'vm' || d.voting_verifier?.address))
+            setChains(toArray(await getChains()).filter(d => d.chain_type !== 'vm' || d.voting_verifier?.address || ['devnet-amplifier'].includes(ENVIRONMENT)))
             break
           case 'assets':
             const assets = await getAssets()
