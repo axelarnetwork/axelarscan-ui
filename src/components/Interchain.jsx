@@ -475,7 +475,7 @@ function StatsBarChart({
   }
 
   const d = toArray(chartData).find(d => d.timestamp === x)
-  const value = d ? d[field] : chartData ? totalValue || _.sumBy(chartData, field) : null
+  const value = d ? d[field] : chartData?.length > 0 ? totalValue || _.sumBy(chartData, field) : null
   const timeString = d ? d.focusTimeString : chartData ? toArray([headString(_.head(chartData.filter(d => d.timestamp))?.focusTimeString, ' - '), lastString(_.last(chartData.filter(d => d.timestamp))?.focusTimeString, ' - ')]).join(' - ') : null
 
   return (
@@ -736,7 +736,7 @@ function Charts({ data, granularity }) {
           granularity={granularity}
           valuePrefix="$"
         />
-        <StatsBarChart
+        {/*<StatsBarChart
           i={2}
           data={chartData}
           totalValue={toNumber(GMPTotalActiveUsers) + toNumber(transfersTotalActiveUsers)}
@@ -757,6 +757,17 @@ function Charts({ data, granularity }) {
           granularity={granularity}
           valuePrefix="$"
         />
+        <StatsBarChart
+          i={3}
+          data={[]}
+          totalValue={null}
+          field=""
+          title=""
+          description=""
+          dateFormat={null}
+          granularity={null}
+          valuePrefix=""
+        />*/}
         <SankeyChart
           i={4}
           data={chainPairs}
@@ -1291,7 +1302,7 @@ export function Interchain() {
   }, [searchParams, params, setParams])
 
   useEffect(() => {
-    const metrics = ['GMPStats', 'GMPChart', 'GMPTotalVolume', 'GMPTotalFee', 'GMPTotalActiveUsers', 'GMPTopUsers', 'GMPTopITSUsers', 'GMPTopITSUsersByVolume', 'GMPTopITSAssets', 'GMPTopITSAssetsByVolume', 'transfersStats', 'transfersChart', 'transfersTotalVolume', 'transfersTotalFee', 'transfersTotalActiveUsers', 'transfersTopUsers', 'transfersTopUsersByVolume']
+    const metrics = ['GMPStats', 'GMPChart', 'GMPTotalVolume'/*, 'GMPTotalFee', 'GMPTotalActiveUsers'*/, 'GMPTopUsers', 'GMPTopITSUsers', 'GMPTopITSUsersByVolume', 'GMPTopITSAssets', 'GMPTopITSAssetsByVolume', 'transfersStats', 'transfersChart', 'transfersTotalVolume'/*, 'transfersTotalFee', 'transfersTotalActiveUsers'*/, 'transfersTopUsers', 'transfersTopUsersByVolume']
     const getData = async () => {
       if (stats && params && toBoolean(refresh)) {
         setData({ ...data, [generateKeyFromParams(params)]: Object.fromEntries((await Promise.all(toArray(metrics.map(d => new Promise(async resolve => {
