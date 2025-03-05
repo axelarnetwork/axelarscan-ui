@@ -1000,6 +1000,55 @@ const data = [
   {address:'axelar1eu4zvmhum66mz7sd82sfnp6w2vfqj06gd4t8f5',name:'Validatrium',environment:'mainnet'},
   {address:'axelar1ensvyl4p5gkdmjcezgjd5se5ykxmdqagl67xgm',name:'Whispernode',environment:'mainnet'},
   {address:'axelar1p0z7ff4wru5yq0v2ny5h6vx5e6ceg06kqnhfpg',name:'Axelar',environment:'mainnet'},
+  {
+    address: 'osmo1n6ney9tsf55etz9nrmzyd8wa7e64qd3s06a74fqs30ka8pps6cvqtsycr6',
+    name: 'Squid Multicall Contract',
+    image: '/logos/accounts/squid.svg',
+  },
+  {
+    address: '0x0ADFb7975aa7c3aD90c57AEa8FDe5E31a721E9bb',
+    name: 'Rango Satellite Middleware',
+  },
+  {
+    address: '0x946fb08103b400d1c79e07acccdef5cfd26cd374',
+    name: 'KIP Protocol',
+  },
+  {
+    address: '0x2260f6120b634B94A23eF11fa0D615ecf62db3cD',
+    name: 'ERC1967 Proxy',
+  },
+  {
+    address: 'osmo1zhqrfu9w3sugwykef3rq8t0vlxkz72vwd63q67',
+    name: 'Skip Swap Entry Point',
+  },
+  {
+    address: '0x4f49B53928A71E553bB1B0F66a5BcB54Fd4E8932',
+    name: 'Transparent Upgradeable Proxy',
+  },
+  {
+    address: '0x11C4F2F7f64a7Def84FF5841C14FB6863dFeF7F9',
+    name: 'GLMR',
+  },
+  {
+    address: '0xCE5B47FA5139fC5f3c8c5f4C278ad5F56A7b2016',
+    name: 'Axelar DVN Adapter',
+  },
+  {
+    address: 'neutron1ujsy9sga0lza95gahwz557xt4r3pdacfs2hn84n4v8wd3lwq74jqxx6zha',
+    name: 'Skip Swap Entry Point',
+  },
+  {
+    address: '0x901D602dCADE00e2d7384e3940a70Ef772A355c3',
+    name: 'Rango Satellite Middleware'
+  },
+  {
+    address: '0x6c9B3A74ae4779da5Ca999371eE8950e8DB3407f',
+    name: 'Magpie CCTP Bridge',
+  },
+  {
+    address: '0xF396456C80da131dB85C29F5A15b53AA913F7d51',
+    name: 'ERC1967 Proxy',
+  }
 ]
 
 export default data
