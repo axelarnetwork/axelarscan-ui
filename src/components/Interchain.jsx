@@ -1315,7 +1315,7 @@ export function Interchain() {
               resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPStats(params))])
               break
             case 'GMPStatsAVGTimes':
-              resolve([d, types.includes('gmp') && await GMPStats({ ...params, avg_times: true })])
+              resolve([d, types.includes('gmp') && await GMPStats({ ...params, avg_times: true, fromTime: params.fromTime || moment().subtract(3, 'months').startOf('day').unix() })])
               break
             case 'GMPChart':
               resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPChart({ ...params, granularity }))])
@@ -1423,7 +1423,7 @@ export function Interchain() {
   useEffect(() => {
     const getData = async () => {
       if (params && toBoolean(refresh)) {
-        setTimeSpentData({ ...timeSpentData, [generateKeyFromParams(params)]: { GMPStatsAVGTimes: types.includes('gmp') && await GMPStats({ ...params, avg_times: true }) } })
+        setTimeSpentData({ ...timeSpentData, [generateKeyFromParams(params)]: { GMPStatsAVGTimes: types.includes('gmp') && await GMPStats({ ...params, avg_times: true, fromTime: params.fromTime || moment().subtract(3, 'months').startOf('day').unix() }) } })
       }
     }
     getData()
