@@ -476,7 +476,7 @@ function StatsBarChart({
 
   const d = toArray(chartData).find(d => d.timestamp === x)
   const value = d ? d[field] : chartData?.length > 0 ? totalValue || _.sumBy(chartData, field) : null
-  const timeString = d ? d.focusTimeString : chartData ? toArray([headString(_.head(chartData.filter(d => d.timestamp))?.focusTimeString, ' - '), lastString(_.last(chartData.filter(d => d.timestamp))?.focusTimeString, ' - ')]).join(' - ') : null
+  const timeString = d ? d.focusTimeString : chartData && field !== 'users' ? toArray([headString(_.head(chartData.filter(d => d.timestamp))?.focusTimeString, ' - '), lastString(_.last(chartData.filter(d => d.timestamp))?.focusTimeString, ' - ')]).join(' - ') : null
 
   return (
     <div className={clsx('border-l border-r border-t border-zinc-200 dark:border-zinc-700 flex flex-col gap-y-2 px-4 sm:px-6 xl:px-8 py-8', i % 2 !== 0 ? 'sm:border-l-0' : '')}>
@@ -757,17 +757,6 @@ function Charts({ data, granularity }) {
           granularity={granularity}
           valuePrefix="$"
         />
-        <StatsBarChart
-          i={3}
-          data={[]}
-          totalValue={null}
-          field=""
-          title=""
-          description=""
-          dateFormat={null}
-          granularity={null}
-          valuePrefix=""
-        />*/}
         <SankeyChart
           i={4}
           data={chainPairs}
@@ -784,6 +773,35 @@ function Charts({ data, granularity }) {
           title="Volume"
           description="Total volume between chains"
           valuePrefix="$"
+        />*/}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 lg:px-2 xl:px-0">
+        <SankeyChart
+          i={0}
+          data={chainPairs}
+          totalValue={toNumber(_.sumBy(GMPStats?.messages, 'num_txs')) + toNumber(transfersStats?.total)}
+          field="num_txs"
+          title="Transactions"
+          description="Total transactions between chains"
+        />
+        <SankeyChart
+          i={1}
+          data={chainPairs}
+          totalValue={toNumber(GMPTotalVolume) + toNumber(transfersTotalVolume)}
+          field="volume"
+          title="Volume"
+          description="Total volume between chains"
+          valuePrefix="$"
+        />
+        <StatsBarChart
+          i={1}
+          data={chartData}
+          totalValue={toNumber(GMPTotalActiveUsers) + toNumber(transfersTotalActiveUsers)}
+          field="users"
+          title="Active Users"
+          description={`Number of active users by ${granularity}`}
+          dateFormat={TIME_FORMAT}
+          granularity={granularity}
         />
       </div>
     </div>
