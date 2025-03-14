@@ -661,11 +661,12 @@ export function SankeyChart({
   )
 }
 
-function Charts({ data, granularity }) {
+function Charts({ data, granularity, params }) {
   if (!data) return null
 
   const { GMPStats, GMPChart, GMPTotalVolume, GMPTotalFee, GMPTotalActiveUsers, transfersStats, transfersChart, transfersAirdropChart, transfersTotalVolume, transfersTotalFee, transfersTotalActiveUsers } = { ...data }
   const TIME_FORMAT = granularity === 'month' ? 'MMM' : 'D MMM'
+  const { contractMethod } = { ...params }
 
   const chartData = _.orderBy(Object.entries(_.groupBy(_.concat(
     toArray(GMPChart?.data).map(d => ({ ...d, gmp_num_txs: d.num_txs, gmp_volume: d.volume, gmp_fee: d.fee, gmp_users: d.users })),
@@ -708,6 +709,7 @@ function Charts({ data, granularity }) {
     toArray(transfersStats?.data).map(d => ({ key: `${d.source_chain}_${d.destination_chain}`, num_txs: d.num_txs, volume: d.volume })),
   ))
 
+  const isSquidCoral = contractMethod?.startsWith('SquidCoral')
   return (
     <div className="border-b border-b-zinc-200 dark:border-b-zinc-700">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:px-2 xl:px-0">
@@ -775,7 +777,7 @@ function Charts({ data, granularity }) {
           valuePrefix="$"
         />*/}
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 lg:px-2 xl:px-0">
+      <div className={clsx('grid grid-cols-1 lg:px-2 xl:px-0', isSquidCoral ? 'sm:grid-cols-2' : 'sm:grid-cols-3')}>
         <SankeyChart
           i={0}
           data={chainPairs}
@@ -793,16 +795,18 @@ function Charts({ data, granularity }) {
           description="Total volume between chains"
           valuePrefix="$"
         />
-        <StatsBarChart
-          i={1}
-          data={chartData}
-          totalValue={toNumber(GMPTotalActiveUsers) + toNumber(transfersTotalActiveUsers)}
-          field="users"
-          title="Active Users"
-          description={`Number of active users by ${granularity}`}
-          dateFormat={TIME_FORMAT}
-          granularity={granularity}
-        />
+        {!isSquidCoral && (
+          <StatsBarChart
+            i={1}
+            data={chartData}
+            totalValue={toNumber(GMPTotalActiveUsers) + toNumber(transfersTotalActiveUsers)}
+            field="users"
+            title="Active Users"
+            description={`Number of active users by ${granularity}`}
+            dateFormat={TIME_FORMAT}
+            granularity={granularity}
+          />
+        )}
       </div>
     </div>
   )
@@ -1513,7 +1517,7 @@ export function Interchain() {
           </div>
           {refresh && refresh !== 'true' && <Overlay />}
           <Summary data={data[generateKeyFromParams(params)]} params={params} />
-          <Charts data={data[generateKeyFromParams(params)]} granularity={granularity} />
+          <Charts data={data[generateKeyFromParams(params)]} granularity={granularity} params={params} />
           <Tops data={data[generateKeyFromParams(params)]} types={types} params={params} />
           {types.includes('gmp') && <GMPTimeSpents data={timeSpentData?.[generateKeyFromParams(params)]} />}
         </div>
