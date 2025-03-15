@@ -14,9 +14,7 @@
     "dev-stagenet": "env-cmd -f .env.stagenet next dev",
     "build-stagenet": "env-cmd -f .env.stagenet next build",
     "dev-devnet-amplifier": "env-cmd -f .env.devnet-amplifier next dev",
-    "build-devnet-amplifier": "env-cmd -f .env.devnet-amplifier next build",
-    "dev-devnet-verifiers": "env-cmd -f .env.devnet-verifiers next dev",
-    "build-devnet-verifiers": "env-cmd -f .env.devnet-verifiers next build"
+    "build-devnet-amplifier": "env-cmd -f .env.devnet-amplifier next build"
   },
   "repository": {
     "type": "git",
