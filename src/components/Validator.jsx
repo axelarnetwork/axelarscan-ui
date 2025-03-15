@@ -580,7 +580,7 @@ export function Validator({ address }) {
         if (_data) {
           if (_data.broadcaster_address) {
             const { data } = { ...await getBalances({ address: _data.broadcaster_address }) }
-            _data.broadcasterBalance = toArray(data).find(d => d.denom === (ENVIRONMENT === 'devnet-verifiers' ? 'uverifiers' : ENVIRONMENT === 'devnet-amplifier' ? 'uamplifier' : 'uaxl'))
+            _data.broadcasterBalance = toArray(data).find(d => d.denom === (ENVIRONMENT === 'devnet-amplifier' ? 'uamplifier' : 'uaxl'))
           }
           _data.supportedChains = Object.entries(maintainers).filter(([k, v]) => v.includes(_data.operator_address)).map(([k, v]) => k)
           if (!_.isEqual(_data, data)) setData(_data)
