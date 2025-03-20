@@ -1438,14 +1438,17 @@ function Details({ data }) {
                           </div>
                         )}
                         <div className="flex flex-col gap-y-4">
-                          {code && (
+                          {code && (call.destination_chain_type === 'evm' ?
                             <Link
                               href={isNumber(code) ? 'https://docs.metamask.io/guide/ethereum-provider.html#errors' : `https://docs.ethers.io/v5/api/utils/logger/#errors-${isString(code) ? `-${split(code, { toCase: 'lower', delimiter: '_' }).join('-')}` : 'ethereum'}`}
                               target="_blank"
                               className="w-fit h-6 bg-zinc-50 dark:bg-zinc-800 rounded-xl flex items-center text-2xs px-2.5 py-1"
                             >
                               {code}
-                            </Link>
+                            </Link> :
+                            <div className="w-fit h-6 bg-zinc-50 dark:bg-zinc-800 rounded-xl flex items-center text-2xs px-2.5 py-1">
+                              {code}
+                            </div>
                           )}
                           {body && (
                             <div className="w-fit bg-zinc-50 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-all text-xs p-2.5">
