@@ -114,7 +114,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
   const [seeMore, setSeeMore] = useState(false)
   const { chains, assets } = useGlobalStore()
 
-  const { call, gas_paid, gas_paid_to_callback, express_executed, confirm, approved, executed, error, refunded, token_sent, token_deployment_initialized, token_deployed, interchain_transfer, interchain_transfer_with_data, token_manager_deployment_started, interchain_token_deployment_started, settlement_forwarded_events, settlement_filled_events, interchain_transfers, is_executed, amount, fees, gas, is_insufficient_fee, is_invalid_destination_chain, is_invalid_source_address, is_invalid_contract_address, not_enough_gas_to_execute, status, simplified_status, time_spent, callbackData, originData, settlementForwardedData, settlementFilledData } = { ...data }
+  const { call, gas_paid, gas_paid_to_callback, express_executed, confirm, approved, executed, error, refunded, refunded_more_transactions, token_sent, token_deployment_initialized, token_deployed, interchain_transfer, interchain_transfer_with_data, token_manager_deployment_started, interchain_token_deployment_started, settlement_forwarded_events, settlement_filled_events, interchain_transfers, is_executed, amount, fees, gas, is_insufficient_fee, is_invalid_destination_chain, is_invalid_source_address, is_invalid_contract_address, not_enough_gas_to_execute, status, simplified_status, time_spent, callbackData, originData, settlementForwardedData, settlementFilledData } = { ...data }
   const { proposal_id } = { ...call }
   const txhash = call?.transactionHash || tx
 
@@ -141,6 +141,10 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
   const sourceSymbol = call?.returnValues?.symbol
   const destinationSymbol = approved?.returnValues?.symbol || addresses?.[destinationChain?.toLowerCase()]?.symbol || sourceSymbol
   const amountInUnits = approved?.returnValues?.amount || call?.returnValues?.amount
+
+  const gasData = data.originData?.gas || gas
+  const refundedData = data.originData?.refunded || refunded
+  const refundedMoreData = toArray(data.originData?.refunded_more_transactions || refunded_more_transactions)
 
   return (
     <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
@@ -694,7 +698,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                 </>
               )
           }
-          {(!data.originData || data.originData.executed) && executed && ((data.originData?.refunded || refunded)?.receipt?.status || ((((!data.originData || data.originData.executed) && executed) || is_executed || error) && timeDiff(((data.originData?.executed || executed).block_timestamp || (data.originData?.error || error)?.block_timestamp || (data.originData?.approved || approved)?.block_timestamp || (data.originData?.confirm || confirm)?.block_timestamp) * 1000) >= 300)) && isNumber((data.originData?.gas || gas)?.gas_paid_amount) && isNumber((data.originData?.gas || gas).gas_remain_amount) && (
+          {(!data.originData || data.originData.executed) && executed && (refundedData?.receipt?.status || ((((!data.originData || data.originData.executed) && executed) || is_executed || error) && timeDiff(((data.originData?.executed || executed).block_timestamp || (data.originData?.error || error)?.block_timestamp || (data.originData?.approved || approved)?.block_timestamp || (data.originData?.confirm || confirm)?.block_timestamp) * 1000) >= 300)) && isNumber(gasData?.gas_paid_amount) && isNumber(gasData.gas_remain_amount) && (
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
               <dt className="flex items-center text-zinc-900 dark:text-zinc-100 text-sm font-medium">
                 <span className="whitespace-nowrap mr-1">Gas Charged</span>
@@ -705,7 +709,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
               <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                 <div className="flex items-center gap-x-2">
                   <Number
-                    value={(data.originData?.gas || gas).gas_paid_amount - ((data.originData?.refunded || refunded)?.receipt?.status ? isNumber((data.originData?.refunded || refunded).amount) ? (data.originData?.refunded || refunded).amount : (data.originData?.gas || gas).gas_remain_amount : 0)}
+                    value={gasData.gas_paid_amount - (refundedData?.receipt?.status ? isNumber(refundedData.amount) ? refundedData.amount : gasData.gas_remain_amount : 0) - _.sum(refundedMoreData.map(d => toNumber(d.amount)))}
                     format="0,0.000000"
                     suffix={` ${(data.originData?.fees || fees)?.source_token?.symbol}`}
                     noTooltip={true}
@@ -713,7 +717,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                   />
                   {(data.originData?.fees || fees)?.source_token?.token_price?.usd > 0 && (
                     <Number
-                      value={((data.originData?.gas || gas).gas_paid_amount - ((data.originData?.refunded || refunded)?.receipt?.status ? isNumber((data.originData?.refunded || refunded).amount) ? (data.originData?.refunded || refunded).amount : (data.originData?.gas || gas).gas_remain_amount : 0)) * (data.originData?.fees || fees).source_token.token_price.usd}
+                      value={(gasData.gas_paid_amount - (refundedData?.receipt?.status ? isNumber(refundedData.amount) ? refundedData.amount : gasData.gas_remain_amount : 0) - _.sum(refundedMoreData.map(d => toNumber(d.amount)))) * (data.originData?.fees || fees).source_token.token_price.usd}
                       prefix="($"
                       suffix=")"
                       noTooltip={true}
@@ -751,7 +755,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                   </dd>
                 </div>
               )}
-              {(!data.originData || data.originData.executed) && executed && isNumber((data.originData?.gas || gas)?.gas_used_amount) && (
+              {(!data.originData || data.originData.executed) && executed && isNumber(gasData?.gas_used_amount) && (
                 <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
                   <dt className="flex items-center text-zinc-900 dark:text-zinc-100 text-sm font-medium">
                     <span className="whitespace-nowrap mr-1">Gas Used</span>
@@ -762,7 +766,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                   <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                     <div className="flex items-center gap-x-2">
                       <Number
-                        value={(data.originData?.gas || gas).gas_used_amount}
+                        value={gasData.gas_used_amount}
                         format="0,0.000000"
                         suffix={` ${(data.originData?.fees || fees)?.source_token?.symbol}`}
                         noTooltip={true}
@@ -770,7 +774,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                       />
                       {(data.originData?.fees || fees)?.source_token?.token_price?.usd > 0 && (
                         <Number
-                          value={(data.originData?.gas || gas).gas_used_amount * (data.originData?.fees || fees).source_token.token_price.usd}
+                          value={gasData.gas_used_amount * (data.originData?.fees || fees).source_token.token_price.usd}
                           prefix="($"
                           suffix=")"
                           noTooltip={true}
