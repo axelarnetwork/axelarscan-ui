@@ -25,7 +25,7 @@ export function Number({
   if (_value && _value.includes(delimiter) && !_value.endsWith(delimiter)) {
     const valueNumber = toNumber(split(_value).join(''))
     const decimals = lastString(_value, delimiter)
-    maxDecimals = isNumber(maxDecimals) ? maxDecimals : valueNumber >= LARGE_NUMBER_THRESHOLD ? 0 : valueNumber >= 10 ? 2 : 6
+    maxDecimals = isNumber(maxDecimals) ? maxDecimals : valueNumber >= LARGE_NUMBER_THRESHOLD ? 0 : valueNumber >= 1.01 ? 2 : 6
 
     // handle exceed maxDecimals
     if (Math.abs(valueNumber) >= Math.pow(10, -maxDecimals)) _value = decimals.length > maxDecimals ? toFixed(valueNumber, maxDecimals) : undefined
