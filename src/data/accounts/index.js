@@ -1002,7 +1002,7 @@ const data = [
   {address:'axelar1p0z7ff4wru5yq0v2ny5h6vx5e6ceg06kqnhfpg',name:'Axelar',environment:'mainnet'},
   {
     address: 'osmo1n6ney9tsf55etz9nrmzyd8wa7e64qd3s06a74fqs30ka8pps6cvqtsycr6',
-    name: 'Squid Multicall Contract',
+    name: 'Squid',
     image: '/logos/accounts/squid.svg',
   },
   {
