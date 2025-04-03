@@ -261,8 +261,10 @@ export const customData = async data => {
 
   try {
     const { id, name, customize } = { ...toArray(customGMPs).find(d => toArray(d.addresses).findIndex(a => equalsIgnoreCase(a, destinationContractAddress)) > -1 && (!d.environment || equalsIgnoreCase(d.environment, ENVIRONMENT))) }
+
     if (typeof customize === 'function') {
-      const customValues = await customize(call.returnValues, ENVIRONMENT)
+      const customValues = await customize(call.returnValues, ENVIRONMENT, data)
+
       if (typeof customValues === 'object' && !Array.isArray(customValues) && Object.keys({ ...customValues }).length > 0) {
         customValues.projectId = id
         customValues.projectName = name || capitalize(id)
@@ -271,12 +273,28 @@ export const customData = async data => {
     }
 
     // interchain transfer
-    if (interchain_transfer?.destinationAddress && !data.customValues?.recipientAddress) data.customValues = { ...data.customValues, recipientAddress: interchain_transfer.destinationAddress, destinationChain: interchain_transfer.destinationChain, projectId: 'its', projectName: 'ITS' }
+    if (interchain_transfer?.destinationAddress && !data.customValues?.recipientAddress) {
+      data.customValues = {
+        ...data.customValues,
+        recipientAddress: interchain_transfer.destinationAddress,
+        destinationChain: interchain_transfer.destinationChain,
+        projectId: 'its',
+        projectName: 'ITS',
+      }
+    }
 
     // interchain transfers
-    if (toArray(interchain_transfers).length > 0 && !data.customValues?.recipientAddresses)
-      data.customValues = { ...data.customValues, recipientAddresses: interchain_transfers.map(d => ({ recipientAddress: d.recipient, chain: d.destinationChain })) }
+    if (toArray(interchain_transfers).length > 0 && !data.customValues?.recipientAddresses) {
+      data.customValues = {
+        ...data.customValues,
+        recipientAddresses: interchain_transfers.map(d => ({
+          recipientAddress: d.recipient,
+          chain: d.destinationChain,
+        })),
+      }
+    }
   } catch (error) {}
+
   return data
 }
 
