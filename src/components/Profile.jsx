@@ -602,6 +602,7 @@ export function ChainProfile({
         alt=""
         width={width}
         height={height}
+        className={className}
       />
       <span className={clsx('text-zinc-900 dark:text-zinc-100 font-medium whitespace-nowrap', titleClassName)}>
         {name || capitalize(value)}
