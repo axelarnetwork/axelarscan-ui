@@ -263,7 +263,7 @@ export const customData = async data => {
     const { id, name, customize } = { ...toArray(customGMPs).find(d => toArray(d.addresses).findIndex(a => equalsIgnoreCase(a, destinationContractAddress)) > -1 && (!d.environment || equalsIgnoreCase(d.environment, ENVIRONMENT))) }
 
     if (typeof customize === 'function') {
-      const customValues = await customize(call.returnValues, ENVIRONMENT, data)
+      const customValues = await customize(call.returnValues, ENVIRONMENT)
 
       if (typeof customValues === 'object' && !Array.isArray(customValues) && Object.keys({ ...customValues }).length > 0) {
         customValues.projectId = id
