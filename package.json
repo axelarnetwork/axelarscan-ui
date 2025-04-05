@@ -34,7 +34,6 @@
     "@mysten/dapp-kit": "^0.14.30",
     "@mysten/sui": "^1.14.2",
     "@nivo/sankey": "^0.85.1",
-    "@redefined/name-resolver-js": "^2.10.6",
     "@siddomains/sidjs": "^0.1.29",
     "@stellar/freighter-api": "^3.0.0",
     "@stellar/stellar-sdk": "^13.0.0",

@@ -3,7 +3,6 @@
 import { usePathname, useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { RedefinedResolver } from '@redefined/name-resolver-js'
 import clsx from 'clsx'
 import _ from 'lodash'
 import { FiSearch } from 'react-icons/fi'
@@ -64,10 +63,6 @@ export function Search() {
         type = 'address'
       }
       else if (type === 'domainName') {
-        const resolver = new RedefinedResolver()
-        const { response } = { ...await resolver.resolve(_input) }
-        const { address } = { ..._.head(response) }
-        if (address) _input = address
         type = 'address'
       }
       else if (['evmAddress', 'axelarAddress', 'cosmosAddress'].includes(type)) type = type === 'axelarAddress' ? 'account' : 'address'
