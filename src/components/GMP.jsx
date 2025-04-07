@@ -1516,7 +1516,7 @@ function Details({ data }) {
             let gasAmount
             switch (d.id) {
               case 'pay_gas':
-                gasAmount = isString(d.data) ? d.data * fees?.source_token?.gas_price : gas?.gas_paid_amount
+                gasAmount = isString(d.data) ? d.data * fees?.destination_native_token?.gas_price * fees?.destination_native_token?.token_price?.usd / fees?.source_token?.token_price?.usd : gas?.gas_paid_amount
                 break
               case 'express':
                 gasAmount = gas?.gas_express_amount
