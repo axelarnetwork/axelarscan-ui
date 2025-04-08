@@ -384,7 +384,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                             title={ellipse(executed.transactionHash, 6, '0x')}
                             iconOnly={false}
                           /> :
-                          toArray(data.settlementForwardedData).map((d, i) => (
+                          toArray(data.settlementForwardedData).filter(d => d.executed).map((d, i) => (
                             <ExplorerLink
                               key={i}
                               value={d.executed.transactionHash}
