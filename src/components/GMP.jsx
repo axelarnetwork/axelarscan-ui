@@ -384,7 +384,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                             title={ellipse(executed.transactionHash, 6, '0x')}
                             iconOnly={false}
                           /> :
-                          toArray(data.settlementForwardedData).map((d, i) => (
+                          toArray(data.settlementForwardedData).filter(d => d.executed).map((d, i) => (
                             <ExplorerLink
                               key={i}
                               value={d.executed.transactionHash}
@@ -2114,7 +2114,7 @@ export function GMP({ tx, lite }) {
     </div>
   )
 
-  const executeButton = call && ![call.destination_chain_type].includes('vm') && !isAxelar(call.returnValues?.destinationChain) && (call.destination_chain_type === 'cosmos' ? confirm : approved) && !executed?.transactionHash && !executed?.receipt?.transactionHash && !is_executed && (error || timeDiff(((call.destination_chain_type === 'cosmos' ? confirm?.block_timestamp : approved.block_timestamp) || call.block_timestamp) * 1000) >= (call.destination_chain_type === 'cosmos' ? 300 : 120)) && call.returnValues?.payload && (
+  const executeButton = call && ![call.destination_chain_type].includes('vm') && !isAxelar(call.returnValues?.destinationChain) && (call.destination_chain_type === 'cosmos' ? confirm : approved) && (!executed?.transactionHash || equalsIgnoreCase(executed.transactionHash === error?.transactionHash)) && !executed?.receipt?.transactionHash && !is_executed && (error || timeDiff(((call.destination_chain_type === 'cosmos' ? confirm?.block_timestamp : approved.block_timestamp) || call.block_timestamp) * 1000) >= (call.destination_chain_type === 'cosmos' ? 300 : 120)) && call.returnValues?.payload && (
     <div key="execute" className="flex items-center gap-x-1">
       {(call.destination_chain_type === 'cosmos' || (signer && !needSwitchChain(destinationChainData?.chain_id, call.destination_chain_type))) && (
         <button
