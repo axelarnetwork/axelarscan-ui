@@ -1023,7 +1023,7 @@ const data = [
   },
   {
     address: '0x4f49B53928A71E553bB1B0F66a5BcB54Fd4E8932',
-    name: 'Transparent Upgradeable Proxy',
+    name: 'Immutable',
   },
   {
     address: '0x11C4F2F7f64a7Def84FF5841C14FB6863dFeF7F9',
@@ -1047,7 +1047,7 @@ const data = [
   },
   {
     address: '0xF396456C80da131dB85C29F5A15b53AA913F7d51',
-    name: 'ERC1967 Proxy',
+    name: 'Social Trade',
   }
 ]
 
