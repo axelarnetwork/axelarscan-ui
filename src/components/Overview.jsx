@@ -16,7 +16,7 @@ import { Summary, SankeyChart } from '@/components/Interchain'
 import { NetworkGraph } from '@/components/NetworkGraph'
 import { useGlobalStore } from '@/components/Global'
 import { getRPCStatus } from '@/lib/api/validator'
-import { GMPStatsByChains, GMPTotalVolume } from '@/lib/api/gmp'
+import { GMPStatsByChains, GMPStatsByContracts, GMPTotalVolume } from '@/lib/api/gmp'
 import { transfersStats, transfersTotalVolume } from '@/lib/api/token-transfer'
 import { getChainData } from '@/lib/config'
 import { toArray } from '@/lib/parser'
@@ -268,13 +268,16 @@ export function Overview() {
   const { chains, contracts, stats } = useGlobalStore()
 
   useEffect(() => {
-    const metrics = ['GMPStatsByChains', 'GMPTotalVolume', 'transfersStats', 'transfersTotalVolume']
+    const metrics = ['GMPStatsByChains', 'GMPStatsByContracts', 'GMPTotalVolume', 'transfersStats', 'transfersTotalVolume']
     const getData = async () => {
       if (chains && stats) {
         setData(Object.fromEntries(await Promise.all(toArray(metrics.map(d => new Promise(async resolve => {
           switch (d) {
             case 'GMPStatsByChains':
               resolve([d, { ...(stats[d] || await GMPStatsByChains()) }])
+              break
+            case 'GMPStatsByContracts':
+              resolve([d, { ...(stats[d] || await GMPStatsByContracts()) }])
               break
             case 'GMPTotalVolume':
               resolve([d, toNumber((stats[d] || await GMPTotalVolume()))])
