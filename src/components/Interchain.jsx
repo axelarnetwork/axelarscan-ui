@@ -26,7 +26,7 @@ import { Profile, ChainProfile, AssetProfile } from '@/components/Profile'
 import { TimeAgo, TimeSpent } from '@/components/Time'
 import { getParams, getQueryString } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
-import { GMPStats, GMPChart, GMPTotalVolume, GMPTotalFee, GMPTotalActiveUsers, GMPTopUsers, GMPTopITSAssets } from '@/lib/api/gmp'
+import { GMPStats, GMPStatsByChains, GMPStatsByContracts, GMPChart, GMPTotalVolume, GMPTotalFee, GMPTotalActiveUsers, GMPTopUsers, GMPTopITSAssets } from '@/lib/api/gmp'
 import { transfersStats, transfersChart, transfersTotalVolume, transfersTotalFee, transfersTotalActiveUsers, transfersTopUsers } from '@/lib/api/token-transfer'
 import { ENVIRONMENT, getChainData, getAssetData, getITSAssetData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
@@ -253,16 +253,25 @@ export function Summary({ data, params }) {
   const globalStore = useGlobalStore()
 
   if (!data) return null
-  const { GMPStats, GMPTotalVolume, transfersStats, transfersTotalVolume } = { ...data }
+  const { GMPStatsByChains, GMPStatsByContracts, GMPTotalVolume, transfersStats, transfersTotalVolume } = { ...data }
 
-  const contracts = _.orderBy(Object.entries(_.groupBy(
-    toArray(GMPStats?.messages).flatMap(m => toArray(m.sourceChains || m.source_chains).flatMap(s =>
-      toArray(s.destinationChains || s.destination_chains).flatMap(d => toArray(d.contracts).filter(c => !c.key.includes('_')).map(c => {
+  const contracts = _.orderBy(
+    Object.entries(
+      _.groupBy(
+      toArray(GMPStatsByContracts?.chains).flatMap(d => toArray(d.contracts).filter(c => !c.key.includes('_')).map(c => {
         const { name } = { ...accounts.find(a => equalsIgnoreCase(a.address, c.key)) }
         return { ...c, key: name || c.key.toLowerCase(), chain: d.key }
-      })
-    ))), 'key')
-  ).map(([k, v]) => ({ key: k, chains: _.uniq(v.map(d => d.chain)), num_txs: _.sumBy(v, 'num_txs'), volume: _.sumBy(v, 'volume') })), ['num_txs', 'volume', 'key'], ['desc', 'desc', 'asc'])
+      })), 'key')
+    )
+    .map(([k, v]) => ({
+      key: k,
+      chains: _.uniq(v.map(d => d.chain)),
+      num_txs: _.sumBy(v, 'num_txs'),
+      volume: _.sumBy(v, 'volume'),
+    })),
+    ['num_txs', 'volume', 'key'], ['desc', 'desc', 'asc'],
+  )
+
   const chains = params?.contractAddress ? _.uniq(contracts.flatMap(d => d.chains)) : toArray(globalStore.chains).filter(d => !d.deprecated && (!d.maintainer_id || globalStore.contracts?.gateway_contracts?.[d.id]?.address))
   const tvlData = toArray(globalStore.tvl?.data)
   console.log('[destinationContracts]', contracts.map(d => d.key))
@@ -274,7 +283,7 @@ export function Summary({ data, params }) {
           <dt className="text-zinc-400 dark:text-zinc-500 text-sm font-medium leading-6">Transactions</dt>
           <dd className="w-full flex-none">
             <Number
-              value={toNumber(_.sumBy(GMPStats?.messages, 'num_txs')) + toNumber(transfersStats?.total)}
+              value={toNumber(_.sumBy(GMPStatsByChains?.source_chains, 'num_txs')) + toNumber(transfersStats?.total)}
               format="0,0"
               noTooltip={true}
               className="text-zinc-900 dark:text-zinc-100 !text-3xl font-medium leading-10 tracking-tight"
@@ -282,7 +291,7 @@ export function Summary({ data, params }) {
           </dd>
           <dd className="w-full grid grid-cols-2 gap-x-2 mt-1">
             <Number
-              value={toNumber(_.sumBy(GMPStats?.messages, 'num_txs'))}
+              value={toNumber(_.sumBy(GMPStatsByChains?.source_chains, 'num_txs'))}
               format="0,0.00a"
               prefix="GMP: "
               noTooltip={true}
@@ -358,7 +367,7 @@ export function Summary({ data, params }) {
             <dt className="text-zinc-400 dark:text-zinc-500 text-sm font-medium leading-6">Average Volume / Transaction</dt>
             <dd className="w-full flex-none">
               <Number
-                value={(toNumber(GMPTotalVolume) + toNumber(transfersTotalVolume)) / (toNumber(_.sumBy(GMPStats?.messages, 'num_txs')) + toNumber(transfersStats?.total) || 1)}
+                value={(toNumber(GMPTotalVolume) + toNumber(transfersTotalVolume)) / (toNumber(_.sumBy(GMPStatsByChains?.source_chains, 'num_txs')) + toNumber(transfersStats?.total) || 1)}
                 format="0,0"
                 prefix="$"
                 noTooltip={true}
@@ -367,7 +376,7 @@ export function Summary({ data, params }) {
             </dd>
             <dd className="w-full grid grid-cols-2 gap-x-2 mt-1">
               <Number
-                value={toNumber(GMPTotalVolume) / (toNumber(_.sumBy(GMPStats?.messages, 'num_txs')) || 1)}
+                value={toNumber(GMPTotalVolume) / (toNumber(_.sumBy(GMPStatsByChains?.source_chains, 'num_txs')) || 1)}
                 format="0,0.00a"
                 prefix="GMP: $"
                 noTooltip={true}
@@ -664,7 +673,7 @@ export function SankeyChart({
 function Charts({ data, granularity, params }) {
   if (!data) return null
 
-  const { GMPStats, GMPChart, GMPTotalVolume, GMPTotalFee, GMPTotalActiveUsers, transfersStats, transfersChart, transfersAirdropChart, transfersTotalVolume, transfersTotalFee, transfersTotalActiveUsers } = { ...data }
+  const { GMPStatsByChains, GMPChart, GMPTotalVolume, GMPTotalFee, GMPTotalActiveUsers, transfersStats, transfersChart, transfersAirdropChart, transfersTotalVolume, transfersTotalFee, transfersTotalActiveUsers } = { ...data }
   const TIME_FORMAT = granularity === 'month' ? 'MMM' : 'D MMM'
   const { contractMethod } = { ...params }
 
@@ -705,7 +714,7 @@ function Charts({ data, granularity, params }) {
   }))
 
   const chainPairs = groupData(_.concat(
-    toArray(GMPStats?.messages).flatMap(m => toArray(m.sourceChains || m.source_chains).flatMap(s => toArray(s.destinationChains || s.destination_chains).map(d => ({ key: `${s.key}_${d.key}`, num_txs: d.num_txs, volume: d.volume })))),
+    toArray(GMPStatsByChains?.source_chains).flatMap(s => toArray(s.destination_chains).map(d => ({ key: `${s.key}_${d.key}`, num_txs: d.num_txs, volume: d.volume }))),
     toArray(transfersStats?.data).map(d => ({ key: `${d.source_chain}_${d.destination_chain}`, num_txs: d.num_txs, volume: d.volume })),
   ))
 
@@ -716,7 +725,7 @@ function Charts({ data, granularity, params }) {
         <StatsBarChart
           i={0}
           data={chartData}
-          totalValue={toNumber(_.sumBy(GMPStats?.messages, 'num_txs')) + toNumber(transfersStats?.total)}
+          totalValue={toNumber(_.sumBy(GMPStatsByChains?.source_chains, 'num_txs')) + toNumber(transfersStats?.total)}
           field="num_txs"
           title="Transactions"
           description={`Number of transactions by ${granularity}`}
@@ -762,7 +771,7 @@ function Charts({ data, granularity, params }) {
         <SankeyChart
           i={4}
           data={chainPairs}
-          totalValue={toNumber(_.sumBy(GMPStats?.messages, 'num_txs')) + toNumber(transfersStats?.total)}
+          totalValue={toNumber(_.sumBy(GMPStatsByChains?.source_chains, 'num_txs')) + toNumber(transfersStats?.total)}
           field="num_txs"
           title="Transactions"
           description="Total transactions between chains"
@@ -781,7 +790,7 @@ function Charts({ data, granularity, params }) {
         <SankeyChart
           i={0}
           data={chainPairs}
-          totalValue={toNumber(_.sumBy(GMPStats?.messages, 'num_txs')) + toNumber(transfersStats?.total)}
+          totalValue={toNumber(_.sumBy(GMPStatsByChains?.source_chains, 'num_txs')) + toNumber(transfersStats?.total)}
           field="num_txs"
           title="Transactions"
           description="Total transactions between chains"
@@ -934,7 +943,7 @@ function Tops({ data, types, params }) {
   const { chains, assets, itsAssets } = useGlobalStore()
 
   if (!data) return null
-  const { GMPStats, GMPTopUsers, GMPTopITSUsers, GMPTopITSUsersByVolume, GMPTopITSAssets, GMPTopITSAssetsByVolume, transfersStats, transfersTopUsers, transfersTopUsersByVolume } = { ...data }
+  const { GMPStatsByChains, GMPStatsByContracts, GMPTopUsers, GMPTopITSUsers, GMPTopITSUsersByVolume, GMPTopITSAssets, GMPTopITSAssetsByVolume, transfersStats, transfersTopUsers, transfersTopUsersByVolume } = { ...data }
 
   const groupData = (data, by = 'key') => Object.entries(_.groupBy(toArray(data), by)).map(([k, v]) => ({
     key: _.head(v)?.key || k,
@@ -950,17 +959,17 @@ function Tops({ data, types, params }) {
   const hasITS = hasGMP && params?.assetType !== 'gateway' && toArray(params?.asset).findIndex(a => getAssetData(a, assets)) < 0
 
   const chainPairs = groupData(_.concat(
-    toArray(GMPStats?.messages).flatMap(m => toArray(m.sourceChains || m.source_chains).flatMap(s => toArray(s.destinationChains || s.destination_chains).map(d => ({ key: `${s.key}_${d.key}`, num_txs: d.num_txs, volume: d.volume })))),
+    toArray(GMPStatsByChains?.source_chains).flatMap(s => toArray(s.destination_chains).map(d => ({ key: `${s.key}_${d.key}`, num_txs: d.num_txs, volume: d.volume }))),
     toArray(transfersStats?.data).map(d => ({ key: `${d.source_chain}_${d.destination_chain}`, num_txs: d.num_txs, volume: d.volume })),
   ))
 
   const sourceChains = groupData(_.concat(
-    toArray(GMPStats?.messages).flatMap(m => toArray(m.sourceChains || m.source_chains).flatMap(s => toArray(s.destinationChains || s.destination_chains).map(d => ({ key: s.key, num_txs: d.num_txs, volume: d.volume })))),
+    toArray(GMPStatsByChains?.source_chains).flatMap(s => toArray(s.destination_chains).map(d => ({ key: s.key, num_txs: d.num_txs, volume: d.volume }))),
     toArray(transfersStats?.data).map(d => ({ key: d.source_chain, num_txs: d.num_txs, volume: d.volume })),
   ))
 
   const destionationChains = groupData(_.concat(
-    toArray(GMPStats?.messages).flatMap(m => toArray(m.sourceChains || m.source_chains).flatMap(s => toArray(s.destinationChains || s.destination_chains).map(d => ({ key: d.key, num_txs: d.num_txs, volume: d.volume })))),
+    toArray(GMPStatsByChains?.source_chains).flatMap(s => toArray(s.destination_chains).map(d => ({ key: d.key, num_txs: d.num_txs, volume: d.volume }))),
     toArray(transfersStats?.data).map(d => ({ key: d.destination_chain, num_txs: d.num_txs, volume: d.volume })),
   ))
 
@@ -975,12 +984,10 @@ function Tops({ data, types, params }) {
     return { key: d.key, customKey: name || d.key, num_txs: d.num_txs, volume: d.volume }
   }), 'customKey')
 
-  const contracts = groupData(toArray(GMPStats?.messages).flatMap(m => toArray(m.sourceChains || m.source_chains).flatMap(s =>
-    toArray(s.destinationChains || s.destination_chains).flatMap(d => toArray(d.contracts).map(c => {
-      const { name } = { ...accounts.find(a => equalsIgnoreCase(a.address, c.key)) }
-      return { key: c.key?.toLowerCase(), customKey: name || c.key?.toLowerCase(), num_txs: c.num_txs, volume: c.volume, chain: d.key }
-    }))
-  )), 'customKey')
+  const contracts = groupData(toArray(GMPStatsByChains?.chains).flatMap(d => toArray(d.contracts).map(c => {
+    const { name } = { ...accounts.find(a => equalsIgnoreCase(a.address, c.key)) }
+    return { key: c.key?.toLowerCase(), customKey: name || c.key?.toLowerCase(), num_txs: c.num_txs, volume: c.volume, chain: d.key }
+  })), 'customKey')
 
   const GMPUsers = groupData(toArray(GMPTopUsers?.data).map(d => {
     const { name } = { ...accounts.find(a => equalsIgnoreCase(a.address, d.key)) }
@@ -1324,7 +1331,7 @@ export function Interchain() {
   }, [searchParams, params, setParams])
 
   useEffect(() => {
-    const metrics = ['GMPStats', 'GMPChart', 'GMPTotalVolume'/*, 'GMPTotalFee', 'GMPTotalActiveUsers'*/, 'GMPTopUsers', 'GMPTopITSUsers', 'GMPTopITSUsersByVolume', 'GMPTopITSAssets', 'GMPTopITSAssetsByVolume', 'transfersStats', 'transfersChart', 'transfersTotalVolume'/*, 'transfersTotalFee', 'transfersTotalActiveUsers'*/, 'transfersTopUsers', 'transfersTopUsersByVolume']
+    const metrics = ['GMPStatsByChains', 'GMPStatsByContracts', 'GMPChart', 'GMPTotalVolume'/*, 'GMPTotalFee', 'GMPTotalActiveUsers'*/, 'GMPTopUsers', 'GMPTopITSUsers', 'GMPTopITSUsersByVolume', 'GMPTopITSAssets', 'GMPTopITSAssetsByVolume', 'transfersStats', 'transfersChart', 'transfersTotalVolume'/*, 'transfersTotalFee', 'transfersTotalActiveUsers'*/, 'transfersTopUsers', 'transfersTopUsersByVolume']
     const getData = async () => {
       if (stats && params && toBoolean(refresh)) {
         setData({ ...data, [generateKeyFromParams(params)]: Object.fromEntries((await Promise.all(toArray(metrics.map(d => new Promise(async resolve => {
@@ -1333,11 +1340,14 @@ export function Interchain() {
           const noFilter = Object.keys(params).length === 0
 
           switch (d) {
-            case 'GMPStats':
-              resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPStats(params))])
+            case 'GMPStatsByChains':
+              resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPStatsByChains(params))])
+              break
+            case 'GMPStatsByContracts':
+              resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPStatsByContracts(params))])
               break
             case 'GMPStatsAVGTimes':
-              resolve([d, types.includes('gmp') && await GMPStats({ ...params, avg_times: true, fromTime: params.fromTime || moment().subtract(3, 'months').startOf('day').unix() })])
+              resolve([d, types.includes('gmp') && await GMPStats({ ...params, avg_times: true, fromTime: params.fromTime || moment().subtract(1, 'months').startOf('day').unix() })])
               break
             case 'GMPChart':
               resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPChart({ ...params, granularity }))])
@@ -1445,7 +1455,16 @@ export function Interchain() {
   useEffect(() => {
     const getData = async () => {
       if (params && toBoolean(refresh)) {
-        setTimeSpentData({ ...timeSpentData, [generateKeyFromParams(params)]: { GMPStatsAVGTimes: types.includes('gmp') && await GMPStats({ ...params, avg_times: true, fromTime: params.fromTime || moment().subtract(3, 'months').startOf('day').unix() }) } })
+        setTimeSpentData({
+          ...timeSpentData,
+          [generateKeyFromParams(params)]: {
+            GMPStatsAVGTimes: types.includes('gmp') && await GMPStats({
+              ...params,
+              avg_times: true,
+              fromTime: params.fromTime || moment().subtract(3, 'months').startOf('day').unix(),
+            }),
+          },
+        })
       }
     }
     getData()

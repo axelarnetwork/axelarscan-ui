@@ -7,7 +7,7 @@ import moment from 'moment'
 import { getChains, getAssets, getITSAssets, getTokensPrice, getInflation, getNetworkParameters, getTVL } from '@/lib/api/axelarscan'
 import { getValidators, getVerifiers } from '@/lib/api/validator'
 import { transfersStats, transfersChart, transfersTotalVolume, transfersTotalFee, transfersTotalActiveUsers, transfersTopUsers } from '@/lib/api/token-transfer'
-import { getContracts, getConfigurations, GMPStats, GMPChart, GMPTotalVolume, GMPTotalFee, GMPTotalActiveUsers, GMPTopUsers, GMPTopITSAssets } from '@/lib/api/gmp'
+import { getContracts, getConfigurations, GMPStatsByChains, GMPStatsByContracts, GMPChart, GMPTotalVolume, GMPTotalFee, GMPTotalActiveUsers, GMPTopUsers, GMPTopITSAssets } from '@/lib/api/gmp'
 import { ENVIRONMENT } from '@/lib/config'
 import { toArray } from '@/lib/parser'
 
@@ -92,11 +92,14 @@ export function Global() {
             setTVL(ENVIRONMENT === 'mainnet' ? await getTVL() : {})
             break
           case 'stats':
-            const metrics = ['GMPStats', 'GMPChart', 'GMPTotalVolume', 'GMPTotalFee', 'GMPTotalActiveUsers', 'GMPTopUsers', 'GMPTopITSUsers', 'GMPTopITSUsersByVolume', 'GMPTopITSAssets', 'GMPTopITSAssetsByVolume', 'transfersStats', 'transfersChart', 'transfersTotalVolume', 'transfersTotalFee', 'transfersTotalActiveUsers', 'transfersTopUsers', 'transfersTopUsersByVolume']
+            const metrics = ['GMPStatsByChains', 'GMPStatsByContracts', 'GMPChart', 'GMPTotalVolume', 'GMPTotalFee', 'GMPTotalActiveUsers', 'GMPTopUsers', 'GMPTopITSUsers', 'GMPTopITSUsersByVolume', 'GMPTopITSAssets', 'GMPTopITSAssetsByVolume', 'transfersStats', 'transfersChart', 'transfersTotalVolume', 'transfersTotalFee', 'transfersTotalActiveUsers', 'transfersTopUsers', 'transfersTopUsersByVolume']
             setStats(Object.fromEntries((await Promise.all(toArray(metrics.map(d => new Promise(async resolve => {
               switch (d) {
-                case 'GMPStats':
-                  resolve([d, await GMPStats()])
+                case 'GMPStatsByChains':
+                  resolve([d, await GMPStatsByChains()])
+                  break
+                case 'GMPStatsByContracts':
+                  resolve([d, await GMPStatsByContracts()])
                   break
                 case 'GMPChart':
                   resolve([d, await GMPChart({ granularity: 'month' })])
