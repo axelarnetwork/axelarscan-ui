@@ -16,7 +16,7 @@ import { Summary, SankeyChart } from '@/components/Interchain'
 import { NetworkGraph } from '@/components/NetworkGraph'
 import { useGlobalStore } from '@/components/Global'
 import { getRPCStatus } from '@/lib/api/validator'
-import { GMPStats, GMPTotalVolume } from '@/lib/api/gmp'
+import { GMPStatsByChains, GMPTotalVolume } from '@/lib/api/gmp'
 import { transfersStats, transfersTotalVolume } from '@/lib/api/token-transfer'
 import { getChainData } from '@/lib/config'
 import { toArray } from '@/lib/parser'
@@ -268,13 +268,13 @@ export function Overview() {
   const { chains, contracts, stats } = useGlobalStore()
 
   useEffect(() => {
-    const metrics = ['GMPStats', 'GMPTotalVolume', 'transfersStats', 'transfersTotalVolume']
+    const metrics = ['GMPStatsByChains', 'GMPTotalVolume', 'transfersStats', 'transfersTotalVolume']
     const getData = async () => {
       if (chains && stats) {
         setData(Object.fromEntries(await Promise.all(toArray(metrics.map(d => new Promise(async resolve => {
           switch (d) {
-            case 'GMPStats':
-              resolve([d, { ...(stats[d] || await GMPStats()) }])
+            case 'GMPStatsByChains':
+              resolve([d, { ...(stats[d] || await GMPStatsByChains()) }])
               break
             case 'GMPTotalVolume':
               resolve([d, toNumber((stats[d] || await GMPTotalVolume()))])
@@ -302,7 +302,7 @@ export function Overview() {
         setNetworkGraph(_.orderBy(Object.entries(_.groupBy(toArray(_.concat((await Promise.all(['gmp', 'transfers'].map(d => new Promise(async resolve => {
           switch (d) {
             case 'gmp':
-              resolve(toArray(data.GMPStats?.messages).flatMap(m => toArray(m.sourceChains || m.source_chains).flatMap(s => toArray(s.destinationChains || s.destination_chains).map(d => {
+              resolve(toArray(data.GMPStatsByChains?.source_chains).flatMap(s => toArray(s.destination_chains).map(d => {
                 let sourceChain = chainIdsLookup[s.key] || getChainData(s.key, chains)?.id
                 chainIdsLookup[s.key] = sourceChain
                 sourceChain = sourceChain || s.key
@@ -312,7 +312,7 @@ export function Overview() {
                 destinationChain = destinationChain || d.key
 
                 return { id: toArray([sourceChain, destinationChain]).join('_'), sourceChain, destinationChain, num_txs: d.num_txs, volume: d.volume }
-              }))))
+              })))
               break
             case 'transfers':
               resolve(toArray(data.transfersStats?.data).map(d => {
@@ -345,7 +345,7 @@ export function Overview() {
   }))
 
   const chainPairs = groupData(_.concat(
-    toArray(data?.GMPStats?.messages).flatMap(m => toArray(m.sourceChains || m.source_chains).flatMap(s => toArray(s.destinationChains || s.destination_chains).filter(d => !chainFocus || [s.key, d.key].includes(chainFocus)).map(d => ({ key: `${s.key}_${d.key}`, num_txs: d.num_txs, volume: d.volume })))),
+    toArray(data?.GMPStatsByChains?.source_chains).flatMap(s => toArray(s.destination_chains).filter(d => !chainFocus || [s.key, d.key].includes(chainFocus)).map(d => ({ key: `${s.key}_${d.key}`, num_txs: d.num_txs, volume: d.volume }))),
     toArray(data?.transfersStats?.data).filter(d => !chainFocus || [d.source_chain, d.destination_chain].includes(chainFocus)).map(d => ({ key: `${d.source_chain}_${d.destination_chain}`, num_txs: d.num_txs, volume: d.volume })),
   ))
 
@@ -383,7 +383,7 @@ export function Overview() {
                   <SankeyChart
                     data={chainPairs}
                     topN={40}
-                    totalValue={sankeyTab === 'transactions' ? toNumber(_.sumBy(data.GMPStats?.messages, 'num_txs')) + toNumber(data.transfersStats?.total) : toNumber(data.GMPTotalVolume) + toNumber(data.transfersTotalVolume)}
+                    totalValue={sankeyTab === 'transactions' ? toNumber(_.sumBy(data.GMPStatsByChains?.source_chains, 'num_txs')) + toNumber(data.transfersStats?.total) : toNumber(data.GMPTotalVolume) + toNumber(data.transfersTotalVolume)}
                     field={sankeyTab === 'transactions' ? 'num_txs' : 'volume'}
                     title={<div className="max-w-xl flex flex-wrap items-center">
                       {sankeyTabs.map((d, i) => {
