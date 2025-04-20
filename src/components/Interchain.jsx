@@ -984,7 +984,7 @@ function Tops({ data, types, params }) {
     return { key: d.key, customKey: name || d.key, num_txs: d.num_txs, volume: d.volume }
   }), 'customKey')
 
-  const contracts = groupData(toArray(GMPStatsByChains?.chains).flatMap(d => toArray(d.contracts).map(c => {
+  const contracts = groupData(toArray(GMPStatsByContracts?.chains).flatMap(d => toArray(d.contracts).map(c => {
     const { name } = { ...accounts.find(a => equalsIgnoreCase(a.address, c.key)) }
     return { key: c.key?.toLowerCase(), customKey: name || c.key?.toLowerCase(), num_txs: c.num_txs, volume: c.volume, chain: d.key }
   })), 'customKey')
