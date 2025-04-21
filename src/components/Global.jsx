@@ -6,8 +6,8 @@ import moment from 'moment'
 
 import { getChains, getAssets, getITSAssets, getTokensPrice, getInflation, getNetworkParameters, getTVL } from '@/lib/api/axelarscan'
 import { getValidators, getVerifiers } from '@/lib/api/validator'
-import { transfersStats, transfersChart, transfersTotalVolume, transfersTotalFee, transfersTotalActiveUsers, transfersTopUsers } from '@/lib/api/token-transfer'
-import { getContracts, getConfigurations, GMPStatsByChains, GMPStatsByContracts, GMPChart, GMPTotalVolume, GMPTotalFee, GMPTotalActiveUsers, GMPTopUsers, GMPTopITSAssets } from '@/lib/api/gmp'
+import { transfersStats, transfersChart, transfersTotalVolume, transfersTopUsers } from '@/lib/api/token-transfer'
+import { getContracts, getConfigurations, GMPStatsByChains, GMPStatsByContracts, GMPChart, GMPTotalVolume, GMPTopUsers, GMPTopITSAssets } from '@/lib/api/gmp'
 import { ENVIRONMENT } from '@/lib/config'
 import { toArray } from '@/lib/parser'
 
@@ -92,7 +92,7 @@ export function Global() {
             setTVL(ENVIRONMENT === 'mainnet' ? await getTVL() : {})
             break
           case 'stats':
-            const metrics = ['GMPStatsByChains', 'GMPStatsByContracts', 'GMPChart', 'GMPTotalVolume', 'GMPTotalFee', 'GMPTotalActiveUsers', 'GMPTopUsers', 'GMPTopITSUsers', 'GMPTopITSUsersByVolume', 'GMPTopITSAssets', 'GMPTopITSAssetsByVolume', 'transfersStats', 'transfersChart', 'transfersTotalVolume', 'transfersTotalFee', 'transfersTotalActiveUsers', 'transfersTopUsers', 'transfersTopUsersByVolume']
+            const metrics = ['GMPStatsByChains', 'GMPStatsByContracts', 'GMPChart', 'GMPTotalVolume', 'GMPTopUsers', 'GMPTopITSUsers', 'GMPTopITSUsersByVolume', 'GMPTopITSAssets', 'GMPTopITSAssetsByVolume', 'transfersStats', 'transfersChart', 'transfersTotalVolume', 'transfersTopUsers', 'transfersTopUsersByVolume']
             setStats(Object.fromEntries((await Promise.all(toArray(metrics.map(d => new Promise(async resolve => {
               switch (d) {
                 case 'GMPStatsByChains':
@@ -106,12 +106,6 @@ export function Global() {
                   break
                 case 'GMPTotalVolume':
                   resolve([d, await GMPTotalVolume()])
-                  break
-                case 'GMPTotalFee':
-                  resolve([d, await GMPTotalFee()])
-                  break
-                case 'GMPTotalActiveUsers':
-                  resolve([d, await GMPTotalActiveUsers()])
                   break
                 case 'GMPTopUsers':
                   resolve([d, await GMPTopUsers({ size: 100 })])
@@ -168,12 +162,6 @@ export function Global() {
                   break
                 case 'transfersTotalVolume':
                   resolve([d, await transfersTotalVolume()])
-                  break
-                case 'transfersTotalFee':
-                  resolve([d, await transfersTotalFee()])
-                  break
-                case 'transfersTotalActiveUsers':
-                  resolve([d, await transfersTotalActiveUsers()])
                   break
                 case 'transfersTopUsers':
                   resolve([d, await transfersTopUsers({ size: 100 })])

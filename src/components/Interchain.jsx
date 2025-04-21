@@ -26,8 +26,8 @@ import { Profile, ChainProfile, AssetProfile } from '@/components/Profile'
 import { TimeAgo, TimeSpent } from '@/components/Time'
 import { getParams, getQueryString } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
-import { GMPStats, GMPStatsByChains, GMPStatsByContracts, GMPChart, GMPTotalVolume, GMPTotalFee, GMPTotalActiveUsers, GMPTopUsers, GMPTopITSAssets } from '@/lib/api/gmp'
-import { transfersStats, transfersChart, transfersTotalVolume, transfersTotalFee, transfersTotalActiveUsers, transfersTopUsers } from '@/lib/api/token-transfer'
+import { GMPStats, GMPStatsByChains, GMPStatsByContracts, GMPChart, GMPTotalVolume, GMPTopUsers, GMPTopITSAssets } from '@/lib/api/gmp'
+import { transfersStats, transfersChart, transfersTotalVolume, transfersTopUsers } from '@/lib/api/token-transfer'
 import { ENVIRONMENT, getChainData, getAssetData, getITSAssetData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
 import { equalsIgnoreCase, toBoolean, headString, lastString, toTitle } from '@/lib/string'
@@ -485,7 +485,7 @@ function StatsBarChart({
 
   const d = toArray(chartData).find(d => d.timestamp === x)
   const value = d ? d[field] : chartData?.length > 0 ? totalValue || _.sumBy(chartData, field) : null
-  const timeString = d ? d.focusTimeString : chartData && field !== 'users' ? toArray([headString(_.head(chartData.filter(d => d.timestamp))?.focusTimeString, ' - '), lastString(_.last(chartData.filter(d => d.timestamp))?.focusTimeString, ' - ')]).join(' - ') : null
+  const timeString = d ? d.focusTimeString : chartData ? toArray([headString(_.head(chartData.filter(d => d.timestamp))?.focusTimeString, ' - '), lastString(_.last(chartData.filter(d => d.timestamp))?.focusTimeString, ' - ')]).join(' - ') : null
 
   return (
     <div className={clsx('border-l border-r border-t border-zinc-200 dark:border-zinc-700 flex flex-col gap-y-2 px-4 sm:px-6 xl:px-8 py-8', i % 2 !== 0 ? 'sm:border-l-0' : '')}>
@@ -673,32 +673,24 @@ export function SankeyChart({
 function Charts({ data, granularity, params }) {
   if (!data) return null
 
-  const { GMPStatsByChains, GMPChart, GMPTotalVolume, GMPTotalFee, GMPTotalActiveUsers, transfersStats, transfersChart, transfersAirdropChart, transfersTotalVolume, transfersTotalFee, transfersTotalActiveUsers } = { ...data }
+  const { GMPStatsByChains, GMPChart, GMPTotalVolume, transfersStats, transfersChart, transfersAirdropChart, transfersTotalVolume } = { ...data }
   const TIME_FORMAT = granularity === 'month' ? 'MMM' : 'D MMM'
   const { contractMethod } = { ...params }
 
   const chartData = _.orderBy(Object.entries(_.groupBy(_.concat(
-    toArray(GMPChart?.data).map(d => ({ ...d, gmp_num_txs: d.num_txs, gmp_volume: d.volume, gmp_fee: d.fee, gmp_users: d.users })),
-    toArray(transfersChart?.data).map(d => ({ ...d, transfers_num_txs: d.num_txs, transfers_volume: d.volume, transfers_fee: d.fee, transfers_users: d.users })),
-    toArray(transfersAirdropChart?.data).map(d => ({ ...d, transfers_airdrop_num_txs: d.num_txs, transfers_airdrop_volume: d.volume, transfers_airdrop_fee: d.fee, transfers_airdrop_users: d.users })),
+    toArray(GMPChart?.data).map(d => ({ ...d, gmp_num_txs: d.num_txs, gmp_volume: d.volume })),
+    toArray(transfersChart?.data).map(d => ({ ...d, transfers_num_txs: d.num_txs, transfers_volume: d.volume })),
+    toArray(transfersAirdropChart?.data).map(d => ({ ...d, transfers_airdrop_num_txs: d.num_txs, transfers_airdrop_volume: d.volume })),
   ), 'timestamp')).map(([k, v]) => ({
     timestamp: toNumber(k),
     num_txs: _.sumBy(v, 'num_txs'),
     volume: _.sumBy(v, 'volume'),
-    fee: _.sumBy(v, 'fee'),
-    users: _.sumBy(v, 'users'),
     gmp_num_txs: _.sumBy(v.filter(_v => _v.gmp_num_txs > 0), 'gmp_num_txs'),
     gmp_volume: _.sumBy(v.filter(_v => _v.gmp_volume > 0), 'gmp_volume'),
-    gmp_fee: _.sumBy(v.filter(_v => _v.gmp_fee > 0), 'gmp_fee'),
-    gmp_users: _.sumBy(v.filter(_v => _v.gmp_users > 0), 'gmp_users'),
     transfers_num_txs: _.sumBy(v.filter(_v => _v.transfers_num_txs > 0), 'transfers_num_txs'),
     transfers_volume: _.sumBy(v.filter(_v => _v.transfers_volume > 0), 'transfers_volume'),
-    transfers_fee: _.sumBy(v.filter(_v => _v.transfers_fee > 0), 'transfers_fee'),
-    transfers_users: _.sumBy(v.filter(_v => _v.transfers_users > 0), 'transfers_users'),
     transfers_airdrop_num_txs: _.sumBy(v.filter(_v => _v.transfers_airdrop_num_txs > 0), 'transfers_airdrop_num_txs'),
     transfers_airdrop_volume: _.sumBy(v.filter(_v => _v.transfers_airdrop_volume > 0), 'transfers_airdrop_volume'),
-    transfers_airdrop_fee: _.sumBy(v.filter(_v => _v.transfers_airdrop_fee > 0), 'transfers_airdrop_fee'),
-    transfers_airdrop_users: _.sumBy(v.filter(_v => _v.transfers_airdrop_users > 0), 'transfers_airdrop_users'),
   })).map(d => ({ ...d, transfers_airdrop_volume_value: d.transfers_airdrop_volume > 0 ? d.transfers_airdrop_volume > 100000 ? _.mean([d.gmp_volume, d.transfers_volume]) * 2 : d.transfers_airdrop_volume : 0 })), ['timestamp'], ['asc'])
 
   const maxVolumePerMean = _.maxBy(chartData, 'volume')?.volume / (_.meanBy(chartData, 'volume') || 1)
@@ -718,7 +710,6 @@ function Charts({ data, granularity, params }) {
     toArray(transfersStats?.data).map(d => ({ key: `${d.source_chain}_${d.destination_chain}`, num_txs: d.num_txs, volume: d.volume })),
   ))
 
-  const isSquidCoral = contractMethod?.startsWith('SquidCoral')
   return (
     <div className="border-b border-b-zinc-200 dark:border-b-zinc-700">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:px-2 xl:px-0">
@@ -747,46 +738,8 @@ function Charts({ data, granularity, params }) {
           granularity={granularity}
           valuePrefix="$"
         />
-        {/*<StatsBarChart
-          i={2}
-          data={chartData}
-          totalValue={toNumber(GMPTotalActiveUsers) + toNumber(transfersTotalActiveUsers)}
-          field="users"
-          title="Active Users"
-          description={`Number of active users by ${granularity}`}
-          dateFormat={TIME_FORMAT}
-          granularity={granularity}
-        />
-        <StatsBarChart
-          i={3}
-          data={chartData}
-          totalValue={toNumber(GMPTotalFee) + toNumber(transfersTotalFee)}
-          field="fee"
-          title="Gas Fees"
-          description={`Gas fees by ${granularity}`}
-          dateFormat={TIME_FORMAT}
-          granularity={granularity}
-          valuePrefix="$"
-        />
-        <SankeyChart
-          i={4}
-          data={chainPairs}
-          totalValue={toNumber(_.sumBy(GMPStatsByChains?.source_chains, 'num_txs')) + toNumber(transfersStats?.total)}
-          field="num_txs"
-          title="Transactions"
-          description="Total transactions between chains"
-        />
-        <SankeyChart
-          i={5}
-          data={chainPairs}
-          totalValue={toNumber(GMPTotalVolume) + toNumber(transfersTotalVolume)}
-          field="volume"
-          title="Volume"
-          description="Total volume between chains"
-          valuePrefix="$"
-        />*/}
       </div>
-      <div className={clsx('grid grid-cols-1 lg:px-2 xl:px-0', isSquidCoral ? 'sm:grid-cols-2' : 'sm:grid-cols-3')}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:px-2 xl:px-0">
         <SankeyChart
           i={0}
           data={chainPairs}
@@ -804,18 +757,6 @@ function Charts({ data, granularity, params }) {
           description="Total volume between chains"
           valuePrefix="$"
         />
-        {!isSquidCoral && (
-          <StatsBarChart
-            i={1}
-            data={chartData}
-            totalValue={toNumber(GMPTotalActiveUsers) + toNumber(transfersTotalActiveUsers)}
-            field="users"
-            title="Active Users"
-            description={`Number of active users by ${granularity}`}
-            dateFormat={TIME_FORMAT}
-            granularity={granularity}
-          />
-        )}
       </div>
     </div>
   )
@@ -1331,7 +1272,7 @@ export function Interchain() {
   }, [searchParams, params, setParams])
 
   useEffect(() => {
-    const metrics = ['GMPStatsByChains', 'GMPStatsByContracts', 'GMPChart', 'GMPTotalVolume'/*, 'GMPTotalFee', 'GMPTotalActiveUsers'*/, 'GMPTopUsers', 'GMPTopITSUsers', 'GMPTopITSUsersByVolume', 'GMPTopITSAssets', 'GMPTopITSAssetsByVolume', 'transfersStats', 'transfersChart', 'transfersTotalVolume'/*, 'transfersTotalFee', 'transfersTotalActiveUsers'*/, 'transfersTopUsers', 'transfersTopUsersByVolume']
+    const metrics = ['GMPStatsByChains', 'GMPStatsByContracts', 'GMPChart', 'GMPTotalVolume', 'GMPTopUsers', 'GMPTopITSUsers', 'GMPTopITSUsersByVolume', 'GMPTopITSAssets', 'GMPTopITSAssetsByVolume', 'transfersStats', 'transfersChart', 'transfersTotalVolume', 'transfersTopUsers', 'transfersTopUsersByVolume']
     const getData = async () => {
       if (stats && params && toBoolean(refresh)) {
         setData({ ...data, [generateKeyFromParams(params)]: Object.fromEntries((await Promise.all(toArray(metrics.map(d => new Promise(async resolve => {
@@ -1354,12 +1295,6 @@ export function Interchain() {
               break
             case 'GMPTotalVolume':
               resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPTotalVolume(params))])
-              break
-            case 'GMPTotalFee':
-              resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPTotalFee(params))])
-              break
-            case 'GMPTotalActiveUsers':
-              resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPTotalActiveUsers(params))])
               break
             case 'GMPTopUsers':
               resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPTopUsers({ ...params, size: 100 }))])
@@ -1424,14 +1359,6 @@ export function Interchain() {
             case 'transfersTotalVolume':
               if (isSearchITSOnTransfers) resolve([d, 0])
               else resolve([d, types.includes('transfers') && ((noFilter && stats[d]) || await transfersTotalVolume(params))])
-              break
-            case 'transfersTotalFee':
-              if (isSearchITSOnTransfers) resolve([d, 0])
-              else resolve([d, types.includes('transfers') && ((noFilter && stats[d]) || await transfersTotalFee(params))])
-              break
-            case 'transfersTotalActiveUsers':
-              if (isSearchITSOnTransfers) resolve([d, 0])
-              else resolve([d, types.includes('transfers') && ((noFilter && stats[d]) || await transfersTotalActiveUsers(params))])
               break
             case 'transfersTopUsers':
               if (isSearchITSOnTransfers) resolve([d, { data: [] }])
