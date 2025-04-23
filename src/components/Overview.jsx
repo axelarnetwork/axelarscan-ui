@@ -270,23 +270,23 @@ export function Overview() {
   useEffect(() => {
     const metrics = ['GMPStatsByChains', 'GMPStatsByContracts', 'GMPTotalVolume', 'transfersStats', 'transfersTotalVolume']
     const getData = async () => {
-      if (chains && stats) {
+      if (chains) {
         setData(Object.fromEntries(await Promise.all(toArray(metrics.map(d => new Promise(async resolve => {
           switch (d) {
             case 'GMPStatsByChains':
-              resolve([d, { ...(stats[d] || await GMPStatsByChains()) }])
+              resolve([d, { ...(stats?.[d] || await GMPStatsByChains()) }])
               break
             case 'GMPStatsByContracts':
-              resolve([d, { ...(stats[d] || await GMPStatsByContracts()) }])
+              resolve([d, { ...(stats?.[d] || await GMPStatsByContracts()) }])
               break
             case 'GMPTotalVolume':
-              resolve([d, toNumber((stats[d] || await GMPTotalVolume()))])
+              resolve([d, toNumber((stats?.[d] || await GMPTotalVolume()))])
               break
             case 'transfersStats':
-              resolve([d, { ...(stats[d] || await transfersStats()) }])
+              resolve([d, { ...(stats?.[d] || await transfersStats()) }])
               break
             case 'transfersTotalVolume':
-              resolve([d, toNumber((stats[d] || await transfersTotalVolume()))])
+              resolve([d, toNumber((stats?.[d] || await transfersTotalVolume()))])
               break
             default:
               resolve()
