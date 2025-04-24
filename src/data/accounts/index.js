@@ -1048,7 +1048,43 @@ const data = [
   {
     address: '0xF396456C80da131dB85C29F5A15b53AA913F7d51',
     name: 'Social Trade',
-  }
+  },
+  {
+    address: '0xc748673057861a797275cd8a068abb95a902e8de',
+    name: 'BabyDoge Coin',
+    environment: 'mainnet',
+    image: '/logos/accounts/baby_doge.png'
+  },
+  {
+    address: '0x58ecEF26335Af7b04A998105a6603B0Dc475aF33',
+    name: 'BabyDoge Vault',
+    environment: 'mainnet',
+    image: '/logos/accounts/baby_doge.png'
+  },
+  {
+    address: '0x9F0d4f965F8d7503046093F1BdA6052eFE6948b8',
+    name: 'BabyDoge BridgeAssistAxelar',
+    environment: 'mainnet',
+    image: '/logos/accounts/baby_doge.png'
+  },
+  {
+    address: '0x7d77aC40BF16fF72DF9f48266F8e115aA1Bc30F7',
+    name: 'BabyDoge BridgeAssistAxelar',
+    environment: 'mainnet',
+    image: '/logos/accounts/baby_doge.png'
+  },
+  {
+    address: '0x58ecEF26335Af7b04A998105a6603B0Dc475aF33',
+    name: 'BabyDoge Coin',
+    environment: 'mainnet',
+    image: '/logos/accounts/baby_doge.png'
+  },
+  {
+    address: '0x9F0d4f965F8d7503046093F1BdA6052eFE6948b8',
+    name: 'BabyDoge Vault',
+    environment: 'mainnet',
+    image: '/logos/accounts/baby_doge.png'
+  },
 ]
 
 export default data
