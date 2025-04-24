@@ -1056,12 +1056,6 @@ const data = [
     image: '/logos/accounts/baby_doge.png'
   },
   {
-    address: '0x58ecEF26335Af7b04A998105a6603B0Dc475aF33',
-    name: 'BabyDoge Vault',
-    environment: 'mainnet',
-    image: '/logos/accounts/baby_doge.png'
-  },
-  {
     address: '0x9F0d4f965F8d7503046093F1BdA6052eFE6948b8',
     name: 'BabyDoge BridgeAssistAxelar',
     environment: 'mainnet',
@@ -1076,12 +1070,6 @@ const data = [
   {
     address: '0x58ecEF26335Af7b04A998105a6603B0Dc475aF33',
     name: 'BabyDoge Coin',
-    environment: 'mainnet',
-    image: '/logos/accounts/baby_doge.png'
-  },
-  {
-    address: '0x9F0d4f965F8d7503046093F1BdA6052eFE6948b8',
-    name: 'BabyDoge Vault',
     environment: 'mainnet',
     image: '/logos/accounts/baby_doge.png'
   },
