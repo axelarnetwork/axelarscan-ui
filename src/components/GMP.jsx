@@ -29,7 +29,7 @@ import { TimeAgo, TimeSpent, TimeUntil } from '@/components/Time'
 import { ExplorerLink } from '@/components/ExplorerLink'
 import { useEVMWalletStore, EVMWallet, useCosmosWalletStore, CosmosWallet, useSuiWalletStore, SuiWallet, useStellarWalletStore, StellarWallet } from '@/components/Wallet'
 import { getParams } from '@/components/Pagination'
-import { getEvent, normalizeEvent, customData } from '@/components/GMPs'
+import { getEvent, customData } from '@/components/GMPs'
 import { useGlobalStore } from '@/components/Global'
 import { searchGMP, estimateTimeSpent } from '@/lib/api/gmp'
 import { isAxelar } from '@/lib/chain'
@@ -42,11 +42,8 @@ import { isNumber, toNumber, toBigNumber, parseUnits, numberFormat } from '@/lib
 import { timeDiff } from '@/lib/time'
 import IAxelarExecutable from '@/data/contract/interfaces/gmp/IAxelarExecutable.json'
 
-const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'
-
 export function getStep(data, chains) {
   const { call, gas_paid, gas_paid_to_callback, express_executed, confirm, confirm_failed, confirm_failed_event, approved, executed, error, refunded, is_executed, is_invalid_call, originData } = { ...data }
-  const { proposal_id } = { ...call }
 
   const sourceChain = call?.chain
   const destinationChain = call?.returnValues?.destinationChain
@@ -54,9 +51,10 @@ export function getStep(data, chains) {
   const sourceChainData = getChainData(sourceChain, chains)
   const destinationChainData = getChainData(destinationChain, chains)
   const axelarChainData = getChainData('axelarnet', chains)
-  const gasPaidChainData = getChainData(originData?.call?.chain, chains) || destinationChainData
+  const callbackGasChainData = getChainData(originData?.call?.chain, chains) || destinationChainData
 
   const errored = error && timeDiff((error?.block_timestamp || approved?.block_timestamp || confirm?.block_timestamp) * 1000) > 120
+
   return toArray([
     {
       id: 'send',
@@ -65,12 +63,12 @@ export function getStep(data, chains) {
       data: call,
       chainData: sourceChainData,
     },
-    (!proposal_id || (gas_paid || gas_paid_to_callback)) && {
+    (!call?.proposal_id || (gas_paid || gas_paid_to_callback)) && {
       id: 'pay_gas',
       title: gas_paid || gas_paid_to_callback ? 'Gas Paid' : timeDiff(call?.block_timestamp * 1000) < 30 ? 'Checking Gas Paid' : 'Pay Gas',
       status: gas_paid || gas_paid_to_callback ? 'success' : 'pending',
       data: gas_paid || gas_paid_to_callback,
-      chainData: gas_paid_to_callback && !gas_paid ? gasPaidChainData : sourceChainData,
+      chainData: !gas_paid && gas_paid_to_callback ? callbackGasChainData : sourceChainData,
     },
     express_executed && {
       id: 'express',
@@ -79,23 +77,23 @@ export function getStep(data, chains) {
       data: express_executed,
       chainData: destinationChainData,
     },
-    (confirm || !approved || !(executed || is_executed || error)) && !isAxelar(sourceChain) && {
+    !isAxelar(sourceChain) && (confirm || !approved || !(executed || is_executed || error)) && {
       id: 'confirm',
-      title: (confirm && (sourceChainData?.chain_type === 'cosmos' || confirm.poll_id !== confirm_failed_event?.poll_id)) || approved || executed || is_executed || error ? 'Confirmed' : is_invalid_call ? 'Invalid Call' : confirm_failed ? 'Failed to Confirm' : gas_paid || gas_paid_to_callback || express_executed ? 'Waiting for Finality' : 'Confirm',
-      status: (confirm && (sourceChainData?.chain_type === 'cosmos' || confirm.poll_id !== confirm_failed_event?.poll_id)) || approved || executed || is_executed || error ? 'success' : is_invalid_call || confirm_failed ? 'failed' : 'pending',
+      title: (confirm && (call?.chain_type === 'cosmos' || confirm.poll_id !== confirm_failed_event?.poll_id)) || approved || executed || is_executed || error ? 'Confirmed' : is_invalid_call ? 'Invalid Call' : confirm_failed ? 'Failed to Confirm' : gas_paid || gas_paid_to_callback || express_executed ? 'Waiting for Finality' : 'Confirm',
+      status: (confirm && (call?.chain_type === 'cosmos' || confirm.poll_id !== confirm_failed_event?.poll_id)) || approved || executed || is_executed || error ? 'success' : is_invalid_call || confirm_failed ? 'failed' : 'pending',
       data: confirm || confirm_failed_event,
       chainData: axelarChainData,
     },
-    (['evm', 'vm'].includes(destinationChainData?.chain_type) || (['evm', 'vm'].includes(sourceChainData?.chain_type) && isAxelar(destinationChain))) && (approved || (!executed && !error)) && {
+    (['evm', 'vm'].includes(call?.destination_chain_type) || (['evm', 'vm'].includes(call?.chain_type) && isAxelar(destinationChain))) && (approved || (!executed && !error)) && {
       id: 'approve',
-      title: approved ? 'Approved' : confirm && (['cosmos', 'vm'].includes(sourceChainData?.chain_type) || confirm.poll_id !== confirm_failed_event?.poll_id) ? 'Approving' : 'Approve',
+      title: approved ? 'Approved' : confirm && (['cosmos', 'vm'].includes(call?.chain_type) || confirm.poll_id !== confirm_failed_event?.poll_id) ? 'Approving' : 'Approve',
       status: approved ? 'success' : 'pending',
       data: approved,
       chainData: destinationChainData,
     },
     {
       id: 'execute',
-      title: (executed && (!executed.axelarTransactionHash || (executed.transactionHash && !error))) || is_executed ? 'Executed' : errored ? 'Error' : executed?.axelarTransactionHash && timeDiff((confirm?.block_timestamp || call?.block_timestamp) * 1000) > 60 ? 'Waiting for IBC' : 'Execute',
+      title: (executed && (!executed.axelarTransactionHash || (executed.transactionHash && !error))) || is_executed ? 'Executed' : errored ? 'Error' : executed?.axelarTransactionHash && timeDiff((confirm?.block_timestamp || call?.block_timestamp) * 1000) >= 60 ? 'Waiting for IBC' : 'Execute',
       status: (executed && (!executed.axelarTransactionHash || (executed.transactionHash && !error))) || is_executed ? 'success' : errored ? 'failed' : 'pending',
       data: executed || is_executed || error,
       chainData: executed?.axelarTransactionHash && !executed.transactionHash ? axelarChainData : destinationChainData,
@@ -114,8 +112,8 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
   const [seeMore, setSeeMore] = useState(false)
   const { chains, assets } = useGlobalStore()
 
-  const { call, gas_paid, gas_paid_to_callback, express_executed, confirm, approved, executed, error, refunded, refunded_more_transactions, token_sent, token_deployment_initialized, token_deployed, interchain_transfer, interchain_transfer_with_data, token_manager_deployment_started, interchain_token_deployment_started, settlement_forwarded_events, settlement_filled_events, interchain_transfers, is_executed, amount, fees, gas, is_insufficient_fee, is_invalid_destination_chain, is_invalid_source_address, is_invalid_contract_address, not_enough_gas_to_execute, status, simplified_status, time_spent, callbackData, originData, settlementForwardedData, settlementFilledData } = { ...data }
-  const { proposal_id } = { ...call }
+  const { call, gas_paid, gas_paid_to_callback, express_executed, confirm, approved, executed, error, interchain_transfer, settlement_forwarded_events, settlement_filled_events, fees, gas, status, time_spent } = { ...data }
+
   const txhash = call?.transactionHash || tx
 
   const sourceChain = approved?.returnValues?.sourceChain || getChainData(call?.chain, chains)?.chain_name || call?.chain
@@ -127,11 +125,12 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
   const sourceChainData = getChainData(sourceChain, chains)
   const { url, transaction_path } = { ...sourceChainData?.explorer }
 
-  const symbol = call?.returnValues?.symbol || token_sent?.symbol || interchain_transfer?.symbol || interchain_transfer_with_data?.symbol || token_deployed?.symbol || token_deployment_initialized?.tokenSymbol || token_manager_deployment_started?.symbol || interchain_token_deployment_started?.tokenSymbol
+  const symbol = call?.returnValues?.symbol || interchain_transfer?.symbol || data.token_manager_deployment_started?.symbol || data.interchain_token_deployment_started?.tokenSymbol
   const { addresses } = { ...getAssetData(symbol, assets) }
+
   const isMultihop = !!(data.originData || data.callbackData)
 
-  const messageId = call?.returnValues?.messageId || (call?.transactionHash && isNumber(call._logIndex) ? `${call.transactionHash}-${call._logIndex}` : undefined)
+  const messageId = data.message_id
   const commandId = approved?.returnValues?.commandId || data.command_id
   const sourceAddress = call?.returnValues?.sender
   const destinationContractAddress = contractAddress
@@ -143,8 +142,8 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
   const amountInUnits = approved?.returnValues?.amount || call?.returnValues?.amount
 
   const gasData = data.originData?.gas || gas
-  const refundedData = data.originData?.refunded || refunded
-  const refundedMoreData = toArray(data.originData?.refunded_more_transactions || refunded_more_transactions)
+  const refundedData = data.originData?.refunded || data.refunded
+  const refundedMoreData = toArray(data.originData?.refunded_more_transactions || data.refunded_more_transactions)
 
   return (
     <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
@@ -156,18 +155,24 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
           {txhash && (
             <div className="flex items-center gap-x-1">
               <Copy value={messageId || txhash}>
-                {url && (proposal_id || call?.transactionHash) ?
+                {url && (call?.proposal_id || call?.transactionHash) ?
                   <Link
-                    href={proposal_id ? `/proposal/${proposal_id}` : `${url}${transaction_path?.replace('{tx}', txhash)}`}
+                    href={call?.proposal_id ? `/proposal/${call.proposal_id}` : `${url}${transaction_path?.replace('{tx}', txhash)}`}
                     target="_blank"
                     className="text-blue-600 dark:text-blue-500 font-semibold"
                   >
-                    {ellipse(messageId, 12) || `${ellipse(txhash)}${call.chain_type === 'evm' && call.receipt ? isNumber(call._logIndex) ? `-${call._logIndex}` : isNumber(call.logIndex) ? `:${call.logIndex}` : '' : ['cosmos', 'vm'].includes(call.chain_type) && isNumber(call.messageIdIndex) ? `-${call.messageIdIndex}` : ''}`}
+                    {ellipse(messageId || txhash, 12)}
                   </Link> :
-                  ellipse(messageId, 12) || `${ellipse(txhash)}${call.chain_type === 'evm' && call.receipt ? isNumber(call._logIndex) ? `-${call._logIndex}` : isNumber(call.logIndex) ? `:${call.logIndex}` : '' : ['cosmos', 'vm'].includes(call.chain_type) && isNumber(call.messageIdIndex) && call?.transactionHash ? `-${call.messageIdIndex}` : ''}`
+                  ellipse(messageId || txhash, 12)
                 }
               </Copy>
-              {!proposal_id && call?.transactionHash && <ExplorerLink value={txhash} chain={sourceChain} hasEventLog={call.chain_type === 'evm' && isNumber(call.logIndex)} />}
+              {!call?.proposal_id && call?.transactionHash && (
+                <ExplorerLink
+                  value={txhash}
+                  chain={sourceChain}
+                  hasEventLog={call.chain_type === 'evm' && isNumber(call.logIndex)}
+                />
+              )}
             </div>
           )}
         </div>
@@ -178,7 +183,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
             <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Method</dt>
             <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
               <Tag className={clsx('w-fit capitalize')}>
-                {toTitle(normalizeEvent(getEvent(data)))}
+                {getEvent(data)}
               </Tag>
             </dd>
           </div>
@@ -189,6 +194,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                 {toArray([data.originData, data, data.callbackData]).map((d, i) => {
                   const sourceChain = d.call?.chain
                   const destinationChain = d.call?.returnValues?.destinationChain || d.approved?.chain
+
                   const steps = getStep(d, chains)
 
                   return (
@@ -213,37 +219,57 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                       <nav aria-label="Progress" className="h-20 overflow-x-auto">
                         <ol role="list" className="flex items-center">
                           {steps.map((d, i) => {
-                            const { confirmation_txhash, contract_address, poll_id, axelarTransactionHash, receipt, proposal_id } = { ...d.data }
+                            const { transactionHash, blockNumber, confirmation_txhash, contract_address, poll_id, axelarTransactionHash, proposal_id } = { ...d.data }
                             const { url, block_path, transaction_path } = { ...d.chainData?.explorer }
-                            const transactionHash = d.data?.transactionHash || receipt?.transactionHash || receipt?.hash
-                            const height = d.data?.blockNumber || receipt?.blockNumber
 
                             let stepURL
+
                             if (url && transaction_path) {
                               switch (d.id) {
                                 case 'pay_gas':
-                                  if (transactionHash || originData?.call?.transactionHash) stepURL = `${url}${transaction_path.replace('{tx}', transactionHash || originData?.call?.transactionHash)}`
+                                  if (transactionHash || data.originData?.call?.transactionHash) {
+                                    stepURL = `${url}${transaction_path.replace('{tx}', transactionHash || data.originData?.call?.transactionHash)}`
+                                  }
                                   break
                                 case 'confirm':
-                                  if (confirmation_txhash) stepURL = `/tx/${confirmation_txhash}`
-                                  else if (contract_address && poll_id) stepURL = `/amplifier-poll/${contract_address}_${poll_id}`
-                                  else if (poll_id) stepURL = `/evm-poll/${poll_id}`
+                                  if (confirmation_txhash) {
+                                    stepURL = `/tx/${confirmation_txhash}`
+                                  }
+                                  else if (contract_address && poll_id) {
+                                    stepURL = `/amplifier-poll/${contract_address}_${poll_id}`
+                                  }
+                                  else if (poll_id) {
+                                    stepURL = `/evm-poll/${poll_id}`
+                                  }
                                   else if (d.title === 'Waiting for Finality') {
                                     const finalityTime = estimatedTimeSpent?.confirm ? estimatedTimeSpent.confirm + 15 : 600
-                                    if (timeDiff(call?.block_timestamp * 1000) >= finalityTime) d.title = 'Confirm'
+
+                                    if (timeDiff(call?.block_timestamp * 1000) >= finalityTime) {
+                                      d.title = 'Confirm'
+                                    }
                                   }
                                   break
                                 case 'executed':
                                   if (transactionHash || axelarTransactionHash) {
-                                    if (block_path && isNumber(transactionHash || axelarTransactionHash) && isNumber(height) && toNumber(transactionHash || axelarTransactionHash) === toNumber(height)) stepURL = `${url}${block_path.replace('{block}', transactionHash || axelarTransactionHash)}`
-                                    else stepURL = `${url}${transaction_path.replace('{tx}', transactionHash || axelarTransactionHash)}`
+                                    if (block_path && isNumber(transactionHash) && isNumber(blockNumber) && toNumber(transactionHash) === toNumber(blockNumber)) {
+                                      stepURL = `${url}${block_path.replace('{block}', transactionHash)}`
+                                    }
+                                    else {
+                                      stepURL = `${url}${transaction_path.replace('{tx}', transactionHash || axelarTransactionHash)}`
+                                    }
                                   }
                                   break
                                 default:
-                                  if (proposal_id) stepURL = `/proposal/${proposal_id}`
+                                  if (proposal_id) {
+                                    stepURL = `/proposal/${proposal_id}`
+                                  }
                                   else if (transactionHash) {
-                                    if (block_path && isNumber(transactionHash) && isNumber(height) && toNumber(transactionHash) === toNumber(height)) stepURL = `${url}${block_path.replace('{block}', transactionHash)}`
-                                    else stepURL = `${url}${transaction_path.replace('{tx}', transactionHash)}`
+                                    if (block_path && isNumber(transactionHash) && isNumber(blockNumber) && toNumber(transactionHash) === toNumber(blockNumber)) {
+                                      stepURL = `${url}${block_path.replace('{block}', transactionHash)}`
+                                    }
+                                    else {
+                                      stepURL = `${url}${transaction_path.replace('{tx}', transactionHash)}`
+                                    }
                                   }
                                   break
                               }
@@ -255,7 +281,11 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                   {d.status === 'failed' ? <MdClose className="w-5 h-5 text-white" /> : <MdCheck className="w-5 h-5 text-white" />}
                                 </div>
                                 <span className={clsx('absolute text-2xs font-medium whitespace-nowrap mt-1', d.status === 'failed' ? 'text-red-600 dark:text-red-500' : 'text-blue-600 dark:text-blue-500', d.title?.length <= 5 ? 'ml-1' : '')}>{d.title}</span>
-                                {d.id === 'express' && <div className="absolute mt-3"><span className="text-2xs font-medium text-green-600 dark:text-green-500">Received</span></div>}
+                                {d.id === 'express' && (
+                                  <div className="absolute mt-3">
+                                    <span className="text-2xs font-medium text-green-600 dark:text-green-500">Received</span>
+                                  </div>
+                                )}
                               </>
                             )
 
@@ -267,8 +297,12 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                       <div className="w-full h-0.5 bg-zinc-200 dark:bg-zinc-700" />
                                     </div>
                                     <div className={clsx('relative w-8 h-8 bg-zinc-50 dark:bg-zinc-800 rounded-full border-2 flex items-center justify-center', steps[i - 1]?.status === 'pending' ? 'border-zinc-200 dark:border-zinc-700' : 'border-blue-600 dark:border-blue-500')} aria-current="step">
-                                      {steps[i - 1]?.status !== 'pending' && <PiClock className={clsx('w-5 h-5', steps[i - 1]?.status === 'pending' ? 'text-zinc-200 dark:text-zinc-700' : 'text-blue-600 dark:text-blue-500')} />}
-                                      <span className={clsx('absolute text-2xs font-medium whitespace-nowrap mt-12 pt-1', steps[i - 1]?.status !== 'pending' ? 'text-blue-600 dark:text-blue-500' : 'text-zinc-400 dark:text-zinc-500', d.title?.length <= 5 ? 'ml-1' : '')}>{d.title}</span>
+                                      {steps[i - 1]?.status !== 'pending' && (
+                                        <PiClock className={clsx('w-5 h-5', steps[i - 1]?.status === 'pending' ? 'text-zinc-200 dark:text-zinc-700' : 'text-blue-600 dark:text-blue-500')} />
+                                      )}
+                                      <span className={clsx('absolute text-2xs font-medium whitespace-nowrap mt-12 pt-1', steps[i - 1]?.status !== 'pending' ? 'text-blue-600 dark:text-blue-500' : 'text-zinc-400 dark:text-zinc-500', d.title?.length <= 5 ? 'ml-1' : '')}>
+                                        {d.title}
+                                      </span>
                                       {d.id === 'confirm' && !express_executed && estimatedTimeSpent?.confirm && timeDiff(moment(), 'seconds', (call?.block_timestamp + estimatedTimeSpent.confirm) * 1000) > 0 && (
                                         <div className="absolute mt-20">
                                           <TimeUntil
@@ -306,14 +340,10 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                         </div>
                       )}
                       {d.is_invalid_gas_paid && !(d.confirm || d.approved) && (
-                        <>
-                          {d.is_invalid_gas_paid_mismatch_source_address && (
-                            <div className="flex items-center text-red-600 dark:text-red-500 gap-x-1">
-                              <PiWarningCircle size={16} />
-                              <span className="text-xs">Invalid Gas Paid (source address mismatch)</span>
-                            </div>
-                          )}
-                        </>
+                        <div className="flex items-center text-red-600 dark:text-red-500 gap-x-1">
+                          <PiWarningCircle size={16} />
+                          <span className="text-xs">Invalid Gas Paid (source address mismatch)</span>
+                        </div>
                       )}
                       {d.not_enough_gas_to_execute && !d.executed && !d.is_executed && (
                         <div className="flex items-center text-red-600 dark:text-red-500 gap-x-1">
@@ -483,7 +513,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                 <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                   <div className="flex flex-col gap-y-2">
                     <ChainProfile value={destinationChain} />
-                    {is_invalid_destination_chain && (
+                    {data.is_invalid_destination_chain && (
                       <div className="h-6 flex items-center text-red-600 dark:text-red-500 gap-x-1.5">
                         <PiWarningCircle size={20} />
                         <span>Invalid Chain</span>
@@ -501,7 +531,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                 <AssetProfile
                   value={symbol}
                   chain={sourceChain}
-                  amount={amount}
+                  amount={data.amount}
                   ITSPossible={true}
                   onlyITS={!getEvent(data)?.includes('ContractCall')}
                   width={16}
@@ -520,13 +550,14 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
               </dd>
             </div>
           )}
-          {toArray(interchain_transfers).length > 0 && (
+          {toArray(data.interchain_transfers).length > 0 && (
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Settlement Filled</dt>
               <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                 <div className="flex flex-col gap-y-1.5">
-                  {interchain_transfers.map((d, i) => {
+                  {data.interchain_transfers.map((d, i) => {
                     const destinationChainData = getChainData(d.destinationChain, chains)
+
                     return (
                       <div key={i} className="flex items-center gap-x-1">
                         <AssetProfile
@@ -575,7 +606,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
             <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
               <div className="flex flex-col gap-y-2">
                 <Profile address={data.originData?.call?.returnValues?.sender || sourceAddress} chain={data.originData?.call?.chain || sourceChain} />
-                {data.originData?.is_invalid_source_address || is_invalid_source_address && (
+                {data.originData?.is_invalid_source_address || data.is_invalid_source_address && (
                   <div className="h-6 flex items-center text-red-600 dark:text-red-500 gap-x-1.5">
                     <PiWarningCircle size={20} />
                     <span>Invalid Address</span>
@@ -593,7 +624,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                   chain={data.callbackData?.call?.returnValues?.destinationChain || destinationChain}
                   useContractLink={true}
                 />
-                {data.callbackData?.is_invalid_contract_address || is_invalid_contract_address && (
+                {data.callbackData?.is_invalid_contract_address || data.is_invalid_contract_address && (
                   <div className="h-6 flex items-center text-red-600 dark:text-red-500 gap-x-1.5">
                     <PiWarningCircle size={20} />
                     <span>Invalid Contract</span>
@@ -613,7 +644,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
           <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
             <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Created</dt>
             <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-              {moment((data.originData?.call || call)?.block_timestamp * 1000).format(TIME_FORMAT)}
+              {moment((data.originData?.call || call)?.block_timestamp * 1000).format('MMM D, YYYY h:mm:ss A z')}
             </dd>
           </div>
           {isMultihop ?
@@ -621,7 +652,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Time Spent</dt>
               <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                 <div className="flex items-center gap-x-4">
-                  {toArray([data.originData, data, data.callbackData]).filter(d => (d.time_spent?.call_express_executed > 0 && ['express_executed', 'executed'].includes(d.status)) || (d.time_spent?.total > 0 && ['executed'].includes(d.status))).map((d, i) => (
+                  {toArray([data.originData, data, data.callbackData]).filter(d => (d.time_spent?.call_express_executed > 0 && ['express_executed', 'executed'].includes(d.status)) || (d.time_spent?.total > 0 && d.status === 'executed')).map((d, i) => (
                     <div key={i} className="flex items-center gap-x-4">
                       {i > 0 && <FiPlus size={18} className="text-zinc-400 dark:text-zinc-500" />}
                       <div className="flex flex-col gap-y-2">
@@ -631,7 +662,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                             <TimeSpent fromTimestamp={0} toTimestamp={d.time_spent.call_express_executed * 1000} />
                           </div>
                         )}
-                        {d.time_spent.total > 0 && ['executed'].includes(d.status) && (
+                        {d.time_spent.total > 0 && d.status === 'executed' && (
                           <div className="flex items-center text-zinc-400 dark:text-zinc-500 gap-x-1">
                             <MdOutlineTimer size={20} />
                             <TimeSpent fromTimestamp={0} toTimestamp={d.time_spent.total * 1000} />
@@ -643,7 +674,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                 </div>
               </dd>
             </div> :
-            (time_spent?.call_express_executed > 0 && ['express_executed', 'executed'].includes(status)) || (time_spent?.total > 0 && ['executed'].includes(status)) ?
+            (time_spent?.call_express_executed > 0 && ['express_executed', 'executed'].includes(status)) || (time_spent?.total > 0 && status === 'executed') ?
               <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
                 <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Time Spent</dt>
                 <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
@@ -654,7 +685,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                         <TimeSpent fromTimestamp={0} toTimestamp={time_spent.call_express_executed * 1000} />
                       </div>
                     )}
-                    {time_spent.total > 0 && ['executed'].includes(status) && (
+                    {time_spent.total > 0 && status === 'executed' && (
                       <div className="flex items-center text-zinc-400 dark:text-zinc-500 gap-x-1">
                         <MdOutlineTimer size={20} />
                         <TimeSpent fromTimestamp={0} toTimestamp={time_spent.total * 1000} />
@@ -698,7 +729,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                 </>
               )
           }
-          {(!data.originData || data.originData.executed) && executed && (refundedData?.receipt?.status || ((((!data.originData || data.originData.executed) && executed) || is_executed || error) && timeDiff(((data.originData?.executed || executed).block_timestamp || (data.originData?.error || error)?.block_timestamp || (data.originData?.approved || approved)?.block_timestamp || (data.originData?.confirm || confirm)?.block_timestamp) * 1000) >= 300)) && isNumber(gasData?.gas_paid_amount) && isNumber(gasData.gas_remain_amount) && (
+          {(!data.originData || data.originData.executed) && executed && isNumber(gasData?.gas_paid_amount) && isNumber(gasData.gas_remain_amount) && (refundedData?.receipt?.status || timeDiff((data.originData?.executed || executed).block_timestamp * 1000) >= 300) && (
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
               <dt className="flex items-center text-zinc-900 dark:text-zinc-100 text-sm font-medium">
                 <span className="whitespace-nowrap mr-1">Gas Charged</span>
@@ -1232,13 +1263,16 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
 function Details({ data }) {
   const { chains } = useGlobalStore()
 
-  const { call, gas_paid, approved, refunded, gas_added_transactions, refunded_more_transactions, fees, gas } = { ...data }
+  const { call, gas_paid, approved, refunded, fees, gas } = { ...data }
+
   const sourceChain = call?.chain
   const destinationChain = approved?.chain || call?.returnValues?.destinationChain
+
   const destinationChainData = getChainData(destinationChain, chains)
   const axelarChainData = getChainData('axelarnet', chains)
 
   const steps = getStep(data, chains)
+
   return steps.length > 0 && (
     <div className="overflow-x-auto lg:overflow-x-visible -mx-4 sm:-mx-0 mt-8">
       {(data.originData || data.callbackData) && (
@@ -1286,15 +1320,15 @@ function Details({ data }) {
         </thead>
         <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
           {steps.filter(d => d.status !== 'pending' || d.data?.axelarTransactionHash).map((d, i) => {
-            const { logIndex, _logIndex, chain_type, confirmation_txhash, poll_id, axelarTransactionHash, blockNumber, axelarBlockNumber, transaction, receipt, returnValues, contract_address, block_timestamp, created_at, proposal_id } = { ...(d.id === 'pay_gas' && isString(d.data) ? data.originData?.gas_paid : d.data) }
-            const transactionHash = d.data?.transactionHash || receipt?.transactionHash || receipt?.hash
-            const height = d.data?.blockNumber || blockNumber
+            const { transactionHash, logIndex, eventIndex, chain_type, confirmation_txhash, poll_id, axelarTransactionHash, blockNumber, axelarBlockNumber, transaction, returnValues, contract_address, block_timestamp, created_at, proposal_id } = { ...(d.id === 'pay_gas' && isString(d.data) ? data.originData?.gas_paid : d.data) }
             const { url, block_path, transaction_path } = { ...d.chainData?.explorer }
 
             let stepTX
             let stepURL
             const stepMoreInfos = []
             const stepMoreTransactions = []
+
+            // transaction
             switch (d.id) {
               case 'confirm':
                 if (confirmation_txhash) {
@@ -1312,7 +1346,7 @@ function Details({ data }) {
 
                 if (confirmation_txhash && poll_id) {
                   stepMoreInfos.push((
-                    <Copy size={16} key={stepMoreInfos.length} value={poll_id}>
+                    <Copy key={stepMoreInfos.length} size={16} value={poll_id}>
                       <Link
                         href={contract_address ? `/amplifier-poll/${contract_address}_${poll_id}` : `/evm-poll/${poll_id}`}
                         target="_blank"
@@ -1332,16 +1366,23 @@ function Details({ data }) {
                 else {
                   if (transactionHash) {
                     stepTX = transactionHash
+
                     if (url) {
-                      if (transaction_path) stepURL = `${url}${transaction_path.replace('{tx}', transactionHash)}`
-                      if (block_path && isNumber(transactionHash) && isNumber(height) && toNumber(transactionHash) === toNumber(height)) stepURL = `${url}${block_path.replace('{block}', transactionHash)}`
+                      if (block_path && isNumber(transactionHash) && isNumber(blockNumber) && toNumber(transactionHash) === toNumber(blockNumber)) {
+                        stepURL = `${url}${block_path.replace('{block}', transactionHash)}`
+                      }
+                      else if (transaction_path) {
+                        stepURL = `${url}${transaction_path.replace('{tx}', transactionHash)}`
+                      }
                     }
                   }
+                  // wait for IBC
                   else if (axelarTransactionHash && axelarChainData?.explorer?.url) {
                     stepTX = axelarTransactionHash
                     stepURL = `${axelarChainData.explorer.url}${axelarChainData.explorer.transaction_path.replace('{tx}', axelarTransactionHash)}`
                   }
 
+                  // cosmos received
                   if (transactionHash && axelarTransactionHash && axelarChainData?.explorer?.url) {
                     stepMoreInfos.push((
                       <div key={stepMoreInfos.length} className="flex items-center gap-x-1">
@@ -1364,6 +1405,7 @@ function Details({ data }) {
                     ))
                   }
 
+                  // evm log index
                   if (['send', 'pay_gas', 'approve'].includes(d.id) && chain_type === 'evm') {
                     if (isNumber(logIndex)) {
                       stepMoreInfos.push((
@@ -1383,7 +1425,8 @@ function Details({ data }) {
                         </div>
                       ))
                     }
-                    if (d.id === 'send' && isNumber(_logIndex)) {
+
+                    if (d.id === 'send' && isNumber(eventIndex)) {
                       stepMoreInfos.push((
                         <div key={stepMoreInfos.length} className="flex items-center gap-x-1">
                           <span className="text-zinc-700 dark:text-zinc-300 text-xs">EventIndex:</span>
@@ -1391,7 +1434,7 @@ function Details({ data }) {
                             value={transactionHash}
                             chain={d.chainData?.id}
                             hasEventLog={true}
-                            title={numberFormat(_logIndex, '0,0')}
+                            title={numberFormat(eventIndex, '0,0')}
                             iconOnly={false}
                             width={14}
                             height={14}
@@ -1403,6 +1446,7 @@ function Details({ data }) {
                     }
                   }
 
+                  // evm command id
                   if (d.id === 'approve' && returnValues?.commandId) {
                     stepMoreInfos.push((
                       <Copy key={stepMoreInfos.length} size={16} value={returnValues.commandId}>
@@ -1422,8 +1466,10 @@ function Details({ data }) {
                     ))
                   }
 
+                  // error
                   if (d.id === 'execute' && d.status === 'failed' && data.error) {
                     const { error } = { ...data.error }
+
                     const message = error?.data?.message || error?.message
                     const reason = error?.reason
                     const code = error?.code
@@ -1464,24 +1510,25 @@ function Details({ data }) {
                     ))
                   }
 
-                  if ((d.id === 'pay_gas' && gas_added_transactions) || (d.id === 'refund' && refunded_more_transactions)) {
-                    for (const tx of toArray(d.id === 'pay_gas' ? gas_added_transactions : refunded_more_transactions)) {
+                  // gas added / refunded more
+                  if ((d.id === 'pay_gas' && data.gas_added_transactions) || (d.id === 'refund' && data.refunded_more_transactions)) {
+                    for (const { transactionHash } of toArray(d.id === 'pay_gas' ? data.gas_added_transactions : data.refunded_more_transactions)) {
                       stepMoreTransactions.push((
                         <div key={stepMoreTransactions.length} className="flex items-center gap-x-1">
-                          <Copy size={16} value={tx.transactionHash}>
+                          <Copy size={16} value={transactionHash}>
                             {url ?
                               <Link
-                                href={`${url}${transaction_path.replace('{tx}', tx.transactionHash)}`}
+                                href={`${url}${transaction_path.replace('{tx}', transactionHash)}`}
                                 target="_blank"
                                 className="text-blue-600 dark:text-blue-500 text-xs font-medium"
                               >
-                                {ellipse(tx.transactionHash)}
+                                {ellipse(transactionHash)}
                               </Link> :
-                              ellipse(tx.transactionHash)
+                              ellipse(transactionHash)
                             }
                           </Copy>
                           <ExplorerLink
-                            value={tx.transactionHash}
+                            value={transactionHash}
                             chain={d.chainData?.id}
                             width={14}
                             height={14}
@@ -1494,17 +1541,25 @@ function Details({ data }) {
                 break
             }
 
+            // address
             const fromAddress = transaction?.from
             let toAddress = contract_address
+
             switch (d.id) {
               case 'send':
-                if (!toAddress && chain_type === 'cosmos') toAddress = returnValues?.sender
+                if (!toAddress && chain_type === 'cosmos') {
+                  toAddress = returnValues?.sender
+                }
                 break
               case 'pay_gas':
-                if (!toAddress && chain_type === 'cosmos') toAddress = returnValues?.recipient
+                if (!toAddress && chain_type === 'cosmos') {
+                  toAddress = returnValues?.recipient
+                }
                 break
               case 'execute':
-                if (!toAddress && chain_type === 'cosmos') toAddress = returnValues?.destinationContractAddress || returnValues?.receiver
+                if (!toAddress && chain_type === 'cosmos') {
+                  toAddress = returnValues?.destinationContractAddress || returnValues?.receiver
+                }
                 break
               case 'refund':
                 toAddress = gas_paid?.returnValues?.refundAddress || toAddress
@@ -1513,7 +1568,9 @@ function Details({ data }) {
                 break
             }
 
+            // gas
             let gasAmount
+
             switch (d.id) {
               case 'pay_gas':
                 gasAmount = isString(d.data) ? d.data * fees?.destination_native_token?.gas_price * fees?.destination_native_token?.token_price?.usd / fees?.source_token?.token_price?.usd : gas?.gas_paid_amount
@@ -1531,11 +1588,12 @@ function Details({ data }) {
                 gasAmount = gas?.gas_execute_amount
                 break
               case 'refund':
-                gasAmount = refunded?.amount + _.sum(toArray(refunded_more_transactions).map(d => toNumber(d.amount)))
+                gasAmount = refunded?.amount + _.sum(toArray(data.refunded_more_transactions).map(d => toNumber(d.amount)))
                 break
               default:
                 break
             }
+
             const gasElement = isNumber(gasAmount) && gasAmount >= 0 && (
               <Number
                 value={gasAmount}
@@ -1545,6 +1603,7 @@ function Details({ data }) {
                 className="text-zinc-900 dark:text-zinc-100 font-medium"
               />
             )
+
             const gasConvertedElement = data.originData?.fees?.source_token?.token_price?.usd > 0 && gasElement && (
               <Number
                 value={gasAmount * fees?.source_token?.token_price?.usd / data.originData.fees.source_token.token_price.usd}
@@ -1576,7 +1635,13 @@ function Details({ data }) {
                             ellipse(stepTX)
                           }
                         </Copy>
-                        {!proposal_id && <ExplorerLink value={stepTX} chain={d.chainData?.id} customURL={stepURL} />}
+                        {!proposal_id && (
+                          <ExplorerLink
+                            value={stepTX}
+                            chain={d.chainData?.id}
+                            customURL={stepURL}
+                          />
+                        )}
                       </div>
                     )}
                     {stepMoreInfos.length > 0 && (
@@ -1593,15 +1658,15 @@ function Details({ data }) {
                 </td>
                 <td className="px-3 py-4 text-left">
                   <div className="flex flex-col gap-y-2">
-                    {toNumber(height) > 0 && (url && block_path ?
+                    {toNumber(blockNumber) > 0 && (url && block_path ?
                       <Link
-                        href={`${url}${block_path.replace('{block}', height)}`}
+                        href={`${url}${block_path.replace('{block}', blockNumber)}`}
                         target="_blank"
                         className="text-blue-600 dark:text-blue-500 font-medium"
                       >
-                        <Number value={height} />
+                        <Number value={blockNumber} />
                       </Link> :
-                      <Number value={height} />
+                      <Number value={blockNumber} />
                     )}
                     {axelarBlockNumber && (axelarChainData?.explorer?.url && axelarChainData.explorer.block_path ?
                       <Link
@@ -1633,7 +1698,7 @@ function Details({ data }) {
                 </td>
                 <td className="px-3 py-4 text-left">
                   {d.status && (
-                    <Tag className={clsx('w-fit capitalize', ['success'].includes(d.status) ? 'bg-green-600 dark:bg-green-500' : ['failed'].includes(d.status) ? 'bg-red-600 dark:bg-red-500' : '')}>
+                    <Tag className={clsx('w-fit capitalize', d.status === 'success' ? 'bg-green-600 dark:bg-green-500' : d.status === 'failed' ? 'bg-red-600 dark:bg-red-500' : '')}>
                       {d.status}
                     </Tag>
                   )}
@@ -1656,8 +1721,6 @@ function Details({ data }) {
   )
 }
 
-const MIN_GAS_REMAIN_AMOUNT = 0.000001
-
 export function GMP({ tx, lite }) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -1678,39 +1741,54 @@ export function GMP({ tx, lite }) {
 
   const getData = useCallback(async () => {
     const { commandId } = { ...getParams(searchParams) }
+
     if (commandId) {
       const { data } = { ...await searchGMP({ commandId }) }
       const d = await customData(_.head(data))
 
-      if (d?.call?.transactionHash) router.push(`/gmp/${d.call.transactionHash}`)
-      else setData({ ...d })
+      if (d?.call?.transactionHash) {
+        router.push(`/gmp/${d.call.transactionHash}`)
+      }
+      else {
+        setData({ ...d })
+      }
     }
     else if (tx && chains && assets && !ended) {
       const { data } = { ...await searchGMP(tx.includes('-') ? { messageId: tx } : { txHash: tx }) }
       const d = await customData(_.head(data))
 
       if (d) {
-        if (['received', 'failed'].includes(d.simplified_status) && (d.executed || d.error) && (d.refunded || d.not_to_refund)) setEnded(true)
+        if (['received', 'failed'].includes(d.simplified_status) && (d.executed || d.error) && (d.refunded || d.not_to_refund)) {
+          setEnded(true)
+        }
 
         // callback
         if (d.callback?.transactionHash) {
-          const { data } = { ...await searchGMP({ txHash: d.callback.transactionHash, txIndex: d.callback.transactionIndex, txLogIndex: d.callback.logIndex }) }
+          const { data } = { ...await searchGMP({
+            txHash: d.callback.transactionHash,
+            txIndex: d.callback.transactionIndex,
+            txLogIndex: d.callback.logIndex,
+          }) }
+
           d.callbackData = toArray(data).find(_d => equalsIgnoreCase(_d.call?.transactionHash, d.callback.transactionHash))
           d.callbackData = await customData(d.callbackData)
         }
         else if (d.executed?.transactionHash) {
           const { data } = { ...await searchGMP({ txHash: d.executed.transactionHash }) }
+
           d.callbackData = toArray(data).find(_d => equalsIgnoreCase(_d.call?.transactionHash, d.executed.transactionHash))
           d.callbackData = await customData(d.callbackData)
         }
         else if (d.callback?.messageIdHash) {
           const messageId = `${d.callback.messageIdHash}-${d.callback.messageIdIndex}`
           const { data } = { ...await searchGMP({ messageId }) }
+
           d.callbackData = toArray(data).find(_d => equalsIgnoreCase(_d.call?.returnValues?.messageId, messageId))
           d.callbackData = await customData(d.callbackData)
         }
         else if (toArray(d.executed?.childMessageIDs) > 0) {
           const { data } = { ...await searchGMP({ messageId: _.head(d.executed.childMessageIDs) }) }
+
           d.callbackData = toArray(data).find(_d => equalsIgnoreCase(_d.call?.returnValues?.messageId, _.head(d.executed.childMessageIDs)))
           d.callbackData = await customData(d.callbackData)
         }
@@ -1718,6 +1796,7 @@ export function GMP({ tx, lite }) {
         // origin
         if (d.call && (d.gas_paid_to_callback || d.is_call_from_relayer)) {
           const { data } = { ...await searchGMP(d.call.transactionHash ? { txHash: d.call.transactionHash } : { messageId: d.call.parentMessageID }) }
+
           d.originData = toArray(data).find(_d => d.call.transactionHash ?
             toArray([_d.express_executed?.transactionHash, _d.executed?.transactionHash]).findIndex(tx => equalsIgnoreCase(tx, d.call.transactionHash)) > -1 :
             toArray([_d.express_executed?.messageId, _d.executed?.messageId, _d.executed?.returnValues?.messageId]).findIndex(id => equalsIgnoreCase(id, d.call.parentMessageID)) > -1
@@ -1734,16 +1813,31 @@ export function GMP({ tx, lite }) {
           let data = []
 
           while ((!isNumber(total) || total > data.length || from < total) && i < 10) {
-            const response = { ...await searchGMP({ event: 'SquidCoralSettlementFilled', squidCoralOrderHash: d.settlement_forwarded_events.map(e => e.orderHash), from, size }) }
-            if (isNumber(response.total)) total = response.total
+            const response = { ...await searchGMP({
+              event: 'SquidCoralSettlementFilled',
+              squidCoralOrderHash: d.settlement_forwarded_events.map(e => e.orderHash),
+              from,
+              size,
+            }) }
+
+            if (isNumber(response.total)) {
+              total = response.total
+            }
+
             if (response.data) {
               data = _.uniqBy(_.concat(data, response.data), 'id')
               from = data.length
             }
-            else break
+            else {
+              break
+            }
+
             i++
           }
-          if (data.length > 0) d.settlementFilledData = data
+
+          if (data.length > 0) {
+            d.settlementFilledData = data
+          }
         }
 
         // settlement forwarded
@@ -1755,44 +1849,67 @@ export function GMP({ tx, lite }) {
           let data = []
 
           while ((!isNumber(total) || total > data.length || from < total) && i < 10) {
-            const response = { ...await searchGMP({ event: 'SquidCoralSettlementForwarded', squidCoralOrderHash: d.settlement_filled_events.map(e => e.orderHash), from, size }) }
-            if (isNumber(response.total)) total = response.total
+            const response = { ...await searchGMP({
+              event: 'SquidCoralSettlementForwarded',
+              squidCoralOrderHash: d.settlement_filled_events.map(e => e.orderHash),
+              from,
+              size,
+            }) }
+
+            if (isNumber(response.total)) {
+              total = response.total
+            }
+
             if (response.data) {
               data = _.uniqBy(_.concat(data, response.data), 'id')
               from = data.length
             }
-            else break
+            else {
+              break
+            }
+
             i++
           }
-          if (data.length > 0) d.settlementForwardedData = data
+
+          if (data.length > 0) {
+            d.settlementForwardedData = data
+          }
         }
 
         console.log('[data]', d)
         setData(d)
+
         return d
       }
     }
+
     return
   }, [tx, router, searchParams, chains, assets, ended, setData])
 
-  // setEstimatedTimeSpent
+  // set EstimatedTimeSpent
   useEffect(() => {
     const getEstimateTimeSpent = async () => {
       if (!estimatedTimeSpent && data?.call?.chain) {
-        const response = await estimateTimeSpent({ sourceChain: data.call.chain, destinationChain: data.call.returnValues?.destinationChain })
+        const response = await estimateTimeSpent({
+          sourceChain: data.call.chain,
+          destinationChain: data.call.returnValues?.destinationChain,
+        })
+
         setEstimatedTimeSpent(toArray(response).find(d => d.key === data.call.chain))
       }
     }
+
     getEstimateTimeSpent()
   }, [data, estimatedTimeSpent, setEstimatedTimeSpent])
 
-  // setExecuteData
+  // set ExecuteData
   useEffect(() => {
     const getExecuteData = async () => {
       if (!executeData && data?.call && data.approved) {
         try {
           const { call, approved, command_id } = { ...data }
           const { addresses } = { ...getAssetData(call.returnValues?.symbol, assets) }
+
           const symbol = approved.returnValues?.symbol || addresses?.[call.returnValues?.destinationChain?.toLowerCase()]?.symbol || call.returnValues?.symbol
           const commandId = approved.returnValues?.commandId || command_id
           const sourceChain = approved.returnValues?.sourceChain || getChainData(call.chain, chains)?.chain_name
@@ -1802,21 +1919,33 @@ export function GMP({ tx, lite }) {
           const amount = toBigNumber(approved.returnValues?.amount || call.returnValues?.amount)
 
           const contract = new Contract(contractAddress, IAxelarExecutable.abi, getProvider(call.returnValues?.destinationChain, chains))
-          const { data } = { ...(symbol ? await contract/*.executeWithToken*/.populateTransaction.executeWithToken(commandId, sourceChain, sourceAddress, payload, symbol, amount) : await contract/*.execute*/.populateTransaction.execute(commandId, sourceChain, sourceAddress, payload)) }
+          const { data } = { ...(symbol ?
+            await contract/*.executeWithToken*/.populateTransaction.executeWithToken(commandId, sourceChain, sourceAddress, payload, symbol, amount) :
+            await contract/*.execute*/.populateTransaction.execute(commandId, sourceChain, sourceAddress, payload)
+          ) }
+
           setExecuteData(data)
         } catch (error) {}
       }
     }
+
     getExecuteData()
   }, [data, executeData, setExecuteData])
 
-  // setEstimatedGasUsed
+  // set EstimatedGasUsed
   useEffect(() => {
     const getEstimatedGasUsed = async () => {
       if (!estimatedGasUsed && (data?.is_insufficient_fee || (data?.call && !data.gas_paid)) && !data.confirm && !data.approved && data.call?.returnValues?.destinationChain && data.call.returnValues.destinationContractAddress) {
         const { destinationChain, destinationContractAddress } = { ...data.call.returnValues }
-        const { express_executed, executed } = { ..._.head((await searchGMP({ destinationChain, destinationContractAddress, status: 'executed', size: 1 }))?.data) }
+        const { express_executed, executed } = { ..._.head((await searchGMP({
+          destinationChain,
+          destinationContractAddress,
+          status: 'executed',
+          size: 1,
+        }))?.data) }
+
         const { gasUsed } = { ...(express_executed || executed)?.receipt }
+
         setEstimatedGasUsed(gasUsed ? toNumber(gasUsed) : {
           ethereum: 400000,
           binance: 150000,
@@ -1845,31 +1974,42 @@ export function GMP({ tx, lite }) {
         }[destinationChain?.toLowerCase()] || 700000)
       }
     }
+
     getEstimatedGasUsed()
   }, [data, estimatedGasUsed, setEstimatedGasUsed])
 
+  // interval update
   useEffect(() => {
     getData()
+
     const interval = !ended && setInterval(() => getData(), 0.5 * 60 * 1000)
     return () => clearInterval(interval)
   }, [tx, searchParams, ended, setData, setEnded, getData])
 
+  // sdk
   useEffect(() => {
     try {
-      setSDK(new AxelarGMPRecoveryAPI({ environment: ENVIRONMENT, axelarRpcUrl: process.env.NEXT_PUBLIC_RPC_URL, axelarLcdUrl: process.env.NEXT_PUBLIC_LCD_URL }))
+      setSDK(new AxelarGMPRecoveryAPI({
+        environment: ENVIRONMENT,
+        axelarRpcUrl: process.env.NEXT_PUBLIC_RPC_URL,
+        axelarLcdUrl: process.env.NEXT_PUBLIC_LCD_URL,
+      }))
     } catch (error) {
       setSDK(undefined)
     }
   }, [])
 
+  // toast
   useEffect(() => {
     const { status, message, hash, chain } = { ...response }
     const chainData = getChainData(chain, chains)
 
     toast.remove()
+
     if (message) {
       if ((hash && chainData?.explorer) || status === 'failed') {
         let icon
+
         switch (status) {
           case 'success':
             icon = <PiCheckCircleFill size={20} className="text-green-600" />
@@ -1923,112 +2063,175 @@ export function GMP({ tx, lite }) {
   }, [response, chains])
 
   const addGas = async data => {
-    if (data?.call && sdk && (data.call.chain_type === 'cosmos' ? cosmosWalletStore?.signer : headString(data.call.chain) === 'sui' ? suiWalletStore?.address : headString(data.call.chain) === 'stellar' ? stellarWalletStore?.address : signer)) {
-      setProcessing(true)
-      setResponse({ status: 'pending', message: 'Adding gas...' })
-      try {
-        const { chain, chain_type, destination_chain_type, transactionHash, logIndex } = { ...data.call }
-        const { sender, destinationChain, messageId } = { ...data.call.returnValues }
-        const { base_fee, express_fee, source_token } = { ...data.fees }
+    if (data?.call && sdk) {
+      // wallet connected
+      if (data.call.chain_type === 'cosmos' ? cosmosWalletStore?.signer : headString(data.call.chain) === 'sui' ? suiWalletStore?.address : headString(data.call.chain) === 'stellar' ? stellarWalletStore?.address : signer) {
+        setProcessing(true)
+        setResponse({ status: 'pending', message: 'Adding gas...' })
 
-        // cosmos
-        const token = 'autocalculate'
-        const sendOptions = chain_type === 'cosmos' && {
-          environment: ENVIRONMENT,
-          offlineSigner: cosmosWalletStore.signer,
-          txFee: { gas: '250000', amount: [{ denom: getChainData(chain, chains)?.native_token?.denom, amount: '30000' }] },
-        }
+        try {
+          const { chain, chain_type, destination_chain_type, transactionHash, logIndex } = { ...data.call }
+          const { sender, destinationChain, messageId } = { ...data.call.returnValues }
+          const { base_fee, express_fee, source_token } = { ...data.fees }
 
-        const gasLimit = isNumber(estimatedGasUsed) ? estimatedGasUsed : 700000
-        const sourceTokenDecimals = source_token?.decimals || (headString(chain) === 'sui' ? 9 : 18)
-        const gasAddedAmount = toBigNumber(BigInt(parseUnits(base_fee + express_fee, sourceTokenDecimals)) + BigInt(parseUnits(gasLimit * source_token?.gas_price, sourceTokenDecimals)))
-        console.log('[addGas request]', { chain, destinationChain, transactionHash, logIndex, messageId, estimatedGasUsed: gasLimit, gasAddedAmount, refundAddress: headString(chain) === 'sui' ? suiWalletStore.address : headString(chain) === 'stellar' ? stellarWalletStore.address : address, token, sendOptions })
+          const gasLimit = isNumber(estimatedGasUsed) ? estimatedGasUsed : 700000
+          const decimals = source_token?.decimals || (headString(chain) === 'sui' ? 9 : 18)
+          const gasAddedAmount = toBigNumber(BigInt(parseUnits(base_fee + express_fee, decimals)) + BigInt(parseUnits(gasLimit * source_token?.gas_price, decimals)))
 
-        let response = chain_type === 'cosmos' ?
-          await sdk.addGasToCosmosChain({ txHash: transactionHash, messageId, gasLimit, chain, token, sendOptions }) :
-            headString(chain) === 'sui' ?
-              await sdk.addGasToSuiChain({ messageId, amount: gasAddedAmount, gasParams: '0x', refundAddress: suiWalletStore.address }) :
-              headString(chain) === 'stellar' ?
-                await sdk.addGasToStellarChain({ senderAddress: sender, messageId, amount: gasAddedAmount, spender: stellarWalletStore.address, contractAddress: ENVIRONMENT === 'mainnet' ? undefined : 'CB3TOUCHMEICNYVRZWBXWLYQF453RNSEQWVG7RII55GHORI3ZWQLDMRT' }) :
-                await sdk.addNativeGas(chain, transactionHash, gasLimit, { evmWalletDetails: { useWindowEthereum: true, provider, signer }, destChain: destinationChain, logIndex, refundAddress: address })
+          let response
 
-        if (headString(chain) === 'sui' && response && suiWalletStore.address) {
-          response = await signAndExecuteTransaction({
-            transaction: response,
-            chain: `sui:${ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}`,
-            options: { showEffects: true, showEvents: true, showObjectChanges: true },
-          })
-          console.log('[addGas response]', response)
+          if (chain_type === 'cosmos' && !isAxelar(chain)) {
+            const token = 'autocalculate'
+            const sendOptions = {
+              environment: ENVIRONMENT,
+              offlineSigner: cosmosWalletStore.signer,
+              txFee: { gas: '250000', amount: [{ denom: sourceChainData?.native_token?.denom, amount: '30000' }] },
+            }
 
-          setResponse({
-            status: response?.error ? 'failed' : 'success',
-            message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
-            hash: response?.digest,
-            chain,
-          })
-        }
-        else if (headString(chain) === 'stellar' && response && stellarWalletStore.provider && stellarWalletStore.network?.sorobanRpcUrl) {
-          const server = new StellarSDK.rpc.Server(stellarWalletStore.network.sorobanRpcUrl)
-          const preparedTransaction = await server.prepareTransaction(StellarSDK.TransactionBuilder.fromXDR(response, stellarWalletStore.network.network))
-          response = await stellarWalletStore.provider.signTransaction(preparedTransaction.toXDR(), stellarWalletStore.network.network)
+            console.log('[addGas request]', { chain, transactionHash, messageId, estimatedGasUsed: gasLimit, token, sendOptions })
 
-          if (response?.signedTxXdr) {
-            console.log('[stellar sendTransaction]', { ...response, network: stellarWalletStore.network })
-            response = await server.sendTransaction(StellarSDK.TransactionBuilder.fromXDR(response.signedTxXdr, stellarWalletStore.network.network))
-
-            try {
-              response.error = JSON.parse(JSON.stringify(response.errorResult))._attributes.result._switch.name
-            } catch (error) {}
+            response = await sdk.addGasToCosmosChain({
+              txHash: transactionHash,
+              messageId,
+              gasLimit,
+              chain,
+              token,
+              sendOptions,
+            })
           }
-          console.log('[addGas response]', response)
+          else if (headString(chain) === 'sui') {
+            console.log('[addGas request]', { chain, messageId, gasAddedAmount, refundAddress: suiWalletStore.address })
 
-          setResponse({
-            status: response?.error || response?.status === 'ERROR' ? 'failed' : 'success',
-            message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
-            hash: response?.hash,
-            chain,
-          })
+            response = await sdk.addGasToSuiChain({
+              messageId,
+              amount: gasAddedAmount,
+              gasParams: '0x',
+              refundAddress: suiWalletStore.address,
+            })
+          }
+          else if (headString(chain) === 'stellar') {
+            console.log('[addGas request]', { chain, messageId, gasAddedAmount, refundAddress: stellarWalletStore.address })
+
+            response = await sdk.addGasToStellarChain({
+              senderAddress: sender,
+              messageId,
+              amount: gasAddedAmount,
+              spender: stellarWalletStore.address,
+              contractAddress: ENVIRONMENT === 'mainnet' ? undefined : 'CB3TOUCHMEICNYVRZWBXWLYQF453RNSEQWVG7RII55GHORI3ZWQLDMRT',
+            })
+          }
+          else if (chain_type === 'evm' || isNumber(sourceChainData?.chain_id)) {
+            console.log('[addGas request]', { chain, destinationChain, transactionHash, logIndex, estimatedGasUsed: gasLimit, refundAddress: address })
+
+            response = await sdk.addNativeGas(chain, transactionHash, gasLimit, {
+              evmWalletDetails: {
+                useWindowEthereum: true,
+                provider,
+                signer,
+              },
+              destChain: destinationChain,
+              logIndex,
+              refundAddress: address,
+            })
+          }
+
+          if (headString(chain) === 'sui') {
+            if (response) {
+              response = await signAndExecuteTransaction({
+                transaction: response,
+                chain: `sui:${ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}`,
+                options: { showEffects: true, showEvents: true, showObjectChanges: true },
+              })
+
+              console.log('[addGas response]', response)
+
+              setResponse({
+                status: response?.error ? 'failed' : 'success',
+                message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
+                hash: response?.digest,
+                chain,
+              })
+            }
+          }
+          else if (headString(chain) === 'stellar') {
+            if (response && stellarWalletStore.provider && stellarWalletStore.network?.sorobanRpcUrl) {
+              const server = new StellarSDK.rpc.Server(stellarWalletStore.network.sorobanRpcUrl)
+
+              const preparedTransaction = await server.prepareTransaction(StellarSDK.TransactionBuilder.fromXDR(response, stellarWalletStore.network.network))
+              response = await stellarWalletStore.provider.signTransaction(preparedTransaction.toXDR(), stellarWalletStore.network.network)
+
+              if (response?.signedTxXdr) {
+                console.log('[stellar sendTransaction]', { ...response, network: stellarWalletStore.network })
+
+                try {
+                  response = await server.sendTransaction(StellarSDK.TransactionBuilder.fromXDR(response.signedTxXdr, stellarWalletStore.network.network))
+                  response.error = JSON.parse(JSON.stringify(response.errorResult))._attributes.result._switch.name
+                } catch (error) {}
+              }
+
+              console.log('[addGas response]', response)
+
+              setResponse({
+                status: response?.error || response?.status === 'ERROR' ? 'failed' : 'success',
+                message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
+                hash: response?.hash,
+                chain,
+              })
+            }
+          }
+          else {
+            console.log('[addGas response]', response)
+
+            const { success, error, transaction, broadcastResult } = { ...response }
+
+            if (success) {
+              await sleep(1 * 1000)
+            }
+
+            setResponse({
+              status: success ? 'success' : 'failed',
+              message: parseError(error)?.message || error || 'Pay gas successful',
+              hash: (chain_type === 'cosmos' ? broadcastResult : transaction)?.transactionHash,
+              chain,
+            })
+
+            if (success && !broadcastResult?.code) {
+              const _data = await getData()
+
+              if (_data && (destination_chain_type === 'cosmos' ? !data.executed && !_data.executed : !data.approved && !_data.approved)) {
+                await approve(_data, true)
+              }
+            }
+          }
+        } catch (error) {
+          setResponse({ status: 'failed', ...parseError(error) })
         }
-        else {
-          console.log('[addGas response]', response)
 
-          const { success, error, transaction, broadcastResult } = { ...response }
-          if (success) await sleep(1 * 1000)
-          setResponse({
-            status: success ? 'success' : 'failed',
-            message: parseError(error)?.message || error || 'Pay gas successful',
-            hash: (chain_type === 'cosmos' ? broadcastResult : transaction)?.transactionHash,
-            chain,
-          })
-
-          const _data = success && await getData()
-          if (_data && success && !broadcastResult?.code && (destination_chain_type === 'cosmos' ? !data.executed && !_data.executed : !data.approved && !_data.approved)) await approve(_data, true)
-        }
-      } catch (error) {
-        setResponse({ status: 'failed', ...parseError(error) })
+        setProcessing(false)
       }
-      setProcessing(false)
     }
   }
 
   const approve = async (data, afterPayGas = false) => {
     if (data?.call && sdk) {
       setProcessing(true)
-      if (!afterPayGas) setResponse({ status: 'pending', message: !data.confirm && data.call.chain_type !== 'cosmos' ? 'Confirming...' : data.call.destination_chain_type === 'cosmos' ? 'Executing...' : 'Approving...' })
+
+      if (!afterPayGas) {
+        setResponse({ status: 'pending', message: !data.confirm && data.call.chain_type !== 'cosmos' ? 'Confirming...' : data.call.destination_chain_type === 'cosmos' ? 'Executing...' : 'Approving...' })
+      }
+
       try {
-        const { destination_chain_type, transactionHash, logIndex, _logIndex } = { ...data.call }
-        let { messageId } = { ...data.call.returnValues }
-        const eventIndex = _logIndex
-        messageId = messageId || (transactionHash && isNumber(_logIndex) ? `${transactionHash}-${_logIndex}` : undefined)
+        const { destination_chain_type, transactionHash, logIndex, eventIndex, message_id } = { ...data.call }
 
-        const escapeAfterConfirm = false
-
-        console.log('[manualRelayToDestChain request]', { transactionHash, logIndex, eventIndex, escapeAfterConfirm, messageId })
-        const response = await sdk.manualRelayToDestChain(transactionHash, logIndex, eventIndex, { useWindowEthereum: true, provider, signer }, escapeAfterConfirm, messageId)
+        console.log('[manualRelayToDestChain request]', { transactionHash, logIndex, eventIndex, message_id })
+        const response = await sdk.manualRelayToDestChain(transactionHash, logIndex, eventIndex, { useWindowEthereum: true, provider, signer }, false, message_id)
         console.log('[manualRelayToDestChain response]', response)
 
         const { success, error, confirmTx, signCommandTx, routeMessageTx } = { ...response }
-        if (success) await sleep(15 * 1000)
+
+        if (success) {
+          await sleep(15 * 1000)
+        }
         if (success || !afterPayGas) {
           setResponse({
             status: success || !error ? 'success' : 'failed',
@@ -2040,6 +2243,7 @@ export function GMP({ tx, lite }) {
       } catch (error) {
         setResponse({ status: 'failed', ...parseError(error) })
       }
+
       setProcessing(false)
     }
   }
@@ -2048,6 +2252,7 @@ export function GMP({ tx, lite }) {
     if (data?.approved && sdk && signer) {
       setProcessing(true)
       setResponse({ status: 'pending', message: 'Executing...' })
+
       try {
         const { transactionHash, logIndex } = { ...data.call }
         const gasLimitBuffer = '200000'
@@ -2057,6 +2262,7 @@ export function GMP({ tx, lite }) {
         console.log('[execute response]', response)
 
         const { success, error, transaction } = { ...response }
+
         setResponse({
           status: success && transaction ? 'success' : 'failed',
           message: parseError(error)?.message || error || (transaction ? 'Execute successful' : 'Error Execution. Please see the error on console.'),
@@ -2064,70 +2270,120 @@ export function GMP({ tx, lite }) {
           chain: data.approved.chain,
         })
 
-        if (success && transaction) getData()
+        if (success && transaction) {
+          getData()
+        }
       } catch (error) {
         setResponse({ status: 'failed', ...parseError(error) })
       }
+
       setProcessing(false)
     }
   }
 
   const needSwitchChain = (id, type) => id !== (type === 'cosmos' ? cosmosWalletStore?.chainId : ['sui', 'stellar'].includes(headString(id)) ? id : chainId)
 
-  const { call, gas_paid, gas_paid_to_callback, confirm, confirm_failed, confirm_failed_event, approved, executed, error, gas, is_executed, is_insufficient_fee, is_call_from_relayer, is_invalid_destination_chain, is_invalid_call, is_invalid_gas_paid, not_enough_gas_to_execute } = { ...data }
-  const { proposal_id } = { ...call }
+  const { call, gas_paid, confirm, approved, executed, error, gas } = { ...data }
+
   const sourceChainData = getChainData(call?.chain, chains)
   const destinationChainData = getChainData(call?.returnValues?.destinationChain, chains)
 
-  const addGasButton = call && (['sui', 'stellar'].includes(headString(call.chain)) || !['vm'].includes(call.chain_type) || isNumber(sourceChainData?.chain_id)) && !isAxelar(call.chain) && !executed && !is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) && (!(gas_paid || gas_paid_to_callback) || is_insufficient_fee || is_invalid_gas_paid || not_enough_gas_to_execute || gas?.gas_remain_amount < MIN_GAS_REMAIN_AMOUNT) && (
-    <div key="addGas" className="flex items-center gap-x-1">
-      {(call.chain_type === 'cosmos' ? cosmosWalletStore?.signer : headString(call.chain) === 'sui' ? suiWalletStore?.address : headString(call.chain) === 'stellar' ? stellarWalletStore?.address : signer) && !needSwitchChain(sourceChainData?.chain_id || sourceChainData?.id, call.chain_type) && (
-        <button
-          disabled={processing}
-          onClick={() => addGas(data)}
-          className={clsx('h-6 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1', processing ? 'pointer-events-none bg-blue-400 dark:bg-blue-400' : 'bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600')}
-        >
-          {gas_paid ? 'Add' : 'Pay'}{processing ? 'ing' : ''} gas{processing ? '...' : ''}
-        </button>
-      )}
-      {call.chain_type === 'cosmos' ?
-        <CosmosWallet connectChainId={sourceChainData?.chain_id} /> :
-        headString(call.chain) === 'sui' ?
-          <SuiWallet /> :
-          headString(call.chain) === 'stellar' ?
-            <StellarWallet /> :
-            <EVMWallet connectChainId={sourceChainData?.chain_id} />
+  let addGasButton
+  let approveButton
+  let executeButton
+
+  if (call) {
+    // addGasButton
+    if (sourceChainData && !isAxelar(call.chain)) {
+      if (
+        // supported chain
+        (call.chain_type !== 'vm' || isNumber(sourceChainData.chain_id) || ['sui', 'stellar'].includes(headString(call.chain))) &&
+        // not executed / approved / not cosmos call or called more than 1 min
+        !executed && !data.is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) &&
+        // no gas paid or not enough gas
+        (!(gas_paid || data.gas_paid_to_callback) || data.is_insufficient_fee || data.is_invalid_gas_paid || data.not_enough_gas_to_execute || gas?.gas_remain_amount < 0.000001)
+      ) {
+        addGasButton = (
+          <div key="addGas" className="flex items-center gap-x-1">
+            {(call.chain_type === 'cosmos' ? cosmosWalletStore?.signer : headString(call.chain) === 'sui' ? suiWalletStore?.address : headString(call.chain) === 'stellar' ? stellarWalletStore?.address : signer) && !needSwitchChain(sourceChainData?.chain_id || sourceChainData?.id, call.chain_type) && (
+              <button
+                disabled={processing}
+                onClick={() => addGas(data)}
+                className={clsx('h-6 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1', processing ? 'pointer-events-none bg-blue-400 dark:bg-blue-400' : 'bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600')}
+              >
+                {gas_paid ? 'Add' : 'Pay'}{processing ? 'ing' : ''} gas{processing ? '...' : ''}
+              </button>
+            )}
+            {call.chain_type === 'cosmos' ?
+              <CosmosWallet connectChainId={sourceChainData?.chain_id} /> :
+              headString(call.chain) === 'sui' ?
+                <SuiWallet /> :
+                headString(call.chain) === 'stellar' ?
+                  <StellarWallet /> :
+                  <EVMWallet connectChainId={sourceChainData?.chain_id} />
+            }
+          </div>
+        )
       }
-    </div>
-  )
+    }
 
-  const finalityTime = estimatedTimeSpent?.confirm ? estimatedTimeSpent.confirm + 15 : 600
-  const approveButton = call && !['vm'].includes(call.chain_type) && !(call.destination_chain_type === 'cosmos' ? (sourceChainData?.chain_type === 'cosmos' && executed?.transactionHash) || (confirm && confirm.poll_id !== confirm_failed_event?.poll_id) : approved) && (!executed || ((error || timeDiff(executed.block_timestamp * 1000) >= 3600) && executed.axelarTransactionHash && !executed.transactionHash)) && !is_executed && (confirm || confirm_failed || timeDiff(call.block_timestamp * 1000) >= finalityTime) && timeDiff((confirm || call).block_timestamp * 1000) >= 60 && !(is_invalid_destination_chain || is_invalid_call || is_insufficient_fee || (!gas?.gas_remain_amount && !gas_paid_to_callback && !is_call_from_relayer && !proposal_id)) && (
-    <div key="approve" className="flex items-center gap-x-1">
-      <button
-        disabled={processing}
-        onClick={() => approve(data)}
-        className={clsx('h-6 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1', processing ? 'pointer-events-none bg-blue-400 dark:bg-blue-400' : 'bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600')}
-      >
-        {!confirm && !isAxelar(call.chain) && sourceChainData?.chain_type !== 'cosmos' ? 'Confirm' : sourceChainData?.chain_type === 'cosmos' ? 'Execut' : 'Approv'}{processing ? 'ing...' : !confirm && !isAxelar(call.chain) && sourceChainData?.chain_type !== 'cosmos' ? '' : 'e'}
-      </button>
-    </div>
-  )
+    // approveButton
+    const finalityTime = estimatedTimeSpent?.confirm ? estimatedTimeSpent.confirm + 15 : 600
 
-  const executeButton = call && ![call.destination_chain_type].includes('vm') && !isAxelar(call.returnValues?.destinationChain) && (call.destination_chain_type === 'cosmos' ? confirm : approved) && ((!executed?.transactionHash && !executed?.receipt?.transactionHash) || equalsIgnoreCase(executed.transactionHash, error?.transactionHash)) && !is_executed && (error || timeDiff(((call.destination_chain_type === 'cosmos' ? confirm?.block_timestamp : approved.block_timestamp) || call.block_timestamp) * 1000) >= (call.destination_chain_type === 'cosmos' ? 300 : 120)) && call.returnValues?.payload && (
-    <div key="execute" className="flex items-center gap-x-1">
-      {(call.destination_chain_type === 'cosmos' || (signer && !needSwitchChain(destinationChainData?.chain_id, call.destination_chain_type))) && (
-        <button
-          disabled={processing}
-          onClick={() => call.destination_chain_type === 'cosmos' ? approve(data) : execute(data)}
-          className={clsx('h-6 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1', processing ? 'pointer-events-none bg-blue-400 dark:bg-blue-400' : 'bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600')}
-        >
-          Execut{processing ? 'ing...' : 'e'}
-        </button>
-      )}
-      {call.destination_chain_type === 'evm' && <EVMWallet connectChainId={destinationChainData?.chain_id} />}
-    </div>
-  )
+    if (
+      // not amplifier call
+      call.chain_type !== 'vm' &&
+      // not approved
+      !(call.destination_chain_type === 'cosmos' ? (call.chain_type === 'cosmos' && executed?.transactionHash) || (confirm && confirm.poll_id !== data.confirm_failed_event?.poll_id) : approved) && !data.is_executed &&
+      // not executed / wait for IBC
+      (!executed || (executed.axelarTransactionHash && !executed.transactionHash && (error || timeDiff(executed.block_timestamp * 1000) >= 3600))) &&
+      // confirmed / confirm failed / called more than finality
+      (confirm || data.confirm_failed || timeDiff(call.block_timestamp * 1000) >= finalityTime) &&
+      // confirmed or called more than 1 min
+      timeDiff((confirm || call).block_timestamp * 1000) >= 60 &&
+      // valid call and sufficient fee / gas
+      !data.is_invalid_call && !data.is_insufficient_fee && (gas?.gas_remain_amount || data.gas_paid_to_callback || data.is_call_from_relayer || call.proposal_id)
+    ) {
+      approveButton = (
+        <div key="approve" className="flex items-center gap-x-1">
+          <button
+            disabled={processing}
+            onClick={() => approve(data)}
+            className={clsx('h-6 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1', processing ? 'pointer-events-none bg-blue-400 dark:bg-blue-400' : 'bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600')}
+          >
+            {!confirm && !isAxelar(call.chain) && sourceChainData?.chain_type !== 'cosmos' ? 'Confirm' : sourceChainData?.chain_type === 'cosmos' ? 'Execut' : 'Approv'}{processing ? 'ing...' : !confirm && !isAxelar(call.chain) && sourceChainData?.chain_type !== 'cosmos' ? '' : 'e'}
+          </button>
+        </div>
+      )
+    }
+
+    // executeButton
+    if (call.destination_chain_type !== 'vm' && !isAxelar(call.returnValues?.destinationChain) && call.returnValues?.payload) {
+      if (
+        // approved
+        (call.destination_chain_type === 'cosmos' ? confirm : approved) &&
+        // no executed txhash or the same with error txhash
+        (!executed?.transactionHash || equalsIgnoreCase(executed.transactionHash, error?.transactionHash)) && !data.is_executed &&
+        // error or confirmed / approved or called more than 5 mins for cosmos, 2 mins for evm
+        (error || timeDiff(((call.destination_chain_type === 'cosmos' ? confirm?.block_timestamp : approved.block_timestamp) || call.block_timestamp) * 1000) >= (call.destination_chain_type === 'cosmos' ? 300 : 120))
+      ) {
+        executeButton = (
+          <div key="execute" className="flex items-center gap-x-1">
+            {(call.destination_chain_type === 'cosmos' || (signer && !needSwitchChain(destinationChainData?.chain_id, call.destination_chain_type))) && (
+              <button
+                disabled={processing}
+                onClick={() => call.destination_chain_type === 'cosmos' ? approve(data) : execute(data)}
+                className={clsx('h-6 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1', processing ? 'pointer-events-none bg-blue-400 dark:bg-blue-400' : 'bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600')}
+              >
+                Execut{processing ? 'ing...' : 'e'}
+              </button>
+            )}
+            {call.destination_chain_type === 'evm' && <EVMWallet connectChainId={destinationChainData?.chain_id} />}
+          </div>
+        )
+      }
+    }
+  }
 
   return (
     <Container className="sm:mt-8">
@@ -2148,9 +2404,19 @@ export function GMP({ tx, lite }) {
           />
           {!lite && (
             <>
-              {data.originData && <Details data={{ ...data.originData, callbackData: Object.fromEntries(Object.entries(data).filter(([k, v]) => !['originData', 'callbackData'].includes(k))) }} />}
+              {data.originData && (
+                <Details data={{
+                  ...data.originData,
+                  callbackData: Object.fromEntries(Object.entries(data).filter(([k, v]) => !['originData', 'callbackData'].includes(k))),
+                }} />
+              )}
               <Details data={data} />
-              {data.callbackData && <Details data={{ ...data.callbackData, originData: Object.fromEntries(Object.entries(data).filter(([k, v]) => !['originData', 'callbackData'].includes(k))) }} />}
+              {data.callbackData && (
+                <Details data={{
+                  ...data.callbackData,
+                  originData: Object.fromEntries(Object.entries(data).filter(([k, v]) => !['originData', 'callbackData'].includes(k))),
+                }} />
+              )}
             </>
           )}
         </div>
