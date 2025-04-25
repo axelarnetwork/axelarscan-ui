@@ -23,9 +23,6 @@ module.exports = {
       '9xl': ['8rem', { lineHeight: '1' }],
     },
     extend: {
-      borderRadius: {
-        '4xl': '2rem',
-      },
       fontFamily: {
         sans: 'var(--font-inter)',
         display: 'var(--font-lexend)',
@@ -41,7 +38,6 @@ module.exports = {
         'md': '28rem',
       },
       maxWidth: {
-        '88': '22rem',
         '2xl': '40rem',
       },
     },

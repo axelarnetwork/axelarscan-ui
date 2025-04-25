@@ -30,7 +30,7 @@ import { useGlobalStore } from '@/components/Global'
 import { searchGMP } from '@/lib/api/gmp'
 import { ENVIRONMENT } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
-import { isString, equalsIgnoreCase, capitalize, toBoolean, ellipse, toTitle } from '@/lib/string'
+import { isString, equalsIgnoreCase, capitalize, toBoolean, ellipse } from '@/lib/string'
 import { isNumber } from '@/lib/number'
 import customGMPs from '@/data/custom/gmp'
 
@@ -47,10 +47,12 @@ function Filters() {
 
   const onSubmit = (e1, e2, _params) => {
     _params = _params || params
+
     if (!_.isEqual(_params, getParams(searchParams, size))) {
       router.push(`${pathname}?${getQueryString(_params)}`)
       setParams(_params)
     }
+
     setOpen(false)
   }
 
@@ -65,21 +67,52 @@ function Filters() {
     { label: 'Source Chain', name: 'sourceChain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
     { label: 'Destination Chain', name: 'destinationChain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
     { label: 'From / To Chain', name: 'chain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
-    { label: 'Asset Type', name: 'assetType', type: 'select', options: _.concat({ title: 'Any' }, [{ value: 'gateway', title: 'Gateway Token' }, { value: 'its', title: 'ITS Token' }]) },
+    { label: 'Asset Type', name: 'assetType', type: 'select', options: [
+      { title: 'Any' },
+      { value: 'gateway', title: 'Gateway Token' },
+      { value: 'its', title: 'ITS Token' },
+    ] },
     { label: 'Asset', name: 'asset', type: 'select', multiple: true, options: _.orderBy(toArray(_.concat(params.assetType !== 'its' && toArray(assets).map(d => ({ value: d.id, title: `${d.symbol} (${d.id})` })), params.assetType !== 'gateway' && toArray(itsAssets).map(d => ({ value: d.symbol, title: `${d.symbol} (ITS)` })))), ['title'], ['asc']) },
     params.assetType === 'its' && { label: 'ITS Token Address', name: 'itsTokenAddress' },
-    { label: 'Method', name: 'contractMethod', type: 'select', options: _.concat({ title: 'Any' }, [{ value: 'callContract', title: 'CallContract' }, { value: 'callContractWithToken', title: 'CallContractWithToken' }, { value: 'InterchainTransfer', title: 'InterchainTransfer' }, { value: 'InterchainTokenDeployment', title: 'InterchainTokenDeployment' }, { value: 'TokenManagerDeployment', title: 'TokenManagerDeployment' }, { value: 'SquidCoral', title: 'SquidCoral' }, { value: 'SquidCoralSettlementForwarded', title: 'SquidCoralSettlementForwarded' }, { value: 'SquidCoralSettlementFilled', title: 'SquidCoralSettlementFilled' }]) },
+    { label: 'Method', name: 'contractMethod', type: 'select', options: [
+      { title: 'Any' },
+      { value: 'callContract', title: 'CallContract' },
+      { value: 'callContractWithToken', title: 'CallContractWithToken' },
+      { value: 'InterchainTransfer', title: 'InterchainTransfer' },
+      { value: 'InterchainTokenDeployment', title: 'InterchainTokenDeployment' },
+      { value: 'TokenManagerDeployment', title: 'TokenManagerDeployment' },
+      { value: 'SquidCoral', title: 'SquidCoral' },
+      { value: 'SquidCoralSettlementForwarded', title: 'SquidCoralSettlementForwarded' },
+      { value: 'SquidCoralSettlementFilled', title: 'SquidCoralSettlementFilled' },
+    ] },
     params.contractMethod?.startsWith('SquidCoral') && { label: 'Squid Coral OrderHash', name: 'squidCoralOrderHash' },
-    { label: 'Status', name: 'status', type: 'select', options: _.concat({ title: 'Any' }, [{ value: 'called', title: 'Called' }, { value: 'confirming', title: 'Wait for Confirmation' }, { value: 'express_executed', title: 'Express Executed' }, { value: 'approving', title: 'Wait for Approval' }, { value: 'approved', title: 'Approved' }, { value: 'executing', title: 'Executing' }, { value: 'executed', title: 'Executed' }, { value: 'error', title: 'Error Execution' }, { value: 'insufficient_fee', title: 'Insufficient Fee' }, { value: 'not_enough_gas_to_execute', title: 'Not Enough Gas' }]) },
+    { label: 'Status', name: 'status', type: 'select', options: [
+      { title: 'Any' },
+      { value: 'called', title: 'Called' },
+      { value: 'confirming', title: 'Wait for Confirmation' },
+      { value: 'express_executed', title: 'Express Executed' },
+      { value: 'approving', title: 'Wait for Approval' },
+      { value: 'approved', title: 'Approved' },
+      { value: 'executing', title: 'Executing' },
+      { value: 'executed', title: 'Executed' },
+      { value: 'error', title: 'Error Execution' },
+      { value: 'insufficient_fee', title: 'Insufficient Fee' },
+      { value: 'not_enough_gas_to_execute', title: 'Not Enough Gas' },
+    ] },
     { label: 'Sender', name: 'senderAddress' },
     { label: 'Contract', name: 'contractAddress' },
     { label: 'Command ID', name: 'commandId' },
     { label: 'Time', name: 'time', type: 'datetimeRange' },
-    { label: 'Sort By', name: 'sortBy', type: 'select', options: _.concat({ title: 'Any' }, [{ value: 'time', title: 'ContractCall Time' }, { value: 'value', title: 'Token Value' }]) },
+    { label: 'Sort By', name: 'sortBy', type: 'select', options: [
+      { title: 'Any' },
+      { value: 'time', title: 'ContractCall Time' },
+      { value: 'value', title: 'Token Value' },
+    ] },
     { label: 'Proposal ID', name: 'proposalId' },
   ])
 
   const filtered = Object.keys(params).filter(k => !['from'].includes(k)).length > 0
+
   return (
     <>
       <Button
@@ -242,17 +275,16 @@ function Filters() {
 }
 
 export const getEvent = data => {
-  const { call, token_sent, token_deployment_initialized, token_deployed, token_manager_deployment_started, interchain_token_deployment_started, interchain_transfer, interchain_transfer_with_data, settlement_forwarded_events, settlement_filled_events, interchain_transfers } = { ...data }
-  if (token_sent || interchain_transfer || interchain_transfer_with_data) return 'InterchainTransfer'
-  if (token_deployment_initialized) return 'TokenDeploymentInitialized'
-  if (token_deployed) return 'TokenDeployed'
+  const { call, interchain_transfer, token_manager_deployment_started, interchain_token_deployment_started, settlement_forwarded_events, settlement_filled_events, interchain_transfers } = { ...data }
+
+  if (interchain_transfer) return 'InterchainTransfer'
   if (token_manager_deployment_started) return 'TokenManagerDeployment'
   if (interchain_token_deployment_started) return 'InterchainTokenDeployment'
   if (settlement_forwarded_events) return 'SquidCoralSettlementForwarded'
   if (settlement_filled_events || interchain_transfers) return 'SquidCoralSettlementFilled'
+
   return call?.event
 }
-export const normalizeEvent = event => event?.replace('ContractCall', 'callContract')
 
 export const customData = async data => {
   const { call, interchain_transfer, interchain_transfers } = { ...data }
@@ -265,7 +297,7 @@ export const customData = async data => {
     if (typeof customize === 'function') {
       const customValues = await customize(call.returnValues, ENVIRONMENT)
 
-      if (typeof customValues === 'object' && !Array.isArray(customValues) && Object.keys({ ...customValues }).length > 0) {
+      if (typeof customValues === 'object' && !Array.isArray(customValues) && Object.keys(customValues).length > 0) {
         customValues.projectId = id
         customValues.projectName = name || capitalize(id)
         data.customValues = customValues
@@ -291,6 +323,8 @@ export const customData = async data => {
           recipientAddress: d.recipient,
           chain: d.destinationChain,
         })),
+        projectId: 'squid',
+        projectName: 'Squid',
       }
     }
   } catch (error) {}
@@ -308,7 +342,11 @@ export function GMPs({ address }) {
 
   useEffect(() => {
     const _params = getParams(searchParams, size)
-    if (address) _params.address = address
+
+    if (address) {
+      _params.address = address
+    }
+
     if (!_.isEqual(_params, params)) {
       setParams(_params)
       setRefresh(true)
@@ -319,15 +357,25 @@ export function GMPs({ address }) {
     const getData = async () => {
       if (params && toBoolean(refresh)) {
         const sort = params.sortBy === 'value' ? { value: 'desc' } : undefined
+
         const _params = _.cloneDeep(params)
         delete _params.sortBy
 
         const response = await searchGMP({ ..._params, size, sort })
-        if (response?.data) response.data = await Promise.all(toArray(response.data).map(d => new Promise(async resolve => resolve(await customData(d)))))
-        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: { ...response } })
+
+        if (response?.data) {
+          response.data = await Promise.all(toArray(response.data).map(d => new Promise(async resolve => resolve(await customData(d)))))
+        }
+
+        setSearchResults({
+          ...(refresh ? undefined : searchResults),
+          [generateKeyFromParams(params)]: { ...response },
+        })
+
         setRefresh(false)
       }
     }
+
     getData()
   }, [params, setSearchResults, refresh, setRefresh])
 
@@ -337,6 +385,7 @@ export function GMPs({ address }) {
   }, [])
 
   const { data, total } = { ...searchResults?.[generateKeyFromParams(params)] }
+
   return (
     <Container className="sm:mt-8">
       {!data ? <Spinner /> :
@@ -388,20 +437,21 @@ export function GMPs({ address }) {
               </thead>
               <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
                 {data.map(d => {
-                  const symbol = d.call.returnValues?.symbol || d.token_sent?.symbol || d.interchain_transfer?.symbol || d.interchain_transfer_with_data?.symbol || d.token_deployed?.symbol || d.token_deployment_initialized?.tokenSymbol || d.token_manager_deployment_started?.symbol || d.interchain_token_deployment_started?.tokenSymbol
-                  const receivedTransactionHash = d.express_executed?.transactionHash || d.express_executed?.receipt?.transactionHash || d.express_executed?.receipt?.hash || d.executed?.transactionHash || d.executed?.receipt?.transactionHash || d.executed?.receipt?.hash
+                  const symbol = d.call.returnValues?.symbol || d.interchain_transfer?.symbol || d.token_manager_deployment_started?.symbol || d.interchain_token_deployment_started?.tokenSymbol
+                  const receivedTransactionHash = d.express_executed?.transactionHash || d.executed?.transactionHash
+                  const key = d.message_id || d.call.transactionHash
 
                   return (
-                    <tr key={d.call.id} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
+                    <tr key={key} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
                       <td className="pl-4 sm:pl-0 pr-3 py-4 text-left">
                         <div className="flex items-center gap-x-1">
-                          <Copy value={d.call.proposal_id && d.call.returnValues?.messageId ? d.call.returnValues.messageId : d.call.transactionHash || d.call.returnValues?.messageId}>
+                          <Copy value={key}>
                             <Link
-                              href={`/gmp/${d.call.returnValues?.messageId ? d.call.returnValues.messageId : `${d.call.chain_type === 'cosmos' && isNumber(d.call.messageIdIndex) ? d.call.axelarTransactionHash : d.call.transactionHash}${d.call.chain_type === 'evm' && d.call.receipt ? isNumber(d.call._logIndex) ? `-${d.call._logIndex}` : isNumber(d.call.logIndex) ? `:${d.call.logIndex}` : '' : d.call.chain_type === 'cosmos' && isNumber(d.call.messageIdIndex) ? `-${d.call.messageIdIndex}` : ''}`}`}
+                              href={`/gmp/${d.message_id ? d.message_id : `${d.call.chain_type === 'cosmos' && isNumber(d.call.messageIdIndex) ? d.call.axelarTransactionHash : d.call.transactionHash}${isNumber(d.call.logIndex) ? `:${d.call.logIndex}` : d.call.chain_type === 'cosmos' && isNumber(d.call.messageIdIndex) ? `-${d.call.messageIdIndex}` : ''}`}`}
                               target="_blank"
                               className="text-blue-600 dark:text-blue-500 font-semibold"
                             >
-                              {ellipse(d.call.proposal_id && d.call.returnValues?.messageId ? d.call.returnValues.messageId : d.call.transactionHash || d.call.returnValues?.messageId, 4, '0x')}
+                              {ellipse(key, 8)}
                             </Link>
                           </Copy>
                           {!d.call.proposal_id && <ExplorerLink value={d.call.transactionHash} chain={d.call.chain} />}
@@ -410,7 +460,7 @@ export function GMPs({ address }) {
                       <td className="px-3 py-4 text-left">
                         <div className="flex flex-col gap-y-1.5">
                           <Tag className={clsx('w-fit capitalize')}>
-                            {toTitle(normalizeEvent(getEvent(d)))}
+                            {getEvent(d)}
                           </Tag>
                           {symbol && (
                             <AssetProfile
@@ -502,7 +552,10 @@ export function GMPs({ address }) {
                               </Tooltip>
                               {d.customValues?.recipientAddress && (
                                 <Tooltip content={`${d.customValues.projectName ? d.customValues.projectName : 'Final User'} Recipient`} parentClassName="!justify-start">
-                                  <Profile address={d.customValues.recipientAddress} chain={d.customValues.destinationChain || d.call.returnValues?.destinationChain} />
+                                  <Profile
+                                    address={d.customValues.recipientAddress}
+                                    chain={d.customValues.destinationChain || d.call.returnValues?.destinationChain}
+                                  />
                                 </Tooltip>
                               )}
                             </>
@@ -513,10 +566,10 @@ export function GMPs({ address }) {
                         <div className="flex flex-col gap-y-1.5">
                           {d.simplified_status && (
                             <div className="flex items-center space-x-1.5">
-                              <Tag className={clsx('w-fit capitalize', ['received'].includes(d.simplified_status) ? 'bg-green-600 dark:bg-green-500' : ['approved'].includes(d.simplified_status) ? 'bg-orange-500 dark:bg-orange-600' : ['failed'].includes(d.simplified_status) ? 'bg-red-600 dark:bg-red-500' : 'bg-yellow-400 dark:bg-yellow-500')}>
+                              <Tag className={clsx('w-fit capitalize', d.simplified_status === 'received' ? 'bg-green-600 dark:bg-green-500' : d.simplified_status === 'approved' ? 'bg-orange-500 dark:bg-orange-600' : d.simplified_status === 'failed' ? 'bg-red-600 dark:bg-red-500' : 'bg-yellow-400 dark:bg-yellow-500')}>
                                 {d.simplified_status === 'received' && getEvent(d) === 'ContractCall' ? 'Executed' : d.simplified_status}
                               </Tag>
-                              {['received'].includes(d.simplified_status) && <ExplorerLink value={receivedTransactionHash} chain={d.call.returnValues?.destinationChain} />}
+                              {d.simplified_status === 'received' && <ExplorerLink value={receivedTransactionHash} chain={d.call.returnValues?.destinationChain} />}
                             </div>
                           )}
                           {d.is_insufficient_fee && (
@@ -534,13 +587,21 @@ export function GMPs({ address }) {
                           {d.time_spent?.call_express_executed > 0 && ['express_executed', 'executed'].includes(d.status) && (
                             <div className="flex items-center text-green-600 dark:text-green-500 gap-x-1">
                               <RiTimerFlashLine size={16} />
-                              <TimeSpent fromTimestamp={0} toTimestamp={d.time_spent.call_express_executed * 1000} className="text-xs" />
+                              <TimeSpent
+                                fromTimestamp={0}
+                                toTimestamp={d.time_spent.call_express_executed * 1000}
+                                className="text-xs"
+                              />
                             </div>
                           )}
-                          {d.time_spent?.total > 0 && ['executed'].includes(d.status) && (
+                          {d.time_spent?.total > 0 && d.status === 'executed' && (
                             <div className="flex items-center text-zinc-400 dark:text-zinc-500 gap-x-1">
                               <MdOutlineTimer size={16} />
-                              <TimeSpent fromTimestamp={0} toTimestamp={d.time_spent.total * 1000} className="text-xs" />
+                              <TimeSpent
+                                fromTimestamp={0}
+                                toTimestamp={d.time_spent.total * 1000}
+                                className="text-xs"
+                              />
                             </div>
                           )}
                         </div>
