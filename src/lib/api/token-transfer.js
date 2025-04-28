@@ -7,8 +7,6 @@ export const searchTransfers = async params => await request('searchTransfers', 
 export const transfersStats = async params => await request('transfersStats', params)
 export const transfersChart = async params => await request('transfersChart', params)
 export const transfersTotalVolume = async params => await request('transfersTotalVolume', params)
-export const transfersTotalFee = async params => await request('transfersTotalFee', params)
-export const transfersTotalActiveUsers = async params => await request('transfersTotalActiveUsers', params)
 export const transfersTopUsers = async params => await request('transfersTopUsers', params)
 export const searchDepositAddresses = async params => await request('searchDepositAddresses', params)
 export const searchBatches = async params => await request('searchBatches', params)
