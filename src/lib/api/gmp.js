@@ -11,8 +11,6 @@ export const GMPStatsByChains = async params => await request('GMPStatsByChains'
 export const GMPStatsByContracts = async params => await request('GMPStatsByContracts', params)
 export const GMPChart = async params => await request('GMPChart', params)
 export const GMPTotalVolume = async params => await request('GMPTotalVolume', params)
-export const GMPTotalFee = async params => await request('GMPTotalFee', params)
-export const GMPTotalActiveUsers = async params => await request('GMPTotalActiveUsers', params)
 export const GMPTopUsers = async params => await request('GMPTopUsers', params)
 export const GMPTopITSAssets = async params => await request('GMPTopITSAssets', params)
 export const estimateTimeSpent = async params => await request('estimateTimeSpent', params)
