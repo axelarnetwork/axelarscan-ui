@@ -39,7 +39,7 @@ const navigations = [
       { title: 'External Chain Polls', href: '/evm-polls' },
       { title: 'External Chain Signings', href: '/evm-batches' },
       { title: 'Proposals', href: '/proposals' },
-    ]),
+    ],
   },
   ENVIRONMENT === 'mainnet' && { title: 'TVL', href: '/tvl' },
   {
