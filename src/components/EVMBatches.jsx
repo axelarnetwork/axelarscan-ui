@@ -25,7 +25,7 @@ import { TimeAgo } from '@/components/Time'
 import { getParams, getQueryString, Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
 import { searchBatches } from '@/lib/api/token-transfer'
-import { ENVIRONMENT, ENABLE_AMPLIFIER_DISPLAY, getChainData, getAssetData } from '@/lib/config'
+import { ENVIRONMENT, getChainData, getAssetData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
 import { equalsIgnoreCase, capitalize, toBoolean, ellipse } from '@/lib/string'
 import { toNumber, formatUnits } from '@/lib/number'
@@ -274,14 +274,10 @@ export function EVMBatches() {
             <div className="sm:flex-auto">
               <div className="flex items-center space-x-2">
                 <h1 className="underline text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">EVM Batches</h1>
-                {ENABLE_AMPLIFIER_DISPLAY && (
-                  <>
-                    <span className="text-zinc-400 dark:text-zinc-500">|</span>
-                    <Link href="/amplifier-proofs" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
-                      Amplifier Proofs
-                    </Link>
-                  </>
-                )}
+                <span className="text-zinc-400 dark:text-zinc-500">|</span>
+                <Link href="/amplifier-proofs" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
+                  Amplifier Proofs
+                </Link>
               </div>
               <p className="mt-2 text-zinc-400 dark:text-zinc-500 text-sm">
                 <Number value={total} suffix={` result${total > 1 ? 's' : ''}`} /> 

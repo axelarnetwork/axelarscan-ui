@@ -26,9 +26,8 @@ import { searchTransactions, getTransactions } from '@/lib/api/validator'
 import { searchDepositAddresses } from '@/lib/api/token-transfer'
 import { axelarContracts, getChainData, getAssetData } from '@/lib/config'
 import { getIcapAddress, getInputType, toJson, toHex, split, toArray } from '@/lib/parser'
-import { includesStringList } from '@/lib/operator'
 import { getAttributeValue } from '@/lib/cosmos'
-import { isString, equalsIgnoreCase, capitalize, camel, removeDoubleQuote, toBoolean, lastString, ellipse } from '@/lib/string'
+import { isString, equalsIgnoreCase, capitalize, camel, removeDoubleQuote, toBoolean, lastString, includesSomePatterns, ellipse } from '@/lib/string'
 import { isNumber, toNumber, formatUnits } from '@/lib/number'
 
 const size = 25
@@ -259,7 +258,7 @@ export const getActivities = (data, assets) => {
   if (!messages) return
 
   let result
-  if (includesStringList(messages.map(d => d['@type']), ['MsgSend', 'MsgTransfer', 'RetryIBCTransferRequest', 'RouteIBCTransfersRequest', 'MsgUpdateClient', 'MsgAcknowledgement', 'SignCommands'])) {
+  if (includesSomePatterns(messages.map(d => d['@type']), ['MsgSend', 'MsgTransfer', 'RetryIBCTransferRequest', 'RouteIBCTransfersRequest', 'MsgUpdateClient', 'MsgAcknowledgement', 'SignCommands'])) {
     result = toArray(messages.flatMap(d => {
       let { sender, recipient, amount, source_channel, destination_channel, timeout_timestamp } = { ...d }
       sender = d.from_address || d.signer || sender
@@ -294,7 +293,7 @@ export const getActivities = (data, assets) => {
       )
     }))
   }
-  else if (includesStringList(messages.flatMap(d => toArray([d['@type'], d.inner_message?.['@type']])), ['ConfirmDeposit', 'ConfirmTokenRequest', 'ConfirmGatewayTx', 'ConfirmTransferKey', 'VoteRequest'])) {
+  else if (includesSomePatterns(messages.flatMap(d => toArray([d['@type'], d.inner_message?.['@type']])), ['ConfirmDeposit', 'ConfirmTokenRequest', 'ConfirmGatewayTx', 'ConfirmTransferKey', 'VoteRequest'])) {
     result = toArray(messages.flatMap(d => {
       let { chain, asset, tx_id, status } = { ...d }
       const { poll_id, vote } = { ...d.inner_message }
@@ -435,8 +434,8 @@ export const getActivities = (data, assets) => {
 
       const delegateEventTypes = ['delegate', 'unbond']
       const transferEventTypes = ['transfer']
-      return includesStringList(events.map(e => e.type), delegateEventTypes) ? events.filter(e => delegateEventTypes.includes(e.type)) :
-        includesStringList(events.map(e => e.type), transferEventTypes) ? events.filter(e => transferEventTypes.includes(e.type)) :
+      return includesSomePatterns(events.map(e => e.type), delegateEventTypes) ? events.filter(e => delegateEventTypes.includes(e.type)) :
+        includesSomePatterns(events.map(e => e.type), transferEventTypes) ? events.filter(e => transferEventTypes.includes(e.type)) :
         _.assign.apply(_, events)
     })
   }
@@ -716,7 +715,7 @@ export function Transactions({ height, address }) {
                     </td>
                     {!!address && (
                       <td className="px-3 py-4 text-left">
-                        {!includesStringList(d.type, ['HeartBeat', 'SubmitSignature', 'SubmitPubKey']) && (
+                        {!includesSomePatterns(d.type, ['HeartBeat', 'SubmitSignature', 'SubmitPubKey']) && (
                           <div className="flex flex-col gap-y-0.5">
                             {toArray(d.recipient).map((a, j) => <Profile key={j} i={j} address={a} />)}
                           </div>

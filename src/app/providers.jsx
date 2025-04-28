@@ -25,16 +25,21 @@ function ThemeWatcher() {
 
     function onMediaChange() {
       const systemTheme = media.matches ? 'dark' : 'light'
-      if (resolvedTheme === systemTheme) setTheme('system')
+
+      if (resolvedTheme === systemTheme) {
+        setTheme('system')
+      }
+
       setThemeMode(resolvedTheme)
     }
 
     onMediaChange()
+
     media.addEventListener('change', onMediaChange)
     return () => media.removeEventListener('change', onMediaChange)
   }, [resolvedTheme, setTheme, setThemeMode])
 
-  return null
+  return
 }
 
 export function Providers({ children }) {

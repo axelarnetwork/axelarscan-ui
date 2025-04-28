@@ -22,8 +22,7 @@ import { useGlobalStore } from '@/components/Global'
 import { getTransaction } from '@/lib/api/validator'
 import { getChainData, getAssetData } from '@/lib/config'
 import { base64ToString, toHex, toJson, split, toArray } from '@/lib/parser'
-import { includesStringList } from '@/lib/operator'
-import { isString, capitalize, ellipse, toTitle } from '@/lib/string'
+import { isString, capitalize, includesSomePatterns, ellipse, toTitle } from '@/lib/string'
 import { isNumber, formatUnits } from '@/lib/number'
 
 const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'
@@ -205,8 +204,8 @@ function Data({ data }) {
                 const recipientChainData = getChainData(recipient_chain, chains)
                 const depositAddressChainData = getChainData(deposit_address_chain, chains)
 
-                const senderValidatorData = toArray(validators).find(v => includesStringList(d.sender, [v.operator_address, v.broadcaster_address]))
-                const recipientValidatorData = toArray(validators).find(v => includesStringList(d.recipient, [v.operator_address, v.broadcaster_address]))
+                const senderValidatorData = toArray(validators).find(v => includesSomePatterns(d.sender, [v.operator_address, v.broadcaster_address]))
+                const recipientValidatorData = toArray(validators).find(v => includesSomePatterns(d.recipient, [v.operator_address, v.broadcaster_address]))
 
                 const tokenData = addresses?.[chainData?.id]
                 symbol = tokenData?.symbol || d.asset_data?.symbol || symbol

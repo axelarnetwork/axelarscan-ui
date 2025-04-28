@@ -17,7 +17,7 @@ export const getValidatorsVotes = async params => await request('getValidatorsVo
 export const searchUptimes = async params => await request('searchUptimes', params)
 export const searchProposedBlocks = async params => await request('searchProposedBlocks', params)
 export const searchHeartbeats = async params => await request('searchHeartbeats', params)
-export const searchPolls = async params => await request('searchPolls', params)
+export const searchEVMPolls = async params => await request('searchEVMPolls', params)
 export const searchVMPolls = async params => await request('searchVMPolls', params)
 export const searchVMProofs = async params => await request('searchVMProofs', params)
 export const getChainMaintainers = async params => await request('getChainMaintainers', params)

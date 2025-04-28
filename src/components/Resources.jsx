@@ -17,17 +17,16 @@ import { Tag } from '@/components/Tag'
 import { AddMetamask } from '@/components/Metamask'
 import { ValueBox } from '@/components/ValueBox'
 import { useGlobalStore } from '@/components/Global'
-import { ENABLE_AMPLIFIER_DISPLAY, getChainData } from '@/lib/config'
+import { getChainData } from '@/lib/config'
 import { getIBCDenomBase64, split, toArray } from '@/lib/parser'
-import { includesStringList } from '@/lib/operator'
-import { equalsIgnoreCase, ellipse } from '@/lib/string'
+import { equalsIgnoreCase, includesSomePatterns, ellipse } from '@/lib/string'
 
-const chainTypes = toArray([
+const chainTypes = [
   { label: 'All', value: undefined },
   { label: 'EVM', value: 'evm' },
   { label: 'Cosmos', value: 'cosmos' },
-  ENABLE_AMPLIFIER_DISPLAY && { label: 'Amplifier', value: 'vm' },
-])
+  { label: 'Amplifier', value: 'vm' },
+]
 
 const assetTypes = [
   { label: 'All', value: undefined },
@@ -331,11 +330,11 @@ export function Resources({ resource }) {
 
     switch (resource) {
       case 'chains':
-        return toArray(chains).filter(d => (!type || d.chain_type === type) && (!chain || equalsIgnoreCase(d.id, chain))).filter(d => !d.no_inflation || d.deprecated).filter(d => !input || includesStringList(_.uniq(toArray(['id', 'chain_id', 'chain_name', 'name'].map(f => d[f]?.toString()), { toCase: 'lower' })), words))
+        return toArray(chains).filter(d => (!type || d.chain_type === type) && (!chain || equalsIgnoreCase(d.id, chain))).filter(d => !d.no_inflation || d.deprecated).filter(d => !input || includesSomePatterns(_.uniq(toArray(['id', 'chain_id', 'chain_name', 'name'].map(f => d[f]?.toString()), { toCase: 'lower' })), words))
       case 'assets':
         return _.concat(
-          toArray(!type || type === 'gateway' ? assets : []).filter(d => !chain || d.addresses?.[chain]).filter(d => !input || includesStringList(_.uniq(toArray(_.concat(['denom', 'name', 'symbol'].map(f => d[f]), d.denoms, Object.values({ ...d.addresses }).flatMap(a => toArray([!equalsIgnoreCase(input, 'axl') && a.symbol, a.address, a.ibc_denom]))), { toCase: 'lower' })), words)),
-          toArray(!type || type === 'its' ? itsAssets : []).filter(d => !chain || d.chains?.[chain]).filter(d => !input || includesStringList(_.uniq(toArray(_.concat(['name', 'symbol'].map(f => d[f]), Object.values({ ...d.chains }).flatMap(a => toArray([!equalsIgnoreCase(input, 'axl') && a.symbol, a.tokenAddress]))), { toCase: 'lower' })), words)).map(d => ({ ...d, type: 'its' })),
+          toArray(!type || type === 'gateway' ? assets : []).filter(d => !chain || d.addresses?.[chain]).filter(d => !input || includesSomePatterns(_.uniq(toArray(_.concat(['denom', 'name', 'symbol'].map(f => d[f]), d.denoms, Object.values({ ...d.addresses }).flatMap(a => toArray([!equalsIgnoreCase(input, 'axl') && a.symbol, a.address, a.ibc_denom]))), { toCase: 'lower' })), words)),
+          toArray(!type || type === 'its' ? itsAssets : []).filter(d => !chain || d.chains?.[chain]).filter(d => !input || includesSomePatterns(_.uniq(toArray(_.concat(['name', 'symbol'].map(f => d[f]), Object.values({ ...d.chains }).flatMap(a => toArray([!equalsIgnoreCase(input, 'axl') && a.symbol, a.tokenAddress]))), { toCase: 'lower' })), words)).map(d => ({ ...d, type: 'its' })),
         )
       default:
         return null
