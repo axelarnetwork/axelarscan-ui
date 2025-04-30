@@ -35,12 +35,12 @@ import { searchGMP, estimateTimeSpent } from '@/lib/api/gmp'
 import { isAxelar } from '@/lib/chain'
 import { getProvider } from '@/lib/chain/evm'
 import { ENVIRONMENT, getChainData, getAssetData } from '@/lib/config'
-import { split, toArray, parseError } from '@/lib/parser'
+import { toCase, split, toArray, parseError } from '@/lib/parser'
 import { sleep } from '@/lib/operator'
 import { isString, equalsIgnoreCase, headString, ellipse, toTitle } from '@/lib/string'
 import { isNumber, toNumber, toBigNumber, parseUnits, numberFormat } from '@/lib/number'
 import { timeDiff } from '@/lib/time'
-import IAxelarExecutable from '@/data/contract/interfaces/gmp/IAxelarExecutable.json'
+import IAxelarExecutable from '@/data/interfaces/gmp/IAxelarExecutable.json'
 
 export function getStep(data, chains) {
   const { call, gas_paid, gas_paid_to_callback, express_executed, confirm, confirm_failed, confirm_failed_event, approved, executed, error, refunded, is_executed, is_invalid_call, originData } = { ...data }
@@ -138,7 +138,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
   const payload = call?.returnValues?.payload
   const version = call?.destination_chain_type === 'cosmos' && payload ? toBigNumber(payload.substring(0, 10)) : undefined
   const sourceSymbol = call?.returnValues?.symbol
-  const destinationSymbol = approved?.returnValues?.symbol || addresses?.[destinationChain?.toLowerCase()]?.symbol || sourceSymbol
+  const destinationSymbol = approved?.returnValues?.symbol || addresses?.[toCase(destinationChain, 'lower')]?.symbol || sourceSymbol
   const amountInUnits = approved?.returnValues?.amount || call?.returnValues?.amount
 
   const gasData = data.originData?.gas || gas
@@ -1910,7 +1910,7 @@ export function GMP({ tx, lite }) {
           const { call, approved, command_id } = { ...data }
           const { addresses } = { ...getAssetData(call.returnValues?.symbol, assets) }
 
-          const symbol = approved.returnValues?.symbol || addresses?.[call.returnValues?.destinationChain?.toLowerCase()]?.symbol || call.returnValues?.symbol
+          const symbol = approved.returnValues?.symbol || addresses?.[toCase(call.returnValues?.destinationChain, 'lower')]?.symbol || call.returnValues?.symbol
           const commandId = approved.returnValues?.commandId || command_id
           const sourceChain = approved.returnValues?.sourceChain || getChainData(call.chain, chains)?.chain_name
           const sourceAddress = approved.returnValues?.sourceAddress || call.returnValues?.sender
@@ -1971,7 +1971,7 @@ export function GMP({ tx, lite }) {
           'centrifuge-2': 1000000,
           scroll: 500000,
           fraxtal: 400000,
-        }[destinationChain?.toLowerCase()] || 700000)
+        }[toCase(destinationChain, 'lower')] || 700000)
       }
     }
 

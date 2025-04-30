@@ -14,9 +14,7 @@ import { useGlobalStore } from '@/components/Global'
 import { searchGMP } from '@/lib/api/gmp'
 import { searchTransfers } from '@/lib/api/token-transfer'
 import { getENS } from '@/lib/api/name-services/ens'
-import { getLENS } from '@/lib/api/name-services/lens'
 import { getSpaceID } from '@/lib/api/name-services/spaceid'
-import { getUnstoppable } from '@/lib/api/name-services/unstoppable'
 import { getSlug } from '@/lib/navigation'
 import { getITSAssetData } from '@/lib/config'
 import { getInputType, split, toArray } from '@/lib/parser'
@@ -30,7 +28,7 @@ export function Search() {
   const [searching, setSearching] = useState(false)
   const { handleSubmit } = useForm()
   const { chains, itsAssets } = useGlobalStore()
-  const { ens, lens, spaceID, unstoppable, setENS, setLENS, setSpaceID, setUnstoppable } = useNameServicesStore()
+  const { ens, spaceID, setENS, setSpaceID } = useNameServicesStore()
 
   const onSubmit = async () => {
     let _input = input
@@ -39,27 +37,16 @@ export function Search() {
     if (type) {
       setSearching(true)
       const { resolvedAddress } = { ...Object.values({ ...ens }).find(v => equalsIgnoreCase(v.name, _input)) }
-      const { ownedBy } = { ...Object.values({ ...lens }).find(v => equalsIgnoreCase(v.handle, _input)) }
       const spaceIDDomain = Object.values({ ...spaceID }).find(v => equalsIgnoreCase(v.name, _input))
-      const { owner } = { ...Object.values({ ...unstoppable }).find(v => equalsIgnoreCase(v.name, _input)) }
 
       if (resolvedAddress) {
         const { id } = { ...resolvedAddress }
         _input = id
         type = 'address'
       }
-      else if (ownedBy) {
-        _input = ownedBy
-        type = 'address'
-      }
       else if (spaceIDDomain) {
         const { address } = { ...spaceIDDomain }
         _input = address
-        type = 'address'
-      }
-      else if (owner) {
-        const { id } = { ...owner }
-        _input = id
         type = 'address'
       }
       else if (type === 'domainName') {
@@ -80,20 +67,14 @@ export function Search() {
       }
 
       if (_input && type === 'address') {
-        await Promise.all(['ens', 'lens', 'spaceid', 'unstoppable'].map(k => new Promise(async resolve => {
+        await Promise.all(['ens', 'spaceid'].map(k => new Promise(async resolve => {
           const addresses = toArray(_input, { toCase: 'lower' })
           switch (k) {
             case 'ens':
               setENS(await getENS(addresses.filter(a => !ens?.[a])))
               break
-            case 'lens':
-              setLENS(await getLENS(addresses.filter(a => !lens?.[a])))
-              break
             case 'spaceid':
               setSpaceID(await getSpaceID(addresses.filter(a => !spaceID?.[a]), undefined, chains))
-              break
-            case 'unstoppable':
-              setUnstoppable(await getUnstoppable(addresses.filter(a => !unstoppable?.[a])))
               break
             default:
               break
