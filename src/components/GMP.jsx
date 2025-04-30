@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { AxelarGMPRecoveryAPI } from '@axelar-network/axelarjs-sdk'
-import { useSignAndExecuteTransaction } from '@mysten/dapp-kit'
+import { useSignAndExecuteTransaction as useSuiSignAndExecuteTransaction } from '@mysten/dapp-kit'
 import * as StellarSDK from '@stellar/stellar-sdk'
 import { Contract } from 'ethers'
 import clsx from 'clsx'
@@ -27,7 +27,7 @@ import { Number } from '@/components/Number'
 import { Profile, ChainProfile, AssetProfile } from '@/components/Profile'
 import { TimeAgo, TimeSpent, TimeUntil } from '@/components/Time'
 import { ExplorerLink } from '@/components/ExplorerLink'
-import { useEVMWalletStore, EVMWallet, useCosmosWalletStore, CosmosWallet, useSuiWalletStore, SuiWallet, useStellarWalletStore, StellarWallet } from '@/components/Wallet'
+import { useEVMWalletStore, EVMWallet, useCosmosWalletStore, CosmosWallet, useSuiWalletStore, SuiWallet, useStellarWalletStore, StellarWallet, useXRPLWalletStore, XRPLWallet } from '@/components/Wallet'
 import { getParams } from '@/components/Pagination'
 import { getEvent, customData } from '@/components/GMPs'
 import { useGlobalStore } from '@/components/Global'
@@ -1737,7 +1737,8 @@ export function GMP({ tx, lite }) {
   const cosmosWalletStore = useCosmosWalletStore()
   const suiWalletStore = useSuiWalletStore()
   const stellarWalletStore = useStellarWalletStore()
-  const { mutateAsync: signAndExecuteTransaction } = useSignAndExecuteTransaction()
+  const xrplWalletStore = useXRPLWalletStore()
+  const { mutateAsync: suiSignAndExecuteTransaction } = useSuiSignAndExecuteTransaction()
 
   const getData = useCallback(async () => {
     const { commandId } = { ...getParams(searchParams) }
@@ -2062,156 +2063,234 @@ export function GMP({ tx, lite }) {
     }
   }, [response, chains])
 
+  const isChainSupportedAddGas = (chain, chainType) => {
+    // evm / cosmos
+    if (chainType !== 'vm') return true
+
+    // amplifier chain that actually evm chain
+    if (isNumber(getChainData(chain, chains)?.chain_id)) return true
+
+    // amplifier chains that already custom addGas function
+    return ['sui', 'stellar', 'xrpl'].includes(headString(chain))
+  }
+
+  const isWalletConnected = (chain, chainType) => {
+    // cosmos
+    if (chainType === 'cosmos') return !!cosmosWalletStore?.signer
+
+    // evm / evm amplifier
+    if (isNumber(getChainData(chain, chains)?.chain_id)) return !!signer
+
+    chain = headString(chain)
+    if (chain === 'sui') return !!suiWalletStore?.address
+    if (chain === 'stellar') return !!stellarWalletStore?.address
+    if (chain === 'xrpl') return !!xrplWalletStore?.address
+
+    return
+  }
+
+  const getWalletComponent = (chain, chainType) => {
+    const { chain_id } = { ...getChainData(chain, chains) }
+
+    // cosmos
+    if (chainType === 'cosmos') return <CosmosWallet connectChainId={chain_id} />
+
+    // evm / evm amplifier
+    if (isNumber(chain_id)) return <EVMWallet connectChainId={chain_id} />
+
+    chain = headString(chain)
+    if (chain === 'sui') return <SuiWallet />
+    if (chain === 'stellar') return <StellarWallet />
+    if (chain === 'xrpl') return <XRPLWallet />
+
+    return
+  }
+
+  const needSwitchChain = (id, chainType) => id !== (chainType === 'cosmos' ? cosmosWalletStore?.chainId : isNumber(id) ? chainId : id)
+
+  // addNativeGas for evm, addGasToCosmosChain for cosmos, amplifier (addGasToSuiChain, addGasToStellarChain, addGasToXrplChain)
   const addGas = async data => {
-    if (data?.call && sdk) {
-      // wallet connected
-      if (data.call.chain_type === 'cosmos' ? cosmosWalletStore?.signer : headString(data.call.chain) === 'sui' ? suiWalletStore?.address : headString(data.call.chain) === 'stellar' ? stellarWalletStore?.address : signer) {
-        setProcessing(true)
-        setResponse({ status: 'pending', message: 'Adding gas...' })
+    if (data?.call && sdk && isWalletConnected(data.call.chain, data.call.chain_type)) {
+      setProcessing(true)
+      setResponse({ status: 'pending', message: 'Adding gas...' })
 
-        try {
-          const { chain, chain_type, destination_chain_type, transactionHash, logIndex } = { ...data.call }
-          const { sender, destinationChain, messageId } = { ...data.call.returnValues }
-          const { base_fee, express_fee, source_token } = { ...data.fees }
+      try {
+        const { chain, chain_type, destination_chain_type, transactionHash, logIndex } = { ...data.call }
+        const { sender, destinationChain, messageId } = { ...data.call.returnValues }
+        const { base_fee, express_fee, source_token } = { ...data.fees }
 
-          const gasLimit = isNumber(estimatedGasUsed) ? estimatedGasUsed : 700000
-          const decimals = source_token?.decimals || (headString(chain) === 'sui' ? 9 : 18)
-          const gasAddedAmount = toBigNumber(BigInt(parseUnits(base_fee + express_fee, decimals)) + BigInt(parseUnits(gasLimit * source_token?.gas_price, decimals)))
+        const gasLimit = isNumber(estimatedGasUsed) ? estimatedGasUsed : 700000
+        const decimals = source_token?.decimals || (headString(chain) === 'sui' ? 9 : 18)
+        const gasAddedAmount = toBigNumber(BigInt(parseUnits(base_fee + express_fee, decimals)) + BigInt(parseUnits(gasLimit * source_token?.gas_price, decimals)))
 
-          let response
+        if (chain_type === 'evm' || isNumber(sourceChainData?.chain_id)) {
+          console.log('[addGas request]', { chain, destinationChain, transactionHash, logIndex, estimatedGasUsed: gasLimit, refundAddress: address })
 
-          if (chain_type === 'cosmos' && !isAxelar(chain)) {
-            const token = 'autocalculate'
-            const sendOptions = {
-              environment: ENVIRONMENT,
-              offlineSigner: cosmosWalletStore.signer,
-              txFee: { gas: '250000', amount: [{ denom: sourceChainData?.native_token?.denom, amount: '30000' }] },
-            }
+          const response = await sdk.addNativeGas(chain, transactionHash, gasLimit, {
+            evmWalletDetails: {
+              useWindowEthereum: true,
+              provider,
+              signer,
+            },
+            destChain: destinationChain,
+            logIndex,
+            refundAddress: address,
+          })
 
-            console.log('[addGas request]', { chain, transactionHash, messageId, estimatedGasUsed: gasLimit, token, sendOptions })
+          console.log('[addGas response]', response)
 
-            response = await sdk.addGasToCosmosChain({
-              txHash: transactionHash,
-              messageId,
-              gasLimit,
-              chain,
-              token,
-              sendOptions,
-            })
-          }
-          else if (headString(chain) === 'sui') {
-            console.log('[addGas request]', { chain, messageId, gasAddedAmount, refundAddress: suiWalletStore.address })
+          const { success, error, transaction } = { ...response }
 
-            response = await sdk.addGasToSuiChain({
-              messageId,
-              amount: gasAddedAmount,
-              gasParams: '0x',
-              refundAddress: suiWalletStore.address,
-            })
-          }
-          else if (headString(chain) === 'stellar') {
-            console.log('[addGas request]', { chain, messageId, gasAddedAmount, refundAddress: stellarWalletStore.address })
-
-            response = await sdk.addGasToStellarChain({
-              senderAddress: sender,
-              messageId,
-              amount: gasAddedAmount,
-              spender: stellarWalletStore.address,
-              contractAddress: ENVIRONMENT === 'mainnet' ? undefined : 'CB3TOUCHMEICNYVRZWBXWLYQF453RNSEQWVG7RII55GHORI3ZWQLDMRT',
-            })
-          }
-          else if (chain_type === 'evm' || isNumber(sourceChainData?.chain_id)) {
-            console.log('[addGas request]', { chain, destinationChain, transactionHash, logIndex, estimatedGasUsed: gasLimit, refundAddress: address })
-
-            response = await sdk.addNativeGas(chain, transactionHash, gasLimit, {
-              evmWalletDetails: {
-                useWindowEthereum: true,
-                provider,
-                signer,
-              },
-              destChain: destinationChain,
-              logIndex,
-              refundAddress: address,
-            })
+          if (success) {
+            await sleep(1000)
           }
 
-          if (headString(chain) === 'sui') {
-            if (response) {
-              response = await signAndExecuteTransaction({
-                transaction: response,
-                chain: `sui:${ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}`,
-                options: { showEffects: true, showEvents: true, showObjectChanges: true },
-              })
+          setResponse({
+            status: success ? 'success' : 'failed',
+            message: parseError(error)?.message || error || 'Pay gas successful',
+            hash: transaction?.transactionHash,
+            chain,
+          })
 
-              console.log('[addGas response]', response)
+          if (success) {
+            const _data = await getData()
 
-              setResponse({
-                status: response?.error ? 'failed' : 'success',
-                message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
-                hash: response?.digest,
-                chain,
-              })
+            if (_data && (destination_chain_type === 'cosmos' ? !data.executed && !_data.executed : !data.approved && !_data.approved)) {
+              await approve(_data, true)
             }
           }
-          else if (headString(chain) === 'stellar') {
-            if (response && stellarWalletStore.provider && stellarWalletStore.network?.sorobanRpcUrl) {
-              const server = new StellarSDK.rpc.Server(stellarWalletStore.network.sorobanRpcUrl)
+        }
+        else if (chain_type === 'cosmos' && !isAxelar(chain)) {
+          const token = 'autocalculate'
+          const sendOptions = {
+            environment: ENVIRONMENT,
+            offlineSigner: cosmosWalletStore.signer,
+            txFee: { gas: '250000', amount: [{ denom: sourceChainData?.native_token?.denom, amount: '30000' }] },
+          }
 
-              const preparedTransaction = await server.prepareTransaction(StellarSDK.TransactionBuilder.fromXDR(response, stellarWalletStore.network.network))
-              response = await stellarWalletStore.provider.signTransaction(preparedTransaction.toXDR(), stellarWalletStore.network.network)
+          console.log('[addGas request]', { chain, transactionHash, messageId, estimatedGasUsed: gasLimit, token, sendOptions })
 
-              if (response?.signedTxXdr) {
-                console.log('[stellar sendTransaction]', { ...response, network: stellarWalletStore.network })
+          const response = await sdk.addGasToCosmosChain({
+            txHash: transactionHash,
+            messageId,
+            gasLimit,
+            chain,
+            token,
+            sendOptions,
+          })
 
-                try {
-                  response = await server.sendTransaction(StellarSDK.TransactionBuilder.fromXDR(response.signedTxXdr, stellarWalletStore.network.network))
-                  response.error = JSON.parse(JSON.stringify(response.errorResult))._attributes.result._switch.name
-                } catch (error) {}
-              }
+          console.log('[addGas response]', response)
 
-              console.log('[addGas response]', response)
+          const { success, error, broadcastResult } = { ...response }
 
-              setResponse({
-                status: response?.error || response?.status === 'ERROR' ? 'failed' : 'success',
-                message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
-                hash: response?.hash,
-                chain,
-              })
+          if (success) {
+            await sleep(1000)
+          }
+
+          setResponse({
+            status: success ? 'success' : 'failed',
+            message: parseError(error)?.message || error || 'Pay gas successful',
+            hash: broadcastResult?.transactionHash,
+            chain,
+          })
+
+          if (success && !broadcastResult?.code) {
+            const _data = await getData()
+
+            if (_data && (destination_chain_type === 'cosmos' ? !data.executed && !_data.executed : !data.approved && !_data.approved)) {
+              await approve(_data, true)
             }
           }
-          else {
+        }
+        else if (headString(chain) === 'sui') {
+          console.log('[addGas request]', { chain, messageId, gasAddedAmount, refundAddress: suiWalletStore.address })
+
+          let response = await sdk.addGasToSuiChain({
+            messageId,
+            amount: gasAddedAmount,
+            gasParams: '0x',
+            refundAddress: suiWalletStore.address,
+          })
+
+          if (response) {
+            response = await suiSignAndExecuteTransaction({
+              transaction: response,
+              chain: `sui:${ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}`,
+              options: { showEffects: true, showEvents: true, showObjectChanges: true },
+            })
+
             console.log('[addGas response]', response)
 
-            const { success, error, transaction, broadcastResult } = { ...response }
-
-            if (success) {
-              await sleep(1 * 1000)
-            }
-
             setResponse({
-              status: success ? 'success' : 'failed',
-              message: parseError(error)?.message || error || 'Pay gas successful',
-              hash: (chain_type === 'cosmos' ? broadcastResult : transaction)?.transactionHash,
+              status: response?.error ? 'failed' : 'success',
+              message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
+              hash: response?.digest,
               chain,
             })
-
-            if (success && !broadcastResult?.code) {
-              const _data = await getData()
-
-              if (_data && (destination_chain_type === 'cosmos' ? !data.executed && !_data.executed : !data.approved && !_data.approved)) {
-                await approve(_data, true)
-              }
-            }
           }
-        } catch (error) {
-          setResponse({ status: 'failed', ...parseError(error) })
         }
+        else if (headString(chain) === 'stellar') {
+          console.log('[addGas request]', { chain, messageId, gasAddedAmount, refundAddress: stellarWalletStore.address })
 
-        setProcessing(false)
+          let response = await sdk.addGasToStellarChain({
+            senderAddress: sender,
+            messageId,
+            amount: gasAddedAmount,
+            spender: stellarWalletStore.address,
+          })
+
+          if (response && stellarWalletStore.provider && stellarWalletStore.network?.sorobanRpcUrl) {
+            const server = new StellarSDK.rpc.Server(stellarWalletStore.network.sorobanRpcUrl)
+
+            const preparedTransaction = await server.prepareTransaction(StellarSDK.TransactionBuilder.fromXDR(response, stellarWalletStore.network.network))
+            response = await stellarWalletStore.provider.signTransaction(preparedTransaction.toXDR(), stellarWalletStore.network.network)
+
+            if (response?.signedTxXdr) {
+              console.log('[stellar sendTransaction]', { ...response, network: stellarWalletStore.network })
+
+              try {
+                response = await server.sendTransaction(StellarSDK.TransactionBuilder.fromXDR(response.signedTxXdr, stellarWalletStore.network.network))
+                response.error = JSON.parse(JSON.stringify(response.errorResult))._attributes.result._switch.name
+              } catch (error) {}
+            }
+
+            console.log('[addGas response]', response)
+
+            setResponse({
+              status: response?.error || response?.status === 'ERROR' ? 'failed' : 'success',
+              message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
+              hash: response?.hash,
+              chain,
+            })
+          }
+        }
+        else if (headString(chain) === 'xrpl') {
+          console.log('[addGas request]', { chain, messageId, gasAddedAmount, refundAddress: xrplWalletStore.address })
+
+          const response = await sdk.addGasToXrplChain({
+            senderAddress: xrplWalletStore.address,
+            messageId,
+            amount: gasAddedAmount,
+          })
+
+          console.log('[addGas response]', response)
+
+          setResponse({
+            status: response?.error || response?.status !== 'success' ? 'failed' : 'success',
+            message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
+            hash: response?.hash,
+            chain,
+          })
+        }
+      } catch (error) {
+        setResponse({ status: 'failed', ...parseError(error) })
       }
+
+      setProcessing(false)
     }
   }
 
+  // manualRelayToDestChain (confirm source evm, approve destination evm, RouteMessage destination cosmos)
   const approve = async (data, afterPayGas = false) => {
     if (data?.call && sdk) {
       setProcessing(true)
@@ -2248,6 +2327,7 @@ export function GMP({ tx, lite }) {
     }
   }
 
+  // execute for evm only
   const execute = async data => {
     if (data?.approved && sdk && signer) {
       setProcessing(true)
@@ -2281,8 +2361,6 @@ export function GMP({ tx, lite }) {
     }
   }
 
-  const needSwitchChain = (id, type) => id !== (type === 'cosmos' ? cosmosWalletStore?.chainId : ['sui', 'stellar'].includes(headString(id)) ? id : chainId)
-
   const { call, gas_paid, confirm, approved, executed, error, gas } = { ...data }
 
   const sourceChainData = getChainData(call?.chain, chains)
@@ -2297,7 +2375,7 @@ export function GMP({ tx, lite }) {
     if (sourceChainData && !isAxelar(call.chain)) {
       if (
         // supported chain
-        (call.chain_type !== 'vm' || isNumber(sourceChainData.chain_id) || ['sui', 'stellar'].includes(headString(call.chain))) &&
+        isChainSupportedAddGas(call.chain, call.chain_type) &&
         // not executed / approved / not cosmos call or called more than 1 min
         !executed && !data.is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) &&
         // no gas paid or not enough gas
@@ -2305,7 +2383,7 @@ export function GMP({ tx, lite }) {
       ) {
         addGasButton = (
           <div key="addGas" className="flex items-center gap-x-1">
-            {(call.chain_type === 'cosmos' ? cosmosWalletStore?.signer : headString(call.chain) === 'sui' ? suiWalletStore?.address : headString(call.chain) === 'stellar' ? stellarWalletStore?.address : signer) && !needSwitchChain(sourceChainData?.chain_id || sourceChainData?.id, call.chain_type) && (
+            {isWalletConnected(call.chain, call.chain_type) && !needSwitchChain(sourceChainData.chain_id || sourceChainData.id, call.chain_type) && (
               <button
                 disabled={processing}
                 onClick={() => addGas(data)}
@@ -2314,14 +2392,7 @@ export function GMP({ tx, lite }) {
                 {gas_paid ? 'Add' : 'Pay'}{processing ? 'ing' : ''} gas{processing ? '...' : ''}
               </button>
             )}
-            {call.chain_type === 'cosmos' ?
-              <CosmosWallet connectChainId={sourceChainData?.chain_id} /> :
-              headString(call.chain) === 'sui' ?
-                <SuiWallet /> :
-                headString(call.chain) === 'stellar' ?
-                  <StellarWallet /> :
-                  <EVMWallet connectChainId={sourceChainData?.chain_id} />
-            }
+            {getWalletComponent(call.chain, call.chain_type)}
           </div>
         )
       }
@@ -2351,7 +2422,7 @@ export function GMP({ tx, lite }) {
             onClick={() => approve(data)}
             className={clsx('h-6 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1', processing ? 'pointer-events-none bg-blue-400 dark:bg-blue-400' : 'bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600')}
           >
-            {!confirm && !isAxelar(call.chain) && sourceChainData?.chain_type !== 'cosmos' ? 'Confirm' : sourceChainData?.chain_type === 'cosmos' ? 'Execut' : 'Approv'}{processing ? 'ing...' : !confirm && !isAxelar(call.chain) && sourceChainData?.chain_type !== 'cosmos' ? '' : 'e'}
+            {!confirm && !isAxelar(call.chain) && call.chain_type !== 'cosmos' ? 'Confirm' : call.chain_type === 'cosmos' ? 'Execut' : 'Approv'}{processing ? 'ing...' : !confirm && !isAxelar(call.chain) && call.chain_type !== 'cosmos' ? '' : 'e'}
           </button>
         </div>
       )

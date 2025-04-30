@@ -2,46 +2,77 @@ import { useEffect, useState } from 'react'
 import { useWeb3Modal } from '@web3modal/wagmi/react'
 import { usePublicClient, useChainId, useSwitchChain, useWalletClient, useAccount, useDisconnect, useSignMessage } from 'wagmi'
 import { hashMessage, parseAbiItem, verifyMessage } from 'viem'
-import { ConnectButton, useCurrentAccount } from '@mysten/dapp-kit'
+import { ConnectButton as SuiConnectButton, useCurrentAccount as useSuiCurrentAccount } from '@mysten/dapp-kit'
 import freighter from '@stellar/freighter-api'
+import { useWallets as useXRPLWallets, useAccount as useXRPLAccount, useConnect as useXRPLConnect, useDisconnect as useXRPLDisconnect } from '@xrpl-wallet-standard/react'
 import { providers } from 'ethers'
 // import { BrowserProvider, FallbackProvider, JsonRpcProvider, JsonRpcSigner } from 'ethers'
 import { create } from 'zustand'
 import clsx from 'clsx'
 
+import { Image } from '@/components/Image'
 import { ENVIRONMENT } from '@/lib/config'
+import { toArray } from '@/lib/parser'
 
 import '@mysten/dapp-kit/dist/index.css'
 
 const publicClientToProvider = publicClient => {
   const { chain, transport } = { ...publicClient }
-  const network = { chainId: chain?.id, name: chain?.name, ensAddress: chain?.contracts?.ensRegistry?.address }
+
+  const network = {
+    chainId: chain?.id,
+    name: chain?.name,
+    ensAddress: chain?.contracts?.ensRegistry?.address,
+  }
+
   // if (transport.type === 'fallback') {
   //   const providers = transport.transports.map(({ value }) => new JsonRpcProvider(value?.url, network))
-  //   if (providers.length === 1) return providers[0]
+
+  //   if (providers.length === 1) {
+  //     return providers[0]
+  //   }
+
   //   return new FallbackProvider(providers)
   // }
+
   // return new JsonRpcProvider(transport.url, network)
+
   if (transport.type === 'fallback') {
     return new providers.FallbackProvider(transport.transports.map(({ value }) => new providers.JsonRpcProvider(value?.url, network)))
   }
+
   return new providers.JsonRpcProvider(transport.url, network)
 }
 
 const walletClientToProvider = walletClient => {
-  const { account, chain, transport } = { ...walletClient }
-  const network = { chainId: chain?.id, name: chain?.name, ensAddress: chain?.contracts?.ensRegistry?.address }
+  const { chain, transport } = { ...walletClient }
+
+  const network = {
+    chainId: chain?.id,
+    name: chain?.name,
+    ensAddress: chain?.contracts?.ensRegistry?.address,
+  }
+
   // const provider = new BrowserProvider(transport, network)
+
   return new providers.Web3Provider(transport, network)
 }
 
 const walletClientToSigner = walletClient => {
   const { account, chain, transport } = { ...walletClient }
-  const network = { chainId: chain?.id, name: chain?.name, ensAddress: chain?.contracts?.ensRegistry?.address }
+
+  const network = {
+    chainId: chain?.id,
+    name: chain?.name,
+    ensAddress: chain?.contracts?.ensRegistry?.address,
+  }
+
   // const provider = new BrowserProvider(transport, network)
   // const signer = new JsonRpcSigner(provider, account.address)
+
   const provider = new providers.Web3Provider(transport, network)
   const signer = provider.getSigner(account.address)
+
   return signer
 }
 
@@ -62,7 +93,7 @@ export function EVMWallet({ connectChainId, children, className }) {
 
   const { open } = useWeb3Modal()
   const publicClient = usePublicClient()
-  const _chainId = useChainId()
+  const chainIdConnected = useChainId()
   const { switchChain } = useSwitchChain()
   const { data: walletClient } = useWalletClient()
   const { address } = useAccount()
@@ -72,8 +103,8 @@ export function EVMWallet({ connectChainId, children, className }) {
   const { data: signature } = useSignMessage({ message })
 
   useEffect(() => {
-    if (_chainId && walletClient && address) {
-      setChainId(_chainId)
+    if (chainIdConnected && walletClient && address) {
+      setChainId(chainIdConnected)
       setAddress(address)
       // setProvider(publicClientToProvider(publicClient))
       setProvider(walletClientToProvider(walletClient))
@@ -85,8 +116,9 @@ export function EVMWallet({ connectChainId, children, className }) {
       setProvider(null)
       setSigner(null)
     }
-  }, [_chainId, publicClient, walletClient, address, setChainId, setAddress, setProvider, setSigner])
+  }, [chainIdConnected, publicClient, walletClient, address, setChainId, setAddress, setProvider, setSigner])
 
+  // validatate signature
   useEffect(() => {
     const validateSignature = async () => {
       try {
@@ -97,14 +129,19 @@ export function EVMWallet({ connectChainId, children, className }) {
             functionName: 'isValidSignature',
             args: [hashMessage(message), signature],
           })
+
           // https://eips.ethereum.org/EIPS/eip-1271
           setSignatureValid(response === '0x1626ba7e')
         }
-        else setSignatureValid(await verifyMessage({ address, message, signature }))
+        else {
+          setSignatureValid(await verifyMessage({ address, message, signature }))
+        }
       } catch (error) {}
     }
 
-    if (!signatureValid && publicClient) validateSignature()
+    if (!signatureValid && publicClient) {
+      validateSignature()
+    }
   }, [signatureValid, publicClient, address, message, signature])
 
   return provider ?
@@ -163,11 +200,13 @@ export function CosmosWallet({ connectChainId, children, className }) {
 
   const enable = async (chainId = connectChainId) => {
     try {
-      if (chainId) await window.keplr.enable(chainId)
+      if (chainId) {
+        await window.keplr.enable(chainId)
+      }
     } catch (error) {
       if (!error?.toString()?.includes('Request rejected')) {
         try {
-          const response = await fetch(`https://${ENVIRONMENT !== 'mainnet' ? 'testnet.' : ''}api.0xsquid.com/v1/chains`).catch(error => { return null })
+          const response = await fetch(`https://${ENVIRONMENT === 'mainnet' ? '' : 'testnet.'}api.0xsquid.com/v1/chains`).catch(error => null)
           const { chains } = { ...await response.json() }
 
           await window.keplr.experimentalSuggestChain(toArray(chains).find(d => d.chainId === chainId))
@@ -179,18 +218,22 @@ export function CosmosWallet({ connectChainId, children, className }) {
 
   const getSigner = async (chainId = connectChainId) => {
     if (!chainId) return
+
     await enable(chainId)
+
     try {
       return await window.keplr.getOfflineSignerAuto(chainId)
-    } catch (error) {
-      return null
-    }
+    } catch (error) {}
+
+    return
   }
 
   const getAddress = async (chainId = connectChainId) => {
     if (!chainId) return
+
     const signer = await getSigner(chainId)
     if (!signer) return
+
     const [account] = await signer.getAccounts()
     return account.address
   }
@@ -205,7 +248,9 @@ export function CosmosWallet({ connectChainId, children, className }) {
       setProvider(window?.keplr)
       setSigner(signer)
     }
-    else disconnect()
+    else {
+      disconnect()
+    }
   }
 
   const disconnect = () => {
@@ -247,17 +292,25 @@ export const useSuiWalletStore = create()(set => ({
 
 export function SuiWallet({ children, className }) {
   const { address, setAddress } = useSuiWalletStore()
-  const account = useCurrentAccount()
+  const account = useSuiCurrentAccount()
 
   useEffect(() => {
     const address = account?.address
-    if (address) setAddress(address)
-    else setAddress(null)
+
+    if (address) {
+      setAddress(address)
+    }
+    else {
+      setAddress(null)
+    }
   }, [account, setAddress])
 
   const connect = () => {
     const address = account?.address
-    if (address) setAddress(address)
+
+    if (address) {
+      setAddress(address)
+    }
   }
 
   const disconnect = () => {
@@ -266,14 +319,14 @@ export function SuiWallet({ children, className }) {
 
   return address ?
     <button onClick={() => disconnect()} className={clsx(className)}>
-      {children || <ConnectButton /> || (
+      {children || <SuiConnectButton /> || (
         <div className="h-6 bg-red-600 hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-600 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1">
           Disconnect
         </div>
       )}
     </button> :
     <button onClick={() => connect()} className={clsx(className)}>
-      {children || <ConnectButton /> || (
+      {children || <SuiConnectButton /> || (
         <div className="h-6 bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1">
           Connect
         </div>
@@ -303,8 +356,10 @@ export function StellarWallet({ children, className }) {
         setAddress(null)
         setProvider(null)
       }
+
       setNetwork(await getNetwork())
     }
+
     getData()
   }, [setAddress, setProvider, setNetwork])
 
@@ -318,6 +373,7 @@ export function StellarWallet({ children, className }) {
   const connect = async () => {
     await freighter.setAllowed()
     const address = await getAddress()
+
     if (address) {
       setAddress(address)
       setProvider(freighter)
@@ -346,4 +402,53 @@ export function StellarWallet({ children, className }) {
         </div>
       )}
     </button>
+}
+
+export const useXRPLWalletStore = create()(set => ({
+  address: null,
+  setAddress: data => set(state => ({ ...state, address: data })),
+}))
+
+export function XRPLWallet({ children, className }) {
+  const { address, setAddress } = useXRPLWalletStore()
+
+  const wallets = useXRPLWallets()
+  const account = useXRPLAccount()
+  const { connect: connectXRPL } = useXRPLConnect()
+  const disconnectXRPL = useXRPLDisconnect()
+
+  useEffect(() => {
+    const address = account?.address
+
+    if (address) {
+      setAddress(address)
+    }
+    else {
+      setAddress(null)
+    }
+  }, [account, setAddress])
+
+  return address ?
+    <button onClick={() => disconnectXRPL()} className={clsx(className)}>
+      {children || (
+        <div className="h-6 bg-red-600 hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-600 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1">
+          Disconnect
+        </div>
+      )}
+    </button> :
+    <div className="flex flex-col gap-y-2">
+      {wallets.filter(w => w.name === 'Crossmark' ? window?.crossmark : w).map((w, i) => (
+        <button key={i} onClick={() => connectXRPL(w)} className={clsx(className)}>
+          <div className="w-fit h-6 bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 rounded-xl flex items-center font-display text-white whitespace-nowrap gap-x-1.5 px-2.5 py-1">
+            <Image
+              src={w.icon}
+              alt=""
+              width={16}
+              height={16}
+            />
+            {w.name}
+          </div>
+        </button>
+      ))}
+    </div>
 }
