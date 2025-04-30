@@ -16,8 +16,7 @@ import { ThemeToggle } from '@/components/ThemeToggle'
 import { Tag } from '@/components/Tag'
 import { Number } from '@/components/Number'
 import { useGlobalStore } from '@/components/Global'
-import { ENVIRONMENT, ENABLE_AMPLIFIER_DISPLAY, getAssetData, getITSAssetData } from '@/lib/config'
-import { toArray } from '@/lib/parser'
+import { ENVIRONMENT, getAssetData, getITSAssetData } from '@/lib/config'
 import { isNumber, toNumber } from '@/lib/number'
 
 const navigations = [
@@ -31,18 +30,16 @@ const navigations = [
   },
   {
     title: 'Network',
-    children: toArray([
+    children: [
       { title: 'Validators', href: '/validators' },
-      ENABLE_AMPLIFIER_DISPLAY && { title: 'Verifiers', href: '/verifiers' },
-      ENABLE_AMPLIFIER_DISPLAY && { title: 'Amplifier Rewards', href: '/amplifier-rewards' },
+      { title: 'Verifiers', href: '/verifiers' },
+      { title: 'Amplifier Rewards', href: '/amplifier-rewards' },
       { title: 'Blocks', href: '/blocks' },
       { title: 'Transactions', href: '/transactions' },
       { title: 'External Chain Polls', href: '/evm-polls' },
-      // ENABLE_AMPLIFIER_DISPLAY && { title: 'Amplifier Polls', href: '/amplifier-polls' },
       { title: 'External Chain Signings', href: '/evm-batches' },
-      // ENABLE_AMPLIFIER_DISPLAY && { title: 'Amplifier Proofs', href: '/amplifier-proofs' },
       { title: 'Proposals', href: '/proposals' },
-    ]),
+    ],
   },
   ENVIRONMENT === 'mainnet' && { title: 'TVL', href: '/tvl' },
   {

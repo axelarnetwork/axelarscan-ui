@@ -21,8 +21,7 @@ import { getAccountAmounts } from '@/lib/api/axelarscan'
 import { searchTransfers, searchDepositAddresses } from '@/lib/api/token-transfer'
 import { axelarContracts, getChainData, getAssetData } from '@/lib/config'
 import { getInputType, toArray } from '@/lib/parser'
-import { includesStringList } from '@/lib/operator'
-import { equalsIgnoreCase, ellipse } from '@/lib/string'
+import { equalsIgnoreCase, includesSomePatterns, ellipse } from '@/lib/string'
 import { isNumber, toNumber } from '@/lib/number'
 
 function DepositAddress({ data, address }) {
@@ -472,7 +471,7 @@ export function Account({ address }) {
     const getData = async () => {
       if (address && chains && assets && validators) {
         if (['axelarvaloper', 'axelarvalcons'].findIndex(p => address.startsWith(p)) > -1) {
-          const { operator_address } = { ...validators.find(d => includesStringList(address.toLowerCase(), [d.operator_address, d.consensus_address])) }
+          const { operator_address } = { ...validators.find(d => includesSomePatterns(address.toLowerCase(), [d.operator_address, d.consensus_address])) }
           router.push(`/validator/${operator_address}`)
         }
         else {

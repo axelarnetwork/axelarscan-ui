@@ -25,7 +25,7 @@ import { TimeAgo } from '@/components/Time'
 import { getParams, getQueryString, Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
 import { getRPCStatus, searchVMProofs } from '@/lib/api/validator'
-import { ENABLE_AMPLIFIER_DISPLAY, getChainData } from '@/lib/config'
+import { getChainData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
 import { equalsIgnoreCase, capitalize, toBoolean, headString, ellipse, toTitle } from '@/lib/string'
 
@@ -298,14 +298,10 @@ export function AmplifierProofs() {
           <div className="flex items-center justify-between gap-x-4">
             <div className="sm:flex-auto">
               <div className="flex items-center space-x-2">
-                {ENABLE_AMPLIFIER_DISPLAY && (
-                  <>
-                    <Link href="/evm-batches" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
-                      EVM Batches
-                    </Link>
-                    <span className="text-zinc-400 dark:text-zinc-500">|</span>
-                  </>
-                )}
+                <Link href="/evm-batches" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
+                  EVM Batches
+                </Link>
+                <span className="text-zinc-400 dark:text-zinc-500">|</span>
                 <h1 className="underline text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">Amplifier Proofs</h1>
               </div>
               <p className="mt-2 text-zinc-400 dark:text-zinc-500 text-sm">

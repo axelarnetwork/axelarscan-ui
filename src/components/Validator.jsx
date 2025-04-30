@@ -21,11 +21,10 @@ import { Profile } from '@/components/Profile'
 import { useValidatorStore } from '@/components/Validators'
 import { useGlobalStore } from '@/components/Global'
 import { getBalances } from '@/lib/api/axelarscan'
-import { getRPCStatus, searchUptimes, searchProposedBlocks, searchHeartbeats, searchPolls, getChainMaintainers, getValidatorDelegations } from '@/lib/api/validator'
+import { getRPCStatus, searchUptimes, searchProposedBlocks, searchHeartbeats, searchEVMPolls, getChainMaintainers, getValidatorDelegations } from '@/lib/api/validator'
 import { ENVIRONMENT, getChainData, getAssetData } from '@/lib/config'
 import { toArray } from '@/lib/parser'
-import { includesStringList } from '@/lib/operator'
-import { equalsIgnoreCase, ellipse } from '@/lib/string'
+import { equalsIgnoreCase, includesSomePatterns, ellipse } from '@/lib/string'
 import { isNumber, toNumber, numberFormat } from '@/lib/number'
 
 function Pagination({ data, value = 1, maxPage = 5, sizePerPage = 25, onChange }) {
@@ -552,7 +551,7 @@ export function Validator({ address }) {
   useEffect(() => {
     if (address && validators) {
       if (['axelarvalcons', 'axelar1'].findIndex(p => address.startsWith(p)) > -1) {
-        const { operator_address } = { ...validators.find(d => includesStringList([d.consensus_address, d.delegator_address, d.broadcaster_address], address.toLowerCase())) }
+        const { operator_address } = { ...validators.find(d => includesSomePatterns([d.consensus_address, d.delegator_address, d.broadcaster_address], address.toLowerCase())) }
         if (operator_address) router.push(`/validator/${operator_address}`)
       }
       else if (address.startsWith('axelarvaloper') && chains && contracts) setEVMChains(toArray(chains).filter(d => d.chain_type ==='evm' && contracts.gateway_contracts?.[d.id]?.address))
@@ -649,7 +648,7 @@ export function Validator({ address }) {
                   const toBlock = latest_block_height - 1
                   const fromBlock = toBlock - NUM_LATEST_BLOCKS
 
-                  const data = broadcaster_address && (await searchPolls({ voter: broadcaster_address, fromBlock, toBlock, size }))?.data
+                  const data = broadcaster_address && (await searchEVMPolls({ voter: broadcaster_address, fromBlock, toBlock, size }))?.data
                   setVotes(toArray(data).map(d => Object.fromEntries(
                     Object.entries(d).filter(([k, v]) => !k.startsWith('axelar1') || equalsIgnoreCase(k, broadcaster_address)).flatMap(([k, v]) =>
                       equalsIgnoreCase(k, broadcaster_address) ? Object.entries({ ...v }).map(([_k, _v]) => [_k === 'id' ? 'txhash' : _k, _v]) : [[k, v]]

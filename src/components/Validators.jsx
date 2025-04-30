@@ -18,7 +18,6 @@ import { Number } from '@/components/Number'
 import { Profile } from '@/components/Profile'
 import { useGlobalStore } from '@/components/Global'
 import { getValidatorsVotes, getChainMaintainers } from '@/lib/api/validator'
-import { ENABLE_AMPLIFIER_DISPLAY } from '@/lib/config'
 import { toArray } from '@/lib/parser'
 import { equalsIgnoreCase, ellipse } from '@/lib/string'
 import { isNumber, toNumber, formatUnits, toFixed, numberFormat } from '@/lib/number'
@@ -126,14 +125,10 @@ export function Validators({ status }) {
             <div className="sm:flex-auto">
               <div className="flex items-center space-x-2">
                 <h1 className="underline text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">Validators</h1>
-                {ENABLE_AMPLIFIER_DISPLAY && (
-                  <>
-                    <span className="text-zinc-400 dark:text-zinc-500">|</span>
-                    <Link href="/verifiers" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
-                      Verifiers
-                    </Link>
-                  </>
-                )}
+                <span className="text-zinc-400 dark:text-zinc-500">|</span>
+                <Link href="/verifiers" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
+                  Verifiers
+                </Link>
               </div>
               <p className="mt-2 text-zinc-400 dark:text-zinc-500 text-sm">
                 List of {status || 'active'} validators in Axelar Network with the latest 10K blocks performance.

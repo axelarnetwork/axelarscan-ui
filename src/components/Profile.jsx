@@ -12,32 +12,22 @@ import { Number } from '@/components/Number'
 import { useGlobalStore } from '@/components/Global'
 import { getKeybaseUser } from '@/lib/api/keybase'
 import { getENS } from '@/lib/api/name-services/ens'
-import { getLENS } from '@/lib/api/name-services/lens'
 import { getSpaceID } from '@/lib/api/name-services/spaceid'
-import { getUnstoppable } from '@/lib/api/name-services/unstoppable'
 import { ENVIRONMENT, getChainData, getAssetData, getITSAssetData } from '@/lib/config'
 import { getIcapAddress, toHex, split, toArray } from '@/lib/parser'
-import { includesStringList } from '@/lib/operator'
-import { equalsIgnoreCase, capitalize, ellipse } from '@/lib/string'
+import { equalsIgnoreCase, capitalize, includesSomePatterns, ellipse } from '@/lib/string'
 import { isNumber } from '@/lib/number'
 import { timeDiff } from '@/lib/time'
 import accounts from '@/data/accounts'
 import broadcasters from '@/data/broadcasters'
-import its from '@/data/its'
 import ENSLogo from '@/images/name-services/ens.png'
-import LENSLogo from '@/images/name-services/lens.png'
 import SpaceIDLogo from '@/images/name-services/spaceid.png'
-import UnstoppableLogo from '@/images/name-services/unstoppable.png'
 
 export const useNameServicesStore = create()(set => ({
   ens: null,
-  lens: null,
   spaceID: null,
-  unstoppable: null,
   setENS: data => set(state => ({ ...state, ens: { ...state.ens, ...data } })),
-  setLENS: data => set(state => ({ ...state, lens: { ...state.lens, ...data } })),
   setSpaceID: data => set(state => ({ ...state, spaceID: { ...state.spaceID, ...data } })),
-  setUnstoppable: data => set(state => ({ ...state, unstoppable: { ...state.unstoppable, ...data } })),
 }))
 
 export function SpaceIDProfile({
@@ -130,188 +120,6 @@ export function SpaceIDProfile({
     />
 }
 
-export function LENSProfile({
-  address,
-  url,
-  width = 24,
-  height = 24,
-  noCopy = false,
-  className,
-}) {
-  const [image404, setImage404] = useState(null)
-  const { lens, setLENS } = useNameServicesStore()
-
-  useEffect(() => {
-    const setDefaultData = (addresses, data) => {
-      addresses.forEach(a => {
-        if (!data?.[a]) data = { ...data, [a]: {} }
-      })
-      return data
-    }
-
-    const getData = async () => {
-      if (address) {
-        const addresses = toArray(address, { toCase: 'lower' }).filter(a => !lens?.[a])
-
-        if (addresses.length > 0) {
-          let data = setDefaultData(addresses, lens)
-          setLENS({ ...data })
-
-          data = await getLENS(addresses)
-          setDefaultData(addresses, data)
-          setLENS({ ...data })
-        }
-      }
-    }
-
-    getData()
-  }, [address, lens, setLENS])
-
-  const { handle, picture } = { ...lens?.[address?.toLowerCase()] }
-  const name = handle
-  const src = picture?.original?.url
-
-  const element = name ?
-    <span title={name} className={clsx('font-medium', className)}>
-      {ellipse(name, 16)}
-    </span> :
-    <span className={clsx('font-medium', className)}>
-      {ellipse(address, 4, '0x')}
-    </span>
-
-  return name ?
-    <div className="flex items-center">
-      {typeof image404 === 'boolean' ?
-        <Image
-          src={image404 ? LENSLogo : src}
-          alt=""
-          width={width}
-          height={height}
-          className={clsx('rounded-full', width === 24 && 'w-6 3xl:w-8 h-6 3xl:h-8', width < 24 ? 'mr-1.5' : 'mr-2 3xl:mr-3')}
-        /> :
-        <img
-          src={src}
-          alt=""
-          onLoad={() => setImage404(false)}
-          onError={() => setImage404(true)}
-          className={clsx('rounded-full', width === 24 ? 'w-6 3xl:w-8 h-6 3xl:h-8' : 'w-5 h-5', width < 24 ? 'mr-1.5' : 'mr-2 3xl:mr-3')}
-        />
-      }
-      {url ?
-        <div className="flex items-center gap-x-1">
-          <Link
-            href={url}
-            target="_blank"
-            className="text-blue-600 dark:text-blue-500 font-medium"
-          >
-            {element}
-          </Link>
-          {!noCopy && <Copy size={width < 24 ? 16 : 18} value={address} />}
-        </div> :
-        noCopy ? element : <Copy size={width < 24 ? 16 : 18} value={address}><span className={clsx(className)}>{element}</span></Copy>
-      }
-    </div> :
-    <UnstoppableProfile
-      address={address}
-      url={url}
-      width={width}
-      height={height}
-      noCopy={noCopy}
-      className={className}
-    />
-}
-
-export function UnstoppableProfile({
-  address,
-  url,
-  width = 24,
-  height = 24,
-  noCopy = false,
-  className,
-}) {
-  const [image404, setImage404] = useState(null)
-  const { unstoppable, setUnstoppable } = useNameServicesStore()
-
-  useEffect(() => {
-    const setDefaultData = (addresses, data) => {
-      addresses.forEach(a => {
-        if (!data?.[a]) data = { ...data, [a]: {} }
-      })
-      return data
-    }
-
-    const getData = async () => {
-      if (address) {
-        const addresses = toArray(address, { toCase: 'lower' }).filter(a => !unstoppable?.[a])
-
-        if (addresses.length > 0) {
-          let data = setDefaultData(addresses, unstoppable)
-          setUnstoppable({ ...data })
-
-          data = await getUnstoppable(addresses)
-          setDefaultData(addresses, data)
-          setUnstoppable({ ...data })
-        }
-      }
-    }
-
-    getData()
-  }, [address, unstoppable, setUnstoppable])
-
-  const { name } = { ...unstoppable?.[address?.toLowerCase()] }
-  const src = UnstoppableLogo
-
-  const element = name ?
-    <span title={name} className={clsx('font-medium', className)}>
-      {ellipse(name, 16)}
-    </span> :
-    <span className={clsx('font-medium', className)}>
-      {ellipse(address, 4, '0x')}
-    </span>
-
-  return name ?
-    <div className="flex items-center">
-      {typeof image404 === 'boolean' ?
-        <Image
-          src={image404 ? UnstoppableLogo : src}
-          alt=""
-          width={width}
-          height={height}
-          className={clsx('rounded-full', width === 24 && 'w-6 3xl:w-8 h-6 3xl:h-8', width < 24 ? 'mr-1.5' : 'mr-2 3xl:mr-3')}
-        /> :
-        <img
-          src={src}
-          alt=""
-          onLoad={() => setImage404(false)}
-          onError={() => setImage404(true)}
-          className={clsx('rounded-full', width === 24 ? 'w-6 3xl:w-8 h-6 3xl:h-8' : 'w-5 h-5', width < 24 ? 'mr-1.5' : 'mr-2 3xl:mr-3')}
-        />
-      }
-      {url ?
-        <div className="flex items-center gap-x-1">
-          <Link
-            href={url}
-            target="_blank"
-            className="text-blue-600 dark:text-blue-500 font-medium"
-          >
-            {element}
-          </Link>
-          {!noCopy && <Copy size={width < 24 ? 16 : 18} value={address} />}
-        </div> :
-        noCopy ? element : <Copy size={width < 24 ? 16 : 18} value={address}><span className={clsx(className)}>{element}</span></Copy>
-      }
-    </div> :
-    <ENSProfile
-      address={address}
-      url={url}
-      width={width}
-      height={height}
-      noCopy={noCopy}
-      origin="unstoppable"
-      className={className}
-    />
-}
-
 export function ENSProfile({
   address,
   url,
@@ -393,27 +201,18 @@ export function ENSProfile({
         noCopy ? element : <Copy size={width < 24 ? 16 : 18} value={address}><span className={clsx(className)}>{element}</span></Copy>
       }
     </div> :
-    origin !== 'unstoppable' ?
-      <UnstoppableProfile
-        address={address}
-        url={url}
-        width={width}
-        height={height}
-        noCopy={noCopy}
-        className={className}
-      /> :
-      url ?
-        <div className={clsx('flex items-center gap-x-1', className)}>
-          <Link
-            href={url}
-            target="_blank"
-            className="text-blue-600 dark:text-blue-500 font-medium"
-          >
-            {element}
-          </Link>
-          {!noCopy && <Copy size={width < 24 ? 16 : 18} value={address} />}
-        </div> :
-        noCopy ? element : <Copy size={width < 24 ? 16 : 18} value={address}><span className={clsx(className)}>{element}</span></Copy>
+    url ?
+      <div className={clsx('flex items-center gap-x-1', className)}>
+        <Link
+          href={url}
+          target="_blank"
+          className="text-blue-600 dark:text-blue-500 font-medium"
+        >
+          {element}
+        </Link>
+        {!noCopy && <Copy size={width < 24 ? 16 : 18} value={address} />}
+      </div> :
+      noCopy ? element : <Copy size={width < 24 ? 16 : 18} value={address}><span className={clsx(className)}>{element}</span></Copy>
 }
 
 export function EVMProfile({ chain, ...props }) {
@@ -423,11 +222,8 @@ export function EVMProfile({ chain, ...props }) {
     case 'arbitrum':
       Profile = SpaceIDProfile
       break
-    case 'polygon':
-      Profile = LENSProfile
-      break
     default:
-      Profile = !chain?.includes('ethereum') ? UnstoppableProfile : ENSProfile
+      Profile = ENSProfile
       break
   }
   return <Profile chain={chain} {...props} />
@@ -477,7 +273,7 @@ export function Profile({
   let isVerifier
   if (address?.startsWith('axelar')) {
     if (!name && validators) {
-      const { broadcaster_address, operator_address, description } = { ...validators.find(d => includesStringList(address, toArray([d.broadcaster_address, d.operator_address, d.delegator_address, d.consensus_address], { toCase: 'lower' }))) }
+      const { broadcaster_address, operator_address, description } = { ...validators.find(d => includesSomePatterns(address, toArray([d.broadcaster_address, d.operator_address, d.delegator_address, d.consensus_address], { toCase: 'lower' }))) }
       const { moniker } = { ...description }
 
       if (moniker) name = `${moniker}${equalsIgnoreCase(address, broadcaster_address) ? `: Proxy` : ''}`
@@ -486,7 +282,7 @@ export function Profile({
     }
 
     if (verifiers) {
-      const verifierData = verifiers.find(d => includesStringList(address, toArray([d.address], { toCase: 'lower' })))
+      const verifierData = verifiers.find(d => includesSomePatterns(address, toArray([d.address], { toCase: 'lower' })))
       isVerifier = !!verifierData?.address
     }
   }
@@ -497,7 +293,7 @@ export function Profile({
   useEffect(() => {
     const getData = async () => {
       if (address?.startsWith('axelar') && validators) {
-        const { operator_address, description } = { ...validators.find(d => includesStringList(address, toArray([d.broadcaster_address, d.operator_address, d.delegator_address], { toCase: 'lower' }))) }
+        const { operator_address, description } = { ...validators.find(d => includesSomePatterns(address, toArray([d.broadcaster_address, d.operator_address, d.delegator_address], { toCase: 'lower' }))) }
         const { moniker, identity } = { ...description }
 
         let value = validatorImages[operator_address]
@@ -627,7 +423,7 @@ export function AssetProfile({
 }) {
   const { chains, assets, itsAssets } = useGlobalStore()
 
-  const assetData = (!onlyITS && getAssetData(addressOrDenom || value, assets)) || (ITSPossible && getITSAssetData(addressOrDenom || value, _.concat(itsAssets, its))) || customAssetData
+  const assetData = (!onlyITS && getAssetData(addressOrDenom || value, assets)) || (ITSPossible && getITSAssetData(addressOrDenom || value, itsAssets)) || customAssetData
   const { addresses } = { ...assetData }
   let { symbol, image } = { ...assetData }
 

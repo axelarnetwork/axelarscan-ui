@@ -25,11 +25,10 @@ import { ExplorerLink } from '@/components/ExplorerLink'
 import { TimeAgo } from '@/components/Time'
 import { getParams, getQueryString, Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
-import { searchPolls } from '@/lib/api/validator'
-import { ENABLE_AMPLIFIER_DISPLAY, getChainData, getAssetData } from '@/lib/config'
+import { searchEVMPolls } from '@/lib/api/validator'
+import { getChainData, getAssetData } from '@/lib/config'
 import { toJson, split, toArray } from '@/lib/parser'
-import { includesStringList } from '@/lib/operator'
-import { equalsIgnoreCase, capitalize, toBoolean, ellipse, toTitle } from '@/lib/string'
+import { equalsIgnoreCase, capitalize, toBoolean, includesSomePatterns, ellipse, toTitle } from '@/lib/string'
 import { isNumber, toNumber, formatUnits, numberFormat } from '@/lib/number'
 import { timeDiff } from '@/lib/time'
 
@@ -47,7 +46,7 @@ function Filters() {
 
   useEffect(() => {
     const getTypes = async () => {
-      const response = await searchPolls({ aggs: { types: { terms: { field: 'event.keyword', size: 25 } } }, size: 0 })
+      const response = await searchEVMPolls({ aggs: { types: { terms: { field: 'event.keyword', size: 25 } } }, size: 0 })
       setTypes(toArray(response).map(d => d.key))
     }
     getTypes()
@@ -261,7 +260,7 @@ export function EVMPolls() {
   useEffect(() => {
     const getData = async () => {
       if (params && toBoolean(refresh)) {
-        const { data, total } = { ...await searchPolls({ ...params, size }) }
+        const { data, total } = { ...await searchEVMPolls({ ...params, size }) }
 
         setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: {
           data: _.orderBy(toArray(data).map(d => {
@@ -313,7 +312,7 @@ export function EVMPolls() {
               votes: _.orderBy(votes, ['height', 'created_at'], ['desc', 'desc']),
               voteOptions,
               eventName: d.event ? split(toTitle(eventName), { delimiter: ' ' }).map(s => capitalize(s)).join('') : eventName,
-              url: includesStringList(eventName, ['operator', 'token_deployed']) ? `${url}${transaction_path?.replace('{tx}', d.transaction_id)}` : `/${includesStringList(eventName, ['contract_call', 'ContractCall']) || !(includesStringList(eventName, ['transfer', 'Transfer']) || d.deposit_address) ? 'gmp' : 'transfer'}/${d.transaction_id ? d.transaction_id : d.transfer_id ? `?transferId=${d.transfer_id}` : ''}`,
+              url: includesSomePatterns(eventName, ['operator', 'token_deployed']) ? `${url}${transaction_path?.replace('{tx}', d.transaction_id)}` : `/${includesSomePatterns(eventName, ['contract_call', 'ContractCall']) || !(includesSomePatterns(eventName, ['transfer', 'Transfer']) || d.deposit_address) ? 'gmp' : 'transfer'}/${d.transaction_id ? d.transaction_id : d.transfer_id ? `?transferId=${d.transfer_id}` : ''}`,
             }
           }), ['idNumber', 'created_at.ms'], ['desc', 'desc']),
           total,
@@ -333,14 +332,10 @@ export function EVMPolls() {
             <div className="sm:flex-auto">
               <div className="flex items-center space-x-2">
                 <h1 className="underline text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">EVM Polls</h1>
-                {ENABLE_AMPLIFIER_DISPLAY && (
-                  <>
-                    <span className="text-zinc-400 dark:text-zinc-500">|</span>
-                    <Link href="/amplifier-polls" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
-                      Amplifier Polls
-                    </Link>
-                  </>
-                )}
+                <span className="text-zinc-400 dark:text-zinc-500">|</span>
+                <Link href="/amplifier-polls" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
+                  Amplifier Polls
+                </Link>
               </div>
               <p className="mt-2 text-zinc-400 dark:text-zinc-500 text-sm">
                 <Number value={total} suffix={` result${total > 1 ? 's' : ''}`} /> 

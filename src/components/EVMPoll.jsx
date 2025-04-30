@@ -17,11 +17,10 @@ import { Profile, ChainProfile } from '@/components/Profile'
 import { TimeAgo } from '@/components/Time'
 import { ExplorerLink } from '@/components/ExplorerLink'
 import { useGlobalStore } from '@/components/Global'
-import { searchPolls } from '@/lib/api/validator'
+import { searchEVMPolls } from '@/lib/api/validator'
 import { getChainData, getAssetData } from '@/lib/config'
 import { toJson, split, toArray } from '@/lib/parser'
-import { includesStringList } from '@/lib/operator'
-import { equalsIgnoreCase, capitalize, ellipse, toTitle } from '@/lib/string'
+import { equalsIgnoreCase, capitalize, includesSomePatterns, ellipse, toTitle } from '@/lib/string'
 import { formatUnits, numberFormat } from '@/lib/number'
 import { timeDiff } from '@/lib/time'
 
@@ -428,7 +427,7 @@ export function EVMPoll({ id }) {
 
   useEffect(() => {
     const getData = async () => {
-      const { data } = { ...await searchPolls({ pollId: id }) }
+      const { data } = { ...await searchEVMPolls({ pollId: id }) }
       let d = _.head(data)
 
       if (d) {
@@ -479,7 +478,7 @@ export function EVMPoll({ id }) {
           votes: _.orderBy(votes, ['height', 'created_at'], ['desc', 'desc']),
           voteOptions,
           eventName: d.event ? split(toTitle(eventName), { delimiter: ' ' }).map(s => capitalize(s)).join('') : eventName,
-          url: includesStringList(eventName, ['operator', 'token_deployed']) ? `${url}${transaction_path?.replace('{tx}', d.transaction_id)}` : `/${includesStringList(eventName, ['contract_call', 'ContractCall']) || !(includesStringList(eventName, ['transfer', 'Transfer']) || d.deposit_address) ? 'gmp' : 'transfer'}/${d.transaction_id ? d.transaction_id : d.transfer_id ? `?transferId=${d.transfer_id}` : ''}`,
+          url: includesSomePatterns(eventName, ['operator', 'token_deployed']) ? `${url}${transaction_path?.replace('{tx}', d.transaction_id)}` : `/${includesSomePatterns(eventName, ['contract_call', 'ContractCall']) || !(includesSomePatterns(eventName, ['transfer', 'Transfer']) || d.deposit_address) ? 'gmp' : 'transfer'}/${d.transaction_id ? d.transaction_id : d.transfer_id ? `?transferId=${d.transfer_id}` : ''}`,
         }
       }
 
