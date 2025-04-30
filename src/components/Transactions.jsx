@@ -478,7 +478,7 @@ export const getRecipient = (data, assets) => {
   )))
 }
 
-function _Pagination({ data, maxPage = 5, sizePerPage = 25, onChange }) {
+function TablePagination({ data, maxPage = 5, sizePerPage = 25, onChange }) {
   const [page, setPage] = useState(1)
 
   useEffect(() => {
@@ -746,7 +746,7 @@ export function Transactions({ height, address }) {
           {total > (height ? sizePerPage : size) && (
             <div className="flex items-center justify-center mt-8">
               {height ?
-                <_Pagination
+                <TablePagination
                   data={data}
                   onChange={page => setPage(page)}
                   sizePerPage={sizePerPage}
