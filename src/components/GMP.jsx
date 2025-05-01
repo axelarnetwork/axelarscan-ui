@@ -39,7 +39,7 @@ import { ENVIRONMENT, getChainData, getAssetData } from '@/lib/config'
 import { toCase, split, toArray, parseError } from '@/lib/parser'
 import { sleep } from '@/lib/operator'
 import { isString, equalsIgnoreCase, headString, ellipse, toTitle } from '@/lib/string'
-import { isNumber, toNumber, toBigNumber, parseUnits, numberFormat } from '@/lib/number'
+import { isNumber, toNumber, toBigNumber, formatUnits, parseUnits, numberFormat } from '@/lib/number'
 import { timeDiff } from '@/lib/time'
 import IAxelarExecutable from '@/data/interfaces/gmp/IAxelarExecutable.json'
 
@@ -2267,12 +2267,12 @@ export function GMP({ tx, lite }) {
           }
         }
         else if (headString(chain) === 'xrpl') {
-          console.log('[addGas request]', { chain, messageId, gasAddedAmount, refundAddress: xrplWalletStore.address })
+          console.log('[addGas request]', { chain, messageId, gasAddedAmount: formatUnits(gasAddedAmount, decimals), refundAddress: xrplWalletStore.address })
 
           let response = await sdk.addGasToXrplChain({
             senderAddress: xrplWalletStore.address,
             messageId,
-            amount: gasAddedAmount,
+            amount: formatUnits(gasAddedAmount, decimals),
           })
 
           if (response) {
@@ -2281,7 +2281,7 @@ export function GMP({ tx, lite }) {
             console.log('[addGas response]', response)
 
             setResponse({
-              status: response?.tx_json?.hash ? 'success' : 'failed',
+              status: response?.tx_json?.meta?.TransactionResult === 'tesSUCCESS' ? 'success' : 'failed',
               message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
               hash: response?.tx_hash,
               chain,
