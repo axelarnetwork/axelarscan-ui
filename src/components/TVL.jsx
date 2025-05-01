@@ -49,7 +49,7 @@ export function TVL() {
 
   const loading = !(data && assets && data.length >= assets.filter(d => !d.no_tvl).length - 3)
   const filteredData = toArray(data).filter(d => includeITS || d.assetType !== 'its')
-  const chainsTVL = !loading && _.orderBy(_.uniqBy(chains.filter(d => !d.no_inflation && !d.no_tvl).map(d => {
+  const chainsTVL = !loading && _.orderBy(_.uniqBy(chains.filter(d => !d.no_inflation && !d.no_tvl && (d.chain_type !== 'vm' || filteredData.filter(_d => _d.tvl?.[d.id]).length > 0)).map(d => {
     return {
       ...d,
       total_value: _.sumBy(filteredData.map(_d => {
