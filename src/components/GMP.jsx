@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { AxelarGMPRecoveryAPI } from '@axelar-network/axelarjs-sdk'
 import { useSignAndExecuteTransaction as useSuiSignAndExecuteTransaction } from '@mysten/dapp-kit'
 import * as StellarSDK from '@stellar/stellar-sdk'
+import { useSignAndSubmitTransaction as useXRPLSignAndSubmitTransaction } from '@xrpl-wallet-standard/react'
 import { Contract } from 'ethers'
 import clsx from 'clsx'
 import _ from 'lodash'
@@ -1739,6 +1740,7 @@ export function GMP({ tx, lite }) {
   const stellarWalletStore = useStellarWalletStore()
   const xrplWalletStore = useXRPLWalletStore()
   const { mutateAsync: suiSignAndExecuteTransaction } = useSuiSignAndExecuteTransaction()
+  const xrplSignAndSubmitTransaction = useXRPLSignAndSubmitTransaction()
 
   const getData = useCallback(async () => {
     const { commandId } = { ...getParams(searchParams) }
@@ -2267,20 +2269,24 @@ export function GMP({ tx, lite }) {
         else if (headString(chain) === 'xrpl') {
           console.log('[addGas request]', { chain, messageId, gasAddedAmount, refundAddress: xrplWalletStore.address })
 
-          const response = await sdk.addGasToXrplChain({
+          let response = await sdk.addGasToXrplChain({
             senderAddress: xrplWalletStore.address,
             messageId,
             amount: gasAddedAmount,
           })
 
-          console.log('[addGas response]', response)
+          if (response) {
+            response = await xrplSignAndSubmitTransaction(response, `xrpl:${ENVIRONMENT === 'mainnet' ? '0' : ENVIRONMENT === 'devnet-amplifier' ? '2' : '1'}`)
 
-          setResponse({
-            status: response?.error || (response?.status && response.status !== 'success') ? 'failed' : 'success',
-            message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
-            hash: response?.hash,
-            chain,
-          })
+            console.log('[addGas response]', response)
+
+            setResponse({
+              status: response?.tx_json?.hash ? 'success' : 'failed',
+              message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
+              hash: response?.tx_hash,
+              chain,
+            })
+          }
         }
       } catch (error) {
         setResponse({ status: 'failed', ...parseError(error) })
