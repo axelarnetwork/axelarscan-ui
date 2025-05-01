@@ -2242,7 +2242,7 @@ export function GMP({ tx, lite }) {
           })
 
           if (response && stellarWalletStore.provider && stellarWalletStore.network?.sorobanRpcUrl) {
-            const server = new StellarSDK.rpc.Server(stellarWalletStore.network.sorobanRpcUrl)
+            const server = new StellarSDK.rpc.Server(stellarWalletStore.network.sorobanRpcUrl, { allowHttp: true })
 
             const preparedTransaction = await server.prepareTransaction(StellarSDK.TransactionBuilder.fromXDR(response, stellarWalletStore.network.network))
             response = await stellarWalletStore.provider.signTransaction(preparedTransaction.toXDR(), stellarWalletStore.network.network)
