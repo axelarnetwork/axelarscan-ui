@@ -39,7 +39,7 @@
     "@stellar/stellar-sdk": "^13.3.0",
     "@tailwindcss/forms": "^0.5.10",
     "@tanstack/react-query": "^5.74.11",
-    "@web3modal/wagmi": "^5.1.11",
+    "@web3modal/wagmi": "5.1.2",
     "@xrpl-wallet-adapter/crossmark": "^0.1.4",
     "@xrpl-wallet-adapter/ledger": "^0.1.0",
     "@xrpl-wallet-adapter/walletconnect": "^0.2.0",
