@@ -484,6 +484,7 @@ export function GMPs({ address }) {
                                 chain={d.call.chain}
                                 width={16}
                                 height={16}
+                                noResolveName={true}
                                 className="w-fit text-xs"
                               />
                             </Tooltip>
