@@ -28,6 +28,7 @@ import { TimeAgo, TimeSpent } from '@/components/Time'
 import { getParams, getQueryString, Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
 import { searchGMP } from '@/lib/api/gmp'
+import { isAxelar } from '@/lib/chain'
 import { ENVIRONMENT } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
 import { isString, equalsIgnoreCase, capitalize, toBoolean, ellipse } from '@/lib/string'
@@ -567,7 +568,7 @@ export function GMPs({ address }) {
                           {d.simplified_status && (
                             <div className="flex items-center space-x-1.5">
                               <Tag className={clsx('w-fit capitalize', d.simplified_status === 'received' ? 'bg-green-600 dark:bg-green-500' : d.simplified_status === 'approved' ? 'bg-orange-500 dark:bg-orange-600' : d.simplified_status === 'failed' ? 'bg-red-600 dark:bg-red-500' : 'bg-yellow-400 dark:bg-yellow-500')}>
-                                {d.simplified_status === 'received' && getEvent(d) === 'ContractCall' ? 'Executed' : d.simplified_status}
+                                {d.simplified_status === 'received' && (getEvent(d) === 'ContractCall' || (getEvent(d) === 'InterchainTransfer' && isAxelar(d.call.returnValues?.destinationChain))) ? 'Executed' : d.simplified_status}
                               </Tag>
                               {d.simplified_status === 'received' && <ExplorerLink value={receivedTransactionHash} chain={d.call.returnValues?.destinationChain} />}
                             </div>
