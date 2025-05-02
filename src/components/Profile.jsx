@@ -244,6 +244,7 @@ export function Profile({
   prefix = 'axelar',
   width = 24,
   height = 24,
+  noResolveName = false,
   noCopy = false,
   customURL,
   useContractLink,
@@ -356,7 +357,7 @@ export function Profile({
         {!noCopy && <Copy size={width < 24 ? 16 : 18} value={address} />}
       </div>
     </div> :
-    address.startsWith('0x') ?
+    address.startsWith('0x') && !noResolveName ?
       <EVMProfile
         address={address}
         chain={chain}
