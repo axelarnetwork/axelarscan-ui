@@ -638,7 +638,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Recipient</dt>
               <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                <Profile address={data.callbackData?.customValues?.recipientAddress || data.customValues.recipientAddress} chain={data.callbackData?.call?.returnValues?.destinationChain || destinationChain} />
+                <Profile address={data.callbackData?.customValues?.recipientAddress || data.customValues.recipientAddress} chain={data.callbackData?.call?.returnValues?.destinationChain || data.customValues.destinationChain || destinationChain} />
               </dd>
             </div>
           )}
