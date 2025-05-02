@@ -2127,7 +2127,7 @@ export function GMP({ tx, lite }) {
 
         const gasLimit = isNumber(estimatedGasUsed) ? estimatedGasUsed : 700000
         const decimals = source_token?.decimals || (headString(chain) === 'sui' ? 9 : 18)
-        const gasAddedAmount = toBigNumber(BigInt(parseUnits(base_fee + express_fee, decimals)) + BigInt(parseUnits(gasLimit * source_token?.gas_price, decimals)))
+        const gasAddedAmount = toBigNumber(BigInt(parseUnits((base_fee + express_fee) * 1.1, decimals)) + BigInt(parseUnits(gasLimit * source_token?.gas_price, decimals)))
 
         if (chain_type === 'evm' || isNumber(sourceChainData?.chain_id)) {
           console.log('[addGas request]', { chain, destinationChain, transactionHash, logIndex, estimatedGasUsed: gasLimit, refundAddress: address })
