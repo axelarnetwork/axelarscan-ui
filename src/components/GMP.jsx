@@ -2242,16 +2242,16 @@ export function GMP({ tx, lite }) {
           })
 
           if (response && stellarWalletStore.provider && stellarWalletStore.network?.sorobanRpcUrl) {
-            const server = new StellarSDK.rpc.Server(stellarWalletStore.network.sorobanRpcUrl, { allowHttp: true })
+            const server = new StellarSDK.rpc.Server(sourceChainData?.endpoints?.rpc?.[0] || stellarWalletStore.network.sorobanRpcUrl, { allowHttp: true })
 
-            const preparedTransaction = await server.prepareTransaction(StellarSDK.TransactionBuilder.fromXDR(response, stellarWalletStore.network.network))
-            response = await stellarWalletStore.provider.signTransaction(preparedTransaction.toXDR(), stellarWalletStore.network.network)
+            const preparedTransaction = await server.prepareTransaction(StellarSDK.TransactionBuilder.fromXDR(response, stellarWalletStore.network.networkPassphrase))
+            response = await stellarWalletStore.provider.signTransaction(preparedTransaction.toXDR(), stellarWalletStore.network.network === 'STANDALONE' ? ENVIRONMENT === 'mainnet' ? 'PUBLIC' : 'TESTNET' : stellarWalletStore.network.network)
 
             if (response?.signedTxXdr) {
               console.log('[stellar sendTransaction]', { ...response, network: stellarWalletStore.network })
 
               try {
-                response = await server.sendTransaction(StellarSDK.TransactionBuilder.fromXDR(response.signedTxXdr, stellarWalletStore.network.network))
+                response = await server.sendTransaction(StellarSDK.TransactionBuilder.fromXDR(response.signedTxXdr, stellarWalletStore.network.networkPassphrase))
                 response.error = JSON.parse(JSON.stringify(response.errorResult))._attributes.result._switch.name
               } catch (error) {}
             }
