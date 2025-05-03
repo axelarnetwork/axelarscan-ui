@@ -16,7 +16,7 @@ import { Profile, ChainProfile } from '@/components/Profile'
 import { TimeAgo } from '@/components/Time'
 import { ExplorerLink } from '@/components/ExplorerLink'
 import { useGlobalStore } from '@/components/Global'
-import { getRPCStatus, searchVMProofs } from '@/lib/api/validator'
+import { getRPCStatus, searchAmplifierProofs } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
 import { toArray } from '@/lib/parser'
 import { equalsIgnoreCase, capitalize, headString, lastString, ellipse, toTitle } from '@/lib/string'
@@ -377,7 +377,7 @@ export function AmplifierProof({ id }) {
   useEffect(() => {
     const getData = async () => {
       if (blockData) {
-        const { data } = { ...await searchVMProofs({ multisigContractAddress: id.includes('_') ? headString(id, '_') : undefined, sessionId: lastString(id, '_') }) }
+        const { data } = { ...await searchAmplifierProofs({ multisigContractAddress: id.includes('_') ? headString(id, '_') : undefined, sessionId: lastString(id, '_') }) }
         let d = _.head(data)
 
         if (d) {

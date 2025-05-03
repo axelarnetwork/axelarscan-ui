@@ -24,7 +24,7 @@ import { ExplorerLink } from '@/components/ExplorerLink'
 import { TimeAgo } from '@/components/Time'
 import { getParams, getQueryString, Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
-import { getRPCStatus, searchVMPolls } from '@/lib/api/validator'
+import { getRPCStatus, searchAmplifierPolls } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
 import { equalsIgnoreCase, capitalize, toBoolean, ellipse, toTitle } from '@/lib/string'
@@ -248,7 +248,7 @@ export function AmplifierPolls() {
   useEffect(() => {
     const getData = async () => {
       if (params && toBoolean(refresh) && blockData) {
-        const { data, total } = { ...await searchVMPolls({ ...params, size }) }
+        const { data, total } = { ...await searchAmplifierPolls({ ...params, size }) }
 
         setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: {
           data: _.orderBy(toArray(data).map(d => {
