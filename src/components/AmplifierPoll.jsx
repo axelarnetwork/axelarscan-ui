@@ -16,7 +16,7 @@ import { Profile, ChainProfile } from '@/components/Profile'
 import { TimeAgo } from '@/components/Time'
 import { ExplorerLink } from '@/components/ExplorerLink'
 import { useGlobalStore } from '@/components/Global'
-import { getRPCStatus, searchVMPolls } from '@/lib/api/validator'
+import { getRPCStatus, searchAmplifierPolls } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
 import { toArray } from '@/lib/parser'
 import { equalsIgnoreCase, capitalize, headString, lastString, ellipse, toTitle } from '@/lib/string'
@@ -323,7 +323,7 @@ export function AmplifierPoll({ id }) {
   useEffect(() => {
     const getData = async () => {
       if (blockData) {
-        const { data } = { ...await searchVMPolls({ verifierContractAddress: id.includes('_') ? headString(id, '_') : undefined, pollId: lastString(id, '_') }) }
+        const { data } = { ...await searchAmplifierPolls({ verifierContractAddress: id.includes('_') ? headString(id, '_') : undefined, pollId: lastString(id, '_') }) }
         let d = _.head(data)
 
         if (d) {

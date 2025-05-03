@@ -24,7 +24,7 @@ import { ExplorerLink } from '@/components/ExplorerLink'
 import { TimeAgo } from '@/components/Time'
 import { getParams, getQueryString, Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
-import { getRPCStatus, searchVMProofs } from '@/lib/api/validator'
+import { getRPCStatus, searchAmplifierProofs } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
 import { equalsIgnoreCase, capitalize, toBoolean, headString, ellipse, toTitle } from '@/lib/string'
@@ -249,7 +249,7 @@ export function AmplifierProofs() {
   useEffect(() => {
     const getData = async () => {
       if (params && toBoolean(refresh) && blockData) {
-        const { data, total } = { ...await searchVMProofs({ ...params, size }) }
+        const { data, total } = { ...await searchAmplifierProofs({ ...params, size }) }
 
         setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: {
           data: _.orderBy(toArray(data).map(d => {

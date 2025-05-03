@@ -17,7 +17,7 @@ import { Number } from '@/components/Number'
 import { Profile } from '@/components/Profile'
 import { TimeAgo } from '@/components/Time'
 import { useGlobalStore } from '@/components/Global'
-import { getRPCStatus, searchVMPolls, searchVMProofs, getVerifiersSigns, getVerifiersRewards, searchVerifiersRewards } from '@/lib/api/validator'
+import { getRPCStatus, searchAmplifierPolls, searchAmplifierProofs, getVerifiersSigns, getVerifiersRewards, searchVerifiersRewards } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
 import { toArray } from '@/lib/parser'
 import { equalsIgnoreCase } from '@/lib/string'
@@ -419,7 +419,7 @@ export function Verifier({ address }) {
                   const toBlock = latest_block_height - 1
                   const fromBlock = 1 // toBlock - NUM_LATEST_BLOCKS
 
-                  const data = verifierAddress && (await searchVMPolls({ voter: verifierAddress, fromBlock, toBlock, size }))?.data
+                  const data = verifierAddress && (await searchAmplifierPolls({ voter: verifierAddress, fromBlock, toBlock, size }))?.data
                   setVotes(toArray(data).map(d => Object.fromEntries(
                     Object.entries(d).filter(([k, v]) => !k.startsWith('axelar') || equalsIgnoreCase(k, verifierAddress)).flatMap(([k, v]) =>
                       equalsIgnoreCase(k, verifierAddress) ? Object.entries({ ...v }).map(([_k, _v]) => [_k === 'id' ? 'txhash' : _k, _v]) : [[k, v]]
@@ -432,7 +432,7 @@ export function Verifier({ address }) {
                   const toBlock = latest_block_height - 1
                   const fromBlock = 1 // toBlock - NUM_LATEST_BLOCKS
 
-                  const data = verifierAddress && (await searchVMProofs({ signer: verifierAddress, fromBlock, toBlock, size }))?.data
+                  const data = verifierAddress && (await searchAmplifierProofs({ signer: verifierAddress, fromBlock, toBlock, size }))?.data
                   setSigns(toArray(data).map(d => Object.fromEntries(
                     Object.entries(d).filter(([k, v]) => !k.startsWith('axelar') || equalsIgnoreCase(k, verifierAddress)).flatMap(([k, v]) =>
                       equalsIgnoreCase(k, verifierAddress) ? Object.entries({ ...v }).map(([_k, _v]) => [_k === 'id' ? 'txhash' : _k, _v]) : [[k, v]]
