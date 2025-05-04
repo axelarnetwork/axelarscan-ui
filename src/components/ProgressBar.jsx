@@ -1,10 +1,15 @@
+'use client'
+
 import clsx from 'clsx'
 
 import { Number } from '@/components/Number'
 import { isNumber, toNumber } from '@/lib/number'
 
 export function ProgressBar({ value, className, valueClassName }) {
-  value = isNumber(value) ? toNumber(value) : value
+  if (isNumber(value)) {
+    value = toNumber(value)
+  }
+
   return isNumber(value) && (
     <div className="w-full bg-zinc-50 dark:bg-zinc-800">
       <div className={clsx('bg-blue-600 dark:bg-blue-500 font-medium text-center leading-none p-0.5', className)} style={{ width: `${value}%` }}>
