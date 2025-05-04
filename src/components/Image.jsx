@@ -1,3 +1,5 @@
+'use client'
+
 import NextImage from 'next/image'
 import clsx from 'clsx'
 
@@ -14,11 +16,11 @@ export function Image({ src, alt = '', className, ...props }) {
       src={src}
       loader={() => loader({ ...props, src })}
       unoptimized
-      className={clsx(className, !isString(src) ? '' :
-        includesSomePatterns(src, ['/immutable', '/ropsten']) ? 'bg-white rounded-full' :
-        includesSomePatterns(src, ['/dymension', '/saga', '/moonbase', '/moonbeam', '/stellar', '/xion', '/allora', '/xrpl']) ? 'bg-white rounded-full p-0.5' :
+      className={clsx(className, isString(src) && (
+        includesSomePatterns(src, ['/immutable']) ? 'bg-white rounded-full' :
+        includesSomePatterns(src, ['/moonbeam', '/moonbase', '/dymension', '/saga', '/xion', '/allora', '/stellar', '/xrpl']) ? 'bg-white rounded-full p-0.5' :
         includesSomePatterns(src, ['/blast']) ? 'bg-zinc-900 rounded-full p-0.5' : ''
-      )}
+      ))}
     />
   )
 }

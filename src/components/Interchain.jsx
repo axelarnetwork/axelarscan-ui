@@ -24,12 +24,12 @@ import { Spinner } from '@/components/Spinner'
 import { Number } from '@/components/Number'
 import { Profile, ChainProfile, AssetProfile } from '@/components/Profile'
 import { TimeAgo, TimeSpent } from '@/components/Time'
-import { getParams, getQueryString } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
 import { GMPStats, GMPStatsByChains, GMPStatsByContracts, GMPChart, GMPTotalVolume, GMPTopUsers, GMPTopITSAssets } from '@/lib/api/gmp'
 import { transfersStats, transfersChart, transfersTotalVolume, transfersTopUsers } from '@/lib/api/token-transfer'
 import { ENVIRONMENT, getChainData, getAssetData, getITSAssetData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
+import { getParams, getQueryString } from '@/lib/operator'
 import { equalsIgnoreCase, toBoolean, headString, lastString, toTitle } from '@/lib/string'
 import { isNumber, toNumber, toFixed, numberFormat } from '@/lib/number'
 import { timeDiff } from '@/lib/time'
@@ -1377,7 +1377,7 @@ export function Interchain() {
       }
     }
     getData()
-  }, [stats, params, data, setData, refresh, setRefresh])
+  }, [params, data, setData, refresh, setRefresh, stats, assets, globalStore.itsAssets, types, granularity])
 
   useEffect(() => {
     const getData = async () => {
@@ -1395,7 +1395,7 @@ export function Interchain() {
       }
     }
     getData()
-  }, [params, setTimeSpentData, refresh, setRefresh])
+  }, [params, setTimeSpentData, refresh, setRefresh, types])
 
   useEffect(() => {
     const interval = setInterval(() => setRefresh('true'), 5 * 60 * 1000)

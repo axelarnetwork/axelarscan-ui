@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useState } from 'react'
 import { useTheme } from 'next-themes'
 
@@ -23,12 +25,13 @@ function MoonIcon(props) {
 
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme()
-  const otherTheme = resolvedTheme === 'dark' ? 'light' : 'dark'
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  const otherTheme = resolvedTheme === 'dark' ? 'light' : 'dark'
 
   return (
     <button

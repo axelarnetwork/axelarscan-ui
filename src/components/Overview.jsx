@@ -338,7 +338,7 @@ export function Overview() {
       }
     }
     getData()
-  }, [data, setNetworkGraph])
+  }, [data, setNetworkGraph, chains])
 
   const groupData = (data, by = 'key') => Object.entries(_.groupBy(toArray(data), by)).map(([k, v]) => ({
     key: _.head(v)?.key || k,

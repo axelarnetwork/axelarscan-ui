@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useState } from 'react'
 import { useWeb3Modal } from '@web3modal/wagmi/react'
 import { usePublicClient, useChainId, useSwitchChain, useWalletClient, useAccount, useDisconnect, useSignMessage } from 'wagmi'

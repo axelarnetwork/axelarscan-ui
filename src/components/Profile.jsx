@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { create } from 'zustand'
@@ -7,14 +9,13 @@ import moment from 'moment'
 
 import { Image } from '@/components/Image'
 import { Copy } from '@/components/Copy'
-import { Spinner } from '@/components/Spinner'
 import { Number } from '@/components/Number'
 import { useGlobalStore } from '@/components/Global'
 import { getKeybaseUser } from '@/lib/api/keybase'
 import { getENS } from '@/lib/api/name-services/ens'
 import { getSpaceID } from '@/lib/api/name-services/spaceid'
 import { ENVIRONMENT, getChainData, getAssetData, getITSAssetData } from '@/lib/config'
-import { getIcapAddress, toHex, split, toArray } from '@/lib/parser'
+import { getIcapAddress, toHex, toCase, split, toArray } from '@/lib/parser'
 import { equalsIgnoreCase, capitalize, includesSomePatterns, ellipse } from '@/lib/string'
 import { isNumber } from '@/lib/number'
 import { timeDiff } from '@/lib/time'
@@ -44,8 +45,11 @@ export function SpaceIDProfile({
   useEffect(() => {
     const setDefaultData = (addresses, data) => {
       addresses.forEach(a => {
-        if (!data?.[a]) data = { ...data, [a]: {} }
+        if (!data?.[a]) {
+          data = { ...data, [a]: {} }
+        }
       })
+
       return data
     }
 
@@ -58,7 +62,7 @@ export function SpaceIDProfile({
           setSpaceID({ ...data })
 
           data = await getSpaceID(addresses)
-          setDefaultData(addresses, data)
+          data = setDefaultData(addresses, data)
           setSpaceID({ ...data })
         }
       }
@@ -67,7 +71,7 @@ export function SpaceIDProfile({
     getData()
   }, [address, spaceID, setSpaceID])
 
-  const { name } = { ...spaceID?.[address?.toLowerCase()] }
+  const { name } = { ...spaceID?.[toCase(address, 'lower')] }
   const src = SpaceIDLogo
 
   const element = name ?
@@ -97,7 +101,7 @@ export function SpaceIDProfile({
         />
       }
       {url ?
-        <div className="flex items-center gap-x-1">
+        <div className={clsx('flex items-center gap-x-1', className)}>
           <Link
             href={url}
             target="_blank"
@@ -107,7 +111,13 @@ export function SpaceIDProfile({
           </Link>
           {!noCopy && <Copy size={width < 24 ? 16 : 18} value={address} />}
         </div> :
-        noCopy ? element : <Copy size={width < 24 ? 16 : 18} value={address}><span className={clsx(className)}>{element}</span></Copy>
+        noCopy ?
+          element :
+          <Copy size={width < 24 ? 16 : 18} value={address}>
+            <span className={clsx(className)}>
+              {element}
+            </span>
+          </Copy>
       }
     </div> :
     <ENSProfile
@@ -135,8 +145,11 @@ export function ENSProfile({
   useEffect(() => {
     const setDefaultData = (addresses, data) => {
       addresses.forEach(a => {
-        if (!data?.[a]) data = { ...data, [a]: {} }
+        if (!data?.[a]) {
+          data = { ...data, [a]: {} }
+        }
       })
+
       return data
     }
 
@@ -149,7 +162,7 @@ export function ENSProfile({
           setENS({ ...data })
 
           data = await getENS(addresses)
-          setDefaultData(addresses, data)
+          data = setDefaultData(addresses, data)
           setENS({ ...data })
         }
       }
@@ -158,7 +171,7 @@ export function ENSProfile({
     getData()
   }, [address, ens, setENS])
 
-  const { name } = { ...ens?.[address?.toLowerCase()] }
+  const { name } = { ...ens?.[toCase(address, 'lower')] }
   const src = `https://metadata.ens.domains/mainnet/avatar/${name}`
 
   const element = name ?
@@ -169,26 +182,27 @@ export function ENSProfile({
       {ellipse(address, 4, '0x')}
     </span>
 
-  return name ?
+  return (
     <div className="flex items-center">
-      {typeof image404 === 'boolean' ?
-        <Image
-          src={image404 ? ENSLogo : src}
-          alt=""
-          width={width}
-          height={height}
-          className={clsx('rounded-full', width === 24 && 'w-6 3xl:w-8 h-6 3xl:h-8', width < 24 ? 'mr-1.5' : 'mr-2 3xl:mr-3')}
-        /> :
-        <img
-          src={src}
-          alt=""
-          onLoad={() => setImage404(false)}
-          onError={() => setImage404(true)}
-          className={clsx('rounded-full', width === 24 ? 'w-6 3xl:w-8 h-6 3xl:h-8' : 'w-5 h-5', width < 24 ? 'mr-1.5' : 'mr-2 3xl:mr-3')}
-        />
-      }
+      {name && (
+        typeof image404 === 'boolean' ?
+          <Image
+            src={image404 ? ENSLogo : src}
+            alt=""
+            width={width}
+            height={height}
+            className={clsx('rounded-full', width === 24 && 'w-6 3xl:w-8 h-6 3xl:h-8', width < 24 ? 'mr-1.5' : 'mr-2 3xl:mr-3')}
+          /> :
+          <img
+            src={src}
+            alt=""
+            onLoad={() => setImage404(false)}
+            onError={() => setImage404(true)}
+            className={clsx('rounded-full', width === 24 ? 'w-6 3xl:w-8 h-6 3xl:h-8' : 'w-5 h-5', width < 24 ? 'mr-1.5' : 'mr-2 3xl:mr-3')}
+          />
+      )}
       {url ?
-        <div className="flex items-center gap-x-1">
+        <div className={clsx('flex items-center gap-x-1', className)}>
           <Link
             href={url}
             target="_blank"
@@ -198,25 +212,21 @@ export function ENSProfile({
           </Link>
           {!noCopy && <Copy size={width < 24 ? 16 : 18} value={address} />}
         </div> :
-        noCopy ? element : <Copy size={width < 24 ? 16 : 18} value={address}><span className={clsx(className)}>{element}</span></Copy>
+        noCopy ?
+          element :
+          <Copy size={width < 24 ? 16 : 18} value={address}>
+            <span className={clsx(className)}>
+              {element}
+            </span>
+          </Copy>
       }
-    </div> :
-    url ?
-      <div className={clsx('flex items-center gap-x-1', className)}>
-        <Link
-          href={url}
-          target="_blank"
-          className="text-blue-600 dark:text-blue-500 font-medium"
-        >
-          {element}
-        </Link>
-        {!noCopy && <Copy size={width < 24 ? 16 : 18} value={address} />}
-      </div> :
-      noCopy ? element : <Copy size={width < 24 ? 16 : 18} value={address}><span className={clsx(className)}>{element}</span></Copy>
+    </div>
+  )
 }
 
 export function EVMProfile({ chain, ...props }) {
   let Profile
+
   switch (chain) {
     case 'binance':
     case 'arbitrum':
@@ -226,6 +236,7 @@ export function EVMProfile({ chain, ...props }) {
       Profile = ENSProfile
       break
   }
+
   return <Profile chain={chain} {...props} />
 }
 
@@ -253,79 +264,127 @@ export function Profile({
   const { chains, contracts, configurations, validators, verifiers } = useGlobalStore()
   const { validatorImages, setValidatorImages } = useValidatorImagesStore()
 
-  address = Array.isArray(address) ? toHex(address) : address
-  chain = address?.startsWith('axelar') ? 'axelarnet' : chain?.toLowerCase()
-  prefix = !address ? prefix : address.startsWith('axelar') && !prefix?.startsWith('axelar') ? 'axelar1' : address.startsWith('0x') ? '0x' : _.head(split(address, { delimiter: '' }).filter(c => isNumber(c))) === '1' ? address.substring(0, address.indexOf('1') + 1) : prefix
-
-  const { interchain_token_service_contract, gateway_contracts, gas_service_contracts } = { ...contracts }
-  const itss = toArray(interchain_token_service_contract?.addresses).map(a => ({ address: a, name: 'Interchain Token Service', image: AXELAR_LOGO }))
-  const gateways = Object.values({ ...gateway_contracts }).filter(d => d.address).map(d => ({ ...d, name: 'Axelar Gateway', image: AXELAR_LOGO }))
-  const gasServices = Object.values({ ...gas_service_contracts }).filter(d => d.address).map(d => ({ ...d, name: 'Axelar Gas Service', image: AXELAR_LOGO }))
-
-  const { relayers, express_relayers, refunders } = { ...configurations }
-  const executorRelayers = _.uniq(toArray(_.concat(relayers, refunders, Object.keys({ ...broadcasters[ENVIRONMENT] })))).map(a => ({ address: a, name: 'Axelar Relayer', image: AXELAR_LOGO }))
-  const expressRelayers = _.uniq(toArray(express_relayers)).map(a => ({ address: a, name: 'Axelar Express Relayer', image: AXELAR_LOGO }))
-
-  // custom
-  let { name, image } = { ...toArray(_.concat(accounts, itss, gateways, gasServices, executorRelayers, expressRelayers)).find(d => equalsIgnoreCase(d.address, address) && (!d.environment || equalsIgnoreCase(d.environment, ENVIRONMENT))) }
-
-  // validator & verifier
-  let isValidator
-  let isVerifier
-  if (address?.startsWith('axelar')) {
-    if (!name && validators) {
-      const { broadcaster_address, operator_address, description } = { ...validators.find(d => includesSomePatterns(address, toArray([d.broadcaster_address, d.operator_address, d.delegator_address, d.consensus_address], { toCase: 'lower' }))) }
-      const { moniker } = { ...description }
-
-      if (moniker) name = `${moniker}${equalsIgnoreCase(address, broadcaster_address) ? `: Proxy` : ''}`
-      image = validatorImages[operator_address]?.image || image
-      isValidator = !!operator_address
-    }
-
-    if (verifiers) {
-      const verifierData = verifiers.find(d => includesSomePatterns(address, toArray([d.address], { toCase: 'lower' })))
-      isVerifier = !!verifierData?.address
-    }
-  }
-
-  // Icap address format for EVM
-  address = address?.startsWith('0x') && address !== '0x' ? getIcapAddress(address) : address
-
+  // get validator image
   useEffect(() => {
     const getData = async () => {
       if (address?.startsWith('axelar') && validators) {
-        const { operator_address, description } = { ...validators.find(d => includesSomePatterns(address, toArray([d.broadcaster_address, d.operator_address, d.delegator_address], { toCase: 'lower' }))) }
+        const { operator_address, description } = { ...validators.find(d => includesSomePatterns(address, [d.broadcaster_address, d.operator_address, d.delegator_address])) }
         const { moniker, identity } = { ...description }
 
         let value = validatorImages[operator_address]
         let { image } = { ...value }
 
-        if (image && timeDiff(value.updatedAt) < 3600) value = null
+        if (image && timeDiff(value.updatedAt) < 3600) {
+          value = undefined
+        }
         else if (identity) {
           const { them } = { ...await getKeybaseUser({ key_suffix: identity }) }
-          const { url } = { ..._.head(them)?.pictures?.primary }
-          image = url || image
+          const { url } = { ...them?.[0]?.pictures?.primary }
+
+          if (url) {
+            image = url
+          }
+
           value = { image, updatedAt: moment().valueOf() }
         }
-        else value = null
-
-        if (!image) {
-          if (moniker?.startsWith('axelar-core-')) image = AXELAR_LOGO
-          else if (!identity) image = randImage()
-          if (image) value = { image, updatedAt: moment().valueOf() }
+        else {
+          value = undefined
         }
 
-        if (value) setValidatorImages({ [operator_address]: value })
+        if (!image) {
+          if (moniker?.startsWith('axelar-core-')) {
+            image = AXELAR_LOGO
+          }
+          else if (!identity) {
+            image = randImage()
+          }
+
+          if (image) {
+            value = { image, updatedAt: moment().valueOf() }
+          }
+        }
+
+        if (value) {
+          setValidatorImages({ [operator_address]: value })
+        }
       }
     }
+
     getData()
   }, [address, validators, setValidatorImages])
 
+  if (!address) return
+
+  if (Array.isArray(address)) {
+    address = toHex(address)
+  }
+
+  // set chain to axelar when address prefix is 'axelar'
+  chain = address.startsWith('axelar') ? 'axelarnet' : toCase(chain, 'lower')
+
+  // auto set prefix by address
+  if (address.startsWith('axelar') && !prefix?.startsWith('axelar')) {
+    prefix = 'axelar1'
+  }
+  else if (address.startsWith('0x')) {
+    prefix = '0x'
+  }
+  else if (getChainData(chain, chains)?.chain_type === 'cosmos' && split(address, { delimiter: '' }).filter(c => isNumber(c))[0] === '1') {
+    prefix = address.substring(0, address.indexOf('1') + 1)
+  }
+
+  // contracts
+  const { interchain_token_service_contract, gateway_contracts, gas_service_contracts } = { ...contracts }
+
+  const itss = toArray(interchain_token_service_contract?.addresses).map(a => ({ address: a, name: 'Interchain Token Service', image: AXELAR_LOGO }))
+  const gateways = Object.values({ ...gateway_contracts }).filter(d => d.address).map(d => ({ ...d, name: 'Axelar Gateway', image: AXELAR_LOGO }))
+  const gasServices = Object.values({ ...gas_service_contracts }).filter(d => d.address).map(d => ({ ...d, name: 'Axelar Gas Service', image: AXELAR_LOGO }))
+
+  // relayers
+  const { relayers, express_relayers, refunders } = { ...configurations }
+
+  const executorRelayers = _.uniq(toArray(_.concat(relayers, refunders, Object.keys({ ...broadcasters[ENVIRONMENT] })))).map(a => ({ address: a, name: 'Axelar Relayer', image: AXELAR_LOGO }))
+  const expressRelayers = _.uniq(toArray(express_relayers)).map(a => ({ address: a, name: 'Axelar Express Relayer', image: AXELAR_LOGO }))
+
+  // get custom profile
+  let { name, image } = { ..._.concat(accounts, itss, gateways, gasServices, executorRelayers, expressRelayers).find(d => equalsIgnoreCase(d.address, address) && (!d.environment || equalsIgnoreCase(d.environment, ENVIRONMENT))) }
+
+  // validator | verifier
+  let isValidator
+  let isVerifier
+
+  // axelar address
+  if (address.startsWith('axelar')) {
+    if (!name && validators) {
+      const { broadcaster_address, operator_address, description } = { ...validators.find(d => includesSomePatterns(address, [d.broadcaster_address, d.operator_address, d.delegator_address, d.consensus_address])) }
+
+      isValidator = !!operator_address
+
+      if (description?.moniker) {
+        name = `${description.moniker}${address === broadcaster_address ? `: Proxy` : ''}`
+      }
+
+      if (validatorImages[operator_address]?.image) {
+        image = validatorImages[operator_address].image
+      }
+    }
+
+    if (verifiers) {
+      isVerifier = verifiers.findIndex(d => d.address === address) > -1
+    }
+  }
+
+  // Icap address format for EVM
+  if (address.startsWith('0x') && address !== '0x') {
+    address = getIcapAddress(address)
+  }
+
   const { explorer } = { ...getChainData(chain, chains) }
+
   const path = useContractLink && explorer?.cannot_link_contract_via_address_path && explorer.contract_path ? explorer.contract_path : explorer?.address_path
   const url = customURL || (explorer ? `${explorer.url}${path?.replace('{address}', address).replace(prefix === 'axelarvaloper' || isVerifier ? '/account' : '', prefix === 'axelarvaloper' ? '/validator' : isVerifier ? '/verifier' : '')}` : undefined)
 
-  return address && (name ?
+  return name ?
     <div className={clsx('min-w-max flex items-center', width < 24 ? 'gap-x-1.5' : 'gap-x-2 3xl:gap-x-3', className)}>
       {image ?
         <Image
@@ -335,7 +394,6 @@ export function Profile({
           height={height}
           className={clsx('rounded-full', width === 24 && 'w-6 3xl:w-8 h-6 3xl:h-8')}
         /> :
-        // isValidator && <Spinner className="!w-6 !h-6" />
         isValidator && (
           <Image
             src={randImage(i)}
@@ -346,7 +404,7 @@ export function Profile({
           />
         )
       }
-      <div className="flex items-center gap-x-1">
+      <div className={clsx('flex items-center gap-x-1', className)}>
         <Link
           href={url || `/${address.startsWith('axelar') ? prefix === 'axelarvaloper' ? 'validator' : isVerifier ? 'verifier' : 'account' : 'address'}/${address}`}
           target="_blank"
@@ -370,7 +428,7 @@ export function Profile({
       url ?
         <div className={clsx('flex items-center gap-x-1', className)}>
           <Link
-            href={url || `/${address.startsWith('axelar') ? prefix === 'axelarvaloper' ? 'validator' : isVerifier ? 'verifier' : 'account' : 'address'}/${address}`}
+            href={url}
             target="_blank"
             className="text-blue-600 dark:text-blue-500 font-medium"
           >
@@ -378,8 +436,11 @@ export function Profile({
           </Link>
           {!noCopy && <Copy size={width < 24 ? 16 : 18} value={address} />}
         </div> :
-        <Copy size={width < 24 ? 16 : 18} value={address}><span className={clsx(className)}>{ellipse(address, 4, prefix)}</span></Copy>
-  )
+        <Copy size={width < 24 ? 16 : 18} value={address}>
+          <span className={clsx(className)}>
+            {ellipse(address, 4, prefix)}
+          </span>
+        </Copy>
 }
 
 export function ChainProfile({
@@ -390,9 +451,12 @@ export function ChainProfile({
   titleClassName,
 }) {
   const { chains } = useGlobalStore()
+
+  if (!value) return
+
   const { name, image } = { ...getChainData(value, chains) }
 
-  return value && (
+  return (
     <div className={clsx('min-w-max flex items-center gap-x-2', className)}>
       <Image
         src={image}
@@ -424,15 +488,33 @@ export function AssetProfile({
 }) {
   const { chains, assets, itsAssets } = useGlobalStore()
 
-  const assetData = (!onlyITS && getAssetData(addressOrDenom || value, assets)) || (ITSPossible && getITSAssetData(addressOrDenom || value, itsAssets)) || customAssetData
+  if (!value) return
+
+  const assetData = (!onlyITS && getAssetData(addressOrDenom || value, assets)) ||
+    (ITSPossible && getITSAssetData(addressOrDenom || value, itsAssets)) ||
+    customAssetData
+
   const { addresses } = { ...assetData }
   let { symbol, image } = { ...assetData }
 
-  if (!chain && assetData?.chains) chain = _.head(Object.keys(assetData.chains))
-  symbol = addresses?.[chain]?.symbol || symbol
-  image = addresses?.[chain]?.image || image
+  // default to first chain
+  if (!chain && assetData?.chains) {
+    chain = Object.keys(assetData.chains)[0]
+  }
+
+  // set symbol and image of specific chain if exists
+  if (addresses?.[chain]) {
+    if (addresses[chain].symbol) {
+      symbol = addresses[chain].symbol
+    }
+
+    if (addresses[chain].image) {
+      image = addresses[chain].image
+    }
+  }
 
   const { url, contract_path } = { ...getChainData(chain, chains)?.explorer }
+
   const element = value && (
     <div className={clsx('min-w-max flex items-center', isNumber(amount) ? 'gap-x-1.5' : 'gap-x-2', className)}>
       <Image
@@ -454,9 +536,13 @@ export function AssetProfile({
     </div>
   )
 
-  return !value ? undefined : isLink && url ? (
-    <Link href={`${url}${contract_path?.replace('{address}', addressOrDenom || value)}`} target="_blank">
-      {element}
-    </Link>
-  ) : element
+  if (isLink && url) {
+    return (
+      <Link href={`${url}${contract_path?.replace('{address}', addressOrDenom || value)}`} target="_blank">
+        {element}
+      </Link>
+    )
+  }
+
+  return element
 }
