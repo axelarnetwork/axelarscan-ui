@@ -4,7 +4,6 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import clsx from 'clsx'
-import _ from 'lodash'
 import { FiSearch } from 'react-icons/fi'
 
 import { Spinner } from '@/components/Spinner'
@@ -18,7 +17,7 @@ import { getSpaceID } from '@/lib/api/name-services/spaceid'
 import { getSlug } from '@/lib/navigation'
 import { getITSAssetData } from '@/lib/config'
 import { getInputType, split, toArray } from '@/lib/parser'
-import { equalsIgnoreCase } from '@/lib/string'
+import { equalsIgnoreCase, find } from '@/lib/string'
 
 export function Search() {
   const pathname = usePathname()
@@ -36,39 +35,54 @@ export function Search() {
 
     if (type) {
       setSearching(true)
+
       const { resolvedAddress } = { ...Object.values({ ...ens }).find(v => equalsIgnoreCase(v.name, _input)) }
       const spaceIDDomain = Object.values({ ...spaceID }).find(v => equalsIgnoreCase(v.name, _input))
 
+      // ens
       if (resolvedAddress) {
-        const { id } = { ...resolvedAddress }
-        _input = id
+        _input = resolvedAddress.id
         type = 'address'
       }
+      // space id
       else if (spaceIDDomain) {
-        const { address } = { ...spaceIDDomain }
-        _input = address
+        _input = spaceIDDomain.address
         type = 'address'
       }
+      // domain name
       else if (type === 'domainName') {
         type = 'address'
       }
-      else if (['evmAddress', 'axelarAddress', 'cosmosAddress'].includes(type)) type = type === 'axelarAddress' ? 'account' : 'address'
-      else if (['txhash', 'tx'].includes(type)) {
-        if ((await searchGMP({ txHash: _input, size: 0 }))?.total) type = 'gmp'
-        else if ((await searchTransfers({ txHash: _input, size: 0 }))?.total) type = 'transfer'
-        else type = type === 'txhash' ? 'gmp' : 'tx'
+      // address
+      else if (['axelarAddress', 'evmAddress', 'cosmosAddress'].includes(type)) {
+        type = type === 'axelarAddress' ? 'account' : 'address'
       }
-
-      if (_input && type === 'address') {
-        if (getITSAssetData(_input, itsAssets)) {
+      // transaction
+      else if (['txhash', 'tx'].includes(type)) {
+        if ((await searchGMP({ txHash: _input, size: 0 }))?.total) {
           type = 'gmp'
-          _input = `search?assetType=its&itsTokenAddress=${_input}`
+        }
+        else if ((await searchTransfers({ txHash: _input, size: 0 }))?.total) {
+          type = 'transfer'
+        }
+        else {
+          type = type === 'txhash' ? 'gmp' : 'tx'
         }
       }
 
       if (_input && type === 'address') {
+        // its asset
+        if (getITSAssetData(_input, itsAssets)) {
+          _input = `search?assetType=its&itsTokenAddress=${_input}`
+          type = 'gmp'
+        }
+      }
+
+      // get domain name
+      if (_input && type === 'address') {
         await Promise.all(['ens', 'spaceid'].map(k => new Promise(async resolve => {
           const addresses = toArray(_input, { toCase: 'lower' })
+
           switch (k) {
             case 'ens':
               setENS(await getENS(addresses.filter(a => !ens?.[a])))
@@ -79,20 +93,22 @@ export function Search() {
             default:
               break
           }
+
           resolve()
         })))
       }
 
       router.push(`/${type}/${_input}`)
-      setInput('')
       ref.current.blur()
+      setInput('')
+
       setSearching(false)
     }
   }
 
   const tx = getSlug(pathname, 'tx')
   const address = getSlug(pathname, 'address')
-  const searchable = !searching && input && toArray([tx, address]).findIndex(s => equalsIgnoreCase(s, input)) < 0
+  const searchable = !searching && !!input && !find(input, [tx, address])
 
   return itsAssets && (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -106,7 +122,7 @@ export function Search() {
           className={clsx(
             'w-full sm:w-80 min-w-56 h-10 bg-white dark:bg-zinc-900 appearance-none border-zinc-200 hover:border-blue-300 focus:border-blue-600 dark:border-zinc-700 dark:hover:border-blue-800 dark:focus:border-blue-500 focus:ring-0 rounded-lg text-sm pl-3',
             searching ? 'text-zinc-400 dark:text-zinc-600' : 'text-zinc-600 dark:text-zinc-400',
-            searchable || searching ? 'pr-10' : 'pr-3',
+            searching || searchable ? 'pr-10' : 'pr-3',
           )}
         />
         {searchable && (

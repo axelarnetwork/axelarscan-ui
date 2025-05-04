@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useState } from 'react'
 import { Switch as HeadlessSwitch } from '@headlessui/react'
 import clsx from 'clsx'
@@ -10,7 +12,9 @@ export function Switch({ value, onChange, title, groupClassName, outerClassName,
   }, [value, setEnabled])
 
   useEffect(() => {
-    if (onChange) onChange(enabled)
+    if (onChange) {
+      onChange(enabled)
+    }
   }, [onChange, enabled])
 
   return (
@@ -35,7 +39,9 @@ export function Switch({ value, onChange, title, groupClassName, outerClassName,
       </HeadlessSwitch>
       {title && (
         <HeadlessSwitch.Label as="span" className={clsx('text-sm', labelClassName)}>
-          <span className={clsx('text-zinc-900 dark:text-zinc-100 font-medium', titleClassName)}>{title}</span>
+          <span className={clsx('text-zinc-900 dark:text-zinc-100 font-medium', titleClassName)}>
+            {title}
+          </span>
         </HeadlessSwitch.Label>
       )}
     </HeadlessSwitch.Group>
