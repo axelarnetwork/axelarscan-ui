@@ -11,7 +11,9 @@ import { Header } from '@/components/Header'
 
 export function Layout({ children }) {
   const pathname = usePathname()
+
   const lite = pathname.startsWith('/lite/')
+
   const noHeader = lite
   const noStatusMessage = lite || ['/tvl'].includes(pathname)
   const noFooter = lite || ['/tvl'].includes(pathname)
@@ -37,7 +39,9 @@ export function Layout({ children }) {
         </>
       )}
       <div className={clsx('relative flex flex-col', !noFooter && 'h-full')}>
-        <main className="bg-white dark:bg-zinc-900 flex-auto">{children}</main>
+        <main className="bg-white dark:bg-zinc-900 flex-auto">
+          {children}
+        </main>
         {!noFooter && <Footer />}
       </div>
     </div>

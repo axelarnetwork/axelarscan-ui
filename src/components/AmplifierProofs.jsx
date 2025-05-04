@@ -22,11 +22,12 @@ import { Number } from '@/components/Number'
 import { ChainProfile } from '@/components/Profile'
 import { ExplorerLink } from '@/components/ExplorerLink'
 import { TimeAgo } from '@/components/Time'
-import { getParams, getQueryString, Pagination } from '@/components/Pagination'
+import { Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
 import { getRPCStatus, searchAmplifierProofs } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
+import { getParams, getQueryString } from '@/lib/operator'
 import { equalsIgnoreCase, capitalize, toBoolean, headString, ellipse, toTitle } from '@/lib/string'
 
 const size = 25

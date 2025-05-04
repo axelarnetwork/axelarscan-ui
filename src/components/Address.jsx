@@ -7,17 +7,9 @@ import clsx from 'clsx'
 import { Container } from '@/components/Container'
 import { GMPs } from '@/components/GMPs'
 import { Transfers } from '@/components/Transfers'
-import { getQueryString } from '@/components/Pagination'
+import { getParams, getQueryString } from '@/lib/operator'
 
 const tabs = ['gmp', 'transfers']
-
-export const getParams = searchParams => {
-  const params = {}
-  for (const [k, v] of searchParams.entries()) {
-    params[k] = v
-  }
-  return params
-}
 
 export function Address({ address }) {
   const router = useRouter()

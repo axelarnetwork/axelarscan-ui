@@ -21,11 +21,12 @@ import { Tag } from '@/components/Tag'
 import { Number } from '@/components/Number'
 import { Profile } from '@/components/Profile'
 import { TimeAgo } from '@/components/Time'
-import { getParams, getQueryString, Pagination } from '@/components/Pagination'
+import { Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
 import { searchRewardsDistribution, getRewardsPool } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
+import { getParams, getQueryString } from '@/lib/operator'
 import { equalsIgnoreCase, toBoolean, ellipse, toTitle } from '@/lib/string'
 import { isNumber, formatUnits } from '@/lib/number'
 
@@ -456,8 +457,14 @@ export function AmplifierRewards({ chain }) {
   const { chains } = useGlobalStore()
 
   useEffect(() => {
-    if (!chain && chains) router.push(`${pathname}/${_.head(chains.filter(d => d.chain_type === 'vm'))?.chain_name}`)
-  }, [chain, chains])
+    if (!chain && chains) {
+      const path = `${pathname}/${_.head(chains.filter(d => d.chain_type === 'vm'))?.chain_name}`
+
+      if (path !== pathname) {
+        router.push(path)
+      }
+    }
+  }, [chain, router, pathname, chains])
 
   useEffect(() => {
     const _params = getParams(searchParams, size)

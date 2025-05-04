@@ -1,17 +1,24 @@
+'use client'
+
 import { DatePicker } from 'antd'
 import clsx from 'clsx'
-import _ from 'lodash'
 import moment from 'moment'
 import dayjs from 'dayjs'
 
 import { isNumber, toNumber } from '@/lib/number'
 
-export const createDayJSFromUnixtime = unixtime => dayjs(unixtime ? isNumber(unixtime) ? toNumber(unixtime) * 1000 : unixtime : undefined)
+export const createDayJSFromUnixtime = unixtime => dayjs(isNumber(unixtime) ? toNumber(unixtime) * 1000 : unixtime)
 
 const getUnixtime = time => time && moment(time.valueOf()).unix()
 
-export function DateRangePicker({ params, format = 'YYYY/MM/DD HH:mm:ss', onChange, className }) {
+export function DateRangePicker({
+  params,
+  format = 'YYYY/MM/DD HH:mm:ss',
+  onChange,
+  className,
+}) {
   const { fromTime, toTime } = { ...params }
+
   return (
     <DatePicker.RangePicker
       showTime
@@ -31,7 +38,10 @@ export function DateRangePicker({ params, format = 'YYYY/MM/DD HH:mm:ss', onChan
         { label: 'All Time', value: [] },
       ]}
       value={fromTime && toTime ? [createDayJSFromUnixtime(fromTime), createDayJSFromUnixtime(toTime)] : undefined}
-      onChange={v => onChange({ fromTime: getUnixtime(_.head(v)), toTime: getUnixtime(_.last(v)) })}
+      onChange={v => onChange({
+        fromTime: getUnixtime(v?.[0]),
+        toTime: getUnixtime(v?.[1]),
+      })}
       className={clsx('py-2', className)}
     />
   )

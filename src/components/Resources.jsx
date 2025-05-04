@@ -19,6 +19,7 @@ import { ValueBox } from '@/components/ValueBox'
 import { useGlobalStore } from '@/components/Global'
 import { getChainData } from '@/lib/config'
 import { getIBCDenomBase64, split, toArray } from '@/lib/parser'
+import { getParams, getQueryString } from '@/lib/operator'
 import { equalsIgnoreCase, includesSomePatterns, ellipse } from '@/lib/string'
 
 const chainTypes = [
@@ -146,8 +147,10 @@ function Asset({ data, focusID, onFocus }) {
   const tokenSymbol = tokenData?.symbol || symbol
 
   useEffect(() => {
-    if (focusID !== _id) setSeeMore(false)
-  }, [focusID, data, type, denom])
+    if (focusID !== _id) {
+      setSeeMore(false)
+    }
+  }, [data, focusID, type, denom, _id])
 
   return (
     <li>
@@ -266,24 +269,6 @@ function Asset({ data, focusID, onFocus }) {
   )
 }
 
-const getParams = searchParams => {
-  const params = {}
-  for (const [k, v] of searchParams.entries()) {
-    switch (k) {
-      default:
-        params[k] = v
-        break
-    }
-  }
-  return params
-}
-
-const getQueryString = params => {
-  const qs = new URLSearchParams()
-  Object.entries({ ...params }).filter(([k, v]) => v).forEach(([k, v]) => { qs.append(k, v) })
-  return qs.toString()
-}
-
 const resources = ['chains', 'assets']
 
 export function Resources({ resource }) {
@@ -313,7 +298,7 @@ export function Resources({ resource }) {
         }
         break
     }
-  }, [router, pathname, rendered, setRendered, resource, setInput, setAssetFocusID])
+  }, [router, pathname, searchParams, rendered, setRendered, resource, setInput, setAssetFocusID])
 
   useEffect(() => {
     const _params = getParams(searchParams)
