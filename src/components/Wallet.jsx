@@ -196,7 +196,7 @@ export function CosmosWallet({ connectChainId, children, className }) {
       setProvider(null)
       setSigner(null)
     }
-  }, [setChainId, setAddress, setProvider, setSigner])
+  }, [chainId, setChainId, address, setAddress, setProvider, setSigner])
 
   const enable = async (chainId = connectChainId) => {
     try {
@@ -361,7 +361,7 @@ export function StellarWallet({ children, className }) {
     }
 
     getData()
-  }, [setAddress, setProvider, setNetwork])
+  }, [address, setAddress, setProvider, setNetwork])
 
   const getAddress = async () => {
     const { address } = { ...await freighter.getAddress() }
