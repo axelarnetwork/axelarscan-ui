@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { constants } from 'ethers'
 const { AddressZero: ZeroAddress } = { ...constants }
@@ -28,13 +30,17 @@ export function ExplorerLink({
   const { chains } = useGlobalStore()
   const { explorer } = { ...getChainData(chain, chains) }
   const { url, name, block_path, address_path, contract_path, contract_0_path, transaction_path, icon, no_0x, cannot_link_contract_via_address_path } = { ...explorer }
+
   if (type === 'tx') {
+    // update type from input value
     switch (getInputType(value, chains)) {
       case 'evmAddress':
         type = 'address'
         break
       case 'block':
-        type = isNumber(value) && (!isString(value) || !value.startsWith('0x')) ? 'block' : type
+        if (isNumber(value) && (!isString(value) || !value.startsWith('0x'))) {
+          type = 'block'
+        }
         break
       default:
         break
@@ -43,6 +49,8 @@ export function ExplorerLink({
 
   let path
   let field = type
+
+  // set explorer path by input type
   switch (type) {
     case 'address':
       path = useContractLink && cannot_link_contract_via_address_path && contract_path ? contract_path : address_path
@@ -53,7 +61,11 @@ export function ExplorerLink({
       break
     case 'tx':
       path = transaction_path
-      value = no_0x && value?.startsWith('0x') ? value.substring(2) : value
+
+      // remove prefix 0x
+      if (no_0x && value?.startsWith('0x')) {
+        value = value.substring(2)
+      }
       break
     case 'block':
       path = block_path

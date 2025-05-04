@@ -28,7 +28,6 @@ import { Profile, ChainProfile, AssetProfile } from '@/components/Profile'
 import { TimeAgo, TimeSpent, TimeUntil } from '@/components/Time'
 import { ExplorerLink } from '@/components/ExplorerLink'
 import { useEVMWalletStore, EVMWallet, useCosmosWalletStore, CosmosWallet, useSuiWalletStore, SuiWallet, useStellarWalletStore, StellarWallet } from '@/components/Wallet'
-import { getParams } from '@/components/Pagination'
 import { getEvent, customData } from '@/components/GMPs'
 import { useGlobalStore } from '@/components/Global'
 import { searchGMP, estimateTimeSpent } from '@/lib/api/gmp'
@@ -36,7 +35,7 @@ import { isAxelar } from '@/lib/chain'
 import { getProvider } from '@/lib/chain/evm'
 import { ENVIRONMENT, getChainData, getAssetData } from '@/lib/config'
 import { toCase, split, toArray, parseError } from '@/lib/parser'
-import { sleep } from '@/lib/operator'
+import { sleep, getParams } from '@/lib/operator'
 import { isString, equalsIgnoreCase, headString, ellipse, toTitle } from '@/lib/string'
 import { isNumber, toNumber, toBigNumber, parseUnits, numberFormat } from '@/lib/number'
 import { timeDiff } from '@/lib/time'
@@ -1909,7 +1908,7 @@ export function GMP({ tx, lite }) {
   // set ExecuteData
   useEffect(() => {
     const getExecuteData = async () => {
-      if (!executeData && data?.call && data.approved) {
+      if (!executeData && data?.call && data.approved && chains && assets) {
         try {
           const { call, approved, command_id } = { ...data }
           const { addresses } = { ...getAssetData(call.returnValues?.symbol, assets) }
@@ -1923,18 +1922,17 @@ export function GMP({ tx, lite }) {
           const amount = toBigNumber(approved.returnValues?.amount || call.returnValues?.amount)
 
           const contract = new Contract(contractAddress, IAxelarExecutable.abi, getProvider(call.returnValues?.destinationChain, chains))
-          const { data } = { ...(symbol ?
+          const transaction = symbol ?
             await contract/*.executeWithToken*/.populateTransaction.executeWithToken(commandId, sourceChain, sourceAddress, payload, symbol, amount) :
             await contract/*.execute*/.populateTransaction.execute(commandId, sourceChain, sourceAddress, payload)
-          ) }
 
-          setExecuteData(data)
+          setExecuteData(transaction?.data)
         } catch (error) {}
       }
     }
 
     getExecuteData()
-  }, [data, executeData, setExecuteData])
+  }, [data, executeData, setExecuteData, chains, assets])
 
   // set EstimatedGasUsed
   useEffect(() => {

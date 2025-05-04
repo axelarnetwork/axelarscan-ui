@@ -1,11 +1,10 @@
 'use client'
 
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Popover, Transition } from '@headlessui/react'
 import clsx from 'clsx'
-import _ from 'lodash'
 import { FiChevronDown } from 'react-icons/fi'
 
 import { Container } from '@/components/Container'
@@ -13,13 +12,10 @@ import { Logo } from '@/components/Logo'
 import { NavLink } from '@/components/NavLink'
 import { Search } from '@/components/Search'
 import { ThemeToggle } from '@/components/ThemeToggle'
-import { Tag } from '@/components/Tag'
-import { Number } from '@/components/Number'
 import { useGlobalStore } from '@/components/Global'
-import { ENVIRONMENT, getAssetData, getITSAssetData } from '@/lib/config'
-import { isNumber, toNumber } from '@/lib/number'
+import { ENVIRONMENT } from '@/lib/config'
 
-const navigations = [
+const NAVIGATIONS = [
   {
     title: 'Interchain',
     children: [
@@ -51,7 +47,7 @@ const navigations = [
   },
 ]
 
-const environments = [
+const ENVIRONMENTS = [
   { name: 'mainnet', href: 'https://axelarscan.io' },
   { name: 'testnet', href: 'https://testnet.axelarscan.io' },
   { name: 'stagenet', href: 'https://stagenet.axelarscan.io' },
@@ -85,20 +81,8 @@ function MobileNavIcon({ open }) {
       strokeWidth={2}
       strokeLinecap="round"
     >
-      <path
-        d="M0 1H14M0 7H14M0 13H14"
-        className={clsx(
-          'origin-center transition',
-          open && 'scale-90 opacity-0',
-        )}
-      />
-      <path
-        d="M2 2L12 12M12 2L2 12"
-        className={clsx(
-          'origin-center transition',
-          !open && 'scale-90 opacity-0',
-        )}
-      />
+      <path d="M0 1H14M0 7H14M0 13H14" className={clsx('origin-center transition', open && 'scale-90 opacity-0')} />
+      <path d="M2 2L12 12M12 2L2 12" className={clsx('origin-center transition', !open && 'scale-90 opacity-0')} />
     </svg>
   )
 }
@@ -137,22 +121,27 @@ function MobileNavigation() {
             as="div"
             className="absolute inset-x-0 top-full mt-4 flex origin-top flex-col rounded-2xl bg-white dark:bg-zinc-800 p-4 text-lg tracking-tight text-zinc-900 dark:text-zinc-100 shadow-xl ring-1 ring-zinc-900/5"
           >
-            {/*<div className="md:hidden">
-              <Search />
-            </div>*/}
-            {navigations.map((d, i) => {
-              const { title, href, children } = { ...d }
-
+            {NAVIGATIONS.map(({ title, href, children }, i) => {
               if (children) {
                 return (
                   <div key={i} className="flex flex-col">
-                    <span className="px-2 pt-4 pb-1 font-bold">{title}</span>
-                    {children.map((c, j) => <MobileNavLink key={j} href={c.href}>{c.title}</MobileNavLink>)}
+                    <span className="px-2 pt-4 pb-1 font-bold">
+                      {title}
+                    </span>
+                    {children.map((c, j) => (
+                      <MobileNavLink key={j} href={c.href}>
+                        {c.title}
+                      </MobileNavLink>
+                    ))}
                   </div>
                 )
               }
 
-              return href && (<MobileNavLink key={i} href={href} className="font-bold pt-4">{title}</MobileNavLink>)
+              return href && (
+                <MobileNavLink key={i} href={href} className="font-bold pt-4">
+                  {title}
+                </MobileNavLink>
+              )
             })}
           </Popover.Panel>
         </Transition.Child>
@@ -179,35 +168,20 @@ export function Header() {
   const pathname = usePathname()
   const [popoverOpen, setPopoverOpen] = useState(null)
   const [popoverEnvironmentOpen, setPopoverEnvironmentOpen] = useState(false)
-  const [data, setData] = useState(null)
-  const { assets, itsAssets, tvl } = useGlobalStore()
+  const { tvl } = useGlobalStore()
 
-  useEffect(() => {
-    if (assets && itsAssets && tvl?.data && tvl.data.length > (assets.length + itsAssets.length) / 2) {
-      setData(tvl.data.map(d => {
-        const { asset, assetType, total } = { ...d }
-        let { price } = { ...d }
-
-        const assetData = assetType === 'its' ? getITSAssetData(asset, itsAssets) : getAssetData(asset, assets)
-        price = toNumber(isNumber(price) ? price : isNumber(assetData?.price) ? assetData.price : -1)
-
-        return { ...d, value: toNumber(total) * price }
-      }))
-    }
-  }, [assets, itsAssets, tvl, setData])
+  const hasTVL = pathname === '/tvl' && !!tvl
 
   return (
-    <header className={clsx('bg-white dark:bg-zinc-900 py-6', ['/tvl'].includes(pathname) && !!tvl && 'lg:w-tvl')}>
-      <Container className={['/tvl'].includes(pathname) && !!tvl && clsx('lg:!mx-24')}>
+    <header className={clsx('bg-white dark:bg-zinc-900 py-6', hasTVL && 'lg:w-tvl')}>
+      <Container className={clsx(hasTVL && 'lg:!mx-24')}>
         <nav className="relative z-50 flex justify-between gap-x-4">
           <div className="flex items-center xl:gap-x-12">
             <Link href="/" aria-label="Dashboard">
               <Logo className="h-10 w-auto" />
             </Link>
             <div className="hidden xl:flex xl:gap-x-4">
-              {navigations.map((d, i) => {
-                const { title, href, children } = { ...d }
-
+              {NAVIGATIONS.map(({ title, href, children }, i) => {
                 if (children) {
                   return (
                     <Popover
@@ -227,7 +201,6 @@ export function Header() {
                           <FiChevronDown className="h-4 w-4" />
                         </Link>
                       </Popover.Button>
-
                       <Transition
                         show={i === popoverOpen}
                         as={Fragment}
@@ -240,7 +213,11 @@ export function Header() {
                       >
                         <Popover.Panel className="absolute left-1/2 z-10 flex w-screen max-w-min -translate-x-1/2">
                           <div className="shrink rounded-xl bg-white dark:bg-zinc-800 p-2 text-sm shadow-lg ring-1 ring-zinc-900/5">
-                            {children.map((c, j) => <NavLink key={j} href={c.href}>{c.title}</NavLink>)}
+                            {children.map((c, j) => (
+                              <NavLink key={j} href={c.href}>
+                                {c.title}
+                              </NavLink>
+                            ))}
                           </div>
                         </Popover.Panel>
                       </Transition>
@@ -252,17 +229,6 @@ export function Header() {
                   <NavLink key={i} href={href}>
                     <div className="flex items-center">
                       {title}
-                      {/*title === 'TVL' && !!data && (
-                        <Tag className="w-fit bg-zinc-100 dark:bg-zinc-800 ml-2">
-                          <Number
-                            value={_.sumBy(data.filter(d => d.value > 0), 'value')}
-                            format="0,0.00a"
-                            prefix="$"
-                            noTooltip={true}
-                            className="text-green-600 dark:text-green-500 text-xs font-semibold"
-                          />
-                        </Tag>
-                      )*/}
                     </div>
                   </NavLink>
                 )
@@ -270,7 +236,7 @@ export function Header() {
             </div>
           </div>
           <div className="flex items-center gap-x-4">
-            <div className={clsx('block'/*, 'hidden md:block'*/)}>
+            <div className="block">
               <Search />
             </div>
             <div className="hidden xl:block">
@@ -282,7 +248,6 @@ export function Header() {
                 <Popover.Button className="p-2 rounded-lg focus:outline-none capitalize text-sm text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                   <span>{ENVIRONMENT}</span>
                 </Popover.Button>
-
                 <Transition
                   show={popoverEnvironmentOpen}
                   as={Fragment}
@@ -295,7 +260,11 @@ export function Header() {
                 >
                   <Popover.Panel className="absolute left-1/2 z-10 flex w-screen max-w-min -translate-x-1/2">
                     <div className="shrink rounded-xl bg-white dark:bg-zinc-800 p-2 text-sm shadow-lg ring-1 ring-zinc-900/5">
-                      {environments.map((d, i) => <EnvironmentLink key={i} {...d}>{d.name}</EnvironmentLink>)}
+                      {ENVIRONMENTS.map((d, i) => (
+                        <EnvironmentLink key={i} {...d}>
+                          {d.name}
+                        </EnvironmentLink>
+                      ))}
                     </div>
                   </Popover.Panel>
                 </Transition>
