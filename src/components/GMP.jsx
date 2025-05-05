@@ -205,6 +205,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                             value={sourceChain}
                             width={20}
                             height={20}
+                            className="h-5"
                             titleClassName="text-sm font-semibold"
                           />
                           <MdKeyboardArrowRight size={20} />
@@ -212,6 +213,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                             value={destinationChain}
                             width={20}
                             height={20}
+                            className="h-5"
                             titleClassName="text-sm font-semibold"
                           />
                         </div>
@@ -1285,6 +1287,7 @@ function Details({ data }) {
             value={sourceChain}
             width={20}
             height={20}
+            className="h-5"
             titleClassName="text-sm font-semibold"
           />
           <MdKeyboardArrowRight size={20} />
@@ -1292,6 +1295,7 @@ function Details({ data }) {
             value={destinationChain}
             width={20}
             height={20}
+            className="h-5"
             titleClassName="text-sm font-semibold"
           />
         </div>

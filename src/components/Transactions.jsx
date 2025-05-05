@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form'
 import { Dialog, Listbox, Transition } from '@headlessui/react'
 import clsx from 'clsx'
 import _ from 'lodash'
-import { MdOutlineRefresh, MdOutlineFilterList, MdClose, MdCheck, MdKeyboardDoubleArrowLeft, MdKeyboardDoubleArrowRight } from 'react-icons/md'
+import { MdOutlineRefresh, MdOutlineFilterList, MdClose, MdCheck } from 'react-icons/md'
 import { LuChevronsUpDown } from 'react-icons/lu'
 
 import { Container } from '@/components/Container'
@@ -20,16 +20,16 @@ import { Tag } from '@/components/Tag'
 import { Number } from '@/components/Number'
 import { Profile } from '@/components/Profile'
 import { TimeAgo } from '@/components/Time'
-import { Pagination } from '@/components/Pagination'
+import { Pagination, TablePagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
 import { searchTransactions, getTransactions } from '@/lib/api/validator'
 import { searchDepositAddresses } from '@/lib/api/token-transfer'
-import { getAttributeValue } from '@/lib/chain/cosmos'
+import { getAttributeValue, getLogEventByType } from '@/lib/chain/cosmos'
 import { axelarContracts, getChainData, getAssetData } from '@/lib/config'
 import { getIcapAddress, getInputType, toJson, toHex, split, toArray } from '@/lib/parser'
-import { getParams, getQueryString } from '@/lib/operator'
-import { isString, equalsIgnoreCase, capitalize, camel, removeDoubleQuote, toBoolean, lastString, includesSomePatterns, ellipse } from '@/lib/string'
-import { isNumber, toNumber, formatUnits } from '@/lib/number'
+import { getParams, getQueryString, generateKeyByParams, isFiltered } from '@/lib/operator'
+import { isString, equalsIgnoreCase, capitalize, camel, removeDoubleQuote, toBoolean, lastString, find, includesSomePatterns, ellipse } from '@/lib/string'
+import { isNumber, formatUnits } from '@/lib/number'
 
 const size = 25
 const sizePerPage = 10
@@ -48,15 +48,20 @@ function Filters({ address }) {
       const response = await searchTransactions({ aggs: { types: { terms: { field: 'types.keyword', size: 1000 } } }, size: 0 })
       setTypes(toArray(response).map(d => d.key))
     }
+
     getTypes()
   }, [])
 
   const onSubmit = (e1, e2, _params) => {
-    _params = _params || params
+    if (!_params) {
+      _params = params
+    }
+
     if (!_.isEqual(_params, getParams(searchParams, size))) {
-      router.push(`${pathname}?${getQueryString(_params)}`)
+      router.push(`${pathname}${getQueryString(_params)}`)
       setParams(_params)
     }
+
     setOpen(false)
   }
 
@@ -73,7 +78,8 @@ function Filters({ address }) {
     { label: 'Time', name: 'time', type: 'datetimeRange' },
   ])
 
-  const filtered = Object.keys(params).filter(k => !['from'].includes(k)).length > 0
+  const filtered = isFiltered(params)
+
   return (
     <>
       <Button
@@ -237,18 +243,27 @@ function Filters({ address }) {
 
 export const getType = data => {
   if (!data) return
+
   let { types, type } = { ...data }
   const { messages } = { ...data.tx?.body }
 
-  if (Array.isArray(types)) type = _.head(types) || type
+  if (Array.isArray(types)) {
+    if (types[0]) {
+      type = types[0]
+    }
+  }
   else {
-    types = _.uniq(toArray(_.concat(
-      toArray(messages).map(d => camel(isString(d.msg) ? d.msg : _.head(Object.keys({ ...d.msg })))),
-      toArray(messages).map(d => d.inner_message?.['@type']),
-      toArray(data.logs).flatMap(d => toArray(d.events).filter(e => equalsIgnoreCase(e.type, 'message')).map(e => getAttributeValue(e.attributes, 'action'))),
-      toArray(messages).map(m => m['@type']),
-    ).map(d => capitalize(lastString(d, '.')))))
-    type = _.head(types.filter(d => !types.includes(`${d}Request`)))
+    types = _.uniq(toArray(
+      _.concat(
+        toArray(messages).map(d => camel(isString(d.msg) ? d.msg : Object.keys({ ...d.msg })[0])),
+        toArray(messages).map(d => d.inner_message?.['@type']),
+        toArray(data.logs).flatMap(d => toArray(d.events).filter(e => equalsIgnoreCase(e.type, 'message')).map(e => getAttributeValue(e.attributes, 'action'))),
+        toArray(messages).map(m => m['@type']),
+      )
+      .map(d => capitalize(lastString(d, '.')))
+    ))
+
+    type = types.filter(d => !types.includes(`${d}Request`))[0]
   }
 
   return type?.replace('Request', '')
@@ -259,19 +274,32 @@ export const getActivities = (data, assets) => {
   if (!messages) return
 
   let result
+
   if (includesSomePatterns(messages.map(d => d['@type']), ['MsgSend', 'MsgTransfer', 'RetryIBCTransferRequest', 'RouteIBCTransfersRequest', 'MsgUpdateClient', 'MsgAcknowledgement', 'SignCommands'])) {
     result = toArray(messages.flatMap(d => {
-      let { sender, recipient, amount, source_channel, destination_channel, timeout_timestamp } = { ...d }
+      let { sender, recipient, amount, source_channel, destination_channel } = { ...d }
+
       sender = d.from_address || d.signer || sender
       recipient = d.to_address || d.receiver || recipient
-      amount = amount || [d.token]
 
-      const sendPacketData = _.head(toArray(data.logs).flatMap(d => toArray(d.events).filter(e => equalsIgnoreCase(e.type, 'send_packet')).map(e => Object.fromEntries(toArray(e.attributes).map(a => [a.key, a.value])))))
-      source_channel = source_channel || sendPacketData?.packet_src_channel
-      destination_channel = destination_channel || sendPacketData?.packet_dst_channel
-      timeout_timestamp = formatUnits(timeout_timestamp, 6)
+      if (!amount) {
+        amount = [d.token]
+      }
+
+      const { attributes } = { ...getLogEventByType(data.logs, 'send_packet') }
+
+      if (attributes) {
+        if (!source_channel) {
+          source_channel = getAttributeValue(attributes, 'packet_src_channel')
+        }
+
+        if (!destination_channel) {
+          destination_channel = getAttributeValue(attributes, 'packet_dst_channel')
+        }
+      }
 
       const assetData = getAssetData(data.denom, assets)
+
       const activity = {
         type: lastString(d['@type'], '.'),
         sender,
@@ -280,17 +308,24 @@ export const getActivities = (data, assets) => {
         chain: d.chain,
         asset_data: assetData,
         symbol: assetData?.symbol,
-        send_packet_data: sendPacketData,
+        send_packet_data: attributes ? Object.fromEntries(attributes.map(a => [a.key, a.value])) : undefined,
         packet: d.packet,
         acknowledgement: d.acknowledgement,
         source_channel,
         destination_channel,
-        timeout_timestamp,
+        timeout_timestamp: formatUnits(d.timeout_timestamp, 6),
       }
 
       return amount?.length > 0 && (Array.isArray(amount) && toArray(amount).length > 0 ?
-        toArray(amount).map(d => ({ ...d, ...activity, amount: formatUnits(d.amount, assetData?.decimals || 6) })) :
-        { ...activity, amount: formatUnits(amount, assetData?.decimals || 6) }
+        toArray(amount).map(d => ({
+          ...d,
+          ...activity,
+          amount: formatUnits(d.amount, assetData?.decimals || 6),
+        })) :
+        {
+          ...activity,
+          amount: formatUnits(amount, assetData?.decimals || 6),
+        }
       )
     }))
   }
@@ -298,14 +333,12 @@ export const getActivities = (data, assets) => {
     result = toArray(messages.flatMap(d => {
       let { chain, asset, tx_id, status } = { ...d }
       const { poll_id, vote } = { ...d.inner_message }
-      let { events } = { ...vote }
 
       chain = vote?.chain || chain
       asset = asset?.name || asset
-      tx_id = toHex(_.head(events)?.tx_id || tx_id)
-      status = _.head(events)?.status || status
+      tx_id = toHex(events?.[0]?.tx_id || tx_id)
+      status = events?.[0]?.status || status
 
-      events = toArray(events).flatMap(e => Object.entries(e).filter(([k, v]) => v && typeof v === 'object' && !Array.isArray(v)).map(([k, v]) => ({ event: k, ...Object.fromEntries(Object.entries(v).map(([k, v]) => [k, toHex(v)])) })))
       return d.sender && {
         type: lastString(d['@type'], '.'),
         sender: d.sender,
@@ -318,7 +351,12 @@ export const getActivities = (data, assets) => {
         asset_data: getAssetData(d.denom || asset, assets),
         status,
         poll_id,
-        events,
+        events: toArray(vote?.events).flatMap(e =>
+          Object.entries(e).filter(([k, v]) => v && typeof v === 'object' && !Array.isArray(v)).map(([k, v]) => ({
+            event: k,
+            ...Object.fromEntries(Object.entries(v).map(([k, v]) => [k, toHex(v)])),
+          }))
+        ),
       }
     }))
   }
@@ -328,7 +366,7 @@ export const getActivities = (data, assets) => {
       let { events } = { ...d }
 
       events = toArray(events).flatMap(e => {
-        if (['delegate', 'unbond', 'transfer'].includes(e.type.toLowerCase())) {
+        if (find(e.type, ['delegate', 'unbond', 'transfer'])) {
           const data = []
           const template = { type: e.type, action: e.type, log: d.log }
           let _e = _.cloneDeep(template)
@@ -373,22 +411,24 @@ export const getActivities = (data, assets) => {
               _e = _.cloneDeep(template)
             }
           })
+
           return data
         }
 
         const event = {
           type: e.type,
           log: d.log,
-          ..._.assign.apply(_, toArray(e.attributes).map(a => {
-            const { key, value } = { ...a }
+          ..._.assign.apply(_, toArray(e.attributes).map(({ key, value }) => {
             const attribute = {}
 
             switch (key) {
               case 'amount':
-                const index = split(value, { delimiter: '' }).findIndex(c => !isNumber(c)) || -1
-                if (index > -1) {
-                  const denom = value.substring(index)
+                const i = split(value, { delimiter: '' }).findIndex(c => !isNumber(c)) || -1
+
+                if (i > -1) {
+                  const denom = value.substring(i)
                   const assetData = getAssetData(denom, assets)
+
                   attribute.denom = assetData?.denom || denom
                   attribute.symbol = assetData?.symbol
                   attribute[key] = formatUnits(value.replace(denom, ''), assetData?.decimals || 6)
@@ -404,7 +444,9 @@ export const getActivities = (data, assets) => {
 
             let { symbol, amount } = { ...attribute }
 
-            if (key === 'amount' && isString(value) && (data.denom || data.asset)) symbol = getAssetData(data.denom || data.asset, assets)?.symbol || symbol
+            if (key === 'amount' && isString(value) && (data.denom || data.asset)) {
+              symbol = getAssetData(data.denom || data.asset, assets)?.symbol || symbol
+            }
 
             if (!symbol) {
               const denom = getAttributeValue(e.attributes, 'denom')
@@ -412,36 +454,61 @@ export const getActivities = (data, assets) => {
 
               if (denom) {
                 const assetData = getAssetData(denom, assets)
-                attribute.denom = asset_data?.denom || denom
-                symbol = assetData?.symbol || symbol
+
+                attribute.denom = assetData?.denom || denom
+
+                if (assetData?.symbol) {
+                  symbol = assetData.symbol
+                }
+
                 amount = formatUnits(amountData, assetData?.decimals || 6)
               }
               else {
-                const index = split(amountData, { delimiter: '' }).findIndex(c => !isNumber(c)) || -1
-                if (index > -1) {
-                  const denom = amountData.substring(index)
+                const i = split(amountData, { delimiter: '' }).findIndex(c => !isNumber(c)) || -1
+
+                if (i > -1) {
+                  const denom = amountData.substring(i)
                   const assetData = getAssetData(denom, assets)
+
                   attribute.denom = assetData?.denom || denom
-                  symbol = assetData?.symbol || symbol
+
+                  if (assetData?.symbol) {
+                    symbol = assetData.symbol
+                  }
+
                   amount = formatUnits(amountData.replace(denom, ''), assetData?.decimals || 6)
                 }
               }
             }
+
             return { ...attribute, symbol, amount }
           })),
         }
-        return [{ ...event, action: event.action || e.type, recipient: _.uniq(toArray(e.attributes).filter(a => a.key === 'recipient').map(a => a.value)) }]
+
+        return [{
+          ...event,
+          action: event.action || e.type,
+          recipient: _.uniq(toArray(e.attributes).filter(a => a.key === 'recipient').map(a => a.value)),
+        }]
       })
 
       const delegateEventTypes = ['delegate', 'unbond']
       const transferEventTypes = ['transfer']
-      return includesSomePatterns(events.map(e => e.type), delegateEventTypes) ? events.filter(e => delegateEventTypes.includes(e.type)) :
-        includesSomePatterns(events.map(e => e.type), transferEventTypes) ? events.filter(e => transferEventTypes.includes(e.type)) :
-        _.assign.apply(_, events)
+
+      if (includesSomePatterns(events.map(e => e.type), delegateEventTypes)) {
+        return events.filter(e => delegateEventTypes.includes(e.type))
+      }
+      else if (includesSomePatterns(events.map(e => e.type), transferEventTypes)) {
+        return events.filter(e => transferEventTypes.includes(e.type))
+      }
+
+      return _.assign.apply(_, events)
     })
   }
 
-  if (toArray(result).length < 1 && data.code) return [{ failed: true }]
+  if (toArray(result).length < 1 && data.code) {
+    return [{ failed: true }]
+  }
 
   return toArray(result).map(d => {
     let { packet_data, symbol } = { ...d }
@@ -449,12 +516,22 @@ export const getActivities = (data, assets) => {
     if (isString(packet_data)) {
       try {
         packet_data = toJson(packet_data)
+
         const assetData = getAssetData(packet_data.denom, assets)
-        packet_data = { ...packet_data, amount: formatUnits(packet_data.amount, assetData.decimals) }
-        symbol = assetData.symbol || symbol
+
+        packet_data = {
+          ...packet_data,
+          amount: formatUnits(packet_data.amount, assetData.decimals),
+        }
+
+        if (assetData?.symbol) {
+          symbol = assetData.symbol
+        }
       } catch (error) {}
     }
-    else if (d.asset) symbol = getAssetData(d.asset, assets)?.symbol || symbol
+    else if (d.asset) {
+      symbol = getAssetData(d.asset, assets)?.symbol || symbol
+    }
 
     return { ...d, packet_data, symbol }
   })
@@ -462,71 +539,39 @@ export const getActivities = (data, assets) => {
 
 export const getSender = (data, assets) => {
   if (!data) return
+
   const { messages } = { ...data.tx?.body }
 
-  return _.head(toArray(toArray([equalsIgnoreCase(getType(data), 'MsgDelegate') && 'delegator_address', equalsIgnoreCase(getType(data), 'MsgUndelegate') && 'validator_address', 'sender', 'signer']).map(f =>
-    toArray(messages).map(d => d[f])[0] || _.head(data[`tx.body.messages.${f}`]) || toArray(getActivities(data, assets)).find(d => d[f])?.[f]
-  )))
+  return toArray(
+    toArray([
+      equalsIgnoreCase(getType(data), 'MsgDelegate') && 'delegator_address',
+      equalsIgnoreCase(getType(data), 'MsgUndelegate') && 'validator_address',
+      'sender', 'signer',
+    ]).map(f =>
+      toArray(messages).map(d => d[f])[0] ||
+      data[`tx.body.messages.${f}`]?.[0] ||
+      toArray(getActivities(data, assets)).find(d => d[f])?.[f]
+    )
+  )[0]
 }
 
 export const getRecipient = (data, assets) => {
   if (!data) return
-  const { types } = { ...data }
+
   const { messages } = { ...data.tx?.body }
 
-  return _.head(toArray(toArray([equalsIgnoreCase(getType(data), 'MsgDelegate') && 'validator_address', equalsIgnoreCase(getType(data), 'MsgUndelegate') && 'delegator_address', 'recipient']).map(f =>
-    toArray(messages).map(d => d[f])[0] || _.head(data[`tx.body.messages.${f}`]) || toArray(getActivities(data, assets)).find(d => d[f])?.[f]
-  )))
+  return toArray(
+    toArray([
+      equalsIgnoreCase(getType(data), 'MsgDelegate') && 'validator_address',
+      equalsIgnoreCase(getType(data), 'MsgUndelegate') && 'delegator_address',
+      'recipient',
+    ]).map(f =>
+      toArray(messages).map(d => d[f])[0] ||
+      data[`tx.body.messages.${f}`]?.[0] ||
+      toArray(getActivities(data, assets)).find(d => d[f])?.[f]
+    )
+  )[0]
 }
-
-function TablePagination({ data, maxPage = 5, sizePerPage = 25, onChange }) {
-  const [page, setPage] = useState(1)
-
-  useEffect(() => {
-    if (page && onChange) onChange(page)
-  }, [page, onChange])
-
-  const half = Math.floor(toNumber(maxPage) / 2)
-  const totalPage = Math.ceil(toNumber(data.length) / sizePerPage)
-  const pages = _.range(page - half, page + half + 1).filter(p => p > 0 && p <= totalPage)
-  const prev = _.min(_.range(_.head(pages) - maxPage, _.head(pages)).filter(p => p > 0))
-  const next = _.max(_.range(_.last(pages) + 1, _.last(pages) + maxPage + 1).filter(p => p <= totalPage))
-
-  return (
-    <div className="flex items-center justify-center gap-x-1">
-      {isNumber(prev) && (
-        <Button
-          color="none"
-          onClick={() => setPage(prev)}
-          className="!px-1"
-        >
-          <MdKeyboardDoubleArrowLeft size={18} />
-        </Button>
-      )}
-      {pages.map(p => (
-        <Button
-          key={p}
-          color={p === page ? 'blue' : 'default'}
-          onClick={() => setPage(p)}
-          className="!text-2xs !px-3 !py-1"
-        >
-          <Number value={p} />
-        </Button>
-      ))}
-      {isNumber(next) && (
-        <Button
-          color="none"
-          onClick={() => setPage(next)}
-          className="!px-1"
-        >
-          <MdKeyboardDoubleArrowRight size={18} />
-        </Button>
-      )}
-    </div>
-  )
-}
-
-const generateKeyFromParams = params => JSON.stringify(params)
 
 export function Transactions({ height, address }) {
   const searchParams = useSearchParams()
@@ -538,6 +583,7 @@ export function Transactions({ height, address }) {
 
   useEffect(() => {
     const _params = getParams(searchParams, size)
+
     if (!_.isEqual(_params, params)) {
       setParams(_params)
       setRefresh(true)
@@ -546,74 +592,119 @@ export function Transactions({ height, address }) {
 
   useEffect(() => {
     const getData = async () => {
-      if (chains && assets && params && toBoolean(refresh)) {
+      if (params && toBoolean(refresh) && chains && assets) {
         const addressType = getInputType(address, chains)
+
         let data
         let total
 
         if (height) {
+          // query block's transactions via lcd
           const response = await getTransactions({ events: `tx.height=${height}` })
-          data = response?.data
-          total = response?.total
+
+          if (response) {
+            data = response.data
+            total = response.total
+          }
         }
-        else if ((address?.length >= 65 || addressType === 'evmAddress') && axelarContracts.findIndex(a => equalsIgnoreCase(a, address)) < 0) {
-          const { deposit_address } = { ..._.head((await searchDepositAddresses({ address }))?.data) }
+        else if ((address?.length >= 65 || addressType === 'evmAddress') && !find(address, axelarContracts)) {
+          const { deposit_address } = { ...(await searchDepositAddresses({ address }))?.data?.[0] }
 
           if (deposit_address || addressType === 'evmAddress') {
-            let _address = equalsIgnoreCase(address, deposit_address) ? deposit_address : address
+            let qAddress = equalsIgnoreCase(address, deposit_address) ? deposit_address : address
 
+            // query address's transactions via lcd
             let response
+
             switch (addressType) {
               case 'axelarAddress':
-                // response = await getTransactions({ events: `transfer.sender='${_address}'` })
-                // data = _.concat(toArray(response?.data), toArray(data))
+                // query message.sender
+                response = await getTransactions({ events: `message.sender='${qAddress}'` })
 
-                response = await getTransactions({ events: `message.sender='${_address}'` })
-                data = _.concat(toArray(response?.data), toArray(data))
+                if (response) {
+                  data = response.data
+                }
 
-                response = await getTransactions({ events: `transfer.recipient='${_address}'` })
-                data = _.concat(toArray(response?.data), toArray(data))
+                // query transfer.recipient
+                response = await getTransactions({ events: `transfer.recipient='${qAddress}'` })
+
+                if (response) {
+                  data = _.concat(toArray(response.data), toArray(data))
+                }
                 break
               case 'evmAddress':
-                _address = getIcapAddress(_address)
-                response = await searchTransactions({ ...params, address: _address, size })
-                data = response?.data
+                qAddress = getIcapAddress(qAddress)
+
+                // query transactions from indexer
+                response = await searchTransactions({ ...params, address: qAddress, size })
+
+                if (response) {
+                  data = response.data
+                }
                 break
               default:
                 break
             }
 
-            response = await getTransactions({ events: `link.depositAddress='${_address}'` })
-            data = _.concat(toArray(response?.data), toArray(data))
+            // query link.depositAddress
+            response = await getTransactions({ events: `link.depositAddress='${qAddress}'` })
+
+            if (response) {
+              data = _.concat(toArray(response.data), toArray(data))
+            }
+
             total = data.length
           }
           else {
+            // query transactions from indexer
             const response = await searchTransactions({ ...params, address, size })
-            data = response?.data
-            total = response?.total
+
+            if (response) {
+              data = response.data
+              total = response.total
+            }
           }
         }
         else {
+          // query transactions from indexer
           const response = await searchTransactions({ ...params, address: params.address || address, size })
-          data = response?.data
-          total = response?.total
+
+          if (response) {
+            data = response.data
+            total = response.total
+          }
         }
 
-        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: { data: _.orderBy(_.uniqBy(toArray(data), 'txhash').map(d => ({ ...d, type: getType(d), sender: getSender(d, assets), recipient: getRecipient(d, assets) })), ['height', 'timestamp', 'txhash'], ['desc', 'desc', 'asc']), total } })
+        setSearchResults({
+          ...(refresh ? undefined : searchResults),
+          [generateKeyByParams(params)]: {
+            data: _.orderBy(_.uniqBy(toArray(data), 'txhash').map(d => ({
+              ...d,
+              type: getType(d),
+              sender: getSender(d, assets),
+              recipient: getRecipient(d, assets),
+            })), ['height', 'timestamp', 'txhash'], ['desc', 'desc', 'asc']),
+            total,
+          },
+        })
         setRefresh(false)
       }
     }
-    getData()
-  }, [height, address, chains, assets, params, setSearchResults, refresh, setRefresh])
 
-  const { data, total } = { ...searchResults?.[generateKeyFromParams(params)] }
+    getData()
+  }, [height, address, params, setSearchResults, refresh, setRefresh, chains, assets])
+
+  const { data, total } = { ...searchResults?.[generateKeyByParams(params)] }
+
   return (
     <Container className={clsx(height ? 'mx-0 mt-5 pt-0.5' : address ? 'max-w-full' : 'sm:mt-8')}>
       {!data ? <Spinner /> :
         <div>
           <div className="flex items-center justify-between gap-x-4">
             <div className="sm:flex-auto">
-              <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">Transactions</h1>
+              <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">
+                Transactions
+              </h1>
               {!height && (
                 <p className="mt-2 text-zinc-400 dark:text-zinc-500 text-sm">
                   <Number value={total} suffix={` result${total > 1 ? 's' : ''}`} /> 
@@ -621,7 +712,7 @@ export function Transactions({ height, address }) {
               )}
             </div>
             <div className="flex items-center gap-x-2">
-              {!(height/* || address*/) && <Filters address={address} />}
+              {!height && <Filters address={address} />}
               {refresh ? <Spinner /> :
                 <Button
                   color="default"
@@ -701,7 +792,7 @@ export function Transactions({ height, address }) {
                     )}
                     <td className="px-3 py-4 text-left">
                       {d.type && (
-                        <Tag className={clsx('w-fit capitalize bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100')}>
+                        <Tag className="w-fit capitalize bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100">
                           {d.type}
                         </Tag>
                       )}
@@ -718,7 +809,13 @@ export function Transactions({ height, address }) {
                       <td className="px-3 py-4 text-left">
                         {!includesSomePatterns(d.type, ['HeartBeat', 'SubmitSignature', 'SubmitPubKey']) && (
                           <div className="flex flex-col gap-y-0.5">
-                            {toArray(d.recipient).map((a, j) => <Profile key={j} i={j} address={a} />)}
+                            {toArray(d.recipient).map((a, j) => (
+                              <Profile
+                                key={j}
+                                i={j}
+                                address={a}
+                              />
+                            ))}
                           </div>
                         )}
                       </td>
@@ -727,7 +824,7 @@ export function Transactions({ height, address }) {
                       <td className="px-3 py-4 text-right">
                         {d.tx?.auth_info?.fee?.amount && (
                           <Number
-                            value={formatUnits(_.head(d.tx?.auth_info.fee.amount)?.amount, 6)}
+                            value={formatUnits(d.tx?.auth_info.fee.amount?.[0]?.amount, 6)}
                             format="0,0.00000000"
                             suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
                             noTooltip={true}
@@ -749,6 +846,7 @@ export function Transactions({ height, address }) {
               {height ?
                 <TablePagination
                   data={data}
+                  value={page}
                   onChange={page => setPage(page)}
                   sizePerPage={sizePerPage}
                 /> :

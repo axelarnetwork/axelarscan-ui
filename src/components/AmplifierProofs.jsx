@@ -27,7 +27,7 @@ import { useGlobalStore } from '@/components/Global'
 import { getRPCStatus, searchAmplifierProofs } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
-import { getParams, getQueryString } from '@/lib/operator'
+import { getParams, getQueryString, generateKeyByParams, isFiltered } from '@/lib/operator'
 import { equalsIgnoreCase, capitalize, toBoolean, headString, ellipse, toTitle } from '@/lib/string'
 
 const size = 25
@@ -42,9 +42,11 @@ function Filters() {
   const { chains } = useGlobalStore()
 
   const onSubmit = (e1, e2, _params) => {
-    _params = _params || params
+    if (!_params) {
+      _params = params
+    }
     if (!_.isEqual(_params, getParams(searchParams, size))) {
-      router.push(`${pathname}?${getQueryString(_params)}`)
+      router.push(`${pathname}${getQueryString(_params)}`)
       setParams(_params)
     }
     setOpen(false)
@@ -67,7 +69,7 @@ function Filters() {
     { label: 'Time', name: 'time', type: 'datetimeRange' },
   ])
 
-  const filtered = Object.keys(params).filter(k => !['from'].includes(k)).length > 0
+  const filtered = isFiltered(params)
   return (
     <>
       <Button
@@ -229,8 +231,6 @@ function Filters() {
   )
 }
 
-const generateKeyFromParams = params => JSON.stringify(params)
-
 export function AmplifierProofs() {
   const searchParams = useSearchParams()
   const [params, setParams] = useState(null)
@@ -252,7 +252,7 @@ export function AmplifierProofs() {
       if (params && toBoolean(refresh) && blockData) {
         const { data, total } = { ...await searchAmplifierProofs({ ...params, size }) }
 
-        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: {
+        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyByParams(params)]: {
           data: _.orderBy(toArray(data).map(d => {
             const signs = []
             Object.entries(d).filter(([k, v]) => k.startsWith('axelar')).forEach(([k, v]) => signs.push(v))
@@ -291,7 +291,7 @@ export function AmplifierProofs() {
     getData()
   }, [setBlockData])
 
-  const { data, total } = { ...searchResults?.[generateKeyFromParams(params)] }
+  const { data, total } = { ...searchResults?.[generateKeyByParams(params)] }
   return (
     <Container className="sm:mt-8">
       {!data ? <Spinner /> :

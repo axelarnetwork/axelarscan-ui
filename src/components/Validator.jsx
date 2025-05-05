@@ -6,10 +6,8 @@ import { useEffect, useState } from 'react'
 import Linkify from 'react-linkify'
 import clsx from 'clsx'
 import _ from 'lodash'
-import { MdKeyboardDoubleArrowLeft, MdKeyboardDoubleArrowRight } from 'react-icons/md'
 
 import { Container } from '@/components/Container'
-import { Button } from '@/components/Button'
 import { Image } from '@/components/Image'
 import { Copy } from '@/components/Copy'
 import { Tooltip } from '@/components/Tooltip'
@@ -18,6 +16,7 @@ import { Spinner } from '@/components/Spinner'
 import { Tag } from '@/components/Tag'
 import { Number } from '@/components/Number'
 import { Profile } from '@/components/Profile'
+import { TablePagination } from '@/components/Pagination'
 import { useValidatorStore } from '@/components/Validators'
 import { useGlobalStore } from '@/components/Global'
 import { getBalances } from '@/lib/api/axelarscan'
@@ -26,57 +25,6 @@ import { ENVIRONMENT, getChainData, getAssetData } from '@/lib/config'
 import { toArray } from '@/lib/parser'
 import { equalsIgnoreCase, includesSomePatterns, ellipse } from '@/lib/string'
 import { isNumber, toNumber, numberFormat } from '@/lib/number'
-
-function Pagination({ data, value = 1, maxPage = 5, sizePerPage = 25, onChange }) {
-  const [page, setPage] = useState(value)
-
-  useEffect(() => {
-    if (value) setPage(value)
-  }, [value, setPage])
-
-  useEffect(() => {
-    if (page && onChange) onChange(page)
-  }, [page, onChange])
-
-  const half = Math.floor(toNumber(maxPage) / 2)
-  const totalPage = Math.ceil(toNumber(data.length) / sizePerPage)
-  const pages = _.range(page - half, page + half + 1).filter(p => p > 0 && p <= totalPage)
-  const prev = _.min(_.range(_.head(pages) - maxPage, _.head(pages)).filter(p => p > 0))
-  const next = _.max(_.range(_.last(pages) + 1, _.last(pages) + maxPage + 1).filter(p => p <= totalPage))
-
-  return (
-    <div className="flex items-center justify-center gap-x-1">
-      {isNumber(prev) && (
-        <Button
-          color="none"
-          onClick={() => setPage(prev)}
-          className="!px-1"
-        >
-          <MdKeyboardDoubleArrowLeft size={18} />
-        </Button>
-      )}
-      {pages.map(p => (
-        <Button
-          key={p}
-          color={p === page ? 'blue' : 'default'}
-          onClick={() => setPage(p)}
-          className="!text-2xs !px-3 !py-1"
-        >
-          <Number value={p} />
-        </Button>
-      ))}
-      {isNumber(next) && (
-        <Button
-          color="none"
-          onClick={() => setPage(next)}
-          className="!px-1"
-        >
-          <MdKeyboardDoubleArrowRight size={18} />
-        </Button>
-      )}
-    </div>
-  )
-}
 
 function Info({ data, address, delegations }) {
   const delegationsSizePerPage = 10
@@ -329,7 +277,7 @@ function Info({ data, address, delegations }) {
                     </table>
                   </div>
                   {delegations.length > delegationsSizePerPage && (
-                    <Pagination
+                    <TablePagination
                       data={delegations}
                       value={delegationsPage}
                       onChange={page => setDelegationsPage(page)}

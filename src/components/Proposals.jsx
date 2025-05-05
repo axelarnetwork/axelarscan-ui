@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import clsx from 'clsx'
-import _ from 'lodash'
 import moment from 'moment'
 
 import { Container } from '@/components/Container'
@@ -14,8 +13,7 @@ import { getProposals } from '@/lib/api/axelarscan'
 import { toArray } from '@/lib/parser'
 import { toTitle } from '@/lib/string'
 import { toNumber } from '@/lib/number'
-
-const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'
+import { TIME_FORMAT } from '@/lib/time'
 
 export function Proposals() {
   const [data, setData] = useState(null)
@@ -25,6 +23,7 @@ export function Proposals() {
       const { data } = { ...await getProposals() }
       setData(toArray(data))
     }
+
     getData()
   }, [setData])
 
@@ -34,7 +33,9 @@ export function Proposals() {
         <div>
           <div className="sm:flex sm:items-center">
             <div className="sm:flex-auto">
-              <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">Proposals</h1>
+              <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">
+                Proposals
+              </h1>
               <p className="mt-2 text-zinc-400 dark:text-zinc-500 text-sm">
                 List of proposals in Axelar Network including ID, title, description, type and status.
               </p>
@@ -68,8 +69,8 @@ export function Proposals() {
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
-                {data.map(d => (
-                  <tr key={d.proposal_id} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
+                {data.map((d, i) => (
+                  <tr key={i} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
                     <td className="pl-4 sm:pl-0 pr-3 py-4 text-left">
                       {d.proposal_id}
                     </td>
@@ -88,7 +89,11 @@ export function Proposals() {
                       </div>
                     </td>
                     <td className="px-3 py-4 text-left">
-                      {d.type && <Tag className="w-fit">{d.type}</Tag>}
+                      {d.type && (
+                        <Tag className="w-fit">
+                          {d.type}
+                        </Tag>
+                      )}
                     </td>
                     <td className="hidden sm:table-cell px-3 py-4 text-left">
                       <Number value={d.content?.plan?.height} />
@@ -97,7 +102,9 @@ export function Proposals() {
                       <div className="flex flex-col gap-y-1 mt-1">
                         {[d.voting_start_time, d.voting_end_time].map((t, i) => (
                           <div key={i} className="flex items-center space-x-1.5">
-                            <div className="w-8 text-xs">{i === 0 ? 'From' : 'To'}:</div>
+                            <div className="w-8 text-xs">
+                              {i === 0 ? 'From' : 'To'}:
+                            </div>
                             <span className="text-zinc-700 dark:text-zinc-300 text-xs font-medium whitespace-nowrap">
                               {moment(t).format(TIME_FORMAT)}
                             </span>
