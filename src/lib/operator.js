@@ -21,11 +21,19 @@ export const getParams = (searchParams, size = 25) => {
 }
 
 export const getQueryString = params => {
+  if (!(Object.keys({ ...params }).length > 0)) {
+    return ''
+  }
+
   const qs = new URLSearchParams()
 
-  Object.entries({ ...params }).filter(([k, v]) => v && !find(k, ['from'])).forEach(([k, v]) => {
+  Object.entries(params).filter(([k, v]) => v && !find(k, ['from'])).forEach(([k, v]) => {
     qs.append(k, v)
   })
 
-  return qs.toString()
+  return `?${qs.toString()}`
 }
+
+export const generateKeyByParams = params => JSON.stringify(params)
+
+export const isFiltered = params => Object.keys({ ...params }).filter(k => !find(k, ['from'])).length > 0

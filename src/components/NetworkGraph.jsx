@@ -5,12 +5,11 @@ import { useTheme } from 'next-themes'
 import ForceGraph2D from 'react-force-graph-2d'
 import clsx from 'clsx'
 import _ from 'lodash'
-import { MdKeyboardDoubleArrowLeft, MdKeyboardDoubleArrowRight } from 'react-icons/md'
 
-import { Button } from '@/components/Button'
 import { Spinner } from '@/components/Spinner'
 import { Number } from '@/components/Number'
 import { ChainProfile } from '@/components/Profile'
+import { TablePagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
 import { getChainData } from '@/lib/config'
 import { toArray } from '@/lib/parser'
@@ -180,57 +179,6 @@ const useLinkCanvasObject = (selectedNode, theme) => useCallback(
   [selectedNode, theme],
 )
 
-function Pagination({ data, value = 1, maxPage = 5, sizePerPage = 25, onChange }) {
-  const [page, setPage] = useState(value)
-
-  useEffect(() => {
-    if (value) setPage(value)
-  }, [value, setPage])
-
-  useEffect(() => {
-    if (page && onChange) onChange(page)
-  }, [page, onChange])
-
-  const half = Math.floor(toNumber(maxPage) / 2)
-  const totalPage = Math.ceil(toNumber(data.length) / sizePerPage)
-  const pages = _.range(page - half, page + half + 1).filter(p => p > 0 && p <= totalPage)
-  const prev = _.min(_.range(_.head(pages) - maxPage, _.head(pages)).filter(p => p > 0))
-  const next = _.max(_.range(_.last(pages) + 1, _.last(pages) + maxPage + 1).filter(p => p <= totalPage))
-
-  return (
-    <div className="flex items-center justify-center gap-x-1">
-      {isNumber(prev) && (
-        <Button
-          color="none"
-          onClick={() => setPage(prev)}
-          className="!px-1"
-        >
-          <MdKeyboardDoubleArrowLeft size={18} />
-        </Button>
-      )}
-      {pages.map(p => (
-        <Button
-          key={p}
-          color={p === page ? 'blue' : 'default'}
-          onClick={() => setPage(p)}
-          className="!text-2xs !px-3 !py-1"
-        >
-          <Number value={p} />
-        </Button>
-      ))}
-      {isNumber(next) && (
-        <Button
-          color="none"
-          onClick={() => setPage(next)}
-          className="!px-1"
-        >
-          <MdKeyboardDoubleArrowRight size={18} />
-        </Button>
-      )}
-    </div>
-  )
-}
-
 const TIERS = [
   { id: 1, n_sd: 0.25 },
   { id: 2, n_sd: -0.25 },
@@ -380,18 +328,10 @@ export function NetworkGraph({ data, hideTable = false, setChainFocus }) {
                 {filteredData.filter((d, i) => i >= (page - 1) * size && i < page * size).map((d, i) => (
                   <tr key={i} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
                     <td className="pl-4 sm:pl-0 pr-3 py-4 text-left">
-                      <ChainProfile
-                        value={d.sourceChain}
-                        className="h-6"
-                        titleClassName="font-semibold"
-                      />
+                      <ChainProfile value={d.sourceChain} titleClassName="font-semibold" />
                     </td>
                     <td className="px-3 py-4 text-left">
-                      <ChainProfile
-                        value={d.destinationChain}
-                        className="h-6"
-                        titleClassName="font-semibold"
-                      />
+                      <ChainProfile value={d.destinationChain} titleClassName="font-semibold" />
                     </td>
                     <td className="px-3 py-4 text-right">
                       <div className="flex items-center justify-end">
@@ -425,7 +365,7 @@ export function NetworkGraph({ data, hideTable = false, setChainFocus }) {
           </div>
           {filteredData.length > size && (
             <div className="flex items-center justify-center mt-4">
-              <Pagination
+              <TablePagination
                 data={filteredData}
                 value={page}
                 onChange={page => setPage(page)}

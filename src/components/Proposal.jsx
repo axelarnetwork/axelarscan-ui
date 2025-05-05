@@ -22,8 +22,7 @@ import { getChainData } from '@/lib/config'
 import { toJson, toArray } from '@/lib/parser'
 import { equalsIgnoreCase, ellipse, toTitle } from '@/lib/string'
 import { toNumber } from '@/lib/number'
-
-const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'
+import { TIME_FORMAT } from '@/lib/time'
 
 function Info({ data, end, voteOptions }) {
   const { chains } = useGlobalStore()
@@ -35,8 +34,12 @@ function Info({ data, end, voteOptions }) {
   return (
     <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
       <div className="px-4 sm:px-6 py-6">
-        <h3 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-7">{title || plan?.name}</h3>
-        <p className="max-w-2xl text-zinc-400 dark:text-zinc-500 text-sm leading-6 mt-1">Proposal ID: {proposal_id}</p>
+        <h3 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-7">
+          {title || plan?.name}
+        </h3>
+        <p className="max-w-2xl text-zinc-400 dark:text-zinc-500 text-sm leading-6 mt-1">
+          Proposal ID: {proposal_id}
+        </p>
       </div>
       <div className="border-t border-zinc-200 dark:border-zinc-700">
         <dl className="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -62,7 +65,9 @@ function Info({ data, end, voteOptions }) {
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Type</dt>
               <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                <Tag className="w-fit">{type}</Tag>
+                <Tag className="w-fit">
+                  {type}
+                </Tag>
               </dd>
             </div>
           )}
@@ -95,23 +100,24 @@ function Info({ data, end, voteOptions }) {
               )}
             </>
           )}
-          {toArray(changes).filter(d => d.subspace).map((d, i) => {
-            const { key, value, subspace } = { ...d }
-            return (
-              <div key={i} className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
-                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">{subspace}</dt>
-                <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm font-medium leading-6 mt-1 sm:mt-0">
-                  {typeof toJson(value) === 'object' ?
-                    <div className="flex flex-col gap-y-2">
-                      <Tag className="w-fit bg-orange-400 dark:bg-orange-500 whitespace-nowrap">{key}</Tag>
-                      <JSONView value={value} />
-                    </div> :
-                    <Tag className="w-fit bg-orange-400 dark:bg-orange-500 whitespace-nowrap">{key} = {value}</Tag>
-                  }
-                </dd>
-              </div>
-            )
-          })}
+          {toArray(changes).filter(d => d.subspace).map(({ key, value, subspace }, i) => (
+            <div key={i} className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
+              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">{subspace}</dt>
+              <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm font-medium leading-6 mt-1 sm:mt-0">
+                {typeof toJson(value) === 'object' ?
+                  <div className="flex flex-col gap-y-2">
+                    <Tag className="w-fit bg-orange-400 dark:bg-orange-500 whitespace-nowrap">
+                      {key}
+                    </Tag>
+                    <JSONView value={value} />
+                  </div> :
+                  <Tag className="w-fit bg-orange-400 dark:bg-orange-500 whitespace-nowrap">
+                    {key} = {value}
+                  </Tag>
+                }
+              </dd>
+            </div>
+          ))}
           {toArray(contract_calls).length > 0 && (
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">GMP(s)</dt>
@@ -140,8 +146,9 @@ function Info({ data, end, voteOptions }) {
                 </div>
                 <div className="w-12 h-1 border-t-2 border-dashed border-zinc-400 dark:border-zinc-600" />
                 <div className="max-w-fit flex flex-wrap items-center">
-                  {toArray(contract_calls).map((d, i) => {
-                    const { name, image } = { ...getChainData(d.chain, chains) }
+                  {contract_calls.map(({ chain }, i) => {
+                    const { name, image } = { ...getChainData(chain, chains) }
+
                     return (
                       <div key={i} className="mr-0.5 mb-0.5">
                         <Tooltip content={name}>
@@ -226,6 +233,7 @@ function Votes({ data }) {
   const { validators } = useGlobalStore()
 
   const totalVotingPower = _.sumBy(toArray(validators).filter(d => !d.jailed && d.status === 'BOND_STATUS_BONDED'), 'tokens')
+
   return data && (
     <div className="overflow-x-auto lg:overflow-x-visible -mx-4 sm:-mx-0 mt-8">
       <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
@@ -266,7 +274,13 @@ function Votes({ data }) {
                 </Copy>
               </td>
               <td className="px-3 py-4 text-left">
-                {d.validatorData && <Profile i={i} address={d.validatorData.operator_address} prefix="axelarvaloper" />}
+                {d.validatorData && (
+                  <Profile
+                    i={i}
+                    address={d.validatorData.operator_address}
+                    prefix="axelarvaloper"
+                  />
+                )}
               </td>
               <td className="px-3 py-4 text-right">
                 {d.voting_power > 0 && (
@@ -312,9 +326,18 @@ export function Proposal({ id }) {
 
   useEffect(() => {
     const setValidatorsToVotes = votes => {
-      if (!validators) return votes
+      if (!validators) {
+        return votes
+      }
+
       return _.orderBy(
-        toArray(votes).map(d => ({ ...d, validatorData: validators.find(v => equalsIgnoreCase(v.delegator_address, d.voter)) })).map(d => ({ ...d, voting_power: d.validatorData ? d.validatorData.tokens : -1 })),
+        toArray(votes).map(d => ({
+          ...d,
+          validatorData: validators.find(v => equalsIgnoreCase(v.delegator_address, d.voter)),
+        })).map(d => ({
+          ...d,
+          voting_power: d.validatorData ? d.validatorData.tokens : -1,
+        })),
         ['voting_power', 'validatorData.description.moniker'], ['desc', 'asc'],
       )
     }
@@ -325,18 +348,27 @@ export function Proposal({ id }) {
         setData({ ...response, votes: setValidatorsToVotes(response?.votes) })
       }
     }
+
     getData()
   }, [id, setData, validators])
 
   const { proposal_id, voting_end_time, votes } = { ...data }
+
   const end = voting_end_time && voting_end_time < moment().valueOf()
-  const voteOptions = Object.entries(_.groupBy(toArray(votes), 'option')).map(([k, v]) => ({ option: k, value: toArray(v).length })).filter(d => d.value)
+  const voteOptions = Object.entries(_.groupBy(toArray(votes), 'option')).map(([k, v]) => ({
+    option: k,
+    value: toArray(v).length,
+  })).filter(d => d.value)
 
   return (
     <Container className="sm:mt-8">
       {!(data && toNumber(id) === toNumber(proposal_id)) ? <Spinner /> :
         <div className="max-w-4xl flex flex-col gap-y-4 sm:gap-y-6">
-          <Info data={data} end={end} voteOptions={voteOptions} />
+          <Info
+            data={data}
+            end={end}
+            voteOptions={voteOptions}
+          />
           {!end && validators && <Votes data={votes} />}
         </div>
       }
