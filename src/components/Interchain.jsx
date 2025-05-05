@@ -29,7 +29,7 @@ import { GMPStats, GMPStatsByChains, GMPStatsByContracts, GMPChart, GMPTotalVolu
 import { transfersStats, transfersChart, transfersTotalVolume, transfersTopUsers } from '@/lib/api/token-transfer'
 import { ENVIRONMENT, getChainData, getAssetData, getITSAssetData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
-import { getParams, getQueryString } from '@/lib/operator'
+import { getParams, getQueryString, generateKeyByParams, isFiltered } from '@/lib/operator'
 import { equalsIgnoreCase, toBoolean, headString, lastString, toTitle } from '@/lib/string'
 import { isNumber, toNumber, toFixed, numberFormat } from '@/lib/number'
 import { timeDiff } from '@/lib/time'
@@ -60,9 +60,11 @@ function Filters() {
   const { chains, assets, itsAssets } = useGlobalStore()
 
   const onSubmit = (e1, e2, _params) => {
-    _params = _params || params
+    if (!_params) {
+      _params = params
+    }
     if (!_.isEqual(_params, getParams(searchParams))) {
-      router.push(`${pathname}?${getQueryString(_params)}`)
+      router.push(`${pathname}${getQueryString(_params)}`)
       setParams(_params)
     }
     setOpen(false)
@@ -86,7 +88,7 @@ function Filters() {
     { label: 'Time', name: 'time', type: 'datetimeRange' },
   ])
 
-  const filtered = Object.keys(params).filter(k => !['from'].includes(k)).length > 0
+  const filtered = isFiltered(params)
   return (
     <>
       <Button
@@ -1164,7 +1166,7 @@ function GMPTimeSpent({ data, format = '0,0', prefix = '' }) {
           value={key}
           width={20}
           height={20}
-          className="gap-x-1"
+          className="h-5 gap-x-1"
           titleClassName="text-xs"
         />
         <Number
@@ -1246,8 +1248,6 @@ function GMPTimeSpents({ data }) {
   )
 }
 
-const generateKeyFromParams = params => JSON.stringify(params)
-
 export function Interchain() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -1275,7 +1275,7 @@ export function Interchain() {
     const metrics = ['GMPStatsByChains', 'GMPStatsByContracts', 'GMPChart', 'GMPTotalVolume', 'GMPTopUsers', 'GMPTopITSUsers', 'GMPTopITSUsersByVolume', 'GMPTopITSAssets', 'GMPTopITSAssetsByVolume', 'transfersStats', 'transfersChart', 'transfersTotalVolume', 'transfersTopUsers', 'transfersTopUsersByVolume']
     const getData = async () => {
       if (stats && params && toBoolean(refresh)) {
-        setData({ ...data, [generateKeyFromParams(params)]: Object.fromEntries((await Promise.all(toArray(metrics.map(d => new Promise(async resolve => {
+        setData({ ...data, [generateKeyByParams(params)]: Object.fromEntries((await Promise.all(toArray(metrics.map(d => new Promise(async resolve => {
           const isSearchITSOnTransfers = types.includes('transfers') && d.startsWith('transfers') && (params.assetType === 'its' || toArray(params.asset).findIndex(a => getITSAssetData(a, globalStore.itsAssets)) > -1)
           const hasITS = types.includes('gmp') && params.assetType !== 'gateway' && toArray(params.asset).findIndex(a => getAssetData(a, assets)) < 0
           const noFilter = Object.keys(params).length === 0
@@ -1384,7 +1384,7 @@ export function Interchain() {
       if (params && toBoolean(refresh)) {
         setTimeSpentData({
           ...timeSpentData,
-          [generateKeyFromParams(params)]: {
+          [generateKeyByParams(params)]: {
             GMPStatsAVGTimes: types.includes('gmp') && await GMPStats({
               ...params,
               avg_times: true,
@@ -1436,7 +1436,7 @@ export function Interchain() {
                   return (
                     <Link
                       key={i}
-                      href={`${pathname}?${getQueryString({ ...params, fromTime: _.head(d.value)?.unix(), toTime: _.last(d.value)?.unix() })}`}
+                      href={`${pathname}${getQueryString({ ...params, fromTime: _.head(d.value)?.unix(), toTime: _.last(d.value)?.unix() })}`}
                       className={clsx(
                         'min-w-max flex items-center text-xs sm:text-sm whitespace-nowrap mr-4 mb-1 sm:mb-0',
                         selected ? 'text-blue-600 dark:text-blue-500 font-semibold' : 'text-zinc-400 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-300',
@@ -1462,10 +1462,10 @@ export function Interchain() {
             </div>
           </div>
           {refresh && refresh !== 'true' && <Overlay />}
-          <Summary data={data[generateKeyFromParams(params)]} params={params} />
-          <Charts data={data[generateKeyFromParams(params)]} granularity={granularity} params={params} />
-          <Tops data={data[generateKeyFromParams(params)]} types={types} params={params} />
-          {types.includes('gmp') && <GMPTimeSpents data={timeSpentData?.[generateKeyFromParams(params)]} />}
+          <Summary data={data[generateKeyByParams(params)]} params={params} />
+          <Charts data={data[generateKeyByParams(params)]} granularity={granularity} params={params} />
+          <Tops data={data[generateKeyByParams(params)]} types={types} params={params} />
+          {types.includes('gmp') && <GMPTimeSpents data={timeSpentData?.[generateKeyByParams(params)]} />}
         </div>
       }
     </Container>
