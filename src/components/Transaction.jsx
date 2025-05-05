@@ -336,8 +336,7 @@ function Data({ data }) {
                             value={d.chain}
                             width={20}
                             height={20}
-                            className="h-5"
-                            className="text-xs gap-x-1.5"
+                            className="h-5 text-xs gap-x-1.5"
                           />
                         </div>
                       )}
