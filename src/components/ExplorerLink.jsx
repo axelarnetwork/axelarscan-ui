@@ -25,7 +25,7 @@ export function ExplorerLink({
   height = 16,
   containerClassName,
   nonIconClassName,
-  className,
+  className = 'h-4',
 }) {
   const { chains } = useGlobalStore()
   const { explorer } = { ...getChainData(chain, chains) }

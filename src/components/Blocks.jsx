@@ -13,7 +13,7 @@ import { searchBlocks } from '@/lib/api/validator'
 import { toBoolean, ellipse } from '@/lib/string'
 import { numberFormat } from '@/lib/number'
 
-const size = 250
+const SIZE = 250
 
 export function Blocks({ height }) {
   const [data, setData] = useState(null)
@@ -22,13 +22,15 @@ export function Blocks({ height }) {
   useEffect(() => {
     const getData = async () => {
       if (toBoolean(refresh)) {
-        const { data } = { ...await searchBlocks({ height, size }) }
+        const { data } = { ...await searchBlocks({ height, size: SIZE }) }
+
         if (data) {
           setData(data)
           setRefresh(false)
         }
       }
     }
+
     getData()
   }, [height, setData, refresh, setRefresh])
 
@@ -42,9 +44,11 @@ export function Blocks({ height }) {
       {!data ? <Spinner /> :
         <div>
           <div className="sm:flex-auto">
-            <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">Blocks</h1>
+            <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">
+              Blocks
+            </h1>
             <p className="mt-2 text-zinc-400 dark:text-zinc-500 text-sm">
-              Latest {numberFormat(size, '0,0')} Blocks
+              Latest {numberFormat(SIZE, '0,0')} Blocks
             </p>
           </div>
           <div className="overflow-x-auto lg:overflow-x-visible -mx-4 sm:-mx-0 mt-4">

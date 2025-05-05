@@ -25,9 +25,7 @@ import { getChainData, getAssetData } from '@/lib/config'
 import { split, toArray, parseError } from '@/lib/parser'
 import { equalsIgnoreCase, ellipse } from '@/lib/string'
 import { toNumber, formatUnits } from '@/lib/number'
-import { timeDiff } from '@/lib/time'
-
-const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'
+import { timeDiff, TIME_FORMAT } from '@/lib/time'
 
 function Info({ data, chain, id, executeButton }) {
   const { chains, assets, contracts } = useGlobalStore()

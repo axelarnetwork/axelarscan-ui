@@ -13,3 +13,5 @@ export const timeDiffString = (fromTime, toTime) => {
 
   return `${timeDiff(fromTime, 'days', toTime)} days`
 }
+
+export const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'

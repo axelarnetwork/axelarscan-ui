@@ -28,7 +28,7 @@ import { useGlobalStore } from '@/components/Global'
 import { searchTransfers } from '@/lib/api/token-transfer'
 import { ENVIRONMENT, getAssetData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
-import { getParams, getQueryString } from '@/lib/operator'
+import { getParams, getQueryString, generateKeyByParams, isFiltered } from '@/lib/operator'
 import { isString, equalsIgnoreCase, capitalize, toBoolean, ellipse, toTitle } from '@/lib/string'
 import { isNumber, formatUnits } from '@/lib/number'
 
@@ -44,9 +44,11 @@ function Filters() {
   const { chains, assets } = useGlobalStore()
 
   const onSubmit = (e1, e2, _params) => {
-    _params = _params || params
+    if (!_params) {
+      _params = params
+    }
     if (!_.isEqual(_params, getParams(searchParams, size))) {
-      router.push(`${pathname}?${getQueryString(_params)}`)
+      router.push(`${pathname}${getQueryString(_params)}`)
       setParams(_params)
     }
     setOpen(false)
@@ -71,7 +73,7 @@ function Filters() {
     { label: 'Sort By', name: 'sortBy', type: 'select', options: _.concat({ title: 'Any' }, [{ value: 'time', title: 'Transfer Time' }, { value: 'value', title: 'Transfer Value' }]) },
   ]
 
-  const filtered = Object.keys(params).filter(k => !['from'].includes(k)).length > 0
+  const filtered = isFiltered(params)
   return (
     <>
       <Button
@@ -235,8 +237,6 @@ function Filters() {
 
 export const normalizeType = type => ['wrap', 'unwrap', 'erc20_transfer'].includes(type) ? 'deposit_service' : type || 'deposit_address'
 
-const generateKeyFromParams = params => JSON.stringify(params)
-
 export function Transfers({ address }) {
   const searchParams = useSearchParams()
   const [params, setParams] = useState(null)
@@ -262,8 +262,8 @@ export function Transfers({ address }) {
         delete _params.sortBy
 
         const response = await searchTransfers({ ..._params, size, sort })
-        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: { ...(response?.total || (Object.keys(_params).length > 0 && !(Object.keys(_params).length === 1 && _params.from !== undefined)) || ENVIRONMENT !== 'mainnet' ? response : searchResults?.[generateKeyFromParams(params)]) } })
-        setRefresh(!isNumber(response?.total) && !searchResults?.[generateKeyFromParams(params)] && ENVIRONMENT === 'mainnet' ? true : false)
+        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyByParams(params)]: { ...(response?.total || (Object.keys(_params).length > 0 && !(Object.keys(_params).length === 1 && _params.from !== undefined)) || ENVIRONMENT !== 'mainnet' ? response : searchResults?.[generateKeyByParams(params)]) } })
+        setRefresh(!isNumber(response?.total) && !searchResults?.[generateKeyByParams(params)] && ENVIRONMENT === 'mainnet' ? true : false)
       }
     }
     getData()
@@ -274,7 +274,7 @@ export function Transfers({ address }) {
     return () => clearInterval(interval)
   }, [])
 
-  const { data, total } = { ...searchResults?.[generateKeyFromParams(params)] }
+  const { data, total } = { ...searchResults?.[generateKeyByParams(params)] }
   return (
     <Container className="sm:mt-8">
       {!data ? <Spinner /> :
@@ -393,21 +393,13 @@ export function Transfers({ address }) {
                       </td>
                       <td className="px-3 py-4 text-left">
                         <div className="flex flex-col gap-y-1">
-                          <ChainProfile
-                            value={d.send.source_chain}
-                            className="h-6"
-                            titleClassName="font-semibold"
-                          />
+                          <ChainProfile value={d.send.source_chain} titleClassName="font-semibold" />
                           <Profile address={senderAddress} chain={d.send.source_chain} />
                         </div>
                       </td>
                       <td className="px-3 py-4 text-left">
                         <div className="flex flex-col gap-y-1">
-                          <ChainProfile
-                            value={d.send.destination_chain || d.link?.destination_chain}
-                            className="h-6"
-                            titleClassName="font-semibold"
-                          />
+                          <ChainProfile value={d.send.destination_chain || d.link?.destination_chain} titleClassName="font-semibold" />
                           <Profile address={recipientAddress} chain={d.send.destination_chain || d.link?.destination_chain} />
                         </div>
                       </td>

@@ -31,7 +31,7 @@ import { searchGMP } from '@/lib/api/gmp'
 import { isAxelar } from '@/lib/chain'
 import { ENVIRONMENT } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
-import { getParams, getQueryString } from '@/lib/operator'
+import { getParams, getQueryString, generateKeyByParams, isFiltered } from '@/lib/operator'
 import { isString, equalsIgnoreCase, capitalize, toBoolean, ellipse } from '@/lib/string'
 import { isNumber } from '@/lib/number'
 import customGMPs from '@/data/custom/gmp'
@@ -48,10 +48,12 @@ function Filters() {
   const { chains, assets, itsAssets } = useGlobalStore()
 
   const onSubmit = (e1, e2, _params) => {
-    _params = _params || params
+    if (!_params) {
+      _params = params
+    }
 
     if (!_.isEqual(_params, getParams(searchParams, size))) {
-      router.push(`${pathname}?${getQueryString(_params)}`)
+      router.push(`${pathname}${getQueryString(_params)}`)
       setParams(_params)
     }
 
@@ -113,7 +115,7 @@ function Filters() {
     { label: 'Proposal ID', name: 'proposalId' },
   ])
 
-  const filtered = Object.keys(params).filter(k => !['from'].includes(k)).length > 0
+  const filtered = isFiltered(params)
 
   return (
     <>
@@ -334,8 +336,6 @@ export const customData = async data => {
   return data
 }
 
-const generateKeyFromParams = params => JSON.stringify(params)
-
 export function GMPs({ address }) {
   const searchParams = useSearchParams()
   const [params, setParams] = useState(null)
@@ -371,7 +371,7 @@ export function GMPs({ address }) {
 
         setSearchResults({
           ...(refresh ? undefined : searchResults),
-          [generateKeyFromParams(params)]: { ...response },
+          [generateKeyByParams(params)]: { ...response },
         })
 
         setRefresh(false)
@@ -386,7 +386,7 @@ export function GMPs({ address }) {
     return () => clearInterval(interval)
   }, [])
 
-  const { data, total } = { ...searchResults?.[generateKeyFromParams(params)] }
+  const { data, total } = { ...searchResults?.[generateKeyByParams(params)] }
 
   return (
     <Container className="sm:mt-8">
@@ -511,11 +511,7 @@ export function GMPs({ address }) {
                       </td>
                       <td className="px-3 py-4 text-left">
                         <div className="flex flex-col gap-y-1">
-                          <ChainProfile
-                            value={d.call.chain}
-                            className="h-6"
-                            titleClassName="font-semibold"
-                          />
+                          <ChainProfile value={d.call.chain} titleClassName="font-semibold" />
                           <Profile address={d.call.transaction?.from} chain={d.call.chain} />
                         </div>
                       </td>
@@ -530,11 +526,7 @@ export function GMPs({ address }) {
                                 </div>
                               </Tooltip>
                             </div> :
-                            <ChainProfile
-                              value={d.call.returnValues?.destinationChain}
-                              className="h-6"
-                              titleClassName="font-semibold"
-                            />
+                            <ChainProfile value={d.call.returnValues?.destinationChain} titleClassName="font-semibold" />
                           }
                           {d.is_invalid_contract_address ?
                             <div className="flex">
