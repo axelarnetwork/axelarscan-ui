@@ -537,7 +537,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                   onlyITS={!getEvent(data)?.includes('ContractCall')}
                   width={16}
                   height={16}
-                  className="w-fit h-6 bg-zinc-100 dark:bg-zinc-800 rounded-xl px-2.5 py-1"
+                  className="w-fit h-4 bg-zinc-100 dark:bg-zinc-800 rounded-xl px-2.5 py-1"
                   titleClassName="text-xs"
                 />
               </dd>
@@ -573,7 +573,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                           ITSPossible={true}
                           width={16}
                           height={16}
-                          className="w-fit h-6 bg-zinc-100 dark:bg-zinc-800 rounded-xl px-2.5 py-1"
+                          className="w-fit h-4 bg-zinc-100 dark:bg-zinc-800 rounded-xl px-2.5 py-1"
                           titleClassName="text-xs"
                         />
                         <MdKeyboardArrowRight size={20} className="text-zinc-700 dark:text-zinc-300" />
@@ -1428,6 +1428,7 @@ function Details({ data }) {
                             height={14}
                             containerClassName="!gap-x-1.5"
                             nonIconClassName="text-blue-600 dark:text-blue-500 text-xs"
+                            className="h-auto"
                           />
                         </div>
                       ))
@@ -1447,6 +1448,7 @@ function Details({ data }) {
                             height={14}
                             containerClassName="!gap-x-1.5"
                             nonIconClassName="text-blue-600 dark:text-blue-500 text-xs"
+                            className="h-auto"
                           />
                         </div>
                       ))
@@ -1539,6 +1541,7 @@ function Details({ data }) {
                             chain={d.chainData?.id}
                             width={14}
                             height={14}
+                            className="h-auto"
                           />
                         </div>
                       ))

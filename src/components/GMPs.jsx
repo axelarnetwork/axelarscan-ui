@@ -473,7 +473,7 @@ export function GMPs({ address }) {
                               onlyITS={!getEvent(d)?.includes('ContractCall')}
                               width={16}
                               height={16}
-                              className="w-fit h-6 bg-zinc-100 dark:bg-zinc-800 rounded-xl px-2.5 py-1"
+                              className="w-fit h-4 bg-zinc-100 dark:bg-zinc-800 rounded-xl px-2.5 py-1"
                               titleClassName="text-xs"
                             />
                           )}
@@ -501,7 +501,7 @@ export function GMPs({ address }) {
                                   ITSPossible={true}
                                   width={16}
                                   height={16}
-                                  className="w-fit h-6 bg-zinc-100 dark:bg-zinc-800 rounded-xl px-2.5 py-1"
+                                  className="w-fit h-4 bg-zinc-100 dark:bg-zinc-800 rounded-xl px-2.5 py-1"
                                   titleClassName="text-xs"
                                 />
                               ))}

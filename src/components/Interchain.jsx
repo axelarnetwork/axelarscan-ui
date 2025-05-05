@@ -816,7 +816,7 @@ function Top({
                               isLink={true}
                               width={20}
                               height={20}
-                              className="text-xs font-medium"
+                              className="h-5 text-xs font-medium"
                             />
                           )
                         case 'contract':
