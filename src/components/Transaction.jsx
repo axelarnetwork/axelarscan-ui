@@ -507,8 +507,8 @@ export function Transaction({ tx }) {
       if (data) {
         data = {
           ...data,
-          type: getType(d),
-          sender: getSender(d, assets),
+          type: getType(data),
+          sender: getSender(data, assets),
         }
 
         console.log('[data]', data)
