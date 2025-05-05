@@ -495,7 +495,7 @@ export function Account({ address }) {
               {!isDepositAddress && !(address.length >= 65) && (
                 <Info data={data} address={address} />
               )}
-              {(isDepositAddress || find(address, axelarContracts)) && (
+              {(isDepositAddress || find(address, axelarContracts) || address.length < 65) && (
                 <Balances data={data.balances?.data} />
               )}
               {!isDepositAddress && !(address.length >= 65) && (
