@@ -19,7 +19,7 @@ export function Image({ src, alt = '', className, ...props }) {
       className={clsx(className, isString(src) && (
         includesSomePatterns(src, ['/immutable']) ? 'bg-white rounded-full' :
         includesSomePatterns(src, ['/moonbeam', '/moonbase', '/dymension', '/saga', '/xion', '/allora', '/stellar', '/xrpl']) ? 'bg-white rounded-full p-0.5' :
-        includesSomePatterns(src, ['/blast']) ? 'bg-zinc-900 rounded-full p-0.5' : ''
+        includesSomePatterns(src, ['/blast']) ? 'bg-zinc-900 rounded-full p-1' : ''
       ))}
     />
   )

@@ -20,8 +20,7 @@ import { getRPCStatus, searchAmplifierProofs } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
 import { toArray } from '@/lib/parser'
 import { equalsIgnoreCase, capitalize, headString, lastString, ellipse, toTitle } from '@/lib/string'
-
-const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'
+import { TIME_FORMAT } from '@/lib/time'
 
 function Info({ data, id }) {
   const { chains } = useGlobalStore()

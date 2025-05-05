@@ -18,27 +18,28 @@ import { Profile } from '@/components/Profile'
 import { Transactions } from '@/components/Transactions'
 import { useGlobalStore } from '@/components/Global'
 import { getBlock, getValidatorSets } from '@/lib/api/validator'
-import { toJson, toHex, split, toArray } from '@/lib/parser'
-import { equalsIgnoreCase, removeDoubleQuote, lastString, ellipse, toTitle } from '@/lib/string'
+import { toJson, toHex, toArray } from '@/lib/parser'
+import { equalsIgnoreCase, removeDoubleQuote, lastString, find, ellipse, toTitle } from '@/lib/string'
 import { isNumber, toNumber, numberFormat } from '@/lib/number'
+import { TIME_FORMAT } from '@/lib/time'
 
-const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'
-
-function Info({ data, validatorSets, height }) {
+function Info({ data, height, validatorSets }) {
   const [signedCollpased, setSignedCollpased] = useState(true)
 
   const { hash } = { ...data.block_id }
   const { proposer_address, time } = { ...data.block?.header }
   const { txs } = { ...data.block?.data }
 
-  const signedValidatorsData = toArray(validatorSets).filter(d => toArray(data.validators).includes(d.address))
-  const unsignedValidatorsData = toArray(validatorSets).filter(d => !toArray(data.validators).includes(d.address))
+  const signedValidatorsData = toArray(validatorSets).filter(d => find(d.address, data.validators))
+  const unsignedValidatorsData = toArray(validatorSets).filter(d => !find(d.address, data.validators))
 
   return (
     <div className="overflow-hidden h-fit bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
       <div className="px-4 sm:px-6 py-6">
         <h3 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-7">
-          <Copy value={height}><Number value={height} format="0,0" /></Copy>
+          <Copy value={height}>
+            <Number value={height} format="0,0" />
+          </Copy>
         </h3>
         <div className="flex items-center gap-x-2 mt-1">
           <Tooltip content={numberFormat(toNumber(height) - 1, '0,0')}>
@@ -96,7 +97,10 @@ function Info({ data, validatorSets, height }) {
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Signer / Absent</dt>
               <dd className="text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1">
                 <div className="flex flex-col gap-y-4">
-                  <button onClick={() => setSignedCollpased(!signedCollpased)} className="cursor-pointer flex items-center text-zinc-900 hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300 gap-x-2">
+                  <button
+                    onClick={() => setSignedCollpased(!signedCollpased)}
+                    className="cursor-pointer flex items-center text-zinc-900 hover:text-zinc-700 dark:text-zinc-100 dark:hover:text-zinc-300 gap-x-2"
+                  >
                     <Number
                       value={_.sumBy(signedValidatorsData, 'tokens') * 100 / _.sumBy(_.concat(signedValidatorsData, unsignedValidatorsData), 'tokens')}
                       prefix={`${signedValidatorsData.length} (`}
@@ -114,14 +118,32 @@ function Info({ data, validatorSets, height }) {
                       <div className="flex flex-col gap-y-2">
                         <span className="text-zinc-400 dark:text-zinc-500">Signed by</span>
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-3">
-                          {signedValidatorsData.map((d, i) => <Profile key={i} i={i} address={d.operator_address} width={20} height={20} className="text-xs" />)}
+                          {signedValidatorsData.map((d, i) => (
+                            <Profile
+                              key={i}
+                              i={i}
+                              address={d.operator_address}
+                              width={20}
+                              height={20}
+                              className="text-xs"
+                            />
+                          ))}
                         </div>
                       </div>
                       {unsignedValidatorsData.length > 0 && (
                         <div className="flex flex-col gap-y-2">
                           <span className="text-zinc-400 dark:text-zinc-500">Missing</span>
                           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-3">
-                            {unsignedValidatorsData.map((d, i) => <Profile key={i} i={i} address={d.operator_address} width={20} height={20} className="text-xs" />)}
+                            {unsignedValidatorsData.map((d, i) => (
+                              <Profile
+                                key={i}
+                                i={i}
+                                address={d.operator_address}
+                                width={20}
+                                height={20}
+                                className="text-xs"
+                              />
+                            ))}
                           </div>
                         </div>
                       )}
@@ -147,15 +169,20 @@ function Info({ data, validatorSets, height }) {
   )
 }
 
-function Events({ data }) {
+const BLOCK_EVENTS = ['begin_block_events', 'end_block_events']
+
+function BlockEvents({ data }) {
   const COLLAPSE_SIZE = 3
+
   const [seeMoreTypes, setSeeMoreTypes] = useState([])
 
   return (
     <div className="grid sm:grid-cols-2 gap-4 sm:gap-8 mx-4">
-      {['begin_block_events', 'end_block_events'].filter(f => toArray(data[f]).length > 0).map((f, i) => (
+      {BLOCK_EVENTS.filter(f => toArray(data[f]).length > 0).map((f, i) => (
         <div key={i} className="flex flex-col gap-y-3">
-          <Tag className="w-fit capitalize">{split(f, { delimiter: '_' }).join(' ')}</Tag>
+          <Tag className="w-fit capitalize">
+            {toTitle(f)}
+          </Tag>
           <div className="overflow-x-auto lg:overflow-x-visible -mx-4 sm:-mx-0">
             <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
               <thead className="sticky top-0 z-10 bg-white dark:bg-zinc-900">
@@ -173,10 +200,12 @@ function Events({ data }) {
                   <tr key={i} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
                     <td className="pl-4 sm:pl-0 pr-3 py-4 text-left">
                       <div className="flex items-center text-xs gap-x-1">
-                        <span className="whitespace-nowrap">{toTitle(lastString(d.type, '.'))}</span>
-                        {toArray(d.data).length > 1 && (
+                        <span className="whitespace-nowrap">
+                          {toTitle(lastString(d.type, '.'))}
+                        </span>
+                        {d.data.length > 1 && (
                           <Number
-                            value={toArray(d.data).length}
+                            value={d.data.length}
                             format="0,0"
                             prefix="["
                             suffix="]"
@@ -226,22 +255,34 @@ export function Block({ height }) {
 
   useEffect(() => {
     const getData = async () => {
-      const d = await getBlock(height)
+      const data = await getBlock(height)
 
-      if (d) {
+      if (data) {
         const { block } = { ...await getBlock(toNumber(height) + 1) }
         const { round, validators } = { ...block?.last_commit }
 
-        if (isNumber(round)) d.round = round
-        if (validators) d.validators = validators
-        for (const f of ['begin_block_events', 'end_block_events']) {
-          if (d[f]) d[f] = Object.entries(_.groupBy(d[f], 'type')).map(([k, v]) => ({ type: k, data: toArray(v).map(e => Object.fromEntries(toArray(e.attributes).map(a => [a.key, removeDoubleQuote(toJson(a.value) || toHex(a.value))]))) }))
+        if (isNumber(round)) {
+          data.round = round
         }
 
-        console.log('[data]', d)
-        setData(d)
+        if (validators) {
+          data.validators = validators
+        }
+
+        for (const f of BLOCK_EVENTS) {
+          if (data[f]) {
+            data[f] = Object.entries(_.groupBy(data[f], 'type')).map(([k, v]) => ({
+              type: k,
+              data: toArray(v).map(e => Object.fromEntries(toArray(e.attributes).map(a => [a.key, removeDoubleQuote(toJson(a.value) || toHex(a.value))]))),
+            }))
+          }
+        }
+
+        console.log('[data]', data)
+        setData(data)
       }
     }
+
     getData()
   }, [height, setData])
 
@@ -252,6 +293,7 @@ export function Block({ height }) {
         setValidatorSets(toArray(result?.validators).map(d => ({ ...d, ...validators.find(v => equalsIgnoreCase(v.consensus_address, d.address)) })))
       }
     }
+
     getData()
   }, [height, data, validators])
 
@@ -259,12 +301,16 @@ export function Block({ height }) {
     <Container className="sm:mt-8">
       {!data ? <Spinner /> :
         <div className="grid sm:grid-cols-3 sm:gap-x-4 gap-y-8 sm:gap-y-12">
-          <Info data={data} validatorSets={validatorSets} height={height} />
+          <Info
+            data={data}
+            height={height}
+            validatorSets={validatorSets}
+          />
           <div className="sm:col-span-2 overflow-x-auto">
             <Transactions height={height} />
           </div>
           <div className="sm:col-span-3 overflow-x-auto">
-            <Events data={data} />
+            <BlockEvents data={data} />
           </div>
         </div>
       }

@@ -26,8 +26,7 @@ import { split, toArray } from '@/lib/parser'
 import { getParams } from '@/lib/operator'
 import { isString, equalsIgnoreCase, ellipse, toTitle } from '@/lib/string'
 import { isNumber, formatUnits } from '@/lib/number'
-
-const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'
+import { TIME_FORMAT } from '@/lib/time'
 
 export function getStep(data, chains) {
   const { link, send, wrap, unwrap, erc20_transfer, confirm, vote, command, ibc_send, axelar_transfer, type } = { ...data }

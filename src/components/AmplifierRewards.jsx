@@ -26,7 +26,7 @@ import { useGlobalStore } from '@/components/Global'
 import { searchRewardsDistribution, getRewardsPool } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
-import { getParams, getQueryString } from '@/lib/operator'
+import { getParams, getQueryString, generateKeyByParams, isFiltered } from '@/lib/operator'
 import { equalsIgnoreCase, toBoolean, ellipse, toTitle } from '@/lib/string'
 import { isNumber, formatUnits } from '@/lib/number'
 
@@ -259,9 +259,11 @@ function Filters() {
   const { handleSubmit } = useForm()
 
   const onSubmit = (e1, e2, _params) => {
-    _params = _params || params
+    if (!_params) {
+      _params = params
+    }
     if (!_.isEqual(_params, getParams(searchParams, size))) {
-      router.push(`${pathname}?${getQueryString(_params)}`)
+      router.push(`${pathname}${getQueryString(_params)}`)
       setParams(_params)
     }
     setOpen(false)
@@ -280,7 +282,7 @@ function Filters() {
     { label: 'Time', name: 'time', type: 'datetimeRange' },
   ])
 
-  const filtered = Object.keys(params).filter(k => !['from'].includes(k)).length > 0
+  const filtered = isFiltered(params)
   return (
     <>
       <Button
@@ -442,8 +444,6 @@ function Filters() {
   )
 }
 
-const generateKeyFromParams = params => JSON.stringify(params)
-
 export function AmplifierRewards({ chain }) {
   const router = useRouter()
   const pathname = usePathname()
@@ -479,7 +479,7 @@ export function AmplifierRewards({ chain }) {
       if (chain && chains && params && toBoolean(refresh)) {
         const { voting_verifier } = { ...getChainData(chain, chains) }
         const { data, total } = { ...await searchRewardsDistribution({ ...params, chain, size }) }
-        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: { data: toArray(data).map(d => ({ ...d, pool_type: equalsIgnoreCase(d.contract_address || d.multisig_contract_address, voting_verifier?.address) ? 'verification' : 'signing' })), total: total || toArray(data).length } })
+        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyByParams(params)]: { data: toArray(data).map(d => ({ ...d, pool_type: equalsIgnoreCase(d.contract_address || d.multisig_contract_address, voting_verifier?.address) ? 'verification' : 'signing' })), total: total || toArray(data).length } })
         setRefresh(false)
         setDistributionExpanded(null)
         setRewardsPool(_.head((await getRewardsPool({ chain }))?.data))
@@ -491,7 +491,7 @@ export function AmplifierRewards({ chain }) {
   }, [chain, chains, params, setSearchResults, refresh, setRefresh, setDistributionExpanded, setRewardsPool])
 
   const chainData = getChainData(chain, chains)
-  const { data, total } = { ...searchResults?.[generateKeyFromParams(params)] }
+  const { data, total } = { ...searchResults?.[generateKeyByParams(params)] }
 
   return (
     <Container className="sm:mt-8">

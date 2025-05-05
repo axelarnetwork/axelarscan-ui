@@ -27,7 +27,7 @@ import { useGlobalStore } from '@/components/Global'
 import { searchBatches } from '@/lib/api/token-transfer'
 import { ENVIRONMENT, getChainData, getAssetData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
-import { getParams, getQueryString } from '@/lib/operator'
+import { getParams, getQueryString, generateKeyByParams, isFiltered } from '@/lib/operator'
 import { equalsIgnoreCase, capitalize, toBoolean, ellipse } from '@/lib/string'
 import { toNumber, formatUnits } from '@/lib/number'
 
@@ -53,9 +53,11 @@ function Filters() {
   }, [])
 
   const onSubmit = (e1, e2, _params) => {
-    _params = _params || params
+    if (!_params) {
+      _params = params
+    }
     if (!_.isEqual(_params, getParams(searchParams, size))) {
-      router.push(`${pathname}?${getQueryString(_params)}`)
+      router.push(`${pathname}${getQueryString(_params)}`)
       setParams(_params)
     }
     setOpen(false)
@@ -75,7 +77,7 @@ function Filters() {
     { label: 'Time', name: 'time', type: 'datetimeRange' },
   ]
 
-  const filtered = Object.keys(params).filter(k => !['from'].includes(k)).length > 0
+  const filtered = isFiltered(params)
   return (
     <>
       <Button
@@ -237,8 +239,6 @@ function Filters() {
   )
 }
 
-const generateKeyFromParams = params => JSON.stringify(params)
-
 export function EVMBatches() {
   const searchParams = useSearchParams()
   const [params, setParams] = useState(null)
@@ -259,14 +259,14 @@ export function EVMBatches() {
       if (params && toBoolean(refresh)) {
         let response = await searchBatches({ ...params, size })
         if (response && !response.data && !['mainnet', 'testnet'].includes(ENVIRONMENT)) response = { data: [], total: 0 }
-        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyFromParams(params)]: { ...response } })
+        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyByParams(params)]: { ...response } })
         setRefresh(false)
       }
     }
     getData()
   }, [params, setSearchResults, refresh, setRefresh])
 
-  const { data, total } = { ...searchResults?.[generateKeyFromParams(params)] }
+  const { data, total } = { ...searchResults?.[generateKeyByParams(params)] }
   return (
     <Container className="sm:mt-8">
       {!data ? <Spinner /> :

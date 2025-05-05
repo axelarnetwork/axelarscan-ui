@@ -22,9 +22,7 @@ import { getChainData, getAssetData } from '@/lib/config'
 import { toJson, split, toArray } from '@/lib/parser'
 import { equalsIgnoreCase, capitalize, includesSomePatterns, ellipse, toTitle } from '@/lib/string'
 import { formatUnits, numberFormat } from '@/lib/number'
-import { timeDiff } from '@/lib/time'
-
-const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z'
+import { timeDiff, TIME_FORMAT } from '@/lib/time'
 
 function Info({ data, id }) {
   const { chains, assets, validators } = useGlobalStore()

@@ -9,7 +9,7 @@ import { GMPs } from '@/components/GMPs'
 import { Transfers } from '@/components/Transfers'
 import { getParams, getQueryString } from '@/lib/operator'
 
-const tabs = ['gmp', 'transfers']
+const TABS = ['gmp', 'transfers']
 
 export function Address({ address }) {
   const router = useRouter()
@@ -18,31 +18,39 @@ export function Address({ address }) {
 
   useEffect(() => {
     const params = getParams(searchParams)
+
     if (address) {
-      if (!params.transfersType) setParams({ ...params, transfersType: tabs[0] })
-      else setParams(params)
+      if (!params.transfersType) {
+        setParams({ ...params, transfersType: TABS[0] })
+      }
+      else {
+        setParams(params)
+      }
     }
   }, [address, searchParams, setParams])
 
   useEffect(() => {
-    if (address && params) router.push(`/address/${address}?${getQueryString(params)}`)
+    if (address && params) {
+      router.push(`/address/${address}${getQueryString(params)}`)
+    }
   }, [address, router, params])
 
   const { transfersType } = { ...params }
+
   return address && transfersType && (
     <Container className="sm:mt-8">
       <div className="flex flex-col gap-y-6 sm:gap-y-0">
         <nav className="flex gap-x-4">
-          {tabs.map((d, i) => (
+          {TABS.map((type, i) => (
             <button
               key={i}
-              onClick={() => setParams({ transfersType: d })}
+              onClick={() => setParams({ transfersType: type })}
               className={clsx(
                 'rounded-md px-3 py-2 capitalize text-xs sm:text-base font-medium',
-                d === transfersType ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300' : 'text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-400',
+                type === transfersType ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300' : 'text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-400',
               )}
             >
-              {d === 'gmp' ? 'General Message Passing' : d === 'transfers' ? 'Token Transfers' : d}
+              {type === 'gmp' ? 'General Message Passing' : type === 'transfers' ? 'Token Transfers' : type}
             </button>
           ))}
         </nav>

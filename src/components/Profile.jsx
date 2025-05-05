@@ -447,7 +447,7 @@ export function ChainProfile({
   value,
   width = 24,
   height = 24,
-  className,
+  className = 'h-6',
   titleClassName,
 }) {
   const { chains } = useGlobalStore()
@@ -483,7 +483,7 @@ export function AssetProfile({
   isLink = false,
   width = 24,
   height = 24,
-  className,
+  className = 'h-6',
   titleClassName,
 }) {
   const { chains, assets, itsAssets } = useGlobalStore()
