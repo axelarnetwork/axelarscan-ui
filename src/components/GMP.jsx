@@ -1429,6 +1429,7 @@ function Details({ data }) {
                             height={14}
                             containerClassName="!gap-x-1.5"
                             nonIconClassName="text-blue-600 dark:text-blue-500 text-xs"
+                            className="h-auto"
                           />
                         </div>
                       ))
@@ -1448,6 +1449,7 @@ function Details({ data }) {
                             height={14}
                             containerClassName="!gap-x-1.5"
                             nonIconClassName="text-blue-600 dark:text-blue-500 text-xs"
+                            className="h-auto"
                           />
                         </div>
                       ))
@@ -1540,6 +1542,7 @@ function Details({ data }) {
                             chain={d.chainData?.id}
                             width={14}
                             height={14}
+                            className="h-auto"
                           />
                         </div>
                       ))
