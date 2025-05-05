@@ -88,7 +88,7 @@ function Chain({ data }) {
             </div>
             {chain_type && (
               <Tag className="uppercase">
-                {chain_type}
+                {chain_type === 'vm' ? 'amplifier' : chain_type}
               </Tag>
             )}
           </div>
@@ -203,9 +203,9 @@ function Asset({ data, focusID, onFocus }) {
   const { chains } = useGlobalStore()
 
   // asset
-  const asset = type === 'its' ? data.id : data.denom
-  const { type, denom, denoms, native_chain, name, symbol, decimals, image } = { ...data }
+  const { type, denom, native_chain, symbol } = { ...data }
   let { addresses } = { ...data }
+  const asset = type === 'its' ? data.id : denom
 
   addresses = _.uniqBy(toArray(_.concat(
     { chain: native_chain, ...(type === 'its' ? data.chains?.[native_chain] : addresses?.[native_chain]) },
@@ -231,7 +231,7 @@ function Asset({ data, focusID, onFocus }) {
         <div className="flex items-start justify-between">
           <div className="overflow-hidden">
             <Image
-              src={image}
+              src={data.image}
               alt=""
               width={56}
               height={56}
@@ -245,7 +245,7 @@ function Asset({ data, focusID, onFocus }) {
               </Tooltip>
             )}
             <div className="flex flex-wrap items-center">
-              {toArray(_.concat(denom, _.head(denoms))).map(d => (
+              {toArray(_.concat(denom, _.head(data.denoms))).map(d => (
                 <Tooltip key={d} content="Denom" className="whitespace-nowrap">
                   <Tag className="bg-orange-400 dark:bg-orange-500 font-normal whitespace-nowrap ml-1 mt-1">
                     {ellipse(d)}
@@ -257,11 +257,11 @@ function Asset({ data, focusID, onFocus }) {
         </div>
         <div className="flex items-center justify-between mt-3">
           <span className="font-display text-xl font-medium">
-            {name}
+            {data.name}
           </span>
-          {decimals > 0 && (
+          {data.decimals > 0 && (
             <span className="text-zinc-400 dark:text-zinc-500 text-sm font-normal whitespace-nowrap mt-0.5">
-              Decimals: {decimals}
+              Decimals: {data.decimals}
             </span>
           )}
         </div>
