@@ -27,7 +27,7 @@ import { searchRewardsDistribution, getRewardsPool } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
 import { getParams, getQueryString, generateKeyByParams, isFiltered } from '@/lib/operator'
-import { equalsIgnoreCase, toBoolean, ellipse, toTitle } from '@/lib/string'
+import { equalsIgnoreCase, toBoolean, find, ellipse, toTitle } from '@/lib/string'
 import { isNumber, formatUnits } from '@/lib/number'
 
 function Info({ chain, rewardsPool, cumulativeRewards }) {
@@ -42,6 +42,7 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
     { ...voting_verifier, id: 'voting_verifier', title: 'Verification' },
     { ...multisig, id: 'multisig', title: 'Signing' },
   ]
+
   const contractsFields = [
     { id: 'balance', title: 'Reward pool balance'},
     { id: 'epoch_duration', title: 'Epoch duration (blocks)'},
@@ -49,6 +50,8 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
     { id: 'last_distribution_epoch', title: 'Last distribution epoch'},
     { id: 'address', title: 'Contract addresses'},
   ]
+
+  const { symbol } = { ...getChainData('axelarnet', chains)?.native_token }
 
   return (
     <>
@@ -63,7 +66,9 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
                 return (
                   <div className="relative">
                     <Listbox.Button className="relative w-full cursor-pointer rounded-md shadow-sm border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 sm:text-sm sm:leading-6 text-left pl-3 pr-10 py-1.5">
-                      <span className="block truncate">{selectedValue?.name}</span>
+                      <span className="block truncate">
+                        {selectedValue?.name}
+                      </span>
                       <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                         <LuChevronsUpDown size={20} className="text-zinc-400" />
                       </span>
@@ -107,7 +112,7 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
                 <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">No. Verifiers</dt>
                 <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                   <Number
-                    value={toArray(verifiers).filter(d => toArray(d.supportedChains).includes(id)).length}
+                    value={toArray(verifiers).filter(d => find(id, d.supportedChains)).length}
                     format="0,0"
                     className="font-medium"
                   />
@@ -118,7 +123,7 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
                 <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                   <Number
                     value={cumulativeRewards}
-                    suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
+                    suffix={` ${symbol}`}
                     noTooltip={true}
                     className="font-medium"
                   />
@@ -131,7 +136,7 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
                 <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                   <Number
                     value={formatUnits(rewardsPool?.balance, 6)}
-                    suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
+                    suffix={` ${symbol}`}
                     noTooltip={true}
                     className="font-medium"
                   />
@@ -169,12 +174,13 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
                 </td>
                 {contracts.map(d => {
                   let element
+
                   switch (f.id) {
                     case 'balance':
                       element = (
                         <Number
                           value={formatUnits(d.balance, 6)}
-                          suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
+                          suffix={` ${symbol}`}
                           noTooltip={true}
                           className="font-medium"
                         />
@@ -186,13 +192,14 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
                           value={d.epoch_duration}
                           format="0,0"
                           className="font-medium"
-                        /> : '-'
+                        /> :
+                        '-'
                       break
                     case 'rewards_per_epoch':
                       element = (
                         <Number
                           value={formatUnits(d.rewards_per_epoch, 6)}
-                          suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
+                          suffix={` ${symbol}`}
                           noTooltip={true}
                           className="font-medium"
                         />
@@ -204,7 +211,8 @@ function Info({ chain, rewardsPool, cumulativeRewards }) {
                           value={d.last_distribution_epoch}
                           format="0,0"
                           className="font-medium"
-                        /> : '-'
+                        /> :
+                        '-'
                       break
                     case 'address':
                       element = (
@@ -262,10 +270,12 @@ function Filters() {
     if (!_params) {
       _params = params
     }
+
     if (!_.isEqual(_params, getParams(searchParams, size))) {
       router.push(`${pathname}${getQueryString(_params)}`)
       setParams(_params)
     }
+
     setOpen(false)
   }
 
@@ -274,15 +284,16 @@ function Filters() {
     setParams(getParams(searchParams, size))
   }
 
-  const attributes = toArray([
+  const attributes = [
     { label: 'Epoch', name: 'epochCount' },
     { label: 'Tx Hash', name: 'txHash' },
     { label: 'Contract', name: 'contractAddress' },
     { label: 'Rewards Contract', name: 'rewardsContractAddress' },
     { label: 'Time', name: 'time', type: 'datetimeRange' },
-  ])
+  ]
 
   const filtered = isFiltered(params)
+
   return (
     <>
       <Button
@@ -352,7 +363,9 @@ function Filters() {
                                             {d.multiple ?
                                               <div className={clsx('flex flex-wrap', selectedValue.length !== 0 && 'my-1')}>
                                                 {selectedValue.length === 0 ?
-                                                  <span className="block truncate">Any</span> :
+                                                  <span className="block truncate">
+                                                    Any
+                                                  </span> :
                                                   selectedValue.map((v, j) => (
                                                     <div
                                                       key={j}
@@ -364,7 +377,9 @@ function Filters() {
                                                   ))
                                                 }
                                               </div> :
-                                              <span className="block truncate">{selectedValue?.title}</span>
+                                              <span className="block truncate">
+                                                {selectedValue?.title}
+                                              </span>
                                             }
                                             <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                               <LuChevronsUpDown size={20} className="text-zinc-400" />
@@ -458,7 +473,7 @@ export function AmplifierRewards({ chain }) {
 
   useEffect(() => {
     if (!chain && chains) {
-      const path = `${pathname}/${_.head(chains.filter(d => d.chain_type === 'vm'))?.chain_name}`
+      const path = `${pathname}/${chains.filter(d => d.chain_type === 'vm')[0]?.chain_name}`
 
       if (path !== pathname) {
         router.push(path)
@@ -468,6 +483,7 @@ export function AmplifierRewards({ chain }) {
 
   useEffect(() => {
     const _params = getParams(searchParams, size)
+
     if (!_.isEqual(_params, params)) {
       setParams(_params)
       setRefresh(true)
@@ -476,21 +492,36 @@ export function AmplifierRewards({ chain }) {
 
   useEffect(() => {
     const getData = async () => {
-      if (chain && chains && params && toBoolean(refresh)) {
+      if (chain && params && toBoolean(refresh) && chains) {
         const { voting_verifier } = { ...getChainData(chain, chains) }
         const { data, total } = { ...await searchRewardsDistribution({ ...params, chain, size }) }
-        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyByParams(params)]: { data: toArray(data).map(d => ({ ...d, pool_type: equalsIgnoreCase(d.contract_address || d.multisig_contract_address, voting_verifier?.address) ? 'verification' : 'signing' })), total: total || toArray(data).length } })
+
+        setSearchResults({
+          ...(refresh ? undefined : searchResults),
+          [generateKeyByParams(params)]: {
+            data: toArray(data).map(d => ({
+              ...d,
+              pool_type: equalsIgnoreCase(d.contract_address || d.multisig_contract_address, voting_verifier?.address) ? 'verification' : 'signing',
+            })),
+            total: total || toArray(data).length,
+          },
+        })
         setRefresh(false)
+
         setDistributionExpanded(null)
-        setRewardsPool(_.head((await getRewardsPool({ chain }))?.data))
+        setRewardsPool((await getRewardsPool({ chain }))?.data?.[0])
+
         const { aggs } = { ...await searchRewardsDistribution({ ...params, chain, aggs: { cumulativeRewards: { sum: { field: 'total_amount' } } }, size: 0 }) }
-        if (isNumber(aggs?.cumulativeRewards?.value)) setCumulativeRewards(aggs.cumulativeRewards.value)
+
+        if (isNumber(aggs?.cumulativeRewards?.value)) {
+          setCumulativeRewards(aggs.cumulativeRewards.value)
+        }
       }
     }
-    getData()
-  }, [chain, chains, params, setSearchResults, refresh, setRefresh, setDistributionExpanded, setRewardsPool])
 
-  const chainData = getChainData(chain, chains)
+    getData()
+  }, [chain, params, setSearchResults, refresh, setRefresh, setDistributionExpanded, setRewardsPool, chains])
+
   const { data, total } = { ...searchResults?.[generateKeyByParams(params)] }
 
   return (
@@ -500,7 +531,9 @@ export function AmplifierRewards({ chain }) {
           <div className="flex flex-col gap-y-4">
             <div className="flex items-center justify-between gap-x-4">
               <div className="sm:flex-auto">
-                <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">Amplifier Rewards</h1>
+                <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">
+                  Amplifier Rewards
+                </h1>
               </div>
             </div>
             <Info
@@ -512,7 +545,9 @@ export function AmplifierRewards({ chain }) {
           <div>
             <div className="flex items-center justify-between gap-x-4">
               <div className="sm:flex-auto">
-                <h2 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">Rewards distribution history</h2>
+                <h2 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">
+                  Rewards distribution history
+                </h2>
                 <p className="mt-2 text-zinc-400 dark:text-zinc-500 text-sm">
                   <Number value={total} suffix={` result${total > 1 ? 's' : ''}`} /> 
                 </p>
@@ -538,9 +573,6 @@ export function AmplifierRewards({ chain }) {
                     <th scope="col" className="pl-4 sm:pl-0 pr-3 py-3.5 text-left">
                       Height
                     </th>
-                    {/*<th scope="col" className="whitespace-nowrap px-3 py-3.5 text-left">
-                      Epoch Count
-                    </th>*/}
                     <th scope="col" className="whitespace-nowrap px-3 py-3.5 text-left">
                       Tx Hash
                     </th>
@@ -572,15 +604,6 @@ export function AmplifierRewards({ chain }) {
                           </Link>
                         )}
                       </td>
-                      {/*<td className="px-3 py-4 text-left">
-                        <Copy value={d.epoch_count}>
-                          <Number
-                            value={d.epoch_count}
-                            format="0,0"
-                            className="text-zinc-900 dark:text-zinc-100 font-medium"
-                          />
-                        </Copy>
-                      </td>*/}
                       <td className="px-3 py-4 text-left">
                         <Copy value={d.txhash}>
                           <Link
