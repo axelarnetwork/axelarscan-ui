@@ -16,7 +16,7 @@ import { getENS } from '@/lib/api/name-services/ens'
 import { getSpaceID } from '@/lib/api/name-services/spaceid'
 import { ENVIRONMENT, axelarContractFields, getChainData, getAssetData, getITSAssetData } from '@/lib/config'
 import { getIcapAddress, toHex, toCase, split, toArray } from '@/lib/parser'
-import { equalsIgnoreCase, capitalize, camel, includesSomePatterns, ellipse, toTitle } from '@/lib/string'
+import { equalsIgnoreCase, capitalize, includesSomePatterns, ellipse, toTitle } from '@/lib/string'
 import { isNumber } from '@/lib/number'
 import { timeDiff } from '@/lib/time'
 import accounts from '@/data/accounts'
@@ -346,7 +346,7 @@ export function Profile({
       if (d[f]?.address) {
         addresses.push({
           address: d[f].address,
-          name: `${d.name} ${split(f, { delimiter: '_' }).map(s => camel(s)).join(' ')} Address`,
+          name: `${d.name} ${split(f, { delimiter: '_' }).map(s => capitalize(s)).join(' ')} Address`,
           image: AXELAR_LOGO,
         })
       }
