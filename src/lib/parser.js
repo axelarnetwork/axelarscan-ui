@@ -117,3 +117,5 @@ export const parseError = error => {
 
   return { code, message }
 }
+
+export const getValuesOfAxelarAddressKey = data => Object.entries({ ...data }).filter(([k, v]) => k.startsWith('axelar') && v).map(([k, v]) => v)

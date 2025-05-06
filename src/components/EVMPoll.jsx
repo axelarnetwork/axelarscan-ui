@@ -19,8 +19,8 @@ import { ExplorerLink } from '@/components/ExplorerLink'
 import { useGlobalStore } from '@/components/Global'
 import { searchEVMPolls } from '@/lib/api/validator'
 import { getChainData, getAssetData } from '@/lib/config'
-import { toJson, split, toArray } from '@/lib/parser'
-import { equalsIgnoreCase, capitalize, includesSomePatterns, ellipse, toTitle } from '@/lib/string'
+import { toJson, split, toArray, getValuesOfAxelarAddressKey } from '@/lib/parser'
+import { equalsIgnoreCase, capitalize, find, includesSomePatterns, ellipse, toTitle } from '@/lib/string'
 import { formatUnits, numberFormat } from '@/lib/number'
 import { timeDiff, TIME_FORMAT } from '@/lib/time'
 
@@ -28,8 +28,11 @@ function Info({ data, id }) {
   const { chains, assets, validators } = useGlobalStore()
 
   const { transaction_id, sender_chain, eventName, confirmation_events, status, height, initiated_txhash, confirmation_txhash, transfer_id, deposit_address, participants, voteOptions, created_at, updated_at } = { ...data }
-  const chainData = getChainData(sender_chain, chains)
-  const { url, transaction_path } = { ...chainData?.explorer }
+
+  const { id: chain, explorer } = { ...getChainData(sender_chain, chains) }
+  const { url, transaction_path } = { ...explorer }
+
+  const totalParticipantsPower = _.sumBy(toArray(validators).filter(d => true || toArray(d.participants).includes(d.operator_address)), 'quadratic_voting_power')
 
   const eventElement = (
     <Tag className={clsx('w-fit')}>
@@ -37,12 +40,13 @@ function Info({ data, id }) {
     </Tag>
   )
 
-  const totalParticipantsPower = _.sumBy(toArray(validators).filter(d => true || toArray(d.participants).includes(d.operator_address)), 'quadratic_voting_power')
   return (
     <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
       <div className="px-4 sm:px-6 py-6">
         <h3 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-7">
-          <Copy value={id}><span>{ellipse(id, 16)}</span></Copy>
+          <Copy value={id}>
+            <span>{ellipse(id, 16)}</span>
+          </Copy>
         </h3>
         <div className="max-w-2xl text-zinc-400 dark:text-zinc-500 text-sm leading-6 mt-1">
           {transaction_id && (
@@ -82,18 +86,24 @@ function Info({ data, id }) {
                   }
                   {toArray(confirmation_events).map((e, i) => {
                     let { asset, symbol, amount } = { ...e }
-                    const assetObject = toJson(asset)
-                    if (assetObject) {
-                      asset = assetObject.denom
-                      amount = assetObject.amount
+
+                    // asset is object { denom, amount }
+                    const assetObj = toJson(asset)
+
+                    if (assetObj) {
+                      asset = assetObj.denom
+                      amount = assetObj.amount
                     }
 
+                    // asset data
                     const assetData = getAssetData(asset || symbol, assets)
                     const { decimals, addresses } = { ...assetData }
                     let { image } = { ...assetData }
-                    const tokenData = addresses?.[chainData?.id]
-                    symbol = tokenData?.symbol || assetData?.symbol || symbol
-                    image = tokenData?.image || image
+
+                    if (assetData) {
+                      symbol = addresses?.[chain]?.symbol || assetData.symbol || symbol
+                      image = image = addresses?.[chain]?.image || image
+                    }
 
                     const element = symbol && (
                       <div className="w-fit h-6 bg-zinc-100 dark:bg-zinc-800 rounded-xl flex items-center gap-x-1.5 px-2.5 py-1">
@@ -121,7 +131,9 @@ function Info({ data, id }) {
                       <Link key={i} href={data.url} target="_blank">
                         {element}
                       </Link> :
-                      <div key={i}>{element}</div>
+                      <div key={i}>
+                        {element}
+                      </div>
                     )
                   })}
                 </div>
@@ -233,6 +245,7 @@ function Info({ data, id }) {
                 <div className="w-fit flex items-center">
                   {voteOptions.map((v, i) => {
                     const totalVotersPower = _.sumBy(toArray(validators).filter(d => toArray(v.voters).includes(d.broadcaster_address)), 'quadratic_voting_power')
+
                     const powerDisplay = totalVotersPower > 0 && totalParticipantsPower > 0 ? `${numberFormat(totalVotersPower, '0,0.0a')} (${numberFormat(totalVotersPower * 100 / totalParticipantsPower, '0,0.0')}%)` : ''
                     const isDisplayPower = powerDisplay && timeDiff(created_at?.ms, 'days') < 3
 
@@ -263,19 +276,28 @@ function Votes({ data }) {
 
   useEffect(() => {
     if (data?.votes) {
-      const votes = toArray(data.votes).map(d => ({ ...d, validatorData: toArray(validators).find(v => equalsIgnoreCase(v.broadcaster_address, d.voter)) }))
+      const votes = data.votes.map(d => ({
+        ...d,
+        validatorData: toArray(validators).find(v => equalsIgnoreCase(v.broadcaster_address, d.voter)),
+      }))
+
       setVotes(_.concat(
         _.orderBy(votes.map(d => ({ ...d, confirmedFlag: d.confirmed ? 1 : 0 })), ['confirmedFlag'], ['desc']),
         // unsubmitted
-        toArray(data.participants).filter(p => votes.findIndex(d => equalsIgnoreCase(d.validatorData?.operator_address, p)) < 0).map(p => {
+        toArray(data.participants).filter(p => !find(p, votes.map(v => v.validatorData?.operator_address))).map(p => {
           const validatorData = toArray(validators).find(v => equalsIgnoreCase(v.operator_address, p))
-          return { voter: validatorData?.broadcaster_address || p, validatorData }
+
+          return {
+            voter: validatorData?.broadcaster_address || p,
+            validatorData,
+          }
         }),
       ))
     }
-  }, [validators, data, setVotes])
+  }, [data, setVotes, validators])
 
   const { initiated_txhash, confirmation_txhash } = { ...data }
+
   const totalVotingPower = _.sumBy(toArray(validators).filter(d => !d.jailed && d.status === 'BOND_STATUS_BONDED'), 'quadratic_voting_power')
 
   return votes && (
@@ -317,7 +339,11 @@ function Votes({ data }) {
                 </td>
                 <td className="px-3 py-4 text-left">
                   {d.validatorData ?
-                    <Profile i={i} address={d.validatorData.operator_address} prefix="axelarvaloper" /> :
+                    <Profile
+                      i={i}
+                      address={d.validatorData.operator_address}
+                      prefix="axelarvaloper"
+                    /> :
                     <Copy value={d.voter}>
                       <Link
                         href={`/account/${d.voter}`}
@@ -426,65 +452,91 @@ export function EVMPoll({ id }) {
   useEffect(() => {
     const getData = async () => {
       const { data } = { ...await searchEVMPolls({ pollId: id }) }
-      let d = _.head(data)
+
+      let d = data?.[0]
 
       if (d) {
-        const votes = []
-        Object.entries(d).filter(([k, v]) => k.startsWith('axelar')).forEach(([k, v]) => votes.push(v))
+        const votes = getValuesOfAxelarAddressKey(d).map(v => ({
+          ...v,
+          option: v.vote ? 'yes' : typeof v.vote === 'boolean' ? 'no' : 'unsubmitted',
+        }))
 
-        let voteOptions = Object.entries(_.groupBy(toArray(votes).map(v => ({ ...v, option: v.vote ? 'yes' : typeof v.vote === 'boolean' ? 'no' : 'unsubmitted' })), 'option')).map(([k, v]) => {
-          return {
-            option: k,
-            value: toArray(v).length,
-            voters: toArray(toArray(v).map(_v => _v.voter)),
-          }
-        }).filter(v => v.value).map(v => ({ ...v, i: v.option === 'yes' ? 0 : v.option === 'no' ? 1 : 2 }))
+        const voteOptions = Object.entries(_.groupBy(votes, 'option')).map(([k, v]) => ({
+          option: k,
+          value: v?.length,
+          voters: toArray(v?.map(d => d.voter)),
+        }))
+        .filter(v => v.value)
+        .map(v => ({
+          ...v,
+          i: v.option === 'yes' ? 0 : v.option === 'no' ? 1 : 2,
+        }))
 
+        // add unsubmitted option
         if (toArray(d.participants).length > 0 && voteOptions.findIndex(v => v.option === 'unsubmitted') < 0 && _.sumBy(voteOptions, 'value') < d.participants.length) {
-          voteOptions.push({ option: 'unsubmitted', value: d.participants.length - _.sumBy(voteOptions, 'value') })
+          voteOptions.push({
+            option: 'unsubmitted',
+            value: d.participants.length - _.sumBy(voteOptions, 'value'),
+          })
         }
-        voteOptions = _.orderBy(voteOptions, ['i'], ['asc'])
 
         let eventName = split(d.event, { delimiter: '_', toCase: 'lower' }).join('_')
+
+        // set eventName and transaction ID from confirmation events
         if (d.confirmation_events) {
           const { type, txID } = { ...d.confirmation_events[0] }
+
           switch (type) {
             case 'depositConfirmation':
-              eventName = eventName || 'Transfer'
+              if (!eventName) {
+                eventName = 'Transfer'
+              }
               break
             case 'ContractCallApproved':
-              eventName = eventName || 'ContractCall'
+              if (!eventName) {
+                eventName = 'ContractCall'
+              }
               break
             case 'ContractCallApprovedWithMint':
             case 'ContractCallWithMintApproved':
-              eventName = eventName || 'ContractCallWithToken'
+              if (!eventName) {
+                eventName = 'ContractCallWithToken'
+              }
               break
             default:
               eventName = type
               break
           }
-          d.transaction_id = d.transaction_id || txID
+
+          if (!d.transaction_id) {
+            d.transaction_id = txID
+          }
         }
 
         const { url, transaction_path } = { ...getChainData(d.sender_chain, chains)?.explorer }
-        const confirmation_txhash = toArray(votes).find(v => v.confirmed)?.id
+        const txhashConfirm = votes.find(v => v.confirmed)?.id
+
         d = {
           ...d,
-          status: d.success ? 'completed' : d.failed ? 'failed' : d.expired ? 'expired' : d.confirmation || confirmation_txhash ? 'confirmed' : 'pending',
+          idNumber: isNumber(d.id) ? toNumber(d.id) : d.id,
+          status: d.success ? 'completed' : d.failed ? 'failed' : d.expired ? 'expired' : d.confirmation || txhashConfirm ? 'confirmed' : 'pending',
           height: _.minBy(votes, 'height')?.height || d.height,
-          confirmation_txhash,
+          confirmation_txhash: txhashConfirm,
           votes: _.orderBy(votes, ['height', 'created_at'], ['desc', 'desc']),
-          voteOptions,
-          eventName: d.event ? split(toTitle(eventName), { delimiter: ' ' }).map(s => capitalize(s)).join('') : eventName,
-          url: includesSomePatterns(eventName, ['operator', 'token_deployed']) ? `${url}${transaction_path?.replace('{tx}', d.transaction_id)}` : `/${includesSomePatterns(eventName, ['contract_call', 'ContractCall']) || !(includesSomePatterns(eventName, ['transfer', 'Transfer']) || d.deposit_address) ? 'gmp' : 'transfer'}/${d.transaction_id ? d.transaction_id : d.transfer_id ? `?transferId=${d.transfer_id}` : ''}`,
+          voteOptions: _.orderBy(voteOptions, ['i'], ['asc']),
+          eventName: d.event ? split(eventName, { delimiter: '_' }).map(s => capitalize(s)).join('') : eventName,
+          url: includesSomePatterns(eventName, ['operator', 'token_deployed']) ?
+            `${url}${transaction_path?.replace('{tx}', d.transaction_id)}` :
+            `/${includesSomePatterns(eventName, ['contract_call', 'ContractCall']) || !(includesSomePatterns(eventName, ['transfer', 'Transfer']) || d.deposit_address) ? 'gmp' : 'transfer'}/${d.transaction_id ? d.transaction_id : d.transfer_id ? `?transferId=${d.transfer_id}` : ''}`,
         }
       }
 
       console.log('[data]', d)
       setData({ ...d })
     }
+
     getData()
-  }, [id, chains, setData])
+  }, [id, setData, chains])
 
   return (
     <Container className="sm:mt-8">
