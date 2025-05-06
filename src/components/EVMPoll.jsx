@@ -21,7 +21,7 @@ import { searchEVMPolls } from '@/lib/api/validator'
 import { getChainData, getAssetData } from '@/lib/config'
 import { toJson, split, toArray, getValuesOfAxelarAddressKey } from '@/lib/parser'
 import { equalsIgnoreCase, capitalize, find, includesSomePatterns, ellipse, toTitle } from '@/lib/string'
-import { formatUnits, numberFormat } from '@/lib/number'
+import { isNumber, toNumber, formatUnits, numberFormat } from '@/lib/number'
 import { timeDiff, TIME_FORMAT } from '@/lib/time'
 
 function Info({ data, id }) {
