@@ -19,7 +19,7 @@ export const getAxelarContractAddresses = chainsData => {
   const addresses = []
 
   for (const chainData of chainsData) {
-    for (const f of fields) {
+    for (const f of axelarContractFields) {
       if (chainData[f]?.address) {
         addresses.push(chainData[f].address)
       }
