@@ -19,7 +19,7 @@ import { Transactions } from '@/components/Transactions'
 import { useGlobalStore } from '@/components/Global'
 import { getAccountAmounts } from '@/lib/api/axelarscan'
 import { searchTransfers, searchDepositAddresses } from '@/lib/api/token-transfer'
-import { axelarContracts, getChainData, getAssetData } from '@/lib/config'
+import { axelarContracts, getAxelarContractAddresses, getChainData, getAssetData } from '@/lib/config'
 import { getInputType, toArray } from '@/lib/parser'
 import { equalsIgnoreCase, find, includesSomePatterns, ellipse } from '@/lib/string'
 
@@ -457,7 +457,7 @@ export function Account({ address }) {
               })), ['value'], ['desc'])
             }
 
-            if ((address.length >= 65 || isEVMAddress) && !find(address, axelarContracts)) {
+            if ((address.length >= 65 || isEVMAddress) && !find(address, _.concat(axelarContracts, getAxelarContractAddresses(chains)))) {
               const depositAddressData = (await searchDepositAddresses({ address }))?.data?.[0]
 
               if (depositAddressData) {
@@ -483,7 +483,7 @@ export function Account({ address }) {
 
   if (!address) return
 
-  const isDepositAddress = ((address.length >= 65 || getInputType(address, chains) === 'evmAddress') && !find(address, axelarContracts)) || data?.depositAddressData
+  const isDepositAddress = ((address.length >= 65 || getInputType(address, chains) === 'evmAddress') && !find(address, _.concat(axelarContracts, getAxelarContractAddresses(chains)))) || data?.depositAddressData
 
   return (
     <Container className={clsx('sm:mt-8', data ? 'max-w-full' : '')}>
@@ -495,7 +495,7 @@ export function Account({ address }) {
               {!isDepositAddress && !(address.length >= 65) && (
                 <Info data={data} address={address} />
               )}
-              {(isDepositAddress || find(address, axelarContracts) || address.length < 65) && (
+              {(isDepositAddress || find(address, _.concat(axelarContracts, getAxelarContractAddresses(chains))) || address.length < 65) && (
                 <Balances data={data.balances?.data} />
               )}
               {!isDepositAddress && !(address.length >= 65) && (

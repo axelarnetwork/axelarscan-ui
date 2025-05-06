@@ -14,9 +14,9 @@ import { useGlobalStore } from '@/components/Global'
 import { getKeybaseUser } from '@/lib/api/keybase'
 import { getENS } from '@/lib/api/name-services/ens'
 import { getSpaceID } from '@/lib/api/name-services/spaceid'
-import { ENVIRONMENT, getChainData, getAssetData, getITSAssetData } from '@/lib/config'
+import { ENVIRONMENT, axelarContractFields, getChainData, getAssetData, getITSAssetData } from '@/lib/config'
 import { getIcapAddress, toHex, toCase, split, toArray } from '@/lib/parser'
-import { equalsIgnoreCase, capitalize, includesSomePatterns, ellipse } from '@/lib/string'
+import { equalsIgnoreCase, capitalize, includesSomePatterns, ellipse, toTitle } from '@/lib/string'
 import { isNumber } from '@/lib/number'
 import { timeDiff } from '@/lib/time'
 import accounts from '@/data/accounts'
@@ -339,6 +339,21 @@ export function Profile({
   const itss = toArray(interchain_token_service_contract?.addresses).map(a => ({ address: a, name: 'Interchain Token Service', image: AXELAR_LOGO }))
   const gateways = Object.values({ ...gateway_contracts }).filter(d => d.address).map(d => ({ ...d, name: 'Axelar Gateway', image: AXELAR_LOGO }))
   const gasServices = Object.values({ ...gas_service_contracts }).filter(d => d.address).map(d => ({ ...d, name: 'Axelar Gas Service', image: AXELAR_LOGO }))
+  const axelarContractAddresses = toArray(chains).flatMap(d => {
+    const addresses = []
+
+    for (const f of axelarContractFields) {
+      if (d[f]?.address) {
+        addresses.push({
+          address: d[f].address,
+          name: `${d.name} ${split(f, { delimiter: '_' }).map(s => camel(s)).join(' ')} Address`,
+          image: AXELAR_LOGO,
+        })
+      }
+    }
+
+    return addresses
+  })
 
   // relayers
   const { relayers, express_relayers, refunders } = { ...configurations }
@@ -347,7 +362,7 @@ export function Profile({
   const expressRelayers = _.uniq(toArray(express_relayers)).map(a => ({ address: a, name: 'Axelar Express Relayer', image: AXELAR_LOGO }))
 
   // get custom profile
-  let { name, image } = { ..._.concat(accounts, itss, gateways, gasServices, executorRelayers, expressRelayers).find(d => equalsIgnoreCase(d.address, address) && (!d.environment || equalsIgnoreCase(d.environment, ENVIRONMENT))) }
+  let { name, image } = { ..._.concat(accounts, itss, gateways, gasServices, axelarContractAddresses, executorRelayers, expressRelayers).find(d => equalsIgnoreCase(d.address, address) && (!d.environment || equalsIgnoreCase(d.environment, ENVIRONMENT))) }
 
   // validator | verifier
   let isValidator
