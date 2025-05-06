@@ -35,7 +35,7 @@ function Info({ data, chain, id, executeButton }) {
 
   signatures = toArray(signatures || data?.signature)
 
-  const { gateway, explorer } = getChainData(chain, chains)
+  const { gateway, explorer } = { ...getChainData(chain, chains) }
   const { url, address_path, transaction_path } = { ...explorer }
 
   const executed = toArray(commands).length === toArray(commands).filter(c => c.executed).length
@@ -407,7 +407,7 @@ export function EVMBatch({ chain, id }) {
   const { chains } = useGlobalStore()
   const { chainId, signer } = useEVMWalletStore()
 
-  const { chain_id, gateway } = getChainData(chain, chains)
+  const { chain_id, gateway } = { ...getChainData(chain, chains) }
 
   const { commands, created_at, execute_data } = { ...data }
   const executed = toArray(commands).length === toArray(commands).filter(c => c.executed).length
