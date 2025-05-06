@@ -26,7 +26,7 @@ import { Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
 import { getRPCStatus, searchAmplifierProofs } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
-import { split, toArray } from '@/lib/parser'
+import { split, toArray, getValuesOfAxelarAddressKey } from '@/lib/parser'
 import { getParams, getQueryString, generateKeyByParams, isFiltered } from '@/lib/operator'
 import { equalsIgnoreCase, capitalize, toBoolean, headString, ellipse, toTitle } from '@/lib/string'
 
@@ -70,6 +70,7 @@ function Filters() {
   ])
 
   const filtered = isFiltered(params)
+
   return (
     <>
       <Button
@@ -139,7 +140,9 @@ function Filters() {
                                             {d.multiple ?
                                               <div className={clsx('flex flex-wrap', selectedValue.length !== 0 && 'my-1')}>
                                                 {selectedValue.length === 0 ?
-                                                  <span className="block truncate">Any</span> :
+                                                  <span className="block truncate">
+                                                    Any
+                                                  </span> :
                                                   selectedValue.map((v, j) => (
                                                     <div
                                                       key={j}
@@ -151,7 +154,9 @@ function Filters() {
                                                   ))
                                                 }
                                               </div> :
-                                              <span className="block truncate">{selectedValue?.title}</span>
+                                              <span className="block truncate">
+                                                {selectedValue?.title}
+                                              </span>
                                             }
                                             <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                               <LuChevronsUpDown size={20} className="text-zinc-400" />
@@ -241,6 +246,7 @@ export function AmplifierProofs() {
 
   useEffect(() => {
     const _params = getParams(searchParams, size)
+
     if (!_.isEqual(_params, params)) {
       setParams(_params)
       setRefresh(true)
@@ -248,50 +254,63 @@ export function AmplifierProofs() {
   }, [searchParams, params, setParams])
 
   useEffect(() => {
-    const getData = async () => {
-      if (params && toBoolean(refresh) && blockData) {
-        const { data, total } = { ...await searchAmplifierProofs({ ...params, size }) }
-
-        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyByParams(params)]: {
-          data: _.orderBy(toArray(data).map(d => {
-            const signs = []
-            Object.entries(d).filter(([k, v]) => k.startsWith('axelar')).forEach(([k, v]) => signs.push(v))
-
-            let signOptions = Object.entries(_.groupBy(toArray(signs).map(s => ({ ...s, option: s.sign ? 'signed' : 'unsubmitted' })), 'option')).map(([k, v]) => {
-              return {
-                option: k,
-                value: toArray(v).length,
-                signers: toArray(toArray(v).map(_v => _v.signer)),
-              }
-            }).filter(v => v.value).map(v => ({ ...v, i: v.option === 'signed' ? 0 : 1 }))
-
-            if (toArray(d.participants).length > 0 && signOptions.findIndex(s => s.option === 'unsubmitted') < 0 && _.sumBy(signOptions, 'value') < d.participants.length) {
-              signOptions.push({ option: 'unsubmitted', value: d.participants.length - _.sumBy(signOptions, 'value') })
-            }
-            signOptions = _.orderBy(signOptions, ['i'], ['asc'])
-
-            return {
-              ...d,
-              status: d.success ? 'completed' : d.failed ? 'failed' : d.expired || d.expired_height < blockData.latest_block_height ? 'expired' : 'pending',
-              height: _.minBy(signs, 'height')?.height || d.height,
-              signs: _.orderBy(signs, ['height', 'created_at'], ['desc', 'desc']),
-              signOptions,
-            }
-          }), ['created_at.ms'], ['desc']),
-          total,
-        } })
-        setRefresh(false)
-      }
-    }
-    getData()
-  }, [params, setSearchResults, refresh, setRefresh, blockData])
-
-  useEffect(() => {
     const getData = async () => setBlockData(await getRPCStatus())
     getData()
   }, [setBlockData])
 
+  useEffect(() => {
+    const getData = async () => {
+      if (params && toBoolean(refresh) && blockData) {
+        const { data, total } = { ...await searchAmplifierProofs({ ...params, size }) }
+
+        setSearchResults({
+          ...(refresh ? undefined : searchResults),
+          [generateKeyByParams(params)]: {
+            data: _.orderBy(toArray(data).map(d => {
+              const signs = getValuesOfAxelarAddressKey(d).map(s => ({
+                ...s,
+                option: s.sign ? 'signed' : 'unsubmitted',
+              }))
+
+              const signOptions = Object.entries(_.groupBy(signs, 'option')).map(([k, v]) => ({
+                option: k,
+                value: v?.length,
+                signers: toArray(v?.map(d => d.signer)),
+              }))
+              .filter(s => s.value)
+              .map(s => ({
+                ...s,
+                i: s.option === 'signed' ? 0 : 1,
+              }))
+
+              // add unsubmitted option
+              if (toArray(d.participants).length > 0 && signOptions.findIndex(s => s.option === 'unsubmitted') < 0 && _.sumBy(signOptions, 'value') < d.participants.length) {
+                signOptions.push({
+                  option: 'unsubmitted',
+                  value: d.participants.length - _.sumBy(signOptions, 'value'),
+                })
+              }
+
+              return {
+                ...d,
+                status: d.success ? 'completed' : d.failed ? 'failed' : d.expired || d.expired_height < blockData.latest_block_height ? 'expired' : 'pending',
+                height: _.minBy(signs, 'height')?.height || d.height,
+                signs: _.orderBy(signs, ['height', 'created_at'], ['desc', 'desc']),
+                signOptions: _.orderBy(signOptions, ['i'], ['asc']),
+              }
+            }), ['created_at.ms'], ['desc']),
+            total,
+          },
+        })
+        setRefresh(false)
+      }
+    }
+
+    getData()
+  }, [params, setSearchResults, refresh, setRefresh, blockData])
+
   const { data, total } = { ...searchResults?.[generateKeyByParams(params)] }
+
   return (
     <Container className="sm:mt-8">
       {!data ? <Spinner /> :
@@ -303,7 +322,9 @@ export function AmplifierProofs() {
                   EVM Batches
                 </Link>
                 <span className="text-zinc-400 dark:text-zinc-500">|</span>
-                <h1 className="underline text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">Amplifier Proofs</h1>
+                <h1 className="underline text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">
+                  Amplifier Proofs
+                </h1>
               </div>
               <p className="mt-2 text-zinc-400 dark:text-zinc-500 text-sm">
                 <Number value={total} suffix={` result${total > 1 ? 's' : ''}`} /> 
@@ -350,6 +371,7 @@ export function AmplifierProofs() {
               <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
                 {data.map(d => {
                   const chain = d.chain || d.destination_chain
+
                   return (
                     <tr key={d.id} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
                       <td className="pl-4 sm:pl-0 pr-3 py-4 text-left">
@@ -364,7 +386,7 @@ export function AmplifierProofs() {
                                 {chain}-{d.session_id}
                               </Link>
                             </Copy>
-                            {d.gateway_txhash && <ExplorerLink value={d.gateway_txhash} chain={d.chain} />}
+                            {d.gateway_txhash && <ExplorerLink value={d.gateway_txhash} chain={chain} />}
                           </div>
                           {d.multisig_prover_contract_address && (
                             <div className="flex items-center">
@@ -389,11 +411,15 @@ export function AmplifierProofs() {
                       <td className="px-3 py-4 text-left">
                         <div className="flex flex-col gap-y-0.5">
                           {toArray(d.message_ids || { message_id: d.message_id, source_chain: d.source_chain }).map((m, i) => {
-                            m.message_id = m.message_id || m.id
-                            m.source_chain = m.source_chain || m.chain
+                            if (!m.message_id) {
+                              m.message_id = m.id
+                            }
 
-                            const chainData = getChainData(m.source_chain, chains)
-                            const { url, transaction_path } = { ...chainData?.explorer }
+                            if (!m.source_chain) {
+                              m.source_chain = m.chain
+                            }
+
+                            const { url, transaction_path } = { ...getChainData(m.source_chain, chains)?.explorer }
 
                             return (
                               <div key={i} className="flex items-center gap-x-4">

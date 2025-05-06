@@ -26,7 +26,7 @@ import { Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
 import { getRPCStatus, searchAmplifierPolls } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
-import { split, toArray } from '@/lib/parser'
+import { split, toArray, getValuesOfAxelarAddressKey } from '@/lib/parser'
 import { getParams, getQueryString, generateKeyByParams, isFiltered } from '@/lib/operator'
 import { equalsIgnoreCase, capitalize, toBoolean, ellipse, toTitle } from '@/lib/string'
 
@@ -45,10 +45,12 @@ function Filters() {
     if (!_params) {
       _params = params
     }
+
     if (!_.isEqual(_params, getParams(searchParams, size))) {
       router.push(`${pathname}${getQueryString(_params)}`)
       setParams(_params)
     }
+
     setOpen(false)
   }
 
@@ -69,6 +71,7 @@ function Filters() {
   ])
 
   const filtered = isFiltered(params)
+
   return (
     <>
       <Button
@@ -138,7 +141,9 @@ function Filters() {
                                             {d.multiple ?
                                               <div className={clsx('flex flex-wrap', selectedValue.length !== 0 && 'my-1')}>
                                                 {selectedValue.length === 0 ?
-                                                  <span className="block truncate">Any</span> :
+                                                  <span className="block truncate">
+                                                    Any
+                                                  </span> :
                                                   selectedValue.map((v, j) => (
                                                     <div
                                                       key={j}
@@ -150,7 +155,9 @@ function Filters() {
                                                   ))
                                                 }
                                               </div> :
-                                              <span className="block truncate">{selectedValue?.title}</span>
+                                              <span className="block truncate">
+                                                {selectedValue?.title}
+                                              </span>
                                             }
                                             <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                               <LuChevronsUpDown size={20} className="text-zinc-400" />
@@ -240,6 +247,7 @@ export function AmplifierPolls() {
 
   useEffect(() => {
     const _params = getParams(searchParams, size)
+
     if (!_.isEqual(_params, params)) {
       setParams(_params)
       setRefresh(true)
@@ -247,52 +255,64 @@ export function AmplifierPolls() {
   }, [searchParams, params, setParams])
 
   useEffect(() => {
-    const getData = async () => {
-      if (params && toBoolean(refresh) && blockData) {
-        const { data, total } = { ...await searchAmplifierPolls({ ...params, size }) }
-
-        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyByParams(params)]: {
-          data: _.orderBy(toArray(data).map(d => {
-            const votes = []
-            Object.entries(d).filter(([k, v]) => k.startsWith('axelar')).forEach(([k, v]) => votes.push(v))
-
-            let voteOptions = Object.entries(_.groupBy(toArray(votes).map(v => ({ ...v, option: v.vote ? 'yes' : typeof v.vote === 'boolean' ? 'no' : 'unsubmitted' })), 'option')).map(([k, v]) => {
-              return {
-                option: k,
-                value: toArray(v).length,
-                voters: toArray(toArray(v).map(_v => _v.voter)),
-              }
-            }).filter(v => v.value).map(v => ({ ...v, i: v.option === 'yes' ? 0 : v.option === 'no' ? 1 : 2 }))
-
-            if (toArray(d.participants).length > 0 && voteOptions.findIndex(v => v.option === 'unsubmitted') < 0 && _.sumBy(voteOptions, 'value') < d.participants.length) {
-              voteOptions.push({ option: 'unsubmitted', value: d.participants.length - _.sumBy(voteOptions, 'value') })
-            }
-            voteOptions = _.orderBy(voteOptions, ['i'], ['asc'])
-
-            const { url, transaction_path } = { ...getChainData(d.sender_chain, chains)?.explorer }
-            return {
-              ...d,
-              status: d.success ? 'completed' : d.failed ? 'failed' : d.expired || d.expired_height < blockData.latest_block_height ? 'expired' : 'pending',
-              height: _.minBy(votes, 'height')?.height || d.height,
-              votes: _.orderBy(votes, ['height', 'created_at'], ['desc', 'desc']),
-              voteOptions,
-              url: `/gmp/${d.transaction_id || ''}`,
-            }
-          }), ['created_at.ms'], ['desc']),
-          total,
-        } })
-        setRefresh(false)
-      }
-    }
-    getData()
-  }, [chains, params, setSearchResults, refresh, setRefresh, blockData])
-
-  useEffect(() => {
     const getData = async () => setBlockData(await getRPCStatus())
     getData()
   }, [setBlockData])
 
+  useEffect(() => {
+    const getData = async () => {
+      if (params && toBoolean(refresh) && blockData) {
+        const { data, total } = { ...await searchAmplifierPolls({ ...params, size }) }
+
+        setSearchResults({
+          ...(refresh ? undefined : searchResults),
+          [generateKeyByParams(params)]: {
+            data: _.orderBy(toArray(data).map(d => {
+              const votes = getValuesOfAxelarAddressKey(d).map(v => ({
+                ...v,
+                option: v.vote ? 'yes' : typeof v.vote === 'boolean' ? 'no' : 'unsubmitted',
+              }))
+
+              const voteOptions = Object.entries(_.groupBy(votes, 'option')).map(([k, v]) => ({
+                option: k,
+                value: v?.length,
+                voters: toArray(v?.map(d => d.voter)),
+              }))
+              .filter(v => v.value)
+              .map(v => ({
+                ...v,
+                i: v.option === 'yes' ? 0 : v.option === 'no' ? 1 : 2,
+              }))
+
+              // add unsubmitted option
+              if (toArray(d.participants).length > 0 && voteOptions.findIndex(v => v.option === 'unsubmitted') < 0 && _.sumBy(voteOptions, 'value') < d.participants.length) {
+                voteOptions.push({
+                  option: 'unsubmitted',
+                  value: d.participants.length - _.sumBy(voteOptions, 'value'),
+                })
+              }
+
+              return {
+                ...d,
+                status: d.success ? 'completed' : d.failed ? 'failed' : d.expired || d.expired_height < blockData.latest_block_height ? 'expired' : 'pending',
+                height: _.minBy(votes, 'height')?.height || d.height,
+                votes: _.orderBy(votes, ['height', 'created_at'], ['desc', 'desc']),
+                voteOptions: _.orderBy(voteOptions, ['i'], ['asc']),
+                url: `/gmp/${d.transaction_id || 'search'}`,
+              }
+            }), ['created_at.ms'], ['desc']),
+            total,
+          },
+        })
+        setRefresh(false)
+      }
+    }
+
+    getData()
+  }, [params, setSearchResults, refresh, setRefresh, blockData, chains])
+
   const { data, total } = { ...searchResults?.[generateKeyByParams(params)] }
+
   return (
     <Container className="sm:mt-8">
       {!data ? <Spinner /> :
@@ -304,7 +324,9 @@ export function AmplifierPolls() {
                   EVM Polls
                 </Link>
                 <span className="text-zinc-400 dark:text-zinc-500">|</span>
-                <h1 className="underline text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">Amplifier Polls</h1>
+                <h1 className="underline text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">
+                  Amplifier Polls
+                </h1>
               </div>
               <p className="mt-2 text-zinc-400 dark:text-zinc-500 text-sm">
                 <Number value={total} suffix={` result${total > 1 ? 's' : ''}`} /> 
@@ -350,8 +372,7 @@ export function AmplifierPolls() {
               </thead>
               <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
                 {data.map(d => {
-                  const chainData = getChainData(d.sender_chain, chains)
-                  const { url, transaction_path } = { ...chainData?.explorer }
+                  const { url, transaction_path } = { ...getChainData(d.sender_chain, chains)?.explorer }
 
                   return (
                     <tr key={d.id} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">

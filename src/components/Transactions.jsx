@@ -149,7 +149,9 @@ function Filters({ address }) {
                                             {d.multiple ?
                                               <div className={clsx('flex flex-wrap', selectedValue.length !== 0 && 'my-1')}>
                                                 {selectedValue.length === 0 ?
-                                                  <span className="block truncate">Any</span> :
+                                                  <span className="block truncate">
+                                                    Any
+                                                  </span> :
                                                   selectedValue.map((v, j) => (
                                                     <div
                                                       key={j}
@@ -161,7 +163,9 @@ function Filters({ address }) {
                                                   ))
                                                 }
                                               </div> :
-                                              <span className="block truncate">{selectedValue?.title}</span>
+                                              <span className="block truncate">
+                                                {selectedValue?.title}
+                                              </span>
                                             }
                                             <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                               <LuChevronsUpDown size={20} className="text-zinc-400" />

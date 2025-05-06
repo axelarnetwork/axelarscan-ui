@@ -27,7 +27,7 @@ import { Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
 import { searchEVMPolls } from '@/lib/api/validator'
 import { getChainData, getAssetData } from '@/lib/config'
-import { toJson, split, toArray } from '@/lib/parser'
+import { toJson, split, toArray, getValuesOfAxelarAddressKey } from '@/lib/parser'
 import { getParams, getQueryString, generateKeyByParams, isFiltered } from '@/lib/operator'
 import { equalsIgnoreCase, capitalize, toBoolean, includesSomePatterns, ellipse, toTitle } from '@/lib/string'
 import { isNumber, toNumber, formatUnits, numberFormat } from '@/lib/number'
@@ -50,6 +50,7 @@ function Filters() {
       const response = await searchEVMPolls({ aggs: { types: { terms: { field: 'event.keyword', size: 25 } } }, size: 0 })
       setTypes(toArray(response).map(d => d.key))
     }
+
     getTypes()
   }, [])
 
@@ -57,10 +58,12 @@ function Filters() {
     if (!_params) {
       _params = params
     }
+
     if (!_.isEqual(_params, getParams(searchParams, size))) {
       router.push(`${pathname}${getQueryString(_params)}`)
       setParams(_params)
     }
+
     setOpen(false)
   }
 
@@ -82,6 +85,7 @@ function Filters() {
   ])
 
   const filtered = isFiltered(params)
+
   return (
     <>
       <Button
@@ -151,7 +155,9 @@ function Filters() {
                                             {d.multiple ?
                                               <div className={clsx('flex flex-wrap', selectedValue.length !== 0 && 'my-1')}>
                                                 {selectedValue.length === 0 ?
-                                                  <span className="block truncate">Any</span> :
+                                                  <span className="block truncate">
+                                                    Any
+                                                  </span> :
                                                   selectedValue.map((v, j) => (
                                                     <div
                                                       key={j}
@@ -163,7 +169,9 @@ function Filters() {
                                                   ))
                                                 }
                                               </div> :
-                                              <span className="block truncate">{selectedValue?.title}</span>
+                                              <span className="block truncate">
+                                                {selectedValue?.title}
+                                              </span>
                                             }
                                             <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                               <LuChevronsUpDown size={20} className="text-zinc-400" />
@@ -252,6 +260,7 @@ export function EVMPolls() {
 
   useEffect(() => {
     const _params = getParams(searchParams, size)
+
     if (!_.isEqual(_params, params)) {
       setParams(_params)
       setRefresh(true)
@@ -263,68 +272,96 @@ export function EVMPolls() {
       if (params && toBoolean(refresh)) {
         const { data, total } = { ...await searchEVMPolls({ ...params, size }) }
 
-        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyByParams(params)]: {
-          data: _.orderBy(toArray(data).map(d => {
-            const votes = []
-            Object.entries(d).filter(([k, v]) => k.startsWith('axelar')).forEach(([k, v]) => votes.push(v))
+        setSearchResults({
+          ...(refresh ? undefined : searchResults),
+          [generateKeyByParams(params)]: {
+            data: _.orderBy(toArray(data).map(d => {
+              const votes = getValuesOfAxelarAddressKey(d).map(v => ({
+                ...v,
+                option: v.vote ? 'yes' : typeof v.vote === 'boolean' ? 'no' : 'unsubmitted',
+              }))
 
-            let voteOptions = Object.entries(_.groupBy(toArray(votes).map(v => ({ ...v, option: v.vote ? 'yes' : typeof v.vote === 'boolean' ? 'no' : 'unsubmitted' })), 'option')).map(([k, v]) => {
-              return {
+              const voteOptions = Object.entries(_.groupBy(votes, 'option')).map(([k, v]) => ({
                 option: k,
-                value: toArray(v).length,
-                voters: toArray(toArray(v).map(_v => _v.voter)),
+                value: v?.length,
+                voters: toArray(v?.map(d => d.voter)),
+              }))
+              .filter(v => v.value)
+              .map(v => ({
+                ...v,
+                i: v.option === 'yes' ? 0 : v.option === 'no' ? 1 : 2,
+              }))
+
+              // add unsubmitted option
+              if (toArray(d.participants).length > 0 && voteOptions.findIndex(v => v.option === 'unsubmitted') < 0 && _.sumBy(voteOptions, 'value') < d.participants.length) {
+                voteOptions.push({
+                  option: 'unsubmitted',
+                  value: d.participants.length - _.sumBy(voteOptions, 'value'),
+                })
               }
-            }).filter(v => v.value).map(v => ({ ...v, i: v.option === 'yes' ? 0 : v.option === 'no' ? 1 : 2 }))
 
-            if (toArray(d.participants).length > 0 && voteOptions.findIndex(v => v.option === 'unsubmitted') < 0 && _.sumBy(voteOptions, 'value') < d.participants.length) {
-              voteOptions.push({ option: 'unsubmitted', value: d.participants.length - _.sumBy(voteOptions, 'value') })
-            }
-            voteOptions = _.orderBy(voteOptions, ['i'], ['asc'])
+              let eventName = split(d.event, { delimiter: '_', toCase: 'lower' }).join('_')
 
-            let eventName = split(d.event, { delimiter: '_', toCase: 'lower' }).join('_')
-            if (d.confirmation_events) {
-              const { type, txID } = { ...d.confirmation_events[0] }
-              switch (type) {
-                case 'depositConfirmation':
-                  eventName = eventName || 'Transfer'
-                  break
-                case 'ContractCallApproved':
-                  eventName = eventName || 'ContractCall'
-                  break
-                case 'ContractCallApprovedWithMint':
-                case 'ContractCallWithMintApproved':
-                  eventName = eventName || 'ContractCallWithToken'
-                  break
-                default:
-                  eventName = type
-                  break
+              // set eventName and transaction ID from confirmation events
+              if (d.confirmation_events) {
+                const { type, txID } = { ...d.confirmation_events[0] }
+
+                switch (type) {
+                  case 'depositConfirmation':
+                    if (!eventName) {
+                      eventName = 'Transfer'
+                    }
+                    break
+                  case 'ContractCallApproved':
+                    if (!eventName) {
+                      eventName = 'ContractCall'
+                    }
+                    break
+                  case 'ContractCallApprovedWithMint':
+                  case 'ContractCallWithMintApproved':
+                    if (!eventName) {
+                      eventName = 'ContractCallWithToken'
+                    }
+                    break
+                  default:
+                    eventName = type
+                    break
+                }
+
+                if (!d.transaction_id) {
+                  d.transaction_id = txID
+                }
               }
-              d.transaction_id = d.transaction_id || txID
-            }
 
-            const { url, transaction_path } = { ...getChainData(d.sender_chain, chains)?.explorer }
-            const confirmation_txhash = toArray(votes).find(v => v.confirmed)?.id
-            return {
-              ...d,
-              idNumber: isNumber(d.id) ? toNumber(d.id) : d.id,
-              status: d.success ? 'completed' : d.failed ? 'failed' : d.expired ? 'expired' : d.confirmation || confirmation_txhash ? 'confirmed' : 'pending',
-              height: _.minBy(votes, 'height')?.height || d.height,
-              confirmation_txhash,
-              votes: _.orderBy(votes, ['height', 'created_at'], ['desc', 'desc']),
-              voteOptions,
-              eventName: d.event ? split(toTitle(eventName), { delimiter: ' ' }).map(s => capitalize(s)).join('') : eventName,
-              url: includesSomePatterns(eventName, ['operator', 'token_deployed']) ? `${url}${transaction_path?.replace('{tx}', d.transaction_id)}` : `/${includesSomePatterns(eventName, ['contract_call', 'ContractCall']) || !(includesSomePatterns(eventName, ['transfer', 'Transfer']) || d.deposit_address) ? 'gmp' : 'transfer'}/${d.transaction_id ? d.transaction_id : d.transfer_id ? `?transferId=${d.transfer_id}` : ''}`,
-            }
-          }), ['idNumber', 'created_at.ms'], ['desc', 'desc']),
-          total,
-        } })
+              const { url, transaction_path } = { ...getChainData(d.sender_chain, chains)?.explorer }
+              const txhashConfirm = votes.find(v => v.confirmed)?.id
+
+              return {
+                ...d,
+                idNumber: isNumber(d.id) ? toNumber(d.id) : d.id,
+                status: d.success ? 'completed' : d.failed ? 'failed' : d.expired ? 'expired' : d.confirmation || txhashConfirm ? 'confirmed' : 'pending',
+                height: _.minBy(votes, 'height')?.height || d.height,
+                confirmation_txhash: txhashConfirm,
+                votes: _.orderBy(votes, ['height', 'created_at'], ['desc', 'desc']),
+                voteOptions: _.orderBy(voteOptions, ['i'], ['asc']),
+                eventName: d.event ? split(eventName, { delimiter: '_' }).map(s => capitalize(s)).join('') : eventName,
+                url: includesSomePatterns(eventName, ['operator', 'token_deployed']) ?
+                  `${url}${transaction_path?.replace('{tx}', d.transaction_id)}` :
+                  `/${includesSomePatterns(eventName, ['contract_call', 'ContractCall']) || !(includesSomePatterns(eventName, ['transfer', 'Transfer']) || d.deposit_address) ? 'gmp' : 'transfer'}/${d.transaction_id ? d.transaction_id : d.transfer_id ? `?transferId=${d.transfer_id}` : ''}`,
+              }
+            }), ['idNumber', 'created_at.ms'], ['desc', 'desc']),
+            total,
+          },
+        })
         setRefresh(false)
       }
     }
+
     getData()
-  }, [chains, params, setSearchResults, refresh, setRefresh])
+  }, [params, setSearchResults, refresh, setRefresh, chains])
 
   const { data, total } = { ...searchResults?.[generateKeyByParams(params)] }
+
   return (
     <Container className="sm:mt-8">
       {!data ? <Spinner /> :
@@ -332,7 +369,9 @@ export function EVMPolls() {
           <div className="flex items-center justify-between gap-x-4">
             <div className="sm:flex-auto">
               <div className="flex items-center space-x-2">
-                <h1 className="underline text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">EVM Polls</h1>
+                <h1 className="underline text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">
+                  EVM Polls
+                </h1>
                 <span className="text-zinc-400 dark:text-zinc-500">|</span>
                 <Link href="/amplifier-polls" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
                   Amplifier Polls
@@ -385,8 +424,10 @@ export function EVMPolls() {
               </thead>
               <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
                 {data.map(d => {
-                  const chainData = getChainData(d.sender_chain, chains)
-                  const { url, transaction_path } = { ...chainData?.explorer }
+                  const { id: chain, explorer } = { ...getChainData(d.sender_chain, chains) }
+                  const { url, transaction_path } = { ...explorer }
+
+                  const totalParticipantsPower = _.sumBy(toArray(validators).filter(d => true || toArray(d.participants).includes(d.operator_address)), 'quadratic_voting_power')
 
                   const eventElement = (
                     <Tag className={clsx('w-fit')}>
@@ -394,7 +435,6 @@ export function EVMPolls() {
                     </Tag>
                   )
 
-                  const totalParticipantsPower = _.sumBy(toArray(validators).filter(d => true || toArray(d.participants).includes(d.operator_address)), 'quadratic_voting_power')
                   return (
                     <tr key={d.id} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
                       <td className="pl-4 sm:pl-0 pr-3 py-4 text-left">
@@ -437,18 +477,24 @@ export function EVMPolls() {
                           )}
                           {toArray(d.confirmation_events).map((e, i) => {
                             let { asset, symbol, amount } = { ...e }
-                            const assetObject = toJson(asset)
-                            if (assetObject) {
-                              asset = assetObject.denom
-                              amount = assetObject.amount
+
+                            // asset is object { denom, amount }
+                            const assetObj = toJson(asset)
+
+                            if (assetObj) {
+                              asset = assetObj.denom
+                              amount = assetObj.amount
                             }
 
+                            // asset data
                             const assetData = getAssetData(asset || symbol, assets)
                             const { decimals, addresses } = { ...assetData }
                             let { image } = { ...assetData }
-                            const tokenData = addresses?.[chainData?.id]
-                            symbol = tokenData?.symbol || assetData?.symbol || symbol
-                            image = tokenData?.image || image
+
+                            if (assetData) {
+                              symbol = addresses?.[chain]?.symbol || assetData.symbol || symbol
+                              image = image = addresses?.[chain]?.image || image
+                            }
 
                             const element = symbol && (
                               <div className="w-fit h-6 bg-zinc-100 dark:bg-zinc-800 rounded-xl flex items-center gap-x-1.5 px-2.5 py-1">
@@ -476,7 +522,9 @@ export function EVMPolls() {
                               <Link key={i} href={d.url} target="_blank">
                                 {element}
                               </Link> :
-                              <div key={i}>{element}</div>
+                              <div key={i}>
+                                {element}
+                              </div>
                             )
                           })}
                         </div>
@@ -535,6 +583,7 @@ export function EVMPolls() {
                         >
                           {d.voteOptions.map((v, i) => {
                             const totalVotersPower = _.sumBy(toArray(validators).filter(d => toArray(v.voters).includes(d.broadcaster_address)), 'quadratic_voting_power')
+
                             const powerDisplay = totalVotersPower > 0 && totalParticipantsPower > 0 ? `${numberFormat(totalVotersPower, '0,0.0a')} (${numberFormat(totalVotersPower * 100 / totalParticipantsPower, '0,0.0')}%)` : ''
                             const isDisplayPower = powerDisplay && timeDiff(d.created_at?.ms, 'days') < 3
 
