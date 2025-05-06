@@ -26,13 +26,12 @@ import { Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
 import { searchBatches } from '@/lib/api/token-transfer'
 import { ENVIRONMENT, getChainData, getAssetData } from '@/lib/config'
-import { split, toArray } from '@/lib/parser'
+import { toCase, split, toArray } from '@/lib/parser'
 import { getParams, getQueryString, generateKeyByParams, isFiltered } from '@/lib/operator'
 import { equalsIgnoreCase, capitalize, toBoolean, ellipse } from '@/lib/string'
 import { toNumber, formatUnits } from '@/lib/number'
 
 const size = 25
-const NUM_COMMANDS_TRUNCATE = 10
 
 function Filters() {
   const router = useRouter()
@@ -49,6 +48,7 @@ function Filters() {
       const response = await searchBatches({ aggs: { types: { terms: { field: 'commands.type.keyword', size: 25 } } }, size: 0 })
       setTypes(toArray(response).map(d => d.key))
     }
+
     getTypes()
   }, [])
 
@@ -56,10 +56,12 @@ function Filters() {
     if (!_params) {
       _params = params
     }
+
     if (!_.isEqual(_params, getParams(searchParams, size))) {
       router.push(`${pathname}${getQueryString(_params)}`)
       setParams(_params)
     }
+
     setOpen(false)
   }
 
@@ -78,6 +80,7 @@ function Filters() {
   ]
 
   const filtered = isFiltered(params)
+
   return (
     <>
       <Button
@@ -147,7 +150,9 @@ function Filters() {
                                             {d.multiple ?
                                               <div className={clsx('flex flex-wrap', selectedValue.length !== 0 && 'my-1')}>
                                                 {selectedValue.length === 0 ?
-                                                  <span className="block truncate">Any</span> :
+                                                  <span className="block truncate">
+                                                    Any
+                                                  </span> :
                                                   selectedValue.map((v, j) => (
                                                     <div
                                                       key={j}
@@ -159,7 +164,9 @@ function Filters() {
                                                   ))
                                                 }
                                               </div> :
-                                              <span className="block truncate">{selectedValue?.title}</span>
+                                              <span className="block truncate">
+                                                {selectedValue?.title}
+                                              </span>
                                             }
                                             <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                               <LuChevronsUpDown size={20} className="text-zinc-400" />
@@ -240,6 +247,8 @@ function Filters() {
 }
 
 export function EVMBatches() {
+  const NUM_COMMANDS_TRUNCATE = 10
+
   const searchParams = useSearchParams()
   const [params, setParams] = useState(null)
   const [searchResults, setSearchResults] = useState(null)
@@ -248,6 +257,7 @@ export function EVMBatches() {
 
   useEffect(() => {
     const _params = getParams(searchParams, size)
+
     if (!_.isEqual(_params, params)) {
       setParams(_params)
       setRefresh(true)
@@ -258,15 +268,24 @@ export function EVMBatches() {
     const getData = async () => {
       if (params && toBoolean(refresh)) {
         let response = await searchBatches({ ...params, size })
-        if (response && !response.data && !['mainnet', 'testnet'].includes(ENVIRONMENT)) response = { data: [], total: 0 }
-        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyByParams(params)]: { ...response } })
+
+        if (response && !response.data && !['mainnet', 'testnet'].includes(ENVIRONMENT)) {
+          response = { data: [], total: 0 }
+        }
+
+        setSearchResults({
+          ...(refresh ? undefined : searchResults),
+          [generateKeyByParams(params)]: { ...response },
+        })
         setRefresh(false)
       }
     }
+
     getData()
   }, [params, setSearchResults, refresh, setRefresh])
 
   const { data, total } = { ...searchResults?.[generateKeyByParams(params)] }
+
   return (
     <Container className="sm:mt-8">
       {!data ? <Spinner /> :
@@ -274,7 +293,9 @@ export function EVMBatches() {
           <div className="flex items-center justify-between gap-x-4">
             <div className="sm:flex-auto">
               <div className="flex items-center space-x-2">
-                <h1 className="underline text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">EVM Batches</h1>
+                <h1 className="underline text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">
+                  EVM Batches
+                </h1>
                 <span className="text-zinc-400 dark:text-zinc-500">|</span>
                 <Link href="/amplifier-proofs" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
                   Amplifier Proofs
@@ -322,8 +343,9 @@ export function EVMBatches() {
               <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
                 {data.map(d => {
                   const { url, transaction_path } = { ...getChainData(d.chain, chains)?.explorer }
+
                   const executed = toArray(d.commands).length === toArray(d.commands).filter(c => c.executed).length
-                  const status = executed ? 'executed' : d.status?.replace('BATCHED_COMMANDS_STATUS_', '').toLowerCase()
+                  const status = executed ? 'executed' : toCase(d.status?.replace('BATCHED_COMMANDS_STATUS_', ''), 'lower')
 
                   return (
                     <tr key={d.batch_id} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
@@ -355,13 +377,14 @@ export function EVMBatches() {
 
                             const transferID = parseInt(c.id, 16)
                             const assetData = getAssetData(symbol, assets)
-                            const tokenData = assetData?.addresses?.[d.chain]
-                            symbol = tokenData?.symbol || assetData?.symbol || symbol
-                            decimals = tokenData?.decimals || assetData?.decimals || decimals || 18
-                            const image = tokenData?.image || assetData?.image
+
+                            symbol = assetData?.addresses?.[d.chain]?.symbol || assetData?.symbol || symbol
+                            decimals = assetData?.addresses?.[d.chain]?.decimals || assetData?.decimals || decimals || 18
+                            const image = assetData?.addresses?.[d.chain]?.image || assetData?.image
 
                             const sourceChainData = getChainData(sourceChain, chains)
                             const destinationChainData = getChainData(d.chain, chains)
+
                             const typeElement = (
                               <Tooltip content={c.executed ? 'Executed' : 'Unexecuted'}>
                                 <Tag className={clsx('w-fit capitalize mr-2', c.executed ? 'bg-green-600 dark:bg-green-500' : 'bg-orange-500 dark:bg-orange-600')}>
@@ -492,14 +515,14 @@ export function EVMBatches() {
                                       {name}
                                     </span>
                                     <div className="flex items-center gap-x-2">
-                                      {decimals && (
+                                      {decimals > 0 && (
                                         <Number
                                           value={decimals}
                                           prefix="Decimals: "
                                           className="text-zinc-400 dark:text-zinc-500 text-xs"
                                         />
                                       )}
-                                      {cap && (
+                                      {cap > 0 && (
                                         <Number
                                           value={cap}
                                           prefix="Cap: "

@@ -18,8 +18,8 @@ import { ExplorerLink } from '@/components/ExplorerLink'
 import { useGlobalStore } from '@/components/Global'
 import { getRPCStatus, searchAmplifierPolls } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
-import { toArray } from '@/lib/parser'
-import { equalsIgnoreCase, capitalize, headString, lastString, ellipse, toTitle } from '@/lib/string'
+import { toArray, getValuesOfAxelarAddressKey } from '@/lib/parser'
+import { equalsIgnoreCase, headString, lastString, find, ellipse, toTitle } from '@/lib/string'
 import { isNumber } from '@/lib/number'
 import { TIME_FORMAT } from '@/lib/time'
 
@@ -27,14 +27,16 @@ function Info({ data, id }) {
   const { chains } = useGlobalStore()
 
   const { contract_address, transaction_id, event_index, sender_chain, status, height, initiated_txhash, confirmation_txhash, completed_txhash, expired_height, participants, voteOptions, created_at, updated_at } = { ...data }
-  const chainData = getChainData(sender_chain, chains)
-  const { url, transaction_path } = { ...chainData?.explorer }
+
+  const { url, transaction_path } = { ...getChainData(sender_chain, chains)?.explorer }
 
   return (
     <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
       <div className="px-4 sm:px-6 py-6">
         <h3 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-7">
-          <Copy value={data?.poll_id || id}><span>{data?.poll_id || ellipse(id, 16)}</span></Copy>
+          <Copy value={data?.poll_id || id}>
+            <span>{data?.poll_id || ellipse(id, 16)}</span>
+          </Copy>
         </h3>
         <div className="max-w-2xl text-zinc-400 dark:text-zinc-500 text-sm leading-6 mt-1">
           {transaction_id && (
@@ -196,19 +198,28 @@ function Votes({ data }) {
 
   useEffect(() => {
     if (data?.votes) {
-      const votes = toArray(data.votes).map(d => ({ ...d, verifierData: toArray(verifiers).find(v => equalsIgnoreCase(v.address, d.voter)) || { address: d.voter } }))
+      const votes = data.votes.map(d => ({
+        ...d,
+        verifierData: toArray(verifiers).find(v => equalsIgnoreCase(v.address, d.voter)) || { address: d.voter },
+      }))
+
       setVotes(_.concat(
         votes,
         // unsubmitted
-        toArray(data.participants).filter(p => votes.findIndex(d => equalsIgnoreCase(d.verifierData?.address, p)) < 0).map(p => {
+        toArray(data.participants).filter(p => !find(p, votes.map(v => v.verifierData?.address))).map(p => {
           const verifierData = toArray(verifiers).find(v => equalsIgnoreCase(v.address, p))
-          return { voter: verifierData?.address || p, verifierData }
+
+          return {
+            voter: verifierData?.address || p,
+            verifierData,
+          }
         }),
       ))
     }
-  }, [verifiers, data, setVotes])
+  }, [data, setVotes, verifiers])
 
   const { confirmation_txhash } = { ...data }
+
   return votes && (
     <div className="overflow-x-auto lg:overflow-x-visible -mx-4 sm:-mx-0 mt-8">
       <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
@@ -320,36 +331,49 @@ export function AmplifierPoll({ id }) {
   const { chains, verifiers } = useGlobalStore()
 
   useEffect(() => {
+    const getData = async () => setBlockData(await getRPCStatus())
+    getData()
+  }, [setBlockData])
+
+  useEffect(() => {
     const getData = async () => {
       if (blockData) {
         const { data } = { ...await searchAmplifierPolls({ verifierContractAddress: id.includes('_') ? headString(id, '_') : undefined, pollId: lastString(id, '_') }) }
-        let d = _.head(data)
+
+        let d = data?.[0]
 
         if (d) {
-          const votes = []
-          Object.entries(d).filter(([k, v]) => k.startsWith('axelar')).forEach(([k, v]) => votes.push(v))
+          const votes = getValuesOfAxelarAddressKey(d).map(v => ({
+            ...v,
+            option: v.vote ? 'yes' : typeof v.vote === 'boolean' ? 'no' : 'unsubmitted',
+          }))
 
-          let voteOptions = Object.entries(_.groupBy(toArray(votes).map(v => ({ ...v, option: v.vote ? 'yes' : typeof v.vote === 'boolean' ? 'no' : 'unsubmitted' })), 'option')).map(([k, v]) => {
-            return {
-              option: k,
-              value: toArray(v).length,
-              voters: toArray(toArray(v).map(_v => _v.voter)),
-            }
-          }).filter(v => v.value).map(v => ({ ...v, i: v.option === 'yes' ? 0 : v.option === 'no' ? 1 : 2 }))
+          const voteOptions = Object.entries(_.groupBy(votes, 'option')).map(([k, v]) => ({
+            option: k,
+            value: v?.length,
+            voters: toArray(v?.map(d => d.voter)),
+          }))
+          .filter(v => v.value)
+          .map(v => ({
+            ...v,
+            i: v.option === 'yes' ? 0 : v.option === 'no' ? 1 : 2,
+          }))
 
+          // add unsubmitted option
           if (toArray(d.participants).length > 0 && voteOptions.findIndex(v => v.option === 'unsubmitted') < 0 && _.sumBy(voteOptions, 'value') < d.participants.length) {
-            voteOptions.push({ option: 'unsubmitted', value: d.participants.length - _.sumBy(voteOptions, 'value') })
+            voteOptions.push({
+              option: 'unsubmitted',
+              value: d.participants.length - _.sumBy(voteOptions, 'value'),
+            })
           }
-          voteOptions = _.orderBy(voteOptions, ['i'], ['asc'])
 
-          const { url, transaction_path } = { ...getChainData(d.sender_chain, chains)?.explorer }
           d = {
             ...d,
             status: d.success ? 'completed' : d.failed ? 'failed' : d.expired || d.expired_height < blockData.latest_block_height ? 'expired' : 'pending',
             height: _.minBy(votes, 'height')?.height || d.height,
             votes: _.orderBy(votes, ['height', 'created_at'], ['desc', 'desc']),
-            voteOptions,
-            url: `/gmp/${d.transaction_id || ''}`,
+            voteOptions: _.orderBy(voteOptions, ['i'], ['asc']),
+            url: `/gmp/${d.transaction_id || 'search'}`,
           }
         }
 
@@ -357,13 +381,9 @@ export function AmplifierPoll({ id }) {
         setData({ ...d })
       }
     }
-    getData()
-  }, [id, chains, setData, blockData])
 
-  useEffect(() => {
-    const getData = async () => setBlockData(await getRPCStatus())
     getData()
-  }, [setBlockData])
+  }, [id, setData, blockData, chains])
 
   return (
     <Container className="sm:mt-8">

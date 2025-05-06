@@ -18,17 +18,17 @@ import { ExplorerLink } from '@/components/ExplorerLink'
 import { useGlobalStore } from '@/components/Global'
 import { getRPCStatus, searchAmplifierProofs } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
-import { toArray } from '@/lib/parser'
-import { equalsIgnoreCase, capitalize, headString, lastString, ellipse, toTitle } from '@/lib/string'
+import { toArray, getValuesOfAxelarAddressKey } from '@/lib/parser'
+import { equalsIgnoreCase, headString, lastString, find, ellipse, toTitle } from '@/lib/string'
 import { TIME_FORMAT } from '@/lib/time'
 
 function Info({ data, id }) {
   const { chains } = useGlobalStore()
 
   const { session_id, multisig_prover_contract_address, multisig_contract_address, message_ids, status, height, initiated_txhash, confirmation_txhash, completed_txhash, expired_height, completed_height, gateway_txhash, participants, signOptions, created_at, updated_at } = { ...data }
+
   const chain = data?.chain || data?.destination_chain
-  const chainData = getChainData(chain, chains)
-  const { url, transaction_path } = { ...chainData?.explorer }
+  const { url, transaction_path } = { ...getChainData(chain, chains)?.explorer }
 
   return (
     <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
@@ -72,11 +72,15 @@ function Info({ data, id }) {
             <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
               <div className="flex flex-col gap-y-0.5">
                 {toArray(message_ids || { message_id: data?.message_id, source_chain: data?.source_chain }).map((m, i) => {
-                  m.message_id = m.message_id || m.id
-                  m.source_chain = m.source_chain || m.chain
+                  if (!m.message_id) {
+                    m.message_id = m.id
+                  }
 
-                  const chainData = getChainData(m.source_chain, chains)
-                  const { url, transaction_path } = { ...chainData?.explorer }
+                  if (!m.source_chain) {
+                    m.source_chain = m.chain
+                  }
+
+                  const { url, transaction_path } = { ...getChainData(m.source_chain, chains)?.explorer }
 
                   return (
                     <div key={i} className="flex items-center gap-x-4">
@@ -250,19 +254,28 @@ function Signs({ data }) {
 
   useEffect(() => {
     if (data?.signs) {
-      const signs = toArray(data.signs).map(d => ({ ...d, verifierData: toArray(verifiers).find(v => equalsIgnoreCase(v.address, d.signer)) || { address: d.signer } }))
+      const signs = data.signs.map(d => ({
+        ...d,
+        verifierData: toArray(verifiers).find(v => equalsIgnoreCase(v.address, d.signer)) || { address: d.signer },
+      }))
+
       setSigns(_.concat(
         signs,
         // unsubmitted
-        toArray(data.participants).filter(p => signs.findIndex(d => equalsIgnoreCase(d.verifierData?.address, p)) < 0).map(p => {
+        toArray(data.participants).filter(p => !find(p, signs.map(s => s.verifierData?.address))).map(p => {
           const verifierData = toArray(verifiers).find(v => equalsIgnoreCase(v.address, p))
-          return { signer: verifierData?.address || p, verifierData }
+
+          return {
+            signer: verifierData?.address || p,
+            verifierData,
+          }
         }),
       ))
     }
-  }, [verifiers, data, setSigns])
+  }, [data, setSigns, verifiers])
 
   const { confirmation_txhash } = { ...data }
+
   return signs && (
     <div className="overflow-x-auto lg:overflow-x-visible -mx-4 sm:-mx-0 mt-8">
       <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
@@ -374,34 +387,48 @@ export function AmplifierProof({ id }) {
   const { chains, verifiers } = useGlobalStore()
 
   useEffect(() => {
+    const getData = async () => setBlockData(await getRPCStatus())
+    getData()
+  }, [setBlockData])
+
+  useEffect(() => {
     const getData = async () => {
       if (blockData) {
         const { data } = { ...await searchAmplifierProofs({ multisigContractAddress: id.includes('_') ? headString(id, '_') : undefined, sessionId: lastString(id, '_') }) }
-        let d = _.head(data)
+
+        let d = data?.[0]
 
         if (d) {
-          const signs = []
-          Object.entries(d).filter(([k, v]) => k.startsWith('axelar')).forEach(([k, v]) => signs.push(v))
+          const signs = getValuesOfAxelarAddressKey(d).map(s => ({
+            ...s,
+            option: s.sign ? 'signed' : 'unsubmitted',
+          }))
 
-          let signOptions = Object.entries(_.groupBy(toArray(signs).map(s => ({ ...s, option: s.sign ? 'signed' : 'unsubmitted' })), 'option')).map(([k, v]) => {
-            return {
-              option: k,
-              value: toArray(v).length,
-              signers: toArray(toArray(v).map(_v => _v.signer)),
-            }
-          }).filter(v => v.value).map(v => ({ ...v, i: v.option === 'signed' ? 0 : 1 }))
+          const signOptions = Object.entries(_.groupBy(signs, 'option')).map(([k, v]) => ({
+            option: k,
+            value: v?.length,
+            signers: toArray(v?.map(d => d.signer)),
+          }))
+          .filter(s => s.value)
+          .map(s => ({
+            ...s,
+            i: s.option === 'signed' ? 0 : 1,
+          }))
 
-          if (toArray(d.participants).length > 0 && signOptions.findIndex(v => v.option === 'unsubmitted') < 0 && _.sumBy(signOptions, 'value') < d.participants.length) {
-            signOptions.push({ option: 'unsubmitted', value: d.participants.length - _.sumBy(signOptions, 'value') })
+          // add unsubmitted option
+          if (toArray(d.participants).length > 0 && signOptions.findIndex(s => s.option === 'unsubmitted') < 0 && _.sumBy(signOptions, 'value') < d.participants.length) {
+            signOptions.push({
+              option: 'unsubmitted',
+              value: d.participants.length - _.sumBy(signOptions, 'value'),
+            })
           }
-          signOptions = _.orderBy(signOptions, ['i'], ['asc'])
 
           d = {
             ...d,
             status: d.success ? 'completed' : d.failed ? 'failed' : d.expired || d.expired_height < blockData.latest_block_height ? 'expired' : 'pending',
             height: _.minBy(signs, 'height')?.height || d.height,
             signs: _.orderBy(signs, ['height', 'created_at'], ['desc', 'desc']),
-            signOptions,
+            signOptions: _.orderBy(signOptions, ['i'], ['asc']),
           }
         }
 
@@ -409,13 +436,9 @@ export function AmplifierProof({ id }) {
         setData({ ...d })
       }
     }
+
     getData()
   }, [id, setData, blockData])
-
-  useEffect(() => {
-    const getData = async () => setBlockData(await getRPCStatus())
-    getData()
-  }, [setBlockData])
 
   return (
     <Container className="sm:mt-8">

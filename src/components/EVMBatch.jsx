@@ -22,29 +22,32 @@ import { useEVMWalletStore, EVMWallet } from '@/components/Wallet'
 import { useGlobalStore } from '@/components/Global'
 import { getBatch } from '@/lib/api/token-transfer'
 import { getChainData, getAssetData } from '@/lib/config'
-import { split, toArray, parseError } from '@/lib/parser'
-import { equalsIgnoreCase, ellipse } from '@/lib/string'
+import { toCase, split, toArray, parseError } from '@/lib/parser'
+import { ellipse } from '@/lib/string'
 import { toNumber, formatUnits } from '@/lib/number'
 import { timeDiff, TIME_FORMAT } from '@/lib/time'
 
 function Info({ data, chain, id, executeButton }) {
-  const { chains, assets, contracts } = useGlobalStore()
+  const { chains, assets } = useGlobalStore()
 
   const { key_id, commands, created_at, execute_data, prev_batched_commands_id } = { ...data }
   let { signatures } = { ...data?.proof }
+
   signatures = toArray(signatures || data?.signature)
 
-  const executed = toArray(commands).length === toArray(commands).filter(d => d.executed).length
-  const status = executed ? 'executed' : data?.status?.replace('BATCHED_COMMANDS_STATUS_', '').toLowerCase()
-  const chainData = getChainData(chain, chains)
-  const { url, address_path, transaction_path } = { ...chainData?.explorer }
-  const gatewayAddress = contracts?.gateway_contracts?.[chainData?.id]?.address
+  const { gateway, explorer } = { ...getChainData(chain, chains) }
+  const { url, address_path, transaction_path } = { ...explorer }
+
+  const executed = toArray(commands).length === toArray(commands).filter(c => c.executed).length
+  const status = executed ? 'executed' : toCase(data?.status?.replace('BATCHED_COMMANDS_STATUS_', ''), 'lower')
 
   return (
     <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
       <div className="px-4 sm:px-6 py-6">
         <h3 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-7">
-          <Copy value={id}><span>{ellipse(id, 16)}</span></Copy>
+          <Copy value={id}>
+            <span>{ellipse(id, 16)}</span>
+          </Copy>
           {key_id && (
             <Copy size={16} value={key_id}>
               <span className="text-zinc-400 dark:text-zinc-500 text-sm font-normal leading-6">
@@ -70,8 +73,8 @@ function Info({ data, chain, id, executeButton }) {
           <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
             <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Chain</dt>
             <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-              {url && gatewayAddress ?
-                <Link href={`${url}${address_path?.replace('{address}', gatewayAddress)}`} target="_blank">
+              {url && gateway?.ddress ?
+                <Link href={`${url}${address_path?.replace('{address}', gateway.ddress)}`} target="_blank">
                   <ChainProfile value={chain} />
                 </Link> :
                 <ChainProfile value={chain} />
@@ -111,30 +114,32 @@ function Info({ data, chain, id, executeButton }) {
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
-                      {toArray(commands).map((d, i) => {
-                        const { deposit_address } = { ...d }
-                        const { amount, name, cap, account, salt, newOwners, newOperators, newWeights, newThreshold, sourceChain, sourceTxHash, contractAddress } = { ...d.params }
-                        let { symbol, decimals } = { ...d.params }
+                      {toArray(commands).map((c, i) => {
+                        const { type, deposit_address } = { ...c }
+                        const { amount, name, cap, account, salt, newOwners, newOperators, newWeights, newThreshold, sourceChain, sourceTxHash, contractAddress } = { ...c.params }
+                        let { symbol, decimals } = { ...c.params }
 
-                        const transferID = parseInt(d.id, 16)
+                        const transferID = parseInt(c.id, 16)
                         const assetData = getAssetData(symbol, assets)
-                        const tokenData = assetData?.addresses?.[chain]
-                        symbol = tokenData?.symbol || assetData?.symbol || symbol
-                        decimals = tokenData?.decimals || assetData?.decimals || decimals || 18
-                        const image = tokenData?.image || assetData?.image
+
+                        symbol = assetData?.addresses?.[chain]?.symbol || assetData?.symbol || symbol
+                        decimals = assetData?.addresses?.[chain]?.decimals || assetData?.decimals || decimals || 18
+                        const image = assetData?.addresses?.[chain]?.image || assetData?.image
 
                         const sourceChainData = getChainData(sourceChain, chains)
                         const destinationChainData = getChainData(chain, chains)
+
                         const IDElement = (
                           <span className="font-medium">
-                            {ellipse(d.id, 6)}
+                            {ellipse(c.id, 6)}
                           </span>
                         )
+
                         const typeElement = (
                           <div className="flex">
-                            <Tooltip content={d.executed ? 'Executed' : 'Unexecuted'}>
-                              <Tag className={clsx('w-fit capitalize text-2xs', d.executed ? 'bg-green-600 dark:bg-green-500' : 'bg-orange-500 dark:bg-orange-600')}>
-                                {d.type}
+                            <Tooltip content={c.executed ? 'Executed' : 'Unexecuted'}>
+                              <Tag className={clsx('w-fit capitalize text-2xs', c.executed ? 'bg-green-600 dark:bg-green-500' : 'bg-orange-500 dark:bg-orange-600')}>
+                                {type}
                               </Tag>
                             </Tooltip>
                           </div>
@@ -143,24 +148,24 @@ function Info({ data, chain, id, executeButton }) {
                         return (
                           <tr key={i} className="align-top text-zinc-400 dark:text-zinc-500 text-xs">
                             <td className="pl-4 sm:pl-3 pr-3 py-3 text-left">
-                              {url && d.transactionHash ?
-                                <Copy size={16} value={d.id}>
+                              {url && c.transactionHash ?
+                                <Copy size={16} value={c.id}>
                                   <Link
-                                    href={`${url}${transaction_path?.replace('{tx}', d.transactionHash)}`}
+                                    href={`${url}${transaction_path?.replace('{tx}', c.transactionHash)}`}
                                     target="_blank"
                                     className="text-blue-600 dark:text-blue-500"
                                   >
                                     {IDElement}
                                   </Link>
                                 </Copy> :
-                                <Copy size={16} value={d.id}>
+                                <Copy size={16} value={c.id}>
                                   {IDElement}
                                 </Copy>
                               }
                             </td>
                             <td className="px-3 py-3 text-left">
-                              {url && d.transactionHash ?
-                                <Link href={`${url}${transaction_path?.replace('{tx}', d.transactionHash)}`} target="_blank">
+                              {url && c.transactionHash ?
+                                <Link href={`${url}${transaction_path?.replace('{tx}', c.transactionHash)}`} target="_blank">
                                   {typeElement}
                                 </Link> :
                                 typeElement
@@ -168,7 +173,7 @@ function Info({ data, chain, id, executeButton }) {
                             </td>
                             <td className="pl-3 pr-4 sm:pr-3 py-3 text-left">
                               <div className="flex lg:flex-wrap lg:items-center">
-                                {symbol && !['approveContractCall'].includes(d.type) && (
+                                {symbol && !['approveContractCall'].includes(type) && (
                                   <div className="min-w-fit h-6 bg-zinc-100 dark:bg-zinc-800 rounded-xl flex items-center gap-x-1.5 mr-2 px-2.5 py-1">
                                     <Image
                                       src={image}
@@ -193,7 +198,7 @@ function Info({ data, chain, id, executeButton }) {
                                   <div className="min-w-fit h-6 flex items-center gap-x-1.5 mr-2">
                                     {sourceTxHash && (
                                       <Link
-                                        href={`/gmp/${sourceTxHash}${sourceChainData.chain_type === 'cosmos' && d.id ? `?commandId=${d.id}` : ''}`}
+                                        href={`/gmp/${sourceTxHash}${sourceChainData.chain_type === 'cosmos' && c.id ? `?commandId=${c.id}` : ''}`}
                                         target="_blank"
                                         className="text-blue-600 dark:text-blue-500 font-medium"
                                       >
@@ -231,7 +236,7 @@ function Info({ data, chain, id, executeButton }) {
                                     )}
                                   </div>
                                 )}
-                                {d.type === 'mintToken' && (
+                                {type === 'mintToken' && (
                                   <div className="min-w-fit h-6 flex items-center gap-x-1.5 mr-2">
                                     <Link
                                       href={`/transfer?transferId=${transferID}`}
@@ -282,14 +287,14 @@ function Info({ data, chain, id, executeButton }) {
                                       {name}
                                     </span>
                                     <div className="flex items-center gap-x-2">
-                                      {decimals && (
+                                      {decimals > 0 && (
                                         <Number
                                           value={decimals}
                                           prefix="Decimals: "
                                           className="text-zinc-400 dark:text-zinc-500 text-xs"
                                         />
                                       )}
-                                      {cap && (
+                                      {cap > 0 && (
                                         <Number
                                           value={cap}
                                           prefix="Cap: "
@@ -398,31 +403,37 @@ const EXECUTE_PERIOD_SECONDS = 5 * 60
 export function EVMBatch({ chain, id }) {
   const [data, setData] = useState(null)
   const [executing, setExecuting] = useState(false)
-  const [executeResponse, setExecuteResponse] = useState(null)
-  const { chains, contracts } = useGlobalStore()
+  const [response, setResponse] = useState(null)
+  const { chains } = useGlobalStore()
   const { chainId, signer } = useEVMWalletStore()
 
+  const { chain_id, gateway } = { ...getChainData(chain, chains) }
+
   const { commands, created_at, execute_data } = { ...data }
-  const executed = toArray(commands).length === toArray(commands).filter(d => d.executed).length
-  const chainData = getChainData(chain, chains)
-  const { chain_id } = { ...chainData }
+  const executed = toArray(commands).length === toArray(commands).filter(c => c.executed).length
 
   useEffect(() => {
     const getData = async () => {
       const data = await getBatch(chain, id)
+
       console.log('[data]', data)
       setData(data)
     }
+
     getData()
   }, [chain, id, setData])
 
+  // toast
   useEffect(() => {
-    const { status, message, hash } = { ...executeResponse }
+    const { status, message, hash } = { ...response }
+    const chainData = getChainData(chain, chains)
 
     toast.remove()
+
     if (message) {
       if (hash && chainData?.explorer) {
         let icon
+
         switch (status) {
           case 'success':
             icon = <PiCheckCircleFill size={20} className="text-green-600" />
@@ -438,7 +449,9 @@ export function EVMBatch({ chain, id }) {
           <div className="bg-white rounded-lg shadow-lg flex flex-col gap-y-1 sm:gap-y-0 px-3 py-2.5">
             <div className="flex items-center gap-x-1.5 sm:gap-x-2">
               {icon}
-              <span className="text-zinc-700">{message}</span>
+              <span className="text-zinc-700">
+                {message}
+              </span>
             </div>
             <div className="flex items-center justify-between gap-x-4 ml-6 sm:ml-7 pl-0.5 sm:pl-0">
               <ExplorerLink
@@ -447,7 +460,7 @@ export function EVMBatch({ chain, id }) {
                 iconOnly={false}
                 nonIconClassName="text-zinc-700 text-xs sm:text-sm"
               />
-              <button onClick={() => setExecuteResponse(null)} className="underline text-zinc-400 text-xs sm:text-sm font-light">
+              <button onClick={() => setResponse(null)} className="underline text-zinc-400 text-xs sm:text-sm font-light">
                 Dismiss
               </button>
             </div>
@@ -456,6 +469,7 @@ export function EVMBatch({ chain, id }) {
       }
       else {
         const duration = 10000
+
         switch (status) {
           case 'pending':
             toast.loading(message)
@@ -471,27 +485,38 @@ export function EVMBatch({ chain, id }) {
         }
       }
     }
-  }, [chain, executeResponse, chainData])
+  }, [chain, response, chains])
 
   const execute = async () => {
     if (execute_data && signer) {
       setExecuting(true)
-      setExecuteResponse({ status: 'pending', message: 'Executing...' })
+      setResponse({ status: 'pending', message: 'Executing...' })
+
       try {
-        const gatewayAddress = contracts?.gateway_contracts?.[chainData?.id]?.address
-        const { hash } = { ...await signer.sendTransaction({ to: gatewayAddress, data: `0x${execute_data}` }) }
-        setExecuteResponse({ status: 'pending', message: 'Wait for Confirmation', hash })
+        const { hash } = { ...await signer.sendTransaction({ to: gateway?.address, data: `0x${execute_data}` }) }
+
+        setResponse({
+          status: 'pending',
+          message: 'Wait for Confirmation',
+          hash,
+        })
 
         const { status } = { ...hash && await signer.provider.waitForTransaction(hash) }
-        setExecuteResponse({ status: status ? 'success' : 'failed', message: status ? 'Execute successful' : 'Failed to execute', hash })
+
+        setResponse({
+          status: status ? 'success' : 'failed',
+          message: status ? 'Execute successful' : 'Failed to execute',
+          hash,
+        })
       } catch (error) {
-        setExecuteResponse({ status: 'failed', ...parseError(error) })
+        setResponse({ status: 'failed', ...parseError(error) })
       }
+
       setExecuting(false)
     }
   }
 
-  const executeButton = equalsIgnoreCase(data?.status, 'BATCHED_COMMANDS_STATUS_SIGNED') && execute_data && !executed && timeDiff(created_at?.ms) > EXECUTE_PERIOD_SECONDS && (
+  const executeButton = data?.status === 'BATCHED_COMMANDS_STATUS_SIGNED' && execute_data && !executed && timeDiff(created_at?.ms) > EXECUTE_PERIOD_SECONDS && (
     <div className="flex items-center gap-x-2">
       {signer && chain_id === chainId && (
         <button
@@ -511,7 +536,12 @@ export function EVMBatch({ chain, id }) {
       {!data ? <Spinner /> :
         <div className="max-w-5xl">
           <Toaster />
-          <Info data={data} chain={chain} id={id} executeButton={executeButton} />
+          <Info
+            data={data}
+            chain={chain}
+            id={id}
+            executeButton={executeButton}
+          />
         </div>
       }
     </Container>

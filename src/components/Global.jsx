@@ -166,11 +166,11 @@ export function Global() {
                         let { fromTime, toTime } = { ...airdrop }
 
                         if (!fromTime) {
-                          fromTime = moment(date).startOf('month').unix()
+                          fromTime = moment(date, 'MM-DD-YYYY').startOf('month').unix()
                         }
 
                         if (!toTime) {
-                          toTime = moment(date).endOf('month').unix()
+                          toTime = moment(date, 'MM-DD-YYYY').endOf('month').unix()
                         }
 
                         if (environment === ENVIRONMENT) {
