@@ -25,7 +25,7 @@ import { useGlobalStore } from '@/components/Global'
 import { searchTransactions, getTransactions } from '@/lib/api/validator'
 import { searchDepositAddresses } from '@/lib/api/token-transfer'
 import { getAttributeValue, getLogEventByType } from '@/lib/chain/cosmos'
-import { axelarContracts, getChainData, getAssetData } from '@/lib/config'
+import { axelarContracts, getAxelarContractAddresses, getChainData, getAssetData } from '@/lib/config'
 import { getIcapAddress, getInputType, toJson, toHex, split, toArray } from '@/lib/parser'
 import { getParams, getQueryString, generateKeyByParams, isFiltered } from '@/lib/operator'
 import { isString, equalsIgnoreCase, capitalize, camel, removeDoubleQuote, toBoolean, lastString, find, includesSomePatterns, ellipse } from '@/lib/string'
@@ -607,7 +607,7 @@ export function Transactions({ height, address }) {
             total = response.total
           }
         }
-        else if ((address?.length >= 65 || addressType === 'evmAddress') && !find(address, axelarContracts)) {
+        else if ((address?.length >= 65 || addressType === 'evmAddress') && !find(address, _.concat(axelarContracts, getAxelarContractAddresses(chains)))) {
           const { deposit_address } = { ...(await searchDepositAddresses({ address }))?.data?.[0] }
 
           if (deposit_address || addressType === 'evmAddress') {

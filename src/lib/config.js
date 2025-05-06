@@ -11,6 +11,24 @@ export const axelarContracts = [
   'axelar1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqecnww6',
 ]
 
+export const axelarContractFields = ['router', 'service_registry', 'rewards', 'multisig', 'multisig_prover', 'voting_verifier']
+
+export const getAxelarContractAddresses = chainsData => {
+  if (!chainsData) return []
+
+  const addresses = []
+
+  for (const chainData of chainsData) {
+    for (const f of fields) {
+      if (chainData[f]?.address) {
+        addresses.push(chainData[f].address)
+      }
+    }
+  }
+
+  return addresses
+}
+
 export const getChainKey = (chain, chainsData, exact = false) => {
   if (!chain) return
   chain = removeDoubleQuote(chain)
