@@ -657,7 +657,7 @@ export function AmplifierRewards({ chain }) {
                         <div className="flex items-center justify-end">
                           <Number
                             value={d.total_amount}
-                            suffix={` ${symbol}`}
+                            suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
                             noTooltip={true}
                             className="text-zinc-900 dark:text-zinc-100 font-semibold"
                           />
