@@ -13,4 +13,4 @@ export const lastString = (string, delimiter = '-') => _.last(split(string, { de
 export const find = (x, elements) => toArray(elements).find(e => equalsIgnoreCase(e, x))
 export const includesSomePatterns = (string, patterns) => toArray(patterns).findIndex(p => toArray(string).findIndex(s => s.includes(p)) > -1) > -1
 export const ellipse = (string, length = 10, prefix = '') => !isString(string) || !string ? '' : string.length < (length * 2) + 3 ? string : `${string.startsWith(prefix) ? prefix : ''}${string.replace(prefix, '').slice(0, length)}...${string.replace(prefix, '').slice(-length)}`
-export const toTitle = (string, delimiter = '_') => split(string, { delimiter }).join(' ')
+export const toTitle = (string, delimiter = '_', isCapitalize = false, noSpace = false) => split(string, { delimiter }).map(s => isCapitalize ? capitalize(s) : s).join(noSpace ? '' : ' ')
