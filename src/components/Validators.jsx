@@ -19,7 +19,7 @@ import { Profile } from '@/components/Profile'
 import { useGlobalStore } from '@/components/Global'
 import { getValidatorsVotes, getChainMaintainers } from '@/lib/api/validator'
 import { toArray } from '@/lib/parser'
-import { equalsIgnoreCase, ellipse } from '@/lib/string'
+import { equalsIgnoreCase, find, ellipse } from '@/lib/string'
 import { isNumber, toNumber, formatUnits, toFixed, numberFormat } from '@/lib/number'
 
 export const useValidatorStore = create()(set => ({
@@ -27,83 +27,105 @@ export const useValidatorStore = create()(set => ({
   setMaintainers: data => set(state => ({ ...state, maintainers: { ...state.maintainers, ...data } })),
 }))
 
-const statuses = ['active', 'inactive']
+const STATUSES = ['active', 'inactive']
 
 export function Validators({ status }) {
   const [EVMChains, setEVMChains] = useState(null)
   const [validatorsVotes, setValidatorsVotes] = useState(null)
   const [data, setData] = useState(null)
   const [order, setOrder] = useState(['tokens', 'desc'])
-  const { chains, contracts, validators, inflationData, networkParameters } = useGlobalStore()
+  const { chains, validators, inflationData, networkParameters } = useGlobalStore()
   const { maintainers, setMaintainers } = useValidatorStore()
 
+  // get evm chains
   useEffect(() => {
-    if (chains && contracts) setEVMChains(toArray(chains).filter(d => d.chain_type ==='evm' && !d.no_inflation && contracts.gateway_contracts?.[d.id]?.address))
-  }, [chains, contracts, setEVMChains])
+    if (chains) {
+      setEVMChains(chains.filter(d => d.chain_type ==='evm' && d.gateway?.address && !d.no_inflation))
+    }
+  }, [setEVMChains, chains])
 
+  // getChainMaintainers
   useEffect(() => {
     const getData = async () => {
       if (EVMChains) {
-        setMaintainers(Object.fromEntries(toArray(
+        setMaintainers(Object.fromEntries(
           await Promise.all(EVMChains.filter(d => !maintainers?.[d.id]).map(d => new Promise(async resolve => {
             const { maintainers } = { ...await getChainMaintainers({ chain: d.id }) }
             resolve([d.id, toArray(maintainers)])
           })))
-        )))
+        ))
       }
     }
+
     getData()
   }, [EVMChains, setMaintainers])
 
+  // getValidatorsVotes
   useEffect(() => {
     const getData = async () => {
       const response = await getValidatorsVotes()
-      if (response?.data) setValidatorsVotes(response)
+
+      if (response?.data) {
+        setValidatorsVotes(response)
+      }
     }
+
     getData()
   }, [setValidatorsVotes])
 
+  // set validators data
   useEffect(() => {
     if (EVMChains && validatorsVotes && validators && inflationData && networkParameters && Object.keys({ ...maintainers }).length === EVMChains.length) {
       const { tendermintInflationRate, keyMgmtRelativeInflationRate, externalChainVotingInflationRate, communityTax } = { ...inflationData }
       const { bankSupply, stakingPool } = { ...networkParameters }
 
-      const _data = _.orderBy(validators.map(d => {
-        const { rate } = { ...d.commission?.commission_rates }
+      const _data = _.orderBy(
+        validators.map(d => {
+          const { rate } = { ...d.commission?.commission_rates }
 
-        if (validatorsVotes?.data) {
-          d.total_polls = toNumber(validatorsVotes.total)
-          d.votes = { ...validatorsVotes.data[d.broadcaster_address] }
-          d.total_votes = toNumber(d.votes.total)
+          if (validatorsVotes.data) {
+            d.total_polls = toNumber(validatorsVotes.total)
+            d.votes = { ...validatorsVotes.data[d.broadcaster_address] }
+            d.total_votes = toNumber(d.votes.total)
 
-          const getVoteCount = (vote, votes) => _.sum(Object.values({ ...votes }).map(v => toNumber(_.last(Object.entries({ ...v?.votes }).find(([k, v]) => equalsIgnoreCase(k, vote?.toString()))))))
-          d.total_yes_votes = getVoteCount(true, d.votes.chains)
-          d.total_no_votes = getVoteCount(false, d.votes.chains)
-          d.total_unsubmitted_votes = getVoteCount('unsubmitted', d.votes.chains)
-        }
+            const getVoteCount = (vote, votes) => _.sum(Object.values({ ...votes }).map(v => toNumber(_.last(Object.entries({ ...v?.votes }).find(([k, v]) => equalsIgnoreCase(k, vote?.toString()))))))
 
-        const supportedChains = Object.entries({ ...maintainers }).filter(([k, v]) => v.includes(d.operator_address)).map(([k, v]) => k)
-        const inflation = toFixed(
-          ((d.uptime / 100) * toNumber(tendermintInflationRate)) +
-          ((isNumber(d.heartbeats_uptime) ? d.heartbeats_uptime / 100 : 1) * toNumber(keyMgmtRelativeInflationRate) * toNumber(tendermintInflationRate)) +
-          (toNumber(externalChainVotingInflationRate) * _.sum(supportedChains.map(c => {
-            const { total, total_polls } = { ...d.votes?.chains?.[c] }
-            return 1 - (total_polls ? (total_polls - total) / total_polls : 0)
-          }))), 6
-        )
+            d.total_yes_votes = getVoteCount(true, d.votes.chains)
+            d.total_no_votes = getVoteCount(false, d.votes.chains)
+            d.total_unsubmitted_votes = getVoteCount('unsubmitted', d.votes.chains)
+          }
 
-        return {
-          ...d,
-          inflation,
-          apr: (inflation * 100) * formatUnits(bankSupply?.amount, 6) * (1 - toNumber(communityTax)) * (1 - toNumber(rate)) / formatUnits(stakingPool?.bonded_tokens, 6),
-          supportedChains,
-          votes: d.votes && { ...d.votes, chains: Object.fromEntries(Object.entries({ ...d.votes.chains }).filter(([k, v]) => supportedChains.includes(k))) },
-        }
-      }), _.concat([order[0]], order[0] === 'quadratic_voting_power' ? ['tokens'] : []), [order[1], order[1]])
+          const supportedChains = Object.entries({ ...maintainers }).filter(([k, v]) => find(d.operator_address, v)).map(([k, v]) => k)
 
-      if (!_.isEqual(_data, data)) setData(_data)
+          const inflation = toFixed(
+            ((d.uptime / 100) * toNumber(tendermintInflationRate)) +
+            ((isNumber(d.heartbeats_uptime) ? d.heartbeats_uptime / 100 : 1) * toNumber(keyMgmtRelativeInflationRate) * toNumber(tendermintInflationRate)) +
+            (toNumber(externalChainVotingInflationRate) * _.sum(supportedChains.map(c => {
+              const { total, total_polls } = { ...d.votes?.chains?.[c] }
+              return 1 - (total_polls ? (total_polls - total) / total_polls : 0)
+            }))), 6
+          )
+
+          return {
+            ...d,
+            inflation,
+            apr: (inflation * 100) * formatUnits(bankSupply?.amount, 6) * (1 - toNumber(communityTax)) * (1 - toNumber(rate)) / formatUnits(stakingPool?.bonded_tokens, 6),
+            supportedChains,
+            votes: d.votes && {
+              ...d.votes,
+              chains: Object.fromEntries(Object.entries({ ...d.votes.chains }).filter(([k, v]) => find(k, supportedChains))),
+            },
+          }
+        }),
+        toArray([order[0], order[0] === 'quadratic_voting_power' && 'tokens']),
+        [order[1], order[1]],
+      )
+
+      if (!_.isEqual(_data, data)) {
+        setData(_data)
+      }
     }
-  }, [status, EVMChains, validatorsVotes, data, order, validators, inflationData, networkParameters, maintainers, setData])
+  }, [status, EVMChains, validatorsVotes, data, setData, order, validators, inflationData, networkParameters, maintainers])
 
   const orderBy = key => {
     switch (key) {
@@ -124,7 +146,9 @@ export function Validators({ status }) {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between sm:gap-x-4 gap-y-4 sm:gap-y-0">
             <div className="sm:flex-auto">
               <div className="flex items-center space-x-2">
-                <h1 className="underline text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">Validators</h1>
+                <h1 className="underline text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">
+                  Validators
+                </h1>
                 <span className="text-zinc-400 dark:text-zinc-500">|</span>
                 <Link href="/verifiers" className="text-blue-600 dark:text-blue-500 text-base font-medium leading-6">
                   Verifiers
@@ -148,16 +172,16 @@ export function Validators({ status }) {
               </p>
             </div>
             <nav className="flex gap-x-4">
-              {statuses.map((d, i) => (
+              {STATUSES.map((s, i) => (
                 <Link
                   key={i}
-                  href={`/validators${d !== 'active' ? `/${d}` : ''}`}
+                  href={`/validators${s !== 'active' ? `/${s}` : ''}`}
                   className={clsx(
                     'rounded-md px-3 py-2 capitalize text-base font-medium',
-                    d === (status || 'active') ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300' : 'text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-400',
+                    s === (status || 'active') ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300' : 'text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-400',
                   )}
                 >
-                  {d} ({filter(d).length})
+                  {s} ({filter(s).length})
                 </Link>
               ))}
             </nav>
@@ -239,6 +263,7 @@ export function Validators({ status }) {
               <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
                 {filter(status).map((d, i) => {
                   const { rate } = { ...d.commission?.commission_rates }
+
                   const totalVotingPower = _.sumBy(filter(status), 'tokens')
                   const totalQuadraticVotingPower = _.sumBy(filter(status), 'quadratic_voting_power')
                   const cumulativeVotingPower = _.sumBy(_.slice(filter(status), 0, i + 1), 'tokens')
@@ -251,7 +276,11 @@ export function Validators({ status }) {
                       </td>
                       <td className="px-3 py-4 text-left">
                         <div className="flex flex-col gap-y-0.5">
-                          <Profile i={i} address={d.operator_address} prefix="axelarvaloper" />
+                          <Profile
+                            i={i}
+                            address={d.operator_address}
+                            prefix="axelarvaloper"
+                          />
                           <Copy value={d.operator_address}>
                             <span className="text-zinc-400 dark:text-zinc-500 font-medium">
                               {ellipse(d.operator_address, 6, 'axelarvaloper')}
@@ -358,7 +387,9 @@ export function Validators({ status }) {
                           {isNumber(d.uptime) && <ProgressBar value={d.uptime} className={clsx(d.uptime < 50 ? 'bg-red-600 dark:bg-red-500' : d.uptime < 80 ? 'bg-yellow-400 dark:bg-yellow-500' : 'bg-green-600 dark:bg-green-500')} />}
                           {status === 'active' && isNumber(d.proposed_blocks) && (
                             <div className="flex flex-col">
-                              <span className="text-zinc-400 dark:text-zinc-500 text-xs whitespace-nowrap">Proposed Block</span>
+                              <span className="text-zinc-400 dark:text-zinc-500 text-xs whitespace-nowrap">
+                                Proposed Block
+                              </span>
                               <div className="flex items-center gap-x-2">
                                 <Number
                                   value={d.proposed_blocks}
@@ -394,17 +425,23 @@ export function Validators({ status }) {
                       <td className="table-cell pl-3 pr-4 sm:pr-0 py-4 text-left">
                         <div className="min-w-56 grid grid-cols-2 lg:grid-cols-3 gap-x-2 gap-y-1">
                           {toArray(chains).filter(c => c.chain_type === 'evm' && !c.deprecated).map(c => {
-                            const { id, maintainer_id, name, image } = { ...c }
-                            const { votes, total, total_polls } = { ...d.votes.chains[id] }
-                            const isSupported = d.supportedChains.includes(maintainer_id)
-                            const details = !isSupported ? 'Not Supported' : ['true', 'false', 'unsubmitted'].map(s => [s === 'true' ? 'Y' : s === 'false' ? 'N' : 'UN', votes?.[s]]).filter(([k, v]) => v).map(([k, v]) => `${numberFormat(v, '0,0')}${k}`).join(' / ')
+                            const { votes, total, total_polls } = { ...d.votes.chains[c.id] }
+
+                            const isSupported = d.supportedChains.includes(c.maintainer_id)
+                            const details = isSupported ?
+                              ['true', 'false', 'unsubmitted']
+                                .map(s => [s === 'true' ? 'Y' : s === 'false' ? 'N' : 'UN', votes?.[s]])
+                                .filter(([k, v]) => v)
+                                .map(([k, v]) => `${numberFormat(v, '0,0')}${k}`)
+                                .join(' / ') :
+                              'Not Supported'
 
                             return (
-                              <div key={id} className="flex justify-start">
-                                <Tooltip content={`${name}${details ? `: ${details}` : ''}`} className="whitespace-nowrap">
+                              <div key={c.id} className="flex justify-start">
+                                <Tooltip content={`${c.name}${details ? `: ${details}` : ''}`} className="whitespace-nowrap">
                                   <div className="flex items-center gap-x-2">
                                     <Image
-                                      src={image}
+                                      src={c.image}
                                       alt=""
                                       width={20}
                                       height={20}
