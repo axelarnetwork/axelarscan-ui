@@ -21,8 +21,8 @@ import { getType, getActivities, getSender } from '@/components/Transactions'
 import { useGlobalStore } from '@/components/Global'
 import { getTransaction } from '@/lib/api/validator'
 import { getChainData, getAssetData } from '@/lib/config'
-import { base64ToString, toHex, toJson, split, toArray } from '@/lib/parser'
-import { isString, capitalize, find, includesSomePatterns, ellipse, toTitle } from '@/lib/string'
+import { base64ToString, toHex, toJson, toArray } from '@/lib/parser'
+import { isString, find, includesSomePatterns, ellipse, toTitle } from '@/lib/string'
 import { isNumber, formatUnits } from '@/lib/number'
 import { TIME_FORMAT } from '@/lib/time'
 
@@ -431,7 +431,7 @@ function Data({ data }) {
                           <div key={j} className="w-fit bg-zinc-100 dark:bg-zinc-800 rounded-lg flex flex-col gap-y-3 px-3 sm:px-4 py-5">
                             {e.event && (
                               <Tag className="w-fit">
-                                {split(toTitle(e.event), { delimiter: ' ' }).map(s => capitalize(s)).join('')}
+                                {toTitle(e.event, '_', true, true)}
                               </Tag>
                             )}
                             {renderEntries(Object.entries(e).filter(([k, v]) => !find(k, ['event'])))}
@@ -468,7 +468,7 @@ function Data({ data }) {
                     <div key={j} className="w-fit bg-zinc-100 dark:bg-zinc-800 rounded-lg flex flex-col gap-y-3 px-3 sm:px-4 py-5">
                       {e.type && (
                         <Tag className="w-fit">
-                          {split(toTitle(e.type), { delimiter: ' ' }).map(s => capitalize(s)).join('')}
+                          {toTitle(e.type, '_', true, true)}
                         </Tag>
                       )}
                       {renderEntries(e.attributes.filter(([k, v]) => typeof v !== 'undefined').map(([k, v], i) => {
