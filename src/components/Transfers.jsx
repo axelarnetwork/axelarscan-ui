@@ -27,7 +27,7 @@ import { Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
 import { searchTransfers } from '@/lib/api/token-transfer'
 import { ENVIRONMENT, getAssetData } from '@/lib/config'
-import { split, toArray } from '@/lib/parser'
+import { toCase, split, toArray } from '@/lib/parser'
 import { getParams, getQueryString, generateKeyByParams, isFiltered } from '@/lib/operator'
 import { isString, equalsIgnoreCase, capitalize, toBoolean, ellipse, toTitle } from '@/lib/string'
 import { isNumber, formatUnits } from '@/lib/number'
@@ -47,10 +47,12 @@ function Filters() {
     if (!_params) {
       _params = params
     }
+
     if (!_.isEqual(_params, getParams(searchParams, size))) {
       router.push(`${pathname}${getQueryString(_params)}`)
       setParams(_params)
     }
+
     setOpen(false)
   }
 
@@ -65,15 +67,27 @@ function Filters() {
     { label: 'Destination Chain', name: 'destinationChain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
     { label: 'From / To Chain', name: 'chain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
     { label: 'Asset', name: 'asset', type: 'select', multiple: true, options: _.orderBy(toArray(assets).map(d => ({ value: d.id, title: d.symbol })), ['title'], ['asc']) },
-    { label: 'Type', name: 'type', type: 'select', options: _.concat({ title: 'Any' }, [{ value: 'deposit_address', title: 'Deposit Address' }, { value: 'send_token', title: 'Send Token' }, { value: 'wrap', title: 'Wrap' }, { value: 'unwrap', title: 'Unwrap' }, { value: 'erc20_transfer', title: 'ERC20 Transfer' }]) },
+    { label: 'Type', name: 'type', type: 'select', options: [
+      { title: 'Any' },
+      { value: 'deposit_address', title: 'Deposit Address' },
+      { value: 'send_token', title: 'Send Token' },
+      { value: 'wrap', title: 'Wrap' },
+      { value: 'unwrap', title: 'Unwrap' },
+      { value: 'erc20_transfer', title: 'ERC20 Transfer' },
+    ] },
     { label: 'Status', name: 'status', type: 'select', options: _.concat({ title: 'Any' }, ['executed', 'failed'].map(d => ({ value: d, title: capitalize(d) }))) },
     { label: 'Sender', name: 'senderAddress' },
     { label: 'Recipient', name: 'recipientAddress' },
     { label: 'Time', name: 'time', type: 'datetimeRange' },
-    { label: 'Sort By', name: 'sortBy', type: 'select', options: _.concat({ title: 'Any' }, [{ value: 'time', title: 'Transfer Time' }, { value: 'value', title: 'Transfer Value' }]) },
+    { label: 'Sort By', name: 'sortBy', type: 'select', options: [
+      { title: 'Any' },
+      { value: 'time', title: 'Transfer Time' },
+      { value: 'value', title: 'Transfer Value' },
+    ] },
   ]
 
   const filtered = isFiltered(params)
+
   return (
     <>
       <Button
@@ -143,11 +157,13 @@ function Filters() {
                                             {d.multiple ?
                                               <div className={clsx('flex flex-wrap', selectedValue.length !== 0 && 'my-1')}>
                                                 {selectedValue.length === 0 ?
-                                                  <span className="block truncate">Any</span> :
+                                                  <span className="block truncate">
+                                                    Any
+                                                  </span> :
                                                   selectedValue.map((v, j) => (
                                                     <div
                                                       key={j}
-                                                      onClick={() => setParams({ ...params, [d.name]: selectedValue.filter(_v => _v.value !== v.value).map(_v => _v.value).join(',') })}
+                                                      onClick={() => setParams({ ...params, [d.name]: selectedValue.filter(v => v.value !== v.value).map(v => v.value).join(',') })}
                                                       className="min-w-fit h-6 bg-zinc-100 rounded-xl flex items-center text-zinc-900 mr-2 my-1 px-2.5 py-1"
                                                     >
                                                       {v.title}
@@ -155,7 +171,9 @@ function Filters() {
                                                   ))
                                                 }
                                               </div> :
-                                              <span className="block truncate">{selectedValue?.title}</span>
+                                              <span className="block truncate">
+                                                {selectedValue?.title}
+                                              </span>
                                             }
                                             <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                               <LuChevronsUpDown size={20} className="text-zinc-400" />
@@ -246,7 +264,11 @@ export function Transfers({ address }) {
 
   useEffect(() => {
     const _params = getParams(searchParams, size)
-    if (address) _params.address = address
+
+    if (address) {
+      _params.address = address
+    }
+
     if (!_.isEqual(_params, params)) {
       setParams(_params)
       setRefresh(true)
@@ -257,15 +279,29 @@ export function Transfers({ address }) {
     const getData = async () => {
       if (params && toBoolean(refresh)) {
         const sort = params.sortBy === 'value' ? { 'send.value': 'desc' } : undefined
-        if (params.from === 0) delete params.from
+
+        if (params.from === 0) {
+          delete params.from
+        }
+
         const _params = _.cloneDeep(params)
         delete _params.sortBy
 
         const response = await searchTransfers({ ..._params, size, sort })
-        setSearchResults({ ...(refresh ? undefined : searchResults), [generateKeyByParams(params)]: { ...(response?.total || (Object.keys(_params).length > 0 && !(Object.keys(_params).length === 1 && _params.from !== undefined)) || ENVIRONMENT !== 'mainnet' ? response : searchResults?.[generateKeyByParams(params)]) } })
+
+        setSearchResults({
+          ...(refresh ? undefined : searchResults),
+          [generateKeyByParams(params)]: {
+            ...(response?.total || (Object.keys(_params).length > 0 && !(Object.keys(_params).length === 1 && _params.from !== undefined)) || ENVIRONMENT !== 'mainnet' ?
+              response :
+              searchResults?.[generateKeyByParams(params)]
+            ),
+          },
+        })
         setRefresh(!isNumber(response?.total) && !searchResults?.[generateKeyByParams(params)] && ENVIRONMENT === 'mainnet' ? true : false)
       }
     }
+
     getData()
   }, [params, setSearchResults, refresh, setRefresh])
 
@@ -275,13 +311,16 @@ export function Transfers({ address }) {
   }, [])
 
   const { data, total } = { ...searchResults?.[generateKeyByParams(params)] }
+
   return (
     <Container className="sm:mt-8">
       {!data ? <Spinner /> :
         <div>
           <div className="flex items-center justify-between gap-x-4">
             <div className="sm:flex-auto">
-              <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">Token Transfers</h1>
+              <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">
+                Token Transfers
+              </h1>
               <p className="mt-2 text-zinc-400 dark:text-zinc-500 text-sm">
                 <Number value={total} suffix={` result${total > 1 ? 's' : ''}`} /> 
               </p>
@@ -327,17 +366,27 @@ export function Transfers({ address }) {
               <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
                 {data.map(d => {
                   const assetData = getAssetData(d.send.denom, assets)
+
                   const { addresses } = { ...assetData }
                   let { symbol, image } = { ...addresses?.[d.send.source_chain] }
-                  symbol = symbol || assetData?.symbol
-                  image = image || assetData?.image
+
+                  if (!symbol) {
+                    symbol = assetData?.symbol
+                  }
+
+                  if (!image) {
+                    image = assetData?.image
+                  }
 
                   if (symbol) {
                     switch (d.type) {
                       case 'wrap':
                         const WRAP_PREFIXES = ['w', 'axl']
-                        const index = WRAP_PREFIXES.findIndex(p => symbol.toLowerCase().startsWith(p) && !equalsIgnoreCase(p, symbol))
-                        if (index > -1) symbol = symbol.substring(WRAP_PREFIXES[index].length)
+                        const i = WRAP_PREFIXES.findIndex(p => toCase(symbol, 'lower').startsWith(p) && !equalsIgnoreCase(p, symbol))
+
+                        if (i > -1) {
+                          symbol = symbol.substring(WRAP_PREFIXES[i].length)
+                        }
                         break
                       default:
                         break
@@ -416,13 +465,19 @@ export function Transfers({ address }) {
                           {d.send.insufficient_fee && (
                             <div className="flex items-center text-red-600 dark:text-red-500 gap-x-1">
                               <PiWarningCircle size={16} />
-                              <span className="text-xs">Insufficient Fee</span>
+                              <span className="text-xs">
+                                Insufficient Fee
+                              </span>
                             </div>
                           )}
                           {d.time_spent?.total > 0 && ['received'].includes(d.simplified_status) && (
                             <div className="flex items-center text-zinc-400 dark:text-zinc-500 gap-x-1">
                               <MdOutlineTimer size={16} />
-                              <TimeSpent fromTimestamp={0} toTimestamp={d.time_spent.total * 1000} className="text-xs" />
+                              <TimeSpent
+                                fromTimestamp={0}
+                                toTimestamp={d.time_spent.total * 1000}
+                                className="text-xs"
+                              />
                             </div>
                           )}
                         </div>

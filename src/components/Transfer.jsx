@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import clsx from 'clsx'
-import _ from 'lodash'
 import moment from 'moment'
 import { MdClose, MdCheck } from 'react-icons/md'
 import { PiClock, PiWarningCircle } from 'react-icons/pi'
@@ -22,7 +21,7 @@ import { normalizeType } from '@/components/Transfers'
 import { useGlobalStore } from '@/components/Global'
 import { searchTransfers } from '@/lib/api/token-transfer'
 import { getChainData, getAssetData } from '@/lib/config'
-import { split, toArray } from '@/lib/parser'
+import { toCase, split, toArray } from '@/lib/parser'
 import { getParams } from '@/lib/operator'
 import { isString, equalsIgnoreCase, ellipse, toTitle } from '@/lib/string'
 import { isNumber, formatUnits } from '@/lib/number'
@@ -31,8 +30,8 @@ import { TIME_FORMAT } from '@/lib/time'
 export function getStep(data, chains) {
   const { link, send, wrap, unwrap, erc20_transfer, confirm, vote, command, ibc_send, axelar_transfer, type } = { ...data }
 
-  const sourceChain = send?.original_source_chain || link?.original_source_chain || send?.source_chain
-  const destinationChain = send?.original_destination_chain || link?.original_destination_chain || unwrap?.destination_chain || send?.destination_chain || link?.destination_chain
+  const sourceChain = send?.source_chain || link?.source_chain
+  const destinationChain = send?.destination_chain || unwrap?.destination_chain || link?.destination_chain
 
   const sourceChainData = getChainData(sourceChain, chains)
   const destinationChainData = getChainData(destinationChain, chains)
@@ -118,43 +117,60 @@ function Info({ data, tx }) {
   const { link, send, wrap, unwrap, erc20_transfer, confirm, vote, command, type, simplified_status, time_spent } = { ...data }
   const txhash = send?.txhash || tx
 
-  const sourceChain = send?.original_source_chain || link?.original_source_chain || send?.source_chain
-  const destinationChain = send?.original_destination_chain || link?.original_destination_chain || unwrap?.destination_chain || send?.destination_chain || link?.destination_chain
+  const sourceChain = send?.source_chain || link?.source_chain
+  const destinationChain = send?.destination_chain || unwrap?.destination_chain || link?.destination_chain
 
   const senderAddress = wrap?.sender_address || erc20_transfer?.sender_address || send?.sender_address
   const recipientAddress = unwrap?.recipient_address || link?.recipient_address
   const depositAddress = wrap?.deposit_address || unwrap?.deposit_address_link || erc20_transfer?.deposit_address || send?.recipient_address || link?.deposit_address
+
   const commandID = command?.command_id
   const transferID = command?.transfer_id || vote?.transfer_id || confirm?.transfer_id || data.transfer_id
 
   const sourceChainData = getChainData(sourceChain, chains)
-  const { url, transaction_path } = { ...sourceChainData?.explorer }
   const destinationChainData = getChainData(destinationChain, chains)
-  const depositChainData = getChainData(depositAddress?.startsWith('axelar') ? 'axelarnet' : sourceChain, chains)
   const axelarChainData = getChainData('axelarnet', chains)
+  const depositChainData = getChainData(depositAddress?.startsWith('axelar') ? 'axelarnet' : sourceChain, chains)
 
+  const { url, transaction_path } = { ...sourceChainData?.explorer }
+
+  // asset data
   const assetData = getAssetData(send?.denom, assets)
+
   const { addresses } = { ...assetData }
   let { symbol, image } = { ...addresses?.[sourceChainData?.id] }
-  symbol = symbol || assetData?.symbol || send?.denom
-  image = image || assetData?.image
+
+  if (!symbol) {
+    symbol = assetData?.symbol || send?.denom
+  }
+
+  if (!image) {
+    image = assetData?.image
+  }
 
   if (symbol) {
     switch (type) {
       case 'wrap':
         const WRAP_PREFIXES = ['w', 'axl']
-        const index = WRAP_PREFIXES.findIndex(p => symbol.toLowerCase().startsWith(p) && !equalsIgnoreCase(p, symbol))
-        if (index > -1) {
-          symbol = symbol.substring(WRAP_PREFIXES[index].length)
+        const i = WRAP_PREFIXES.findIndex(p => toCase(symbol, 'lower').startsWith(p) && !equalsIgnoreCase(p, symbol))
+
+        if (i > -1) {
+          symbol = symbol.substring(WRAP_PREFIXES[i].length)
+
           if (image) {
             image = split(image, { delimiter: '/' }).map(s => {
               if (s?.includes('.')) {
-                const index = WRAP_PREFIXES.findIndex(p => s.toLowerCase().startsWith(p))
-                if (index > -1) s = s.substring(WRAP_PREFIXES[index].length)
+                const i = WRAP_PREFIXES.findIndex(p => toCase(s, 'lower').startsWith(p))
+
+                if (i > -1) {
+                  s = s.substring(WRAP_PREFIXES[i].length)
+                }
               }
+
               return s
             }).join('/')
-            image = image.startsWith('/') ? image : `/${image}`
+
+            image = `${image.startsWith('/') ? '' : '/'}${image}`
           }
         }
         break
@@ -164,6 +180,7 @@ function Info({ data, tx }) {
   }
 
   const steps = getStep(data, chains)
+
   return (
     <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
       <div className="px-4 sm:px-6 py-6">
@@ -211,6 +228,7 @@ function Info({ data, tx }) {
                       const { url, transaction_path } = { ...d.chainData?.explorer }
 
                       let stepURL
+
                       if (url && transaction_path) {
                         switch (d.id) {
                           case 'link':
@@ -219,23 +237,41 @@ function Info({ data, tx }) {
                           case 'erc20_transfer':
                           case 'confirm':
                           case 'axelar_transfer':
-                            if (txhash) stepURL = `${url}${transaction_path.replace('{tx}', txhash)}`
+                            if (txhash) {
+                              stepURL = `${url}${transaction_path.replace('{tx}', txhash)}`
+                            }
                             break
                           case 'vote':
-                            if (txhash) stepURL = `/tx/${txhash}`
-                            else if (poll_id) stepURL = `/evm-poll/${poll_id}`
+                            if (txhash) {
+                              stepURL = `/tx/${txhash}`
+                            }
+                            else if (poll_id) {
+                              stepURL = `/evm-poll/${poll_id}`
+                            }
                             break
                           case 'command':
-                            if (transactionHash) stepURL = `${url}${transaction_path.replace('{tx}', transactionHash)}`
-                            else if (batch_id && destinationChainData) stepURL = `/evm-batch/${destinationChainData.id}/${batch_id}`
+                            if (transactionHash) {
+                              stepURL = `${url}${transaction_path.replace('{tx}', transactionHash)}`
+                            }
+                            else if (batch_id && destinationChainData) {
+                              stepURL = `/evm-batch/${destinationChainData.id}/${batch_id}`
+                            }
                             break
                           case 'ibc_send':
-                            if (recv_txhash) stepURL = `${url}${transaction_path.replace('{tx}', recv_txhash)}`
-                            else if (ack_txhash) stepURL = `${axelarChainData.explorer.url}${axelarChainData.explorer.transaction_path.replace('{tx}', ack_txhash)}`
-                            else if (failed_txhash) stepURL = `${url}${transaction_path.replace('{tx}', failed_txhash)}`
+                            if (recv_txhash) {
+                              stepURL = `${url}${transaction_path.replace('{tx}', recv_txhash)}`
+                            }
+                            else if (ack_txhash) {
+                              stepURL = `${axelarChainData.explorer.url}${axelarChainData.explorer.transaction_path.replace('{tx}', ack_txhash)}`
+                            }
+                            else if (failed_txhash) {
+                              stepURL = `${url}${transaction_path.replace('{tx}', failed_txhash)}`
+                            }
                             break
                           case 'unwrap':
-                            if (tx_hash_unwrap) stepURL = `${url}${transaction_path.replace('{tx}', tx_hash_unwrap)}`
+                            if (tx_hash_unwrap) {
+                              stepURL = `${url}${transaction_path.replace('{tx}', tx_hash_unwrap)}`
+                            }
                             break
                           default:
                             break
@@ -247,7 +283,9 @@ function Info({ data, tx }) {
                           <div className={clsx('relative w-8 h-8 rounded-full flex items-center justify-center', d.status === 'failed' ? 'bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-400' : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400')}>
                             {d.status === 'failed' ? <MdClose className="w-5 h-5 text-white" /> : <MdCheck className="w-5 h-5 text-white" />}
                           </div>
-                          <span className={clsx('absolute text-2xs font-medium whitespace-nowrap mt-1', d.status === 'failed' ? 'text-red-600 dark:text-red-500' : 'text-blue-600 dark:text-blue-500', d.title?.length <= 5 ? 'ml-1' : '')}>{d.title}</span>
+                          <span className={clsx('absolute text-2xs font-medium whitespace-nowrap mt-1', d.status === 'failed' ? 'text-red-600 dark:text-red-500' : 'text-blue-600 dark:text-blue-500', d.title?.length <= 5 ? 'ml-1' : '')}>
+                            {d.title}
+                          </span>
                         </>
                       )
 
@@ -260,7 +298,9 @@ function Info({ data, tx }) {
                               </div>
                               <div className={clsx('relative w-8 h-8 bg-zinc-50 dark:bg-zinc-800 rounded-full border-2 flex items-center justify-center', steps[i - 1]?.status === 'pending' ? 'border-zinc-200 dark:border-zinc-700' : 'border-blue-600 dark:border-blue-500')} aria-current="step">
                                 {steps[i - 1]?.status !== 'pending' && <PiClock className={clsx('w-5 h-5', steps[i - 1]?.status === 'pending' ? 'text-zinc-200 dark:text-zinc-700' : 'text-blue-600 dark:text-blue-500')} />}
-                                <span className={clsx('absolute text-2xs font-medium whitespace-nowrap mt-12 pt-1', steps[i - 1]?.status !== 'pending' ? 'text-blue-600 dark:text-blue-500' : 'text-zinc-400 dark:text-zinc-500', d.title?.length <= 5 ? 'ml-1' : '')}>{d.title}</span>
+                                <span className={clsx('absolute text-2xs font-medium whitespace-nowrap mt-12 pt-1', steps[i - 1]?.status !== 'pending' ? 'text-blue-600 dark:text-blue-500' : 'text-zinc-400 dark:text-zinc-500', d.title?.length <= 5 ? 'ml-1' : '')}>
+                                  {d.title}
+                                </span>
                               </div>
                             </> :
                             <>
@@ -283,7 +323,9 @@ function Info({ data, tx }) {
                 {send?.insufficient_fee && (
                   <div className="flex items-center text-red-600 dark:text-red-500 gap-x-1">
                     <PiWarningCircle size={16} />
-                    <span className="text-xs">Insufficient Fee</span>
+                    <span className="text-xs">
+                      Insufficient Fee
+                    </span>
                   </div>
                 )}
               </div>
@@ -408,7 +450,8 @@ function Details({ data }) {
   const { chains } = useGlobalStore()
 
   const { link, send, unwrap } = { ...data }
-  const destinationChain = send?.original_destination_chain || link?.original_destination_chain || unwrap?.destination_chain || send?.destination_chain || link?.destination_chain
+
+  const destinationChain = send?.destination_chain || unwrap?.destination_chain || link?.destination_chain
   const destinationChainData = getChainData(destinationChain, chains)
   const axelarChainData = getChainData('axelarnet', chains)
 
@@ -444,6 +487,7 @@ function Details({ data }) {
             let stepTX
             let stepURL
             const stepMoreInfos = []
+
             if (url && transaction_path) {
               switch (d.id) {
                 case 'link':
@@ -472,13 +516,19 @@ function Details({ data }) {
                     stepTX = transactionHash
                     stepURL = `${url}${transaction_path.replace('{tx}', transactionHash)}`
                   }
+
                   if (batch_id && destinationChainData) {
-                    stepTX = stepTX || batch_id
-                    stepURL = stepURL || `/evm-batch/${destinationChainData.id}/${batch_id}`
+                    if (!stepTX) {
+                      stepTX = batch_id
+                    }
+
+                    if (!stepURL) {
+                      stepURL = `/evm-batch/${destinationChainData.id}/${batch_id}`
+                    }
 
                     if (transactionHash) {
                       stepMoreInfos.push((
-                        <Copy size={16} key={stepMoreInfos.length} value={batch_id}>
+                        <Copy key={stepMoreInfos.length} size={16} value={batch_id}>
                           <Link
                             href={`/evm-batch/${destinationChainData.id}/${batch_id}`}
                             target="_blank"
@@ -496,9 +546,15 @@ function Details({ data }) {
                     stepTX = recv_txhash
                     stepURL = `${url}${transaction_path.replace('{tx}', recv_txhash)}`
                   }
+
                   if (ack_txhash) {
-                    stepTX = stepTX || ack_txhash
-                    stepURL = stepURL || `${axelarChainData.explorer.url}${axelarChainData.explorer.transaction_path.replace('{tx}', ack_txhash)}`
+                    if (!stepTX) {
+                      stepTX = ack_txhash
+                    }
+
+                    if (stepURL) {
+                      stepURL = `${axelarChainData.explorer.url}${axelarChainData.explorer.transaction_path.replace('{tx}', ack_txhash)}`
+                    }
 
                     if (recv_txhash) {
                       stepMoreInfos.push((
@@ -514,9 +570,15 @@ function Details({ data }) {
                       ))
                     }
                   }
+
                   if (failed_txhash) {
-                    stepTX = stepTX || failed_txhash
-                    stepURL = stepURL || `${url}${transaction_path.replace('{tx}', failed_txhash)}`
+                    if (!stepTX) {
+                      stepTX = failed_txhash
+                    }
+
+                    if (!stepURL) {
+                      stepURL = `${url}${transaction_path.replace('{tx}', failed_txhash)}`
+                    }
 
                     if (recv_txhash && !ack_txhash) {
                       stepMoreInfos.push((
@@ -532,9 +594,15 @@ function Details({ data }) {
                       ))
                     }
                   }
+
                   if (txhash) {
-                    stepTX = stepTX || txhash
-                    stepURL = stepURL || `${url}${transaction_path.replace('{tx}', txhash)}`
+                    if (!stepTX) {
+                      stepTX = txhash
+                    }
+
+                    if (!stepURL) {
+                      stepURL = `${url}${transaction_path.replace('{tx}', txhash)}`
+                    }
 
                     if (recv_txhash || ack_txhash || failed_txhash) {
                       stepMoreInfos.push((
@@ -565,7 +633,9 @@ function Details({ data }) {
             return (
               <tr key={i} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
                 <td className="pl-4 sm:pl-0 pr-3 py-4 text-left">
-                  <span className="text-zinc-700 dark:text-zinc-300 font-medium">{d.title}</span>
+                  <span className="text-zinc-700 dark:text-zinc-300 font-medium">
+                    {d.title}
+                  </span>
                 </td>
                 <td className="px-3 py-4 text-left">
                   <div className="flex flex-col gap-y-2">
@@ -580,7 +650,11 @@ function Details({ data }) {
                             {ellipse(stepTX)}
                           </Link>
                         </Copy>
-                        <ExplorerLink value={stepTX} chain={d.chainData?.id} customURL={stepURL} />
+                        <ExplorerLink
+                          value={stepTX}
+                          chain={d.chainData?.id}
+                          customURL={stepURL}
+                        />
                       </div>
                     )}
                     {stepMoreInfos.length > 0 && (
@@ -630,13 +704,17 @@ export function Transfer({ tx, lite }) {
   useEffect(() => {
     const getData = async () => {
       const { transferId } = { ...getParams(searchParams) }
+
       if (tx) {
         if (!ended) {
           const { data } = { ...await searchTransfers({ txHash: tx }) }
-          const d = _.head(data)
+          const d = data?.[0]
 
           if (d) {
-            if (['received', 'failed'].includes(d.simplified_status)) setEnded(true)
+            if (['received', 'failed'].includes(d.simplified_status)) {
+              setEnded(true)
+            }
+
             console.log('[data]', d)
             setData(d)
           }
@@ -644,17 +722,22 @@ export function Transfer({ tx, lite }) {
       }
       else if (transferId) {
         const { data } = { ...await searchTransfers({ transferId }) }
-        const d = _.head(data)
+        const d = data?.[0]
 
-        if (d?.send?.txhash) router.push(`/transfer/${d.send.txhash}`)
-        else setData({ ...d })
+        if (d?.send?.txhash) {
+          router.push(`/transfer/${d.send.txhash}`)
+        }
+        else {
+          setData({ ...d })
+        }
       }
     }
 
     getData()
+
     const interval = !ended && setInterval(() => getData(), 0.5 * 60 * 1000)
     return () => clearInterval(interval)
-  }, [tx, router, searchParams, ended, setData, setEnded])
+  }, [tx, router, searchParams, setData, ended, setEnded])
 
   return (
     <Container className="sm:mt-8">
