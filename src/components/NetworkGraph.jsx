@@ -13,7 +13,7 @@ import { TablePagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
 import { getChainData } from '@/lib/config'
 import { toArray } from '@/lib/parser'
-import { isString, equalsIgnoreCase } from '@/lib/string'
+import { isString, equalsIgnoreCase, find } from '@/lib/string'
 import { isNumber, toNumber } from '@/lib/number'
 
 const preloadImagePromise = src => new Promise((resolve, reject) => {
@@ -28,7 +28,7 @@ const getImageAsync = async url => {
   try {
     return await preloadImagePromise(url)
   } catch (error) {
-    return null
+    return
   }
 }
 
@@ -39,11 +39,18 @@ const useImagePreloader = images => {
     const preloadImages = async () => {
       images.forEach(async url => {
         if (imagesMap[url]) return
+
         const image = await getImageAsync(url)
-        if (image !== null) setImagesMap(d => ({ ...d, [url]: image }))
+
+        if (image) {
+          setImagesMap(d => ({ ...d, [url]: image }))
+        }
       })
     }
-    if (images) preloadImages()
+
+    if (images) {
+      preloadImages()
+    }
   }, [images, imagesMap])
 
   return imagesMap
@@ -63,8 +70,10 @@ const drawNode = (node, ctx, globalScale, isSelected, image) => {
     ctx.lineWidth = 4 / globalScale
 
     const animatedPos = node.__animatedPos
+
     if (animatedPos && animatedPos.length > 0) {
       const coord = animatedPos.splice(0, 1)
+
       node.__animatedPos = animatedPos
       node.x = x = coord[0].x
       node.y = y = coord[0].y
@@ -90,10 +99,12 @@ const drawNode = (node, ctx, globalScale, isSelected, image) => {
 
 const drawTitle = (node, ctx, isSelected, theme) => {
   const fontSize = 2
+
   const { x, y } = node
   if (x === undefined || y === undefined) return
 
   const radius = (TIERS.length + 1 + Math.pow(2, TIERS.length + 1 - (node.tier || 1)) + fontSize) / 2
+
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.font = `${isSelected ? '700' : '600'} ${fontSize}px Inter, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif`
@@ -103,7 +114,9 @@ const drawTitle = (node, ctx, isSelected, theme) => {
 
 const drawNodeCanvasObject = (node, ctx, globalScale, selectedNode, links, images, theme) => {
   if (!node || node.x === undefined || node.y === undefined) return
+
   const isSelected = node.id === selectedNode?.id
+
   drawNode(node, ctx, globalScale, isSelected, images?.[node.image])
   drawTitle(node, ctx, isSelected, theme)
 }
@@ -118,9 +131,11 @@ const COMET_LENGTH = 3
 
 const drawLine = (link, ctx, scale, isSelected, theme) => {
   if (isString(link.source) || isString(link.target)) return
+
   if (link.source.x != null && link.source.y != null && link.target.x != null && link.target.y != null) {
     ctx.lineWidth = 0.5 / scale
     ctx.strokeStyle = theme === 'dark' ? isSelected ? '#e4e4e7' : '#27272a' : isSelected ? '#52525b' : '#e4e4e7'
+
     ctx.beginPath()
     ctx.moveTo(link.source.x, link.source.y)
     ctx.lineTo(link.target.x, link.target.y)
@@ -141,6 +156,7 @@ const calculateAndDrawComet = (ctx, targetX, sourceX, targetY, sourceY, commetPr
   const cometEndY = sourceY + diffY * cometEndProgress || 0
 
   const gradient = ctx.createLinearGradient(cometStartX, cometStartY, cometEndX, cometEndY)
+
   gradient.addColorStop(0, `${color || (theme === 'dark' ? '#f4f4f5' : '#18181b')}ff`)
   gradient.addColorStop(1, `${color || (theme === 'dark' ? '#f4f4f5' : '#18181b')}00`)
 
@@ -152,24 +168,29 @@ const calculateAndDrawComet = (ctx, targetX, sourceX, targetY, sourceY, commetPr
 }
 
 const drawCommet = (link, ctx, theme) => {
-  if (typeof link.source === 'string' || typeof link.target === 'string') return
+  if (isString(link.source) || isString(link.target)) return
+
   const { x: sourceX, y: sourceY } = link.source
   const { x: targetX, y: targetY } = link.target
+
   if (sourceX === undefined || sourceY === undefined || targetX === undefined || targetY === undefined) return
 
   const comet = link.__comet || { __progress: 0 }
   comet.__progress += COMET_SPEED
+
   if (comet.__progress >= 1) {
     link.__comet = undefined
     return
   }
 
   calculateAndDrawComet(ctx, targetX, sourceX, targetY, sourceY, comet.__progress, link.color, theme)
+
   link.__comet = comet
 }
 
 const drawLinkCanvasObject = (link, ctx, scale, selectedNode, theme) => {
   if (!link) return
+
   drawLine(link, ctx, scale, [link.source?.id, link.target?.id].includes(selectedNode?.id), theme)
   drawCommet(link, ctx, theme)
 }
@@ -189,13 +210,23 @@ const MEAN = (data, field = 'num_txs') => _.mean(toArray(data).map(d => toNumber
 
 const SD = (data, field = 'num_txs') => {
   data = toArray(data)
-  if (data.length === 0) return 0
+
+  if (data.length === 0) {
+    return 0
+  }
+
   return Math.sqrt(_.sum(data.map(d => Math.pow(toNumber(d[field]) - MEAN(data, field), 2))) / data.length)
 }
 
 const THRESHOLD = (data, n_sd, field = 'num_txs') => !isNumber(n_sd) ? 0 : MEAN(data, field) + (n_sd * SD(data, field))
 
-export function NetworkGraph({ data, hideTable = false, setChainFocus }) {
+const sizePerPage = 10
+
+export function NetworkGraph({
+  data,
+  hideTable = false,
+  setChainFocus,
+}) {
   const graphRef = useRef()
   const [graphData, setGraphData] = useState(null)
   const [selectedNode, setSelectedNode] = useState(null)
@@ -205,6 +236,7 @@ export function NetworkGraph({ data, hideTable = false, setChainFocus }) {
 
   useEffect(() => {
     const fg = graphRef.current
+
     fg?.d3Force('link', null)
     fg?.d3Force('charge')?.strength(0)
     fg?.d3Force('center')?.strength(0)
@@ -214,58 +246,107 @@ export function NetworkGraph({ data, hideTable = false, setChainFocus }) {
     if (data && chains) {
       const AXELAR = 'axelarnet'
 
-      const _data = _.orderBy(Object.entries(_.groupBy(data.flatMap(d => {
-        if ([d.sourceChain, d.destinationChain].includes(AXELAR)) return d
-        return [[d.sourceChain, AXELAR], [AXELAR, d.destinationChain]].map((ids, i) => ({ ...d, id: ids.join('_'), [i === 0 ? 'destinationChain' : 'sourceChain']: AXELAR }))
-      }), 'id')).map(([k, v]) => ({ id: k, ..._.head(v), num_txs: _.sumBy(v, 'num_txs'), volume: _.sumBy(v, 'volume') })), ['num_txs'], ['desc'])
+      const _data = _.orderBy(
+        Object.entries(_.groupBy(data.flatMap(d => {
+          if (find(AXELAR, [d.sourceChain, d.destinationChain])) {
+            return d
+          }
 
+          return [[d.sourceChain, AXELAR], [AXELAR, d.destinationChain]].map((ids, i) => ({
+            ...d,
+            id: ids.join('_'),
+            [i === 0 ? 'destinationChain' : 'sourceChain']: AXELAR,
+          }))
+        }), 'id'))
+        .map(([k, v]) => ({
+          id: k,
+          ...v[0],
+          num_txs: _.sumBy(v, 'num_txs'),
+          volume: _.sumBy(v, 'volume'),
+        })),
+        ['num_txs'], ['desc'],
+      )
+
+      // add no traffic pairs
       chains.filter(d => (!d.maintainer_id || !d.no_inflation) && d.id !== AXELAR).forEach(d => {
         [[d.id, AXELAR], [AXELAR, d.id]].map(ids => ids.join('_')).forEach((id, i) => {
           if (_data.findIndex(d => equalsIgnoreCase(d.id, id)) < 0) {
-            _data.push({ id, sourceChain: i === 0 ? d.id : AXELAR, destinationChain: i === 0 ? AXELAR : d.id, num_txs: 0 })
+            _data.push({
+              id,
+              sourceChain: i === 0 ? d.id : AXELAR,
+              destinationChain: i === 0 ? AXELAR : d.id,
+              num_txs: 0,
+            })
           }
         })
       })
 
+      // create nodes & edges
       let nodes = []
       const edges = []
 
-      toArray(_data).forEach(d => {
+      _data.forEach(d => {
         ['source', 'destination'].forEach(s => {
           const id = d[`${s}Chain`]
 
           if (id && nodes.findIndex(n => equalsIgnoreCase(n.id, id)) < 0) {
             const { name, image, color } = { ...getChainData(id, chains) }
-            if (name) nodes.push({ id, image, label: name, color, num_txs: _.sumBy(_data.filter(d => [d.sourceChain, d.destinationChain].includes(id)), 'num_txs') })
+
+            if (name) {
+              nodes.push({
+                id,
+                image,
+                label: name,
+                color,
+                num_txs: _.sumBy(_data.filter(d => find(id, [d.sourceChain, d.destinationChain])), 'num_txs'),
+              })
+            }
           }
         })
 
         if (['source', 'destination'].findIndex(s => nodes.findIndex(n => equalsIgnoreCase(n.id, d[`${s}Chain`])) < 0) < 0) {
           const { color } = { ...getChainData(d.sourceChain, chains) }
-          edges.push({ data: d, id: d.id, source: d.sourceChain, target: d.destinationChain, color })
+
+          edges.push({
+            data: d,
+            id: d.id,
+            source: d.sourceChain,
+            target: d.destinationChain,
+            color,
+          })
         }
       })
 
-      const tiers = TIERS.map(d => ({ ...d, threshold: THRESHOLD(nodes.filter(d => d.id !== AXELAR), d.n_sd) }))
-      nodes = _.orderBy(nodes.map(d => ({ ...d, tier: d.id === AXELAR ? 0 : tiers.find(t => t.threshold <= d.num_txs)?.id })), ['num_txs'], ['desc'])
+      const tiers = TIERS.map(d => ({
+        ...d,
+        threshold: THRESHOLD(nodes.filter(d => d.id !== AXELAR), d.n_sd),
+      }))
+
+      nodes = _.orderBy(nodes.map(d => ({
+        ...d,
+        tier: d.id === AXELAR ? 0 : tiers.find(t => t.threshold <= d.num_txs)?.id,
+      })), ['num_txs'], ['desc'])
 
       setGraphData({ nodes, edges })
     }
-  }, [data, resolvedTheme, chains, setGraphData])
+  }, [data, setGraphData, resolvedTheme, chains])
 
   useEffect(() => {
-    if (!page) setPage(1)
+    if (!page) {
+      setPage(1)
+    }
   }, [page, setPage])
 
   const { nodes, edges } = { ...graphData }
+
   const imagesUrl = useMemo(() => toArray(nodes).map(d => d.image), [nodes])
   const images = useImagePreloader(toArray(imagesUrl))
   const imagesLoaded = chains && Object.keys({ ...images }).length / chains.length >= 0.5
+
   const nodeCanvasObject = useNodeCanvasObject(selectedNode, edges, images, resolvedTheme)
   const linkCanvasObject = useLinkCanvasObject(selectedNode, resolvedTheme)
 
-  const filteredData = toArray(data).filter(d => !selectedNode?.id || [d.sourceChain, d.destinationChain].includes(selectedNode.id))
-  const size = 10
+  const filteredData = toArray(data).filter(d => !selectedNode?.id || find(selectedNode.id, [d.sourceChain, d.destinationChain]))
 
   return !data || !(ForceGraph2D && graphData && imagesLoaded) ? <Spinner /> :
     <div className={clsx('grid lg:gap-x-4 xl:gap-x-16', !hideTable ? 'lg:grid-cols-2' : 'justify-center')}>
@@ -282,17 +363,26 @@ export function NetworkGraph({ data, hideTable = false, setChainFocus }) {
           onNodeClick={node => {
             setSelectedNode(node)
             setPage(undefined)
-            if (setChainFocus) setChainFocus(node.id)
+
+            if (setChainFocus) {
+              setChainFocus(node.id)
+            }
           }}
           onLinkClick={() => {
             setSelectedNode(null)
             setPage(undefined)
-            if (setChainFocus) setChainFocus(null)
+
+            if (setChainFocus) {
+              setChainFocus(null)
+            }
           }}
           onBackgroundClick={() => {
             setSelectedNode(null)
             setPage(undefined)
-            if (setChainFocus) setChainFocus(null)
+
+            if (setChainFocus) {
+              setChainFocus(null)
+            }
           }}
           maxZoom={5}
           minZoom={5}
@@ -325,7 +415,7 @@ export function NetworkGraph({ data, hideTable = false, setChainFocus }) {
                 </tr>
               </thead>
               <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
-                {filteredData.filter((d, i) => i >= (page - 1) * size && i < page * size).map((d, i) => (
+                {filteredData.filter((d, i) => i >= (page - 1) * sizePerPage && i < page * sizePerPage).map((d, i) => (
                   <tr key={i} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
                     <td className="pl-4 sm:pl-0 pr-3 py-4 text-left">
                       <ChainProfile value={d.sourceChain} titleClassName="font-semibold" />
@@ -363,13 +453,13 @@ export function NetworkGraph({ data, hideTable = false, setChainFocus }) {
               </tbody>
             </table>
           </div>
-          {filteredData.length > size && (
+          {filteredData.length > sizePerPage && (
             <div className="flex items-center justify-center mt-4">
               <TablePagination
                 data={filteredData}
                 value={page}
                 onChange={page => setPage(page)}
-                sizePerPage={size}
+                sizePerPage={sizePerPage}
               />
             </div>
           )}
