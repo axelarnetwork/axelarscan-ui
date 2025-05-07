@@ -22,18 +22,25 @@ import { toArray } from '@/lib/parser'
 import { equalsIgnoreCase } from '@/lib/string'
 import { isNumber, numberFormat } from '@/lib/number'
 
-function Info({ data, rewards, cumulativeRewards, address }) {
+function Info({ data, address, rewards, cumulativeRewards }) {
   const rewardsSizePerPage = 10
+
   const [rewardsPage, setRewardsPage] = useState(1)
   const { chains, verifiersByChain } = useGlobalStore()
-  const { supportedChains } = { ...data }
 
-  const { bonding_state, authorization_state, weight } = { ...Object.values(verifiersByChain).flatMap(d => toArray(d?.addresses)).find(d => equalsIgnoreCase(d.address, address)) }
+  const { supportedChains } = { ...data }
+  const { bonding_state, authorization_state, weight } = { ...Object.values({ ...verifiersByChain }).flatMap(d => toArray(d?.addresses)).find(d => equalsIgnoreCase(d.address, address)) }
+  const { symbol } = { ...getChainData('axelarnet', chains)?.native_token }
+
   return (
     <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
       <div className="px-4 sm:px-6 py-6">
         <h3 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-7">
-          <Profile address={address} width={32} height={32} />
+          <Profile
+            address={address}
+            width={32}
+            height={32}
+          />
         </h3>
       </div>
       <div className="border-t border-zinc-200 dark:border-zinc-700">
@@ -48,23 +55,29 @@ function Info({ data, rewards, cumulativeRewards, address }) {
                   </Tag>
                   {isNumber(bonding_state?.Bonded?.amount) && (
                     <div className="flex items-center space-x-2">
-                      <span className="font-semibold">Bonding State:</span>
+                      <span className="font-semibold">
+                        Bonding State:
+                      </span>
                       <Number
                         value={bonding_state.Bonded.amount}
-                        suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
+                        suffix={` ${symbol}`}
                         noTooltip={true}
                       />
                     </div>
                   )}
                   {authorization_state && (
                     <div className="flex items-center space-x-2">
-                      <span className="font-semibold">Authorization State:</span>
+                      <span className="font-semibold">
+                        Authorization State:
+                      </span>
                       <span>{authorization_state}</span>
                     </div>
                   )}
                   {isNumber(weight) && (
                     <div className="flex items-center space-x-2">
-                      <span className="font-semibold">Weight:</span>
+                      <span className="font-semibold">
+                        Weight:
+                      </span>
                       <Number value={weight} noTooltip={true} />
                     </div>
                   )}
@@ -76,6 +89,7 @@ function Info({ data, rewards, cumulativeRewards, address }) {
                   <div className="flex flex-wrap">
                     {supportedChains.map((c, i) => {
                       const { name, image } = { ...getChainData(c, chains) }
+
                       return (
                         <Tooltip key={i} content={name} className="whitespace-nowrap">
                           <Image
@@ -117,7 +131,7 @@ function Info({ data, rewards, cumulativeRewards, address }) {
                 >
                   <Number
                     value={cumulativeRewards.total_rewards}
-                    suffix={` ${getChainData('axelarnet', chains)?.native_token?.symbol}`}
+                    suffix={` ${symbol}`}
                     noTooltip={true}
                     className="font-medium"
                   />
@@ -137,9 +151,6 @@ function Info({ data, rewards, cumulativeRewards, address }) {
                           <th scope="col" className="pl-4 sm:pl-3 pr-3 py-2.5 text-left">
                             Height
                           </th>
-                          {/*<th scope="col" className="whitespace-nowrap px-3 py-2.5 text-left">
-                            Epoch Count
-                          </th>*/}
                           <th scope="col" className="px-3 py-2.5 text-left">
                             Chain
                           </th>
@@ -152,8 +163,9 @@ function Info({ data, rewards, cumulativeRewards, address }) {
                         </tr>
                       </thead>
                       <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
-                        {toArray(rewards).filter((d, i) => i >= (rewardsPage - 1) * rewardsSizePerPage && i < rewardsPage * rewardsSizePerPage).map((d, i) => {
+                        {rewards.filter((d, i) => i >= (rewardsPage - 1) * rewardsSizePerPage && i < rewardsPage * rewardsSizePerPage).map((d, i) => {
                           const { name, image } = { ...getChainData(d.chain, chains) }
+
                           return (
                             <tr key={i} className="align-top text-zinc-400 dark:text-zinc-500 text-xs">
                               <td className="pl-4 sm:pl-3 pr-3 py-3 text-left">
@@ -169,15 +181,6 @@ function Info({ data, rewards, cumulativeRewards, address }) {
                                   </Copy>
                                 </div>
                               </td>
-                              {/*<td className="px-3 py-3">
-                                <Copy size={16} value={d.epoch_count}>
-                                  <Number
-                                    value={d.epoch_count}
-                                    format="0,0"
-                                    className="text-zinc-900 dark:text-zinc-100 text-xs font-medium"
-                                  />
-                                </Copy>
-                              </td>*/}
                               <td className="px-3 py-3">
                                 <div className="flex items-center">
                                   {name ?
@@ -189,7 +192,9 @@ function Info({ data, rewards, cumulativeRewards, address }) {
                                         height={20}
                                       />
                                     </Tooltip> :
-                                    <span className="text-zinc-900 dark:text-zinc-100">{d.chain}</span>
+                                    <span className="text-zinc-900 dark:text-zinc-100">
+                                      {d.chain}
+                                    </span>
                                   }
                                 </div>
                               </td>
@@ -229,6 +234,7 @@ function Info({ data, rewards, cumulativeRewards, address }) {
 
 function Votes({ data }) {
   const { chains } = useGlobalStore()
+
   const totalY = toArray(data).filter(d => typeof d.vote === 'boolean' && d.vote).length
   const totalN = toArray(data).filter(d => typeof d.vote === 'boolean' && !d.vote).length
   const totalUN = toArray(data).filter(d => typeof d.vote !== 'boolean').length
@@ -242,7 +248,7 @@ function Votes({ data }) {
             Amplifier Votes
           </h3>
           <p className="text-zinc-400 dark:text-zinc-500 text-xs leading-5">
-            Latest {numberFormat(size, '0,0')} Polls{/* ({numberFormat(NUM_LATEST_BLOCKS, '0,0')} Blocks)*/}
+            Latest {numberFormat(size, '0,0')} Polls
           </p>
         </div>
         <div className="flex flex-col items-end">
@@ -262,6 +268,7 @@ function Votes({ data }) {
       <div className="flex flex-wrap">
         {data.map((d, i) => {
           const { name } = { ...getChainData(d.sender_chain, chains) }
+
           return (
             <Link
               key={i}
@@ -282,6 +289,7 @@ function Votes({ data }) {
 
 function Signs({ data }) {
   const { chains } = useGlobalStore()
+
   const totalSigned = toArray(data).filter(d => typeof d.sign === 'boolean' && d.sign).length
   const totalUN = toArray(data).filter(d => typeof d.sign !== 'boolean').length
   const totalSigns = Object.fromEntries(Object.entries({ S: totalSigned, UN: totalUN }).filter(([k, v]) => v || k === 'S'))
@@ -294,7 +302,7 @@ function Signs({ data }) {
             Amplifier Signings
           </h3>
           <p className="text-zinc-400 dark:text-zinc-500 text-xs leading-5">
-            Latest {numberFormat(size, '0,0')} Signings{/* ({numberFormat(NUM_LATEST_BLOCKS, '0,0')} Blocks)*/}
+            Latest {numberFormat(size, '0,0')} Signings
           </p>
         </div>
         <div className="flex flex-col items-end">
@@ -314,6 +322,7 @@ function Signs({ data }) {
       <div className="flex flex-wrap">
         {data.map((d, i) => {
           const { name } = { ...getChainData(d.chain || d.destination_chain, chains) }
+
           return (
             <Link
               key={i}
@@ -333,7 +342,6 @@ function Signs({ data }) {
 }
 
 const size = 200
-const NUM_LATEST_BLOCKS = 10000
 
 export function Verifier({ address }) {
   const [data, setData] = useState(null)
@@ -343,16 +351,22 @@ export function Verifier({ address }) {
   const [cumulativeRewards, setCumulativeRewards] = useState(null)
   const { chains, verifiers } = useGlobalStore()
 
+  // set verifier data
   useEffect(() => {
     const getData = async () => {
       if (address && verifiers) {
         const _data = verifiers.find(d => equalsIgnoreCase(d.address, address))
-        if (_data && !_.isEqual(_data, data)) setData(_data)
+
+        if (_data && !_.isEqual(_data, data)) {
+          setData(_data)
+        }
       }
     }
-    getData()
-  }, [address, data, verifiers, setData])
 
+    getData()
+  }, [address, data, setData, verifiers])
+
+  // set verifier metrics
   useEffect(() => {
     const getData = async () => {
       if (address && data) {
@@ -365,12 +379,17 @@ export function Verifier({ address }) {
               case 'votes':
                 try {
                   const toBlock = latest_block_height - 1
-                  const fromBlock = 1 // toBlock - NUM_LATEST_BLOCKS
+                  const fromBlock = 1
 
-                  const data = verifierAddress && (await searchAmplifierPolls({ voter: verifierAddress, fromBlock, toBlock, size }))?.data
-                  setVotes(toArray(data).map(d => Object.fromEntries(
-                    Object.entries(d).filter(([k, v]) => !k.startsWith('axelar') || equalsIgnoreCase(k, verifierAddress)).flatMap(([k, v]) =>
-                      equalsIgnoreCase(k, verifierAddress) ? Object.entries({ ...v }).map(([_k, _v]) => [_k === 'id' ? 'txhash' : _k, _v]) : [[k, v]]
+                  const { data } = { ...(verifierAddress && await searchAmplifierPolls({ voter: verifierAddress, fromBlock, toBlock, size })) }
+
+                  setVotes(toArray(data).map(d => Object.fromEntries(Object.entries(d)
+                    // filter verifier address
+                    .filter(([k, v]) => !k.startsWith('axelar') || equalsIgnoreCase(k, verifierAddress))
+                    // flatMap vote data
+                    .flatMap(([k, v]) => equalsIgnoreCase(k, verifierAddress) ?
+                      Object.entries({ ...v }).map(([k, v]) => [k === 'id' ? 'txhash' : k, v]) :
+                      [[k, v]]
                     )
                   )))
                 } catch (error) {}
@@ -378,31 +397,37 @@ export function Verifier({ address }) {
               case 'signs':
                 try {
                   const toBlock = latest_block_height - 1
-                  const fromBlock = 1 // toBlock - NUM_LATEST_BLOCKS
+                  const fromBlock = 1
 
-                  const data = verifierAddress && (await searchAmplifierProofs({ signer: verifierAddress, fromBlock, toBlock, size }))?.data
-                  setSigns(toArray(data).map(d => Object.fromEntries(
-                    Object.entries(d).filter(([k, v]) => !k.startsWith('axelar') || equalsIgnoreCase(k, verifierAddress)).flatMap(([k, v]) =>
-                      equalsIgnoreCase(k, verifierAddress) ? Object.entries({ ...v }).map(([_k, _v]) => [_k === 'id' ? 'txhash' : _k, _v]) : [[k, v]]
+                  const { data } = { ...(verifierAddress && await searchAmplifierProofs({ signer: verifierAddress, fromBlock, toBlock, size })) }
+
+                  setSigns(toArray(data).map(d => Object.fromEntries(Object.entries(d)
+                    // filter verifier address
+                    .filter(([k, v]) => !k.startsWith('axelar') || equalsIgnoreCase(k, verifierAddress))
+                    // flatMap sign data
+                    .flatMap(([k, v]) => equalsIgnoreCase(k, verifierAddress) ?
+                      Object.entries({ ...v }).map(([k, v]) => [k === 'id' ? 'txhash' : k, v]) :
+                      [[k, v]]
                     )
                   )))
                 } catch (error) {}
                 break
               case 'rewards':
                 try {
-                  const data = verifierAddress && (await searchVerifiersRewards({ verifierAddress, fromBlock: 1, size }))?.data
+                  const { data } = { ...(verifierAddress && await searchVerifiersRewards({ verifierAddress, fromBlock: 1, size })) }
                   setRewards(toArray(data))
                 } catch (error) {}
                 break
               case 'cumulative_rewards':
                 try {
-                  const data = verifierAddress && (await getVerifiersRewards({ verifierAddress, fromBlock: 1 }))?.data
-                  setCumulativeRewards(_.head(data))
+                  const { data } = { ...(verifierAddress && await getVerifiersRewards({ verifierAddress, fromBlock: 1 })) }
+                  setCumulativeRewards(data?.[0])
                 } catch (error) {}
                 break
               default:
                 break
             }
+
             resolve()
           })))
         }
@@ -419,9 +444,9 @@ export function Verifier({ address }) {
           <div className="md:col-span-2">
             <Info
               data={data}
+              address={address}
               rewards={rewards}
               cumulativeRewards={cumulativeRewards}
-              address={address}
             />
           </div>
           {!(votes || signs) ? <Spinner /> :

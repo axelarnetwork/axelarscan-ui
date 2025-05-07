@@ -340,8 +340,8 @@ export const getActivities = (data, assets) => {
 
       chain = vote?.chain || chain
       asset = asset?.name || asset
-      tx_id = toHex(events?.[0]?.tx_id || tx_id)
-      status = events?.[0]?.status || status
+      tx_id = toHex(vote?.events?.[0]?.tx_id || tx_id)
+      status = vote?.events?.[0]?.status || status
 
       return d.sender && {
         type: lastString(d['@type'], '.'),

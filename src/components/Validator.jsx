@@ -11,7 +11,6 @@ import { Container } from '@/components/Container'
 import { Image } from '@/components/Image'
 import { Copy } from '@/components/Copy'
 import { Tooltip } from '@/components/Tooltip'
-import { ProgressBar } from '@/components/ProgressBar'
 import { Spinner } from '@/components/Spinner'
 import { Tag } from '@/components/Tag'
 import { Number } from '@/components/Number'
@@ -23,11 +22,12 @@ import { getBalances } from '@/lib/api/axelarscan'
 import { getRPCStatus, searchUptimes, searchProposedBlocks, searchHeartbeats, searchEVMPolls, getChainMaintainers, getValidatorDelegations } from '@/lib/api/validator'
 import { ENVIRONMENT, getChainData, getAssetData } from '@/lib/config'
 import { toArray } from '@/lib/parser'
-import { equalsIgnoreCase, includesSomePatterns, ellipse } from '@/lib/string'
+import { equalsIgnoreCase, find, includesSomePatterns, ellipse } from '@/lib/string'
 import { isNumber, toNumber, numberFormat } from '@/lib/number'
 
 function Info({ data, address, delegations }) {
   const delegationsSizePerPage = 10
+
   const [delegationsPage, setDelegationsPage] = useState(1)
   const { chains, assets, validators } = useGlobalStore()
 
@@ -42,7 +42,11 @@ function Info({ data, address, delegations }) {
     <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
       <div className="px-4 sm:px-6 py-6">
         <h3 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-7">
-          <Profile address={address} width={32} height={32} />
+          <Profile
+            address={address}
+            width={32}
+            height={32}
+          />
         </h3>
         <div className="flex flex-col mt-1">
           {details && (
@@ -69,7 +73,9 @@ function Info({ data, address, delegations }) {
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Operator Address</dt>
               <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                <Copy value={operator_address}><span>{ellipse(operator_address, 10, 'axelarvaloper')}</span></Copy>
+                <Copy value={operator_address}>
+                  <span>{ellipse(operator_address, 10, 'axelarvaloper')}</span>
+                </Copy>
               </dd>
             </div>
           )}
@@ -77,7 +83,9 @@ function Info({ data, address, delegations }) {
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Consensus Address</dt>
               <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                <Copy value={consensus_address}><span>{ellipse(consensus_address, 10, 'axelarvalcons')}</span></Copy>
+                <Copy value={consensus_address}>
+                  <span>{ellipse(consensus_address, 10, 'axelarvalcons')}</span>
+                </Copy>
               </dd>
             </div>
           )}
@@ -201,6 +209,7 @@ function Info({ data, address, delegations }) {
                 <div className="flex flex-wrap">
                   {supportedChains.map((c, i) => {
                     const { name, image } = { ...getChainData(c, chains) }
+
                     return (
                       <Tooltip key={i} content={name} className="whitespace-nowrap">
                         <Image
@@ -238,8 +247,9 @@ function Info({ data, address, delegations }) {
                         </tr>
                       </thead>
                       <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
-                        {toArray(delegations).filter((d, i) => i >= (delegationsPage - 1) * delegationsSizePerPage && i < delegationsPage * delegationsSizePerPage).map((d, i) => {
+                        {delegations.filter((d, i) => i >= (delegationsPage - 1) * delegationsSizePerPage && i < delegationsPage * delegationsSizePerPage).map((d, i) => {
                           const { price } = { ...getAssetData(d.denom, assets) }
+
                           return (
                             <tr key={i} className="align-top text-zinc-400 dark:text-zinc-500 text-xs">
                               <td className="pl-4 sm:pl-3 pr-3 py-3 text-left">
@@ -428,6 +438,7 @@ function Heartbeats({ data }) {
 
 function Votes({ data }) {
   const { chains } = useGlobalStore()
+
   const totalY = toArray(data).filter(d => typeof d.vote === 'boolean' && d.vote).length
   const totalN = toArray(data).filter(d => typeof d.vote === 'boolean' && !d.vote).length
   const totalUN = toArray(data).filter(d => typeof d.vote !== 'boolean').length
@@ -461,6 +472,7 @@ function Votes({ data }) {
       <div className="flex flex-wrap">
         {data.map((d, i) => {
           const { name } = { ...getChainData(d.sender_chain, chains) }
+
           return (
             <Link
               key={i}
@@ -493,50 +505,68 @@ export function Validator({ address }) {
   const [proposedBlocks, setProposedBlocks] = useState(null)
   const [heartbeats, setHeartbeats] = useState(null)
   const [votes, setVotes] = useState(null)
-  const { chains, contracts, validators } = useGlobalStore()
+  const { chains, validators } = useGlobalStore()
   const { maintainers, setMaintainers } = useValidatorStore()
 
+  // redirect or get evm chains
   useEffect(() => {
     if (address && validators) {
       if (['axelarvalcons', 'axelar1'].findIndex(p => address.startsWith(p)) > -1) {
-        const { operator_address } = { ...validators.find(d => includesSomePatterns([d.consensus_address, d.delegator_address, d.broadcaster_address], address.toLowerCase())) }
-        if (operator_address) router.push(`/validator/${operator_address}`)
-      }
-      else if (address.startsWith('axelarvaloper') && chains && contracts) setEVMChains(toArray(chains).filter(d => d.chain_type ==='evm' && contracts.gateway_contracts?.[d.id]?.address))
-    }
-  }, [address, router, chains, contracts, validators, setEVMChains])
+        const { operator_address } = { ...validators.find(d => includesSomePatterns([d.consensus_address, d.delegator_address, d.broadcaster_address], address)) }
 
+        if (operator_address) {
+          router.push(`/validator/${operator_address}`)
+        }
+      }
+      else if (address.startsWith('axelarvaloper') && chains) {
+        setEVMChains(chains.filter(d => d.chain_type ==='evm' && d.gateway?.address))
+      }
+    }
+  }, [address, router, setEVMChains, chains, validators])
+
+  // getChainMaintainers
   useEffect(() => {
     const getData = async () => {
       if (EVMChains) {
-        setMaintainers(Object.fromEntries(toArray(
+        setMaintainers(Object.fromEntries(
           await Promise.all(EVMChains.filter(d => !maintainers?.[d.id]).map(d => new Promise(async resolve => {
             const { maintainers } = { ...await getChainMaintainers({ chain: d.id }) }
             resolve([d.id, toArray(maintainers)])
           })))
-        )))
+        ))
       }
     }
+
     getData()
   }, [EVMChains, setMaintainers])
 
+  // set validator data
   useEffect(() => {
     const getData = async () => {
       if (address?.startsWith('axelarvaloper') && EVMChains && validators && Object.keys({ ...maintainers }).length === EVMChains.length) {
         const _data = validators.find(d => equalsIgnoreCase(d.operator_address, address))
+
         if (_data) {
+          // broadcaster balance
           if (_data.broadcaster_address) {
             const { data } = { ...await getBalances({ address: _data.broadcaster_address }) }
             _data.broadcasterBalance = toArray(data).find(d => d.denom === (ENVIRONMENT === 'devnet-amplifier' ? 'uamplifier' : 'uaxl'))
           }
-          _data.supportedChains = Object.entries(maintainers).filter(([k, v]) => v.includes(_data.operator_address)).map(([k, v]) => k)
-          if (!_.isEqual(_data, data)) setData(_data)
+
+          // support chains
+          _data.supportedChains = Object.entries({ ...maintainers }).filter(([k, v]) => find(_data.operator_address, v)).map(([k, v]) => k)
+
+          if (!_.isEqual(_data, data)) {
+            setData(_data)
+          }
         }
       }
     }
-    getData()
-  }, [address, EVMChains, data, validators, maintainers, setData])
 
+    getData()
+  }, [address, EVMChains, data, setData, validators, maintainers])
+
+  // set validator metrics
   useEffect(() => {
     const getData = async () => {
       if (address && data) {
@@ -554,11 +584,17 @@ export function Validator({ address }) {
                   const toBlock = latest_block_height - 1
                   const fromBlock = toBlock - size
 
-                  const data = (await searchUptimes({ fromBlock, toBlock, size }))?.data
+                  const { data } = { ...await searchUptimes({ fromBlock, toBlock, size }) }
+
                   setUptimes(_.range(0, size).map(i => {
                     const height = toBlock - i
                     const d = toArray(data).find(d => d.height === height)
-                    return { ...d, height, status: toArray(d?.validators).findIndex(a => equalsIgnoreCase(a, consensus_address)) > -1 }
+
+                    return {
+                      ...d,
+                      height,
+                      status: toArray(d?.validators).findIndex(a => equalsIgnoreCase(a, consensus_address)) > -1,
+                    }
                   }))
                 } catch (error) {}
                 break
@@ -567,27 +603,39 @@ export function Validator({ address }) {
                   const toBlock = latest_block_height - 1
                   const fromBlock = toBlock - NUM_LATEST_PROPOSED_BLOCKS
 
-                  const data = (await searchProposedBlocks({ fromBlock, toBlock, size: NUM_LATEST_PROPOSED_BLOCKS }))?.data
+                  const { data } = { ...await searchProposedBlocks({ fromBlock, toBlock, size: NUM_LATEST_PROPOSED_BLOCKS }) }
+
                   setProposedBlocks(toArray(data).filter(d => equalsIgnoreCase(d.proposer, consensus_address)))
                 } catch (error) {}
                 break
               case 'heartbeats':
-                const endBlock = (height, numBlocks = NUM_BLOCKS_PER_HEARTBEAT, fraction = 1) => {
+                const getEndBlock = (height, numBlocks = NUM_BLOCKS_PER_HEARTBEAT, fraction = 1) => {
                   height = toNumber(height) + numBlocks
-                  while (height > 0 && height % numBlocks !== fraction) height--
+
+                  while (height > 0 && height % numBlocks !== fraction) {
+                    height--
+                  }
+
                   return height - 1
                 }
-                const startBlock = height => endBlock(toNumber(height) - NUM_BLOCKS_PER_HEARTBEAT) + 1
+
+                const getStartBlock = height => getEndBlock(toNumber(height) - NUM_BLOCKS_PER_HEARTBEAT) + 1
 
                 try {
-                  const fromBlock = startBlock(latest_block_height - NUM_LATEST_BLOCKS)
-                  const toBlock = endBlock(latest_block_height)
+                  const fromBlock = getStartBlock(latest_block_height - NUM_LATEST_BLOCKS)
+                  const toBlock = getEndBlock(latest_block_height)
 
-                  const data = (await searchHeartbeats({ address: broadcaster_address, fromBlock, toBlock, size }))?.data
+                  const { data } = { ...await searchHeartbeats({ address: broadcaster_address, fromBlock, toBlock, size }) }
+
                   setHeartbeats(_.range(0, size).map(i => {
-                    const height = startBlock(toBlock - (i * NUM_BLOCKS_PER_HEARTBEAT))
+                    const height = getStartBlock(toBlock - (i * NUM_BLOCKS_PER_HEARTBEAT))
                     const d = toArray(data).find(d => d.period_height === height)
-                    return { ...d, period_height: height, status: !!broadcaster_address && equalsIgnoreCase(d?.sender, broadcaster_address) }
+
+                    return {
+                      ...d,
+                      period_height: height,
+                      status: !!broadcaster_address && equalsIgnoreCase(d?.sender, broadcaster_address),
+                    }
                   }))
                 } catch (error) {}
                 break
@@ -596,10 +644,15 @@ export function Validator({ address }) {
                   const toBlock = latest_block_height - 1
                   const fromBlock = toBlock - NUM_LATEST_BLOCKS
 
-                  const data = broadcaster_address && (await searchEVMPolls({ voter: broadcaster_address, fromBlock, toBlock, size }))?.data
-                  setVotes(toArray(data).map(d => Object.fromEntries(
-                    Object.entries(d).filter(([k, v]) => !k.startsWith('axelar1') || equalsIgnoreCase(k, broadcaster_address)).flatMap(([k, v]) =>
-                      equalsIgnoreCase(k, broadcaster_address) ? Object.entries({ ...v }).map(([_k, _v]) => [_k === 'id' ? 'txhash' : _k, _v]) : [[k, v]]
+                  const { data } = { ...(broadcaster_address && await searchEVMPolls({ voter: broadcaster_address, fromBlock, toBlock, size })) }
+
+                  setVotes(toArray(data).map(d => Object.fromEntries(Object.entries(d)
+                    // filter broadcaster address
+                    .filter(([k, v]) => !k.startsWith('axelar1') || equalsIgnoreCase(k, broadcaster_address))
+                    // flatMap vote data
+                    .flatMap(([k, v]) => equalsIgnoreCase(k, broadcaster_address) ?
+                      Object.entries({ ...v }).map(([k, v]) => [k === 'id' ? 'txhash' : k, v]) :
+                      [[k, v]]
                     )
                   )))
                 } catch (error) {}
@@ -607,6 +660,7 @@ export function Validator({ address }) {
               default:
                 break
             }
+
             resolve()
           })))
         }
@@ -621,7 +675,11 @@ export function Validator({ address }) {
       {!data ? <Spinner /> :
         <div className="grid md:grid-cols-3 md:gap-x-4 gap-y-4 md:gap-y-0">
           <div className="md:col-span-2">
-            <Info data={data} address={address} delegations={delegations} />
+            <Info
+              data={data}
+              address={address}
+              delegations={delegations}
+            />
           </div>
           {!(uptimes || proposedBlocks || heartbeats || votes) ? <Spinner /> :
             <div className="flex flex-col gap-y-4">
