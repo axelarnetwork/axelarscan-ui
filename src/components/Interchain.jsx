@@ -28,7 +28,7 @@ import { useGlobalStore } from '@/components/Global'
 import { GMPStats, GMPStatsByChains, GMPStatsByContracts, GMPChart, GMPTotalVolume, GMPTopUsers, GMPTopITSAssets } from '@/lib/api/gmp'
 import { transfersStats, transfersChart, transfersTotalVolume, transfersTopUsers } from '@/lib/api/token-transfer'
 import { ENVIRONMENT, getChainData, getAssetData, getITSAssetData } from '@/lib/config'
-import { split, toArray } from '@/lib/parser'
+import { toCase, split, toArray } from '@/lib/parser'
 import { getParams, getQueryString, generateKeyByParams, isFiltered } from '@/lib/operator'
 import { equalsIgnoreCase, toBoolean, headString, lastString, toTitle } from '@/lib/string'
 import { isNumber, toNumber, toFixed, numberFormat } from '@/lib/number'
@@ -37,13 +37,20 @@ import accounts from '@/data/accounts'
 
 const getGranularity = (fromTimestamp, toTimestamp) => {
   if (!fromTimestamp) return 'month'
+
   const diff = timeDiff(fromTimestamp * 1000, 'days', toTimestamp * 1000)
-  if (diff >= 180) return 'month'
-  else if (diff >= 60) return 'week'
+
+  if (diff >= 180) {
+    return 'month'
+  }
+  else if (diff >= 60) {
+    return 'week'
+  }
+
   return 'day'
 }
 
-const timeShortcuts = [
+const TIME_SHORTCUTS = [
   { label: 'Last 7 days', value: [moment().subtract(7, 'days').startOf('day'), moment().endOf('day')] },
   { label: 'Last 30 days', value: [moment().subtract(30, 'days').startOf('day'), moment().endOf('day')] },
   { label: 'Last 365 days', value: [moment().subtract(365, 'days').startOf('day'), moment().endOf('day')] },
@@ -63,10 +70,12 @@ function Filters() {
     if (!_params) {
       _params = params
     }
+
     if (!_.isEqual(_params, getParams(searchParams))) {
       router.push(`${pathname}${getQueryString(_params)}`)
       setParams(_params)
     }
+
     setOpen(false)
   }
 
@@ -76,19 +85,34 @@ function Filters() {
   }
 
   const attributes = toArray([
-    { label: 'Transfers Type', name: 'transfersType', type: 'select', options: _.concat({ title: 'Any' }, [{ value: 'gmp', title: 'General Message Passing' }, { value: 'transfers', title: 'Token Transfers' }]) },
+    { label: 'Transfers Type', name: 'transfersType', type: 'select', options:[
+      { title: 'Any' },
+      { value: 'gmp', title: 'General Message Passing' },
+      { value: 'transfers', title: 'Token Transfers' },
+    ] },
     { label: 'Source Chain', name: 'sourceChain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
     { label: 'Destination Chain', name: 'destinationChain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
     { label: 'From / To Chain', name: 'chain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
     { label: 'Asset', name: 'asset', type: 'select', multiple: true, options: _.orderBy(toArray(_.concat(params.assetType !== 'its' && toArray(assets).map(d => ({ value: d.id, title: `${d.symbol} (${d.id})` })), params.assetType !== 'gateway' && toArray(itsAssets).map(d => ({ value: d.symbol, title: `${d.symbol} (ITS)` })))), ['title'], ['asc']) },
     params.assetType === 'its' && { label: 'ITS Token Address', name: 'itsTokenAddress' },
-    { label: 'Method', name: 'contractMethod', type: 'select', options: _.concat({ title: 'Any' }, [{ value: 'callContract', title: 'CallContract' }, { value: 'callContractWithToken', title: 'CallContractWithToken' }, { value: 'InterchainTransfer', title: 'InterchainTransfer' }, { value: 'SquidCoral', title: 'SquidCoral' }]) },
+    { label: 'Method', name: 'contractMethod', type: 'select', options: [
+      { title: 'Any' },
+      { value: 'callContract', title: 'CallContract' },
+      { value: 'callContractWithToken', title: 'CallContractWithToken' },
+      { value: 'InterchainTransfer', title: 'InterchainTransfer' },
+      { value: 'SquidCoral', title: 'SquidCoral' },
+    ] },
     { label: 'Contract', name: 'contractAddress' },
-    { label: 'Asset Type', name: 'assetType', type: 'select', options: _.concat({ title: 'Any' }, [{ value: 'gateway', title: 'Gateway Token' }, { value: 'its', title: 'ITS Token' }]) },
+    { label: 'Asset Type', name: 'assetType', type: 'select', options: [
+      { title: 'Any' },
+      { value: 'gateway', title: 'Gateway Token' },
+      { value: 'its', title: 'ITS Token' },
+    ] },
     { label: 'Time', name: 'time', type: 'datetimeRange' },
   ])
 
   const filtered = isFiltered(params)
+
   return (
     <>
       <Button
@@ -158,11 +182,13 @@ function Filters() {
                                             {d.multiple ?
                                               <div className={clsx('flex flex-wrap', selectedValue.length !== 0 && 'my-1')}>
                                                 {selectedValue.length === 0 ?
-                                                  <span className="block truncate">Any</span> :
+                                                  <span className="block truncate">
+                                                    Any
+                                                  </span> :
                                                   selectedValue.map((v, j) => (
                                                     <div
                                                       key={j}
-                                                      onClick={() => setParams({ ...params, [d.name]: selectedValue.filter(_v => _v.value !== v.value).map(_v => _v.value).join(',') })}
+                                                      onClick={() => setParams({ ...params, [d.name]: selectedValue.filter(v => v.value !== v.value).map(v => v.value).join(',') })}
                                                       className="min-w-fit h-6 bg-zinc-100 rounded-xl flex items-center text-zinc-900 mr-2 my-1 px-2.5 py-1"
                                                     >
                                                       {v.title}
@@ -170,7 +196,9 @@ function Filters() {
                                                   ))
                                                 }
                                               </div> :
-                                              <span className="block truncate">{selectedValue?.title}</span>
+                                              <span className="block truncate">
+                                                {selectedValue?.title}
+                                              </span>
                                             }
                                             <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                               <LuChevronsUpDown size={20} className="text-zinc-400" />
@@ -254,7 +282,8 @@ export function Summary({ data, params }) {
   const pathname = usePathname()
   const globalStore = useGlobalStore()
 
-  if (!data) return null
+  if (!data) return
+
   const { GMPStatsByChains, GMPStatsByContracts, GMPTotalVolume, transfersStats, transfersTotalVolume } = { ...data }
 
   const contracts = _.orderBy(
@@ -262,7 +291,12 @@ export function Summary({ data, params }) {
       _.groupBy(
       toArray(GMPStatsByContracts?.chains).flatMap(d => toArray(d.contracts).filter(c => !c.key.includes('_')).map(c => {
         const { name } = { ...accounts.find(a => equalsIgnoreCase(a.address, c.key)) }
-        return { ...c, key: name || c.key.toLowerCase(), chain: d.key }
+
+        return {
+          ...c,
+          key: name || toCase(c.key, 'lower'),
+          chain: d.key,
+        }
       })), 'key')
     )
     .map(([k, v]) => ({
@@ -274,8 +308,12 @@ export function Summary({ data, params }) {
     ['num_txs', 'volume', 'key'], ['desc', 'desc', 'asc'],
   )
 
-  const chains = params?.contractAddress ? _.uniq(contracts.flatMap(d => d.chains)) : toArray(globalStore.chains).filter(d => !d.deprecated && (!d.maintainer_id || globalStore.contracts?.gateway_contracts?.[d.id]?.address))
+  const chains = params?.contractAddress ?
+    _.uniq(contracts.flatMap(d => d.chains)) :
+    toArray(globalStore.chains).filter(d => !d.deprecated && (!d.maintainer_id || d.gateway?.address))
+
   const tvlData = toArray(globalStore.tvl?.data)
+
   console.log('[destinationContracts]', contracts.map(d => d.key))
 
   return (
@@ -336,7 +374,7 @@ export function Summary({ data, params }) {
             />
           </dd>
         </div>
-        {ENVIRONMENT === 'mainnet' && tvlData.length > 0 && ['/'].includes(pathname) ?
+        {tvlData.length > 0 && pathname === '/' ?
           <div className="border-t lg:border-t-0 border-l lg:border-l-0 border-r border-zinc-200 dark:border-zinc-700 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 px-4 sm:px-6 xl:px-8 py-8">
             <dt className="text-zinc-400 dark:text-zinc-500 text-sm font-medium leading-6">Total Value Locked</dt>
             <dd className="w-full flex-none">
@@ -439,11 +477,12 @@ function StatsBarChart({
 
   useEffect(() => {
     if (data) {
-      setChartData(toArray(data).map(d => {
+      setChartData(data.map(d => {
         const time = moment(d.timestamp).utc()
         const timeString = time.format(dateFormat)
 
         let focusTimeString
+
         switch (granularity) {
           case 'month':
             focusTimeString = time.format('MMM YYYY')
@@ -456,20 +495,33 @@ function StatsBarChart({
             break
         }
 
-        return { ...d, timeString, focusTimeString }
+        return {
+          ...d,
+          timeString,
+          focusTimeString,
+        }
       }).filter(d => scale !== 'log' || field !== 'volume' || d[field] > 100))
     }
   }, [data, field, scale, dateFormat, granularity, setChartData])
 
   const CustomTooltip = ({ active, payload }) => {
-    if (!active) return null
+    if (!active) return
 
-    const data = _.head(payload)?.payload
-    const values = toArray(_.concat(stacks, 'total')).map(d => ({ key: d, value: data?.[`${d !== 'total' ? `${d}_` : ''}${field}`] })).filter(d => field !== 'volume' || !d.key.includes('airdrop') || d.value > 100).map(d => ({ ...d, key: d.key === 'transfers_airdrop' ? 'airdrop_participations' : d.key }))
+    const data = payload?.[0]?.payload
+
+    const values = toArray(_.concat(stacks, 'total')).map(d => ({
+      key: d,
+      value: data?.[`${d !== 'total' ? `${d}_` : ''}${field}`],
+    }))
+    .filter(d => field !== 'volume' || !d.key.includes('airdrop') || d.value > 100)
+    .map(d => ({
+      ...d,
+      key: d.key === 'transfers_airdrop' ? 'airdrop_participations' : d.key,
+    }))
 
     return (
       <div className="bg-zinc-50 dark:bg-zinc-800 rounded-lg flex flex-col gap-y-1.5 p-2">
-        {toArray(values).map((d, i) => (
+        {values.map((d, i) => (
           <div key={i} className="flex items-center justify-between gap-x-4">
             <span className="capitalize text-xs font-semibold">
               {toTitle(d.key === 'gmp' ? 'GMPs' : d.key)}
@@ -488,8 +540,9 @@ function StatsBarChart({
   }
 
   const d = toArray(chartData).find(d => d.timestamp === x)
-  const value = d ? d[field] : chartData?.length > 0 ? totalValue || _.sumBy(chartData, field) : null
-  const timeString = d ? d.focusTimeString : chartData ? toArray([headString(_.head(chartData.filter(d => d.timestamp))?.focusTimeString, ' - '), lastString(_.last(chartData.filter(d => d.timestamp))?.focusTimeString, ' - ')]).join(' - ') : null
+
+  const value = d ? d[field] : chartData?.length > 0 ? totalValue || _.sumBy(chartData, field) : undefined
+  const timeString = d ? d.focusTimeString : chartData ? toArray([headString(_.head(chartData.filter(d => d.timestamp))?.focusTimeString, ' - '), lastString(_.last(chartData.filter(d => d.timestamp))?.focusTimeString, ' - ')]).join(' - ') : undefined
 
   return (
     <div className={clsx('border-l border-r border-t border-zinc-200 dark:border-zinc-700 flex flex-col gap-y-2 px-4 sm:px-6 xl:px-8 py-8', i % 2 !== 0 ? 'sm:border-l-0' : '')}>
@@ -527,8 +580,8 @@ function StatsBarChart({
           <ResponsiveContainer>
             <BarChart
               data={chartData}
-              onMouseEnter={e => setX(_.head(e?.activePayload)?.payload?.timestamp)}
-              onMouseMove={e => setX(_.head(e?.activePayload)?.payload?.timestamp)}
+              onMouseEnter={e => setX(e?.activePayload?.[0]?.payload?.timestamp)}
+              onMouseMove={e => setX(e?.activePayload?.[0]?.payload?.timestamp)}
               onMouseLeave={() => setX(null)}
               margin={{ top: 12, right: 0, bottom: 0, left: scale ? -24 : 0 }}
             >
@@ -585,9 +638,23 @@ export function SankeyChart({
   const { chains } = useGlobalStore()
 
   const d = toArray(data).find(d => d.key === x)
-  const value = d ? d[field] : data ? totalValue || _.sumBy(data, field) : null
-  const keyString = d ? d.key : data ? null : null
-  const chartData = _.slice(_.orderBy(toArray(data).map(d => ({ source: headString(d.key, '_'), target: lastString(d.key, '_'), value: parseInt(d[field]) })), ['value'], ['desc']), 0, topN).map(d => ({ ...d, source: getChainData(d.source, chains)?.name || d.source, target: `${getChainData(d.target, chains)?.name || d.target} ` }))
+
+  const value = d ? d[field] : data ? totalValue || _.sumBy(data, field) : undefined
+  const keyString = d ? d.key : undefined
+
+  const chartData = _.slice(
+    _.orderBy(toArray(data).map(d => ({
+      source: headString(d.key, '_'),
+      target: lastString(d.key, '_'),
+      value: parseInt(d[field]),
+    })), ['value'], ['desc']),
+    0, topN,
+  )
+  .map(d => ({
+    ...d,
+    source: getChainData(d.source, chains)?.name || d.source,
+    target: `${getChainData(d.target, chains)?.name || d.target} `,
+  }))
 
   return (
     <div className={clsx('border-zinc-200 dark:border-zinc-700 flex flex-col gap-y-2', i % 2 !== 0 ? 'sm:border-l-0' : '', !noBorder ? 'border-l border-r border-t px-4 sm:px-6 xl:px-8 py-8' : 'w-full')}>
@@ -655,11 +722,14 @@ export function SankeyChart({
                 labelTextColor={resolvedTheme === 'dark' ? '#f4f4f5' : '#18181b'}
                 nodeTooltip={d => {
                   const { id, formattedValue, nodeColor } = { ...d.node }
+
                   return (
                     <div className="px-2 py-1.5 bg-zinc-100 dark:bg-black rounded-sm shadow-sm flex flex-col space-y-0.5 text-xs">
                       <div className="flex items-center space-x-2">
                         <div className="w-3 h-3" style={{ backgroundColor: nodeColor }} />
-                        <span className="font-bold">{id}</span>
+                        <span className="font-bold">
+                          {id}
+                        </span>
                       </div>
                       <span>Total: {formattedValue}</span>
                     </div>
@@ -675,43 +745,77 @@ export function SankeyChart({
 }
 
 function Charts({ data, granularity, params }) {
-  if (!data) return null
+  if (!data) return
 
   const { GMPStatsByChains, GMPChart, GMPTotalVolume, transfersStats, transfersChart, transfersAirdropChart, transfersTotalVolume } = { ...data }
-  const TIME_FORMAT = granularity === 'month' ? 'MMM' : 'D MMM'
-  const { contractMethod } = { ...params }
 
-  const chartData = _.orderBy(Object.entries(_.groupBy(_.concat(
-    toArray(GMPChart?.data).map(d => ({ ...d, gmp_num_txs: d.num_txs, gmp_volume: d.volume })),
-    toArray(transfersChart?.data).map(d => ({ ...d, transfers_num_txs: d.num_txs, transfers_volume: d.volume })),
-    toArray(transfersAirdropChart?.data).map(d => ({ ...d, transfers_airdrop_num_txs: d.num_txs, transfers_airdrop_volume: d.volume })),
-  ), 'timestamp')).map(([k, v]) => ({
-    timestamp: toNumber(k),
-    num_txs: _.sumBy(v, 'num_txs'),
-    volume: _.sumBy(v, 'volume'),
-    gmp_num_txs: _.sumBy(v.filter(_v => _v.gmp_num_txs > 0), 'gmp_num_txs'),
-    gmp_volume: _.sumBy(v.filter(_v => _v.gmp_volume > 0), 'gmp_volume'),
-    transfers_num_txs: _.sumBy(v.filter(_v => _v.transfers_num_txs > 0), 'transfers_num_txs'),
-    transfers_volume: _.sumBy(v.filter(_v => _v.transfers_volume > 0), 'transfers_volume'),
-    transfers_airdrop_num_txs: _.sumBy(v.filter(_v => _v.transfers_airdrop_num_txs > 0), 'transfers_airdrop_num_txs'),
-    transfers_airdrop_volume: _.sumBy(v.filter(_v => _v.transfers_airdrop_volume > 0), 'transfers_airdrop_volume'),
-  })).map(d => ({ ...d, transfers_airdrop_volume_value: d.transfers_airdrop_volume > 0 ? d.transfers_airdrop_volume > 100000 ? _.mean([d.gmp_volume, d.transfers_volume]) * 2 : d.transfers_airdrop_volume : 0 })), ['timestamp'], ['asc'])
+  const TIME_FORMAT = granularity === 'month' ? 'MMM' : 'D MMM'
+
+  const chartData = _.orderBy(
+    Object.entries(
+      _.groupBy(_.concat(
+        toArray(GMPChart?.data).map(d => ({
+          ...d,
+          gmp_num_txs: d.num_txs,
+          gmp_volume: d.volume,
+        })),
+        toArray(transfersChart?.data).map(d => ({
+          ...d,
+          transfers_num_txs: d.num_txs,
+          transfers_volume: d.volume,
+        })),
+        toArray(transfersAirdropChart?.data).map(d => ({
+          ...d,
+          transfers_airdrop_num_txs: d.num_txs,
+          transfers_airdrop_volume: d.volume,
+        })),
+      ), 'timestamp')
+    )
+    .map(([k, v]) => ({
+      timestamp: toNumber(k),
+      num_txs: _.sumBy(v, 'num_txs'),
+      volume: _.sumBy(v, 'volume'),
+      gmp_num_txs: _.sumBy(v.filter(v => v.gmp_num_txs > 0), 'gmp_num_txs'),
+      gmp_volume: _.sumBy(v.filter(v => v.gmp_volume > 0), 'gmp_volume'),
+      transfers_num_txs: _.sumBy(v.filter(v => v.transfers_num_txs > 0), 'transfers_num_txs'),
+      transfers_volume: _.sumBy(v.filter(v => v.transfers_volume > 0), 'transfers_volume'),
+      transfers_airdrop_num_txs: _.sumBy(v.filter(v => v.transfers_airdrop_num_txs > 0), 'transfers_airdrop_num_txs'),
+      transfers_airdrop_volume: _.sumBy(v.filter(v => v.transfers_airdrop_volume > 0), 'transfers_airdrop_volume'),
+    }))
+    .map(d => ({
+      ...d,
+      transfers_airdrop_volume_value: d.transfers_airdrop_volume > 0 ? d.transfers_airdrop_volume > 100000 ? _.mean([d.gmp_volume, d.transfers_volume]) * 2 : d.transfers_airdrop_volume : 0,
+    })),
+    ['timestamp'], ['asc'],
+  )
 
   const maxVolumePerMean = _.maxBy(chartData, 'volume')?.volume / (_.meanBy(chartData, 'volume') || 1)
   const hasAirdropActivities = chartData.find(d => d.transfers_airdrop_volume > 0)
+
   const scale = false && maxVolumePerMean > 5 && !hasAirdropActivities ? 'log' : undefined
   const useStack = maxVolumePerMean <= 5 || maxVolumePerMean > 10 || hasAirdropActivities
 
   const groupData = (data, by = 'key') => Object.entries(_.groupBy(toArray(data), by)).map(([k, v]) => ({
-    key: _.head(v)?.key || k,
+    key: v[0]?.key || k,
     num_txs: _.sumBy(v, 'num_txs'),
     volume: _.sumBy(v, 'volume'),
-    chain: _.orderBy(toArray(_.uniq(toArray(by === 'customKey' ? _.head(v)?.chain : v.map(d => d.chain))).map(d => getChainData(d, chains))), ['i'], ['asc']).map(d => d.id),
+    chain: _.orderBy(
+      toArray(_.uniq(toArray(by === 'customKey' ? v[0]?.chain : v.map(d => d.chain))).map(d => getChainData(d, chains))),
+      ['i'], ['asc'],
+    ).map(d => d.id),
   }))
 
   const chainPairs = groupData(_.concat(
-    toArray(GMPStatsByChains?.source_chains).flatMap(s => toArray(s.destination_chains).map(d => ({ key: `${s.key}_${d.key}`, num_txs: d.num_txs, volume: d.volume }))),
-    toArray(transfersStats?.data).map(d => ({ key: `${d.source_chain}_${d.destination_chain}`, num_txs: d.num_txs, volume: d.volume })),
+    toArray(GMPStatsByChains?.source_chains).flatMap(s => toArray(s.destination_chains).map(d => ({
+      key: `${s.key}_${d.key}`,
+      num_txs: d.num_txs,
+      volume: d.volume,
+    }))),
+    toArray(transfersStats?.data).map(d => ({
+      key: `${d.source_chain}_${d.destination_chain}`,
+      num_txs: d.num_txs,
+      volume: d.volume,
+    })),
   ))
 
   return (
@@ -782,6 +886,7 @@ function Top({
   className,
 }) {
   const { chains } = useGlobalStore()
+
   return (
     <div className={clsx('border-l border-r border-t border-zinc-200 dark:border-zinc-700 flex flex-col gap-y-3 px-4 sm:px-6', type === 'chain' ? i % 3 !== 0 ? 'sm:border-l-0' : i % (hasTransfers ? 6 : 3) !== 0 ? 'lg:border-l-0' : '' : !hasTransfers || !hasGMP || i % 4 !== 0 ? 'sm:border-l-0' : '', type === 'chain' ? 'xl:px-4 py-4' : 'xl:px-8 py-8')}>
       <div className="flex flex-col gap-y-0.5">
@@ -802,6 +907,7 @@ function Top({
           <div className={clsx('overflow-y-auto flex flex-col gap-y-1', className)}>
             {toArray(data).filter(d => type !== 'chain' || split(d.key, { delimiter: '_' }).filter(k => !getChainData(k, chains)).length < 1).map((d, i) => {
               const keys = split(d.key, { delimiter: '_' })
+
               return keys.length > 0 && (
                 <div key={i} className="flex items-center justify-between gap-x-2">
                   <div className={clsx('flex items-center gap-x-1', ['asset', 'contract', 'address'].includes(type) ? 'h-8' : 'h-6')}>
@@ -827,7 +933,7 @@ function Top({
                             <Profile
                               key={j}
                               address={k}
-                              chain={_.head(toArray(d.chain))}
+                              chain={toArray(d.chain)[0]}
                               width={20}
                               height={20}
                               noCopy={true}
@@ -838,6 +944,7 @@ function Top({
                         case 'chain':
                         default:
                           const { name, image } = { ...getChainData(k, chains) }
+
                           const element = (
                             <div key={j} className="flex items-center gap-x-1.5">
                               <Image
@@ -858,6 +965,7 @@ function Top({
                               )}
                             </div>
                           )
+
                           return keys.length > 1 ?
                             <div key={j} className="flex items-center gap-x-1">
                               {j > 0 && <MdKeyboardArrowRight size={16} className="text-zinc-700 dark:text-zinc-300" />}
@@ -887,14 +995,18 @@ function Top({
 function Tops({ data, types, params }) {
   const { chains, assets, itsAssets } = useGlobalStore()
 
-  if (!data) return null
+  if (!data) return
+
   const { GMPStatsByChains, GMPStatsByContracts, GMPTopUsers, GMPTopITSUsers, GMPTopITSUsersByVolume, GMPTopITSAssets, GMPTopITSAssetsByVolume, transfersStats, transfersTopUsers, transfersTopUsersByVolume } = { ...data }
 
   const groupData = (data, by = 'key') => Object.entries(_.groupBy(toArray(data), by)).map(([k, v]) => ({
-    key: _.head(v)?.key || k,
+    key: v[0]?.key || k,
     num_txs: _.sumBy(v, 'num_txs'),
     volume: _.sumBy(v, 'volume'),
-    chain: _.orderBy(toArray(_.uniq(toArray(by === 'customKey' ? _.head(v)?.chain : v.map(d => d.chain))).map(d => getChainData(d, chains))), ['i'], ['asc']).map(d => d.id),
+    chain: _.orderBy(
+      toArray(_.uniq(toArray(by === 'customKey' ? v[0]?.chain : v.map(d => d.chain))).map(d => getChainData(d, chains))),
+      ['i'], ['asc'],
+    ).map(d => d.id),
   }))
 
   const getTopData = (data, field = 'num_txs', n = 5) => _.slice(_.orderBy(toArray(data), [field], ['desc']), 0, n)
@@ -904,59 +1016,128 @@ function Tops({ data, types, params }) {
   const hasITS = hasGMP && params?.assetType !== 'gateway' && toArray(params?.asset).findIndex(a => getAssetData(a, assets)) < 0
 
   const chainPairs = groupData(_.concat(
-    toArray(GMPStatsByChains?.source_chains).flatMap(s => toArray(s.destination_chains).map(d => ({ key: `${s.key}_${d.key}`, num_txs: d.num_txs, volume: d.volume }))),
-    toArray(transfersStats?.data).map(d => ({ key: `${d.source_chain}_${d.destination_chain}`, num_txs: d.num_txs, volume: d.volume })),
+    toArray(GMPStatsByChains?.source_chains).flatMap(s => toArray(s.destination_chains).map(d => ({
+      key: `${s.key}_${d.key}`,
+      num_txs: d.num_txs,
+      volume: d.volume,
+    }))),
+    toArray(transfersStats?.data).map(d => ({
+      key: `${d.source_chain}_${d.destination_chain}`,
+      num_txs: d.num_txs,
+      volume: d.volume,
+    })),
   ))
 
   const sourceChains = groupData(_.concat(
-    toArray(GMPStatsByChains?.source_chains).flatMap(s => toArray(s.destination_chains).map(d => ({ key: s.key, num_txs: d.num_txs, volume: d.volume }))),
-    toArray(transfersStats?.data).map(d => ({ key: d.source_chain, num_txs: d.num_txs, volume: d.volume })),
+    toArray(GMPStatsByChains?.source_chains).flatMap(s => toArray(s.destination_chains).map(d => ({
+      key: s.key,
+      num_txs: d.num_txs,
+      volume: d.volume,
+    }))),
+    toArray(transfersStats?.data).map(d => ({
+      key: d.source_chain,
+      num_txs: d.num_txs,
+      volume: d.volume,
+    })),
   ))
 
   const destionationChains = groupData(_.concat(
-    toArray(GMPStatsByChains?.source_chains).flatMap(s => toArray(s.destination_chains).map(d => ({ key: d.key, num_txs: d.num_txs, volume: d.volume }))),
-    toArray(transfersStats?.data).map(d => ({ key: d.destination_chain, num_txs: d.num_txs, volume: d.volume })),
+    toArray(GMPStatsByChains?.source_chains).flatMap(s => toArray(s.destination_chains).map(d => ({
+      key: d.key,
+      num_txs: d.num_txs,
+      volume: d.volume,
+    }))),
+    toArray(transfersStats?.data).map(d => ({
+      key: d.destination_chain,
+      num_txs: d.num_txs,
+      volume: d.volume,
+    })),
   ))
 
   const transfersUsers = groupData(toArray(transfersTopUsers?.data).map(d => {
     const { name } = { ...accounts.find(a => equalsIgnoreCase(a.address, d.key)) }
-    return { key: d.key, customKey: name || d.key, num_txs: d.num_txs, volume: d.volume }
+
+    return {
+      key: d.key,
+      customKey: name || d.key,
+      num_txs: d.num_txs,
+      volume: d.volume,
+    }
   }), 'customKey')
 
   const transfersUsersByVolume = groupData(toArray(transfersTopUsersByVolume?.data).map(d => {
-    const { key, num_txs, volume } = { ...d }
     const { name } = { ...accounts.find(a => equalsIgnoreCase(a.address, d.key)) }
-    return { key: d.key, customKey: name || d.key, num_txs: d.num_txs, volume: d.volume }
+
+    return {
+      key: d.key,
+      customKey: name || d.key,
+      num_txs: d.num_txs,
+      volume: d.volume,
+    }
   }), 'customKey')
 
   const contracts = groupData(toArray(GMPStatsByContracts?.chains).flatMap(d => toArray(d.contracts).map(c => {
     const { name } = { ...accounts.find(a => equalsIgnoreCase(a.address, c.key)) }
-    return { key: c.key?.toLowerCase(), customKey: name || c.key?.toLowerCase(), num_txs: c.num_txs, volume: c.volume, chain: d.key }
+
+    return {
+      key: toCase(c.key, 'lower'),
+      customKey: name || toCase(c.key, 'lower'),
+      num_txs: c.num_txs,
+      volume: c.volume,
+      chain: d.key,
+    }
   })), 'customKey')
 
   const GMPUsers = groupData(toArray(GMPTopUsers?.data).map(d => {
     const { name } = { ...accounts.find(a => equalsIgnoreCase(a.address, d.key)) }
-    return { key: d.key?.toLowerCase(), customKey: name || d.key?.toLowerCase(), num_txs: d.num_txs }
+
+    return {
+      key: toCase(d.key, 'lower'),
+      customKey: name || toCase(d.key, 'lower'),
+      num_txs: d.num_txs,
+    }
   }), 'customKey')
 
   const ITSUsers = groupData(toArray(GMPTopITSUsers?.data).map(d => {
     const { name } = { ...accounts.find(a => equalsIgnoreCase(a.address, d.key)) }
-    return { key: d.key?.toLowerCase(), customKey: name || d.key?.toLowerCase(), num_txs: d.num_txs }
+
+    return {
+      key: toCase(d.key, 'lower'),
+      customKey: name || toCase(d.key, 'lower'),
+      num_txs: d.num_txs,
+    }
   }), 'customKey')
 
   const ITSUsersByVolume = groupData(toArray(GMPTopITSUsersByVolume?.data).filter(d => d.volume > 0).map(d => {
     const { name } = { ...accounts.find(a => equalsIgnoreCase(a.address, d.key)) }
-    return { key: d.key?.toLowerCase(), customKey: name || d.key?.toLowerCase(), num_txs: d.num_txs, volume: d.volume }
+
+    return {
+      key: toCase(d.key, 'lower'),
+      customKey: name || toCase(d.key, 'lower'),
+      num_txs: d.num_txs,
+      volume: d.volume,
+    }
   }), 'customKey')
 
   const ITSAssets = groupData(toArray(GMPTopITSAssets?.data).map(d => {
     const { symbol } = { ...getITSAssetData(d.key, itsAssets) }
-    return { key: d.key?.toLowerCase(), customKey: symbol || d.key?.toLowerCase(), num_txs: d.num_txs }
+
+    return {
+      key: toCase(d.key, 'lower'),
+      customKey: symbol || toCase(d.key, 'lower'),
+      num_txs: d.num_txs,
+    }
   }), 'customKey')
 
   const ITSAssetsByVolume = groupData(toArray(GMPTopITSAssetsByVolume?.data).filter(d => d.volume > 0).map(d => {
     const { symbol } = { ...getITSAssetData(d.key, itsAssets) }
-    return { key: d.key?.toLowerCase(), customKey: symbol || d.key?.toLowerCase(), num_txs: d.num_txs, volume: d.volume }
+
+    return {
+      key: toCase(d.key, 'lower'),
+      customKey: symbol || toCase(d.key, 'lower'),
+      num_txs: d.num_txs,
+      volume: d.volume,
+    }
   }), 'customKey')
 
   return (
@@ -1130,8 +1311,12 @@ function Tops({ data, types, params }) {
   )
 }
 
-function GMPTimeSpent({ data, format = '0,0', prefix = '' }) {
-  if (!data) return null
+function GMPTimeSpent({
+  data,
+  format = '0,0',
+  prefix = '',
+}) {
+  if (!data) return
 
   const { key, num_txs, express_execute, confirm, approve, total } = { ...data }
 
@@ -1144,7 +1329,16 @@ function GMPTimeSpent({ data, format = '0,0', prefix = '' }) {
         </span>
       </div>
     )
-    return noTooltip ? point : <TooltipComponent content={name} className="whitespace-nowrap">{point}</TooltipComponent>
+
+    if (noTooltip) {
+      return point
+    }
+
+    return (
+      <TooltipComponent content={name} className="whitespace-nowrap">
+        {point}
+      </TooltipComponent>
+    )
   }
 
   let points = toArray([
@@ -1157,7 +1351,11 @@ function GMPTimeSpent({ data, format = '0,0', prefix = '' }) {
   if (total) {
     points = points.map((d, i) => {
       const value = d.time_spent - (i > 0 ? points[i - 1].time_spent : 0)
-      return { ...d, value, width: toFixed(value * 100 / total, 2) }
+
+      return {
+        ...d,
+        value, width: toFixed(value * 100 / total, 2),
+      }
     })
   }
 
@@ -1199,7 +1397,11 @@ function GMPTimeSpent({ data, format = '0,0', prefix = '' }) {
                   )}
                   className="whitespace-nowrap"
                 >
-                  <Point title={d.title} name={d.name} noTooltip={true} />
+                  <Point
+                    title={d.title}
+                    name={d.name}
+                    noTooltip={true}
+                  />
                 </TooltipComponent>
               </div>
             ))}
@@ -1228,9 +1430,8 @@ function GMPTimeSpent({ data, format = '0,0', prefix = '' }) {
 }
 
 function GMPTimeSpents({ data }) {
-  if (!data) return null
+  if (!data?.GMPStatsAVGTimes?.time_spents) return
 
-  const { GMPStatsAVGTimes } = { ...data }
   return (
     <div className="border border-zinc-200 dark:border-zinc-700 flex flex-col gap-y-4 px-4 sm:px-6 xl:px-8 py-8">
       <div className="flex items-start justify-between gap-x-4">
@@ -1244,7 +1445,9 @@ function GMPTimeSpents({ data }) {
         </div>
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {toArray(GMPStatsAVGTimes?.time_spents).map((d, i) => <GMPTimeSpent key={i} data={d} />)}
+        {data.GMPStatsAVGTimes.time_spents.map((d, i) => (
+          <GMPTimeSpent key={i} data={d} />
+        ))}
       </div>
     </div>
   )
@@ -1261,12 +1464,18 @@ export function Interchain() {
   const { assets, stats } = { ...globalStore }
 
   const { transfersType, contractMethod, contractAddress, fromTime, toTime } = { ...params }
-  let types = toArray(transfersType || ['gmp', 'transfers'])
-  if (contractMethod) types = ['gmp']
+
+  let types = transfersType || ['gmp', 'transfers']
+
+  if (contractMethod) {
+    types = ['gmp']
+  }
+
   const granularity = getGranularity(fromTime, toTime)
 
   useEffect(() => {
     const _params = getParams(searchParams)
+
     if (!_.isEqual(_params, params)) {
       setParams(_params)
       setRefresh(true)
@@ -1275,111 +1484,150 @@ export function Interchain() {
 
   useEffect(() => {
     const metrics = ['GMPStatsByChains', 'GMPStatsByContracts', 'GMPChart', 'GMPTotalVolume', 'GMPTopUsers', 'GMPTopITSUsers', 'GMPTopITSUsersByVolume', 'GMPTopITSAssets', 'GMPTopITSAssetsByVolume', 'transfersStats', 'transfersChart', 'transfersTotalVolume', 'transfersTopUsers', 'transfersTopUsersByVolume']
+
     const getData = async () => {
-      if (stats && params && toBoolean(refresh)) {
-        setData({ ...data, [generateKeyByParams(params)]: Object.fromEntries((await Promise.all(toArray(metrics.map(d => new Promise(async resolve => {
-          const isSearchITSOnTransfers = types.includes('transfers') && d.startsWith('transfers') && (params.assetType === 'its' || toArray(params.asset).findIndex(a => getITSAssetData(a, globalStore.itsAssets)) > -1)
-          const hasITS = types.includes('gmp') && params.assetType !== 'gateway' && toArray(params.asset).findIndex(a => getAssetData(a, assets)) < 0
-          const noFilter = Object.keys(params).length === 0
+      if (params && toBoolean(refresh) && stats) {
+        setData({
+          ...data,
+          [generateKeyByParams(params)]: Object.fromEntries(
+            (await Promise.all(toArray(metrics.map(d => new Promise(async resolve => {
+              const isSearchITSOnTransfers = types.includes('transfers') && d.startsWith('transfers') && (params.assetType === 'its' || toArray(params.asset).findIndex(a => getITSAssetData(a, globalStore.itsAssets)) > -1)
+              const hasITS = types.includes('gmp') && params.assetType !== 'gateway' && toArray(params.asset).findIndex(a => getAssetData(a, assets)) < 0
+              const noFilter = Object.keys(params).length === 0
 
-          switch (d) {
-            case 'GMPStatsByChains':
-              resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPStatsByChains(params))])
-              break
-            case 'GMPStatsByContracts':
-              resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPStatsByContracts(params))])
-              break
-            case 'GMPStatsAVGTimes':
-              resolve([d, types.includes('gmp') && await GMPStats({ ...params, avg_times: true, fromTime: params.fromTime || moment().subtract(1, 'months').startOf('day').unix() })])
-              break
-            case 'GMPChart':
-              resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPChart({ ...params, granularity }))])
-              break
-            case 'GMPTotalVolume':
-              resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPTotalVolume(params))])
-              break
-            case 'GMPTopUsers':
-              resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPTopUsers({ ...params, size: 100 }))])
-              break
-            case 'GMPTopITSUsers':
-              resolve([d, hasITS && ((noFilter && stats[d]) || await GMPTopUsers({ ...params, assetType: 'its', size: 100 }))])
-              break
-            case 'GMPTopITSUsersByVolume':
-              resolve([d, hasITS && ((noFilter && stats[d]) || await GMPTopUsers({ ...params, assetType: 'its', orderBy: 'volume', size: 100 }))])
-              break
-            case 'GMPTopITSAssets':
-              resolve([d, hasITS && ((noFilter && stats[d]) || await GMPTopITSAssets({ ...params, size: 100 }))])
-              break
-            case 'GMPTopITSAssetsByVolume':
-              resolve([d, hasITS && ((noFilter && stats[d]) || await GMPTopITSAssets({ ...params, orderBy: 'volume', size: 100 }))])
-              break
-            case 'transfersStats':
-              if (isSearchITSOnTransfers) resolve([d, { data: [] }])
-              else resolve([d, types.includes('transfers') && ((noFilter && stats[d]) || await transfersStats(params))])
-              break
-            case 'transfersChart':
-              if (isSearchITSOnTransfers) resolve([d, { data: [] }])
-              else {
-                if (noFilter && stats[d]) resolve([[d, stats[d]], [d.replace('transfers', 'transfersAirdrop'), stats[d.replace('transfers', 'transfersAirdrop')]]])
-                else {
-                  let value = types.includes('transfers') && await transfersChart({ ...params, granularity })
-                  const values = [[d, value]]
+              switch (d) {
+                case 'GMPStatsByChains':
+                  resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPStatsByChains(params))])
+                  break
+                case 'GMPStatsByContracts':
+                  resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPStatsByContracts(params))])
+                  break
+                case 'GMPStatsAVGTimes':
+                  resolve([d, types.includes('gmp') && await GMPStats({ ...params, avg_times: true, fromTime: params.fromTime || moment().subtract(1, 'months').startOf('day').unix() })])
+                  break
+                case 'GMPChart':
+                  resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPChart({ ...params, granularity }))])
+                  break
+                case 'GMPTotalVolume':
+                  resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPTotalVolume(params))])
+                  break
+                case 'GMPTopUsers':
+                  resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPTopUsers({ ...params, size: 100 }))])
+                  break
+                case 'GMPTopITSUsers':
+                  resolve([d, hasITS && ((noFilter && stats[d]) || await GMPTopUsers({ ...params, assetType: 'its', size: 100 }))])
+                  break
+                case 'GMPTopITSUsersByVolume':
+                  resolve([d, hasITS && ((noFilter && stats[d]) || await GMPTopUsers({ ...params, assetType: 'its', orderBy: 'volume', size: 100 }))])
+                  break
+                case 'GMPTopITSAssets':
+                  resolve([d, hasITS && ((noFilter && stats[d]) || await GMPTopITSAssets({ ...params, size: 100 }))])
+                  break
+                case 'GMPTopITSAssetsByVolume':
+                  resolve([d, hasITS && ((noFilter && stats[d]) || await GMPTopITSAssets({ ...params, orderBy: 'volume', size: 100 }))])
+                  break
+                case 'transfersStats':
+                  if (isSearchITSOnTransfers) {
+                    resolve([d, { data: [] }])
+                  }
+                  else {
+                    resolve([d, types.includes('transfers') && ((noFilter && stats[d]) || await transfersStats(params))])
+                  }
+                  break
+                case 'transfersChart':
+                  if (isSearchITSOnTransfers) {
+                    resolve([d, { data: [] }])
+                  }
+                  else {
+                    if (noFilter && stats[d]) {
+                      resolve([[d, stats[d]], [d.replace('transfers', 'transfersAirdrop'), stats[d.replace('transfers', 'transfersAirdrop')]]])
+                    }
+                    else {
+                      let value = types.includes('transfers') && await transfersChart({ ...params, granularity })
 
-                  if (value?.data && granularity === 'month') {
-                    const airdrops = [
-                      { date: '08-01-2023', fromTime: undefined, toTime: undefined, chain: 'sei', environment: 'mainnet' },
-                    ]
+                      const values = [[d, value]]
 
-                    for (const airdrop of airdrops) {
-                      const { date, chain, environment } = { ...airdrop }
-                      let { fromTime, toTime } = { ...airdrop }
-                      fromTime = fromTime || moment(date).startOf('month').unix()
-                      toTime = toTime || moment(date).endOf('month').unix()
+                      if (value?.data && granularity === 'month') {
+                        const airdrops = [
+                          { date: '08-01-2023', fromTime: undefined, toTime: undefined, chain: 'sei', environment: 'mainnet' },
+                        ]
 
-                      if (environment === ENVIRONMENT && (!params.fromTime || toNumber(params.fromTime) < fromTime) && (!params.toTime || toNumber(params.toTime) > toTime)) {
-                        const _value = await transfersChart({ ...params, chain, fromTime, toTime, granularity })
+                        // custom transfers chart by adding airdrops data
+                        for (const airdrop of airdrops) {
+                          const { date, chain, environment } = { ...airdrop }
+                          let { fromTime, toTime } = { ...airdrop }
 
-                        if (toArray(_value?.data).length > 0) {
-                          for (const v of _value.data) {
-                            if (v.timestamp && v.volume > 0) {
-                              const index = value.data.findIndex(_v => _v.timestamp === v.timestamp)
-                              if (index > -1 && value.data[index].volume >= v.volume) {
-                                value.data[index] = { ...value.data[index], volume: value.data[index].volume - v.volume }
+                          if (!fromTime) {
+                            fromTime = moment(date, 'MM-DD-YYYY').startOf('month').unix()
+                          }
+
+                          if (!toTime) {
+                            toTime = moment(date, 'MM-DD-YYYY').endOf('month').unix()
+                          }
+
+                          if (environment === ENVIRONMENT && (!params.fromTime || toNumber(params.fromTime) < fromTime) && (!params.toTime || toNumber(params.toTime) > toTime)) {
+                            const response = await transfersChart({ ...params, chain, fromTime, toTime, granularity })
+
+                            if (toArray(response?.data).length > 0) {
+                              for (const v of response.data) {
+                                if (v.timestamp && v.volume > 0) {
+                                  const i = value.data.findIndex(v => v.timestamp === v.timestamp)
+
+                                  if (i > -1 && value.data[i].volume >= v.volume) {
+                                    value.data[i] = { ...value.data[i], volume: value.data[i].volume - v.volume }
+                                  }
+                                }
                               }
+
+                              values.push([d.replace('transfers', 'transfersAirdrop'), response])
                             }
                           }
-                          values.push([d.replace('transfers', 'transfersAirdrop'), _value])
                         }
                       }
+
+                      resolve(values)
                     }
                   }
-
-                  resolve(values)
-                }
+                  break
+                case 'transfersTotalVolume':
+                  if (isSearchITSOnTransfers) {
+                    resolve([d, 0])
+                  }
+                  else {
+                    resolve([d, types.includes('transfers') && ((noFilter && stats[d]) || await transfersTotalVolume(params))])
+                  }
+                  break
+                case 'transfersTopUsers':
+                  if (isSearchITSOnTransfers) {
+                    resolve([d, { data: [] }])
+                  }
+                  else {
+                    resolve([d, types.includes('transfers') && ((noFilter && stats[d]) || await transfersTopUsers({ ...params, size: 100 }))])
+                  }
+                  break
+                case 'transfersTopUsersByVolume':
+                  if (isSearchITSOnTransfers) {
+                    resolve([d, { data: [] }])
+                  }
+                  else {
+                    resolve([d, types.includes('transfers') && ((noFilter && stats[d]) || await transfersTopUsers({ ...params, orderBy: 'volume', size: 100 }))])
+                  }
+                  break
+                default:
+                  resolve()
+                  break
               }
-              break
-            case 'transfersTotalVolume':
-              if (isSearchITSOnTransfers) resolve([d, 0])
-              else resolve([d, types.includes('transfers') && ((noFilter && stats[d]) || await transfersTotalVolume(params))])
-              break
-            case 'transfersTopUsers':
-              if (isSearchITSOnTransfers) resolve([d, { data: [] }])
-              else resolve([d, types.includes('transfers') && ((noFilter && stats[d]) || await transfersTopUsers({ ...params, size: 100 }))])
-              break
-            case 'transfersTopUsersByVolume':
-              if (isSearchITSOnTransfers) resolve([d, { data: [] }])
-              else resolve([d, types.includes('transfers') && ((noFilter && stats[d]) || await transfersTopUsers({ ...params, orderBy: 'volume', size: 100 }))])
-              break
-            default:
-              resolve()
-              break
-          }
-        }))))).map(d => Array.isArray(_.head(d)) ? d : [d]).flatMap(d => d)) })
+            })))))
+            .map(d => Array.isArray(d[0]) ? d : [d])
+            .flatMap(d => d)
+          ),
+        })
         setRefresh(false)
       }
     }
+
     getData()
-  }, [params, data, setData, refresh, setRefresh, stats, assets, globalStore.itsAssets, types, granularity])
+  }, [params, data, setData, refresh, setRefresh, assets, stats, globalStore.itsAssets, types, granularity])
 
   useEffect(() => {
     const getData = async () => {
@@ -1396,6 +1644,7 @@ export function Interchain() {
         })
       }
     }
+
     getData()
   }, [params, setTimeSpentData, refresh, setRefresh, types])
 
@@ -1411,7 +1660,9 @@ export function Interchain() {
           <div className="flex items-center gap-x-6">
             <div className="sm:flex-auto">
               <div className="flex items-center gap-x-4">
-                <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">Statistics</h1>
+                <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">
+                  Statistics
+                </h1>
                 {_.slice(toArray(contractAddress), 0, 1).map((a, i) => (
                   <Profile
                     key={i}
@@ -1433,8 +1684,9 @@ export function Interchain() {
                 )}
               </div>
               <div className="max-w-xl flex flex-wrap items-center mt-2">
-                {timeShortcuts.map((d, i) => {
+                {TIME_SHORTCUTS.map((d, i) => {
                   const selected = ((!fromTime && !_.head(d.value)) || _.head(d.value)?.unix() === toNumber(fromTime)) && ((!toTime && !_.last(d.value)) || _.last(d.value)?.unix() === toNumber(toTime))
+
                   return (
                     <Link
                       key={i}
@@ -1465,8 +1717,16 @@ export function Interchain() {
           </div>
           {refresh && refresh !== 'true' && <Overlay />}
           <Summary data={data[generateKeyByParams(params)]} params={params} />
-          <Charts data={data[generateKeyByParams(params)]} granularity={granularity} params={params} />
-          <Tops data={data[generateKeyByParams(params)]} types={types} params={params} />
+          <Charts
+            data={data[generateKeyByParams(params)]}
+            granularity={granularity}
+            params={params}
+          />
+          <Tops
+            data={data[generateKeyByParams(params)]}
+            types={types}
+            params={params}
+          />
           {types.includes('gmp') && <GMPTimeSpents data={timeSpentData?.[generateKeyByParams(params)]} />}
         </div>
       }
