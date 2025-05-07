@@ -37,7 +37,7 @@ import { getProvider } from '@/lib/chain/evm'
 import { ENVIRONMENT, getChainData, getAssetData } from '@/lib/config'
 import { toCase, split, toArray, parseError } from '@/lib/parser'
 import { sleep, getParams } from '@/lib/operator'
-import { isString, equalsIgnoreCase, headString, ellipse, toTitle } from '@/lib/string'
+import { isString, equalsIgnoreCase, headString, find, ellipse, toTitle } from '@/lib/string'
 import { isNumber, toNumber, toBigNumber, formatUnits, parseUnits, numberFormat } from '@/lib/number'
 import { timeDiff } from '@/lib/time'
 import IAxelarExecutable from '@/data/interfaces/gmp/IAxelarExecutable.json'
@@ -285,7 +285,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                 <span className={clsx('absolute text-2xs font-medium whitespace-nowrap mt-1', d.status === 'failed' ? 'text-red-600 dark:text-red-500' : 'text-blue-600 dark:text-blue-500', d.title?.length <= 5 ? 'ml-1' : '')}>{d.title}</span>
                                 {d.id === 'express' && (
                                   <div className="absolute mt-3">
-                                    <span className="text-2xs font-medium text-green-600 dark:text-green-500">Received</span>
+                                    <span className="text-2xs font-medium text-green-600 dark:text-green-500">
+                                      Received
+                                    </span>
                                   </div>
                                 )}
                               </>
@@ -338,19 +340,25 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                       {d.is_insufficient_fee && !(d.confirm || d.approved) && (
                         <div className="flex items-center text-red-600 dark:text-red-500 gap-x-1">
                           <PiWarningCircle size={16} />
-                          <span className="text-xs">Insufficient Fee</span>
+                          <span className="text-xs">
+                            Insufficient Fee
+                          </span>
                         </div>
                       )}
                       {d.is_invalid_gas_paid && !(d.confirm || d.approved) && (
                         <div className="flex items-center text-red-600 dark:text-red-500 gap-x-1">
                           <PiWarningCircle size={16} />
-                          <span className="text-xs">Invalid Gas Paid (source address mismatch)</span>
+                          <span className="text-xs">
+                            Invalid Gas Paid (source address mismatch)
+                          </span>
                         </div>
                       )}
                       {d.not_enough_gas_to_execute && !d.executed && !d.is_executed && (
                         <div className="flex items-center text-red-600 dark:text-red-500 gap-x-1">
                           <PiWarningCircle size={16} />
-                          <span className="text-xs">Insufficient Gas</span>
+                          <span className="text-xs">
+                            Insufficient Gas
+                          </span>
                         </div>
                       )}
                     </div>
@@ -366,8 +374,12 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                 <div className="flex flex-col gap-y-2">
                   {Object.entries(buttons).map(([k, v]) => (
                     <div key={k} className="w-72 grid grid-cols-3 gap-x-4">
-                      <span className="font-semibold capitalize">{toTitle(k)}:</span>
-                      <div className="col-span-2 flex items-center">{v}</div>
+                      <span className="font-semibold capitalize">
+                        {toTitle(k)}:
+                      </span>
+                      <div className="col-span-2 flex items-center">
+                        {v}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -381,7 +393,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                 <div className="overflow-x-auto flex flex-col sm:grid sm:grid-cols-4 gap-y-6 sm:gap-y-0 sm:gap-x-4">
                   <div className="flex justify-between gap-x-4">
                     <div className="flex flex-col gap-y-2 sm:gap-y-4">
-                      <span className="text-blue-600 dark:text-blue-500 text-2xs font-medium whitespace-nowrap">Settlement Forwarded</span>
+                      <span className="text-blue-600 dark:text-blue-500 text-2xs font-medium whitespace-nowrap">
+                        Settlement Forwarded
+                      </span>
                       <div className="flex flex-col gap-y-3">
                         {settlement_forwarded_events ?
                           <ExplorerLink
@@ -407,7 +421,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                   </div>
                   <div className="flex justify-between gap-x-4">
                     <div className="flex flex-col gap-y-2 sm:gap-y-4">
-                      <span className="text-blue-600 dark:text-blue-500 text-2xs font-medium whitespace-nowrap">Settlement Processed</span>
+                      <span className="text-blue-600 dark:text-blue-500 text-2xs font-medium whitespace-nowrap">
+                        Settlement Processed
+                      </span>
                       <div className="flex flex-col gap-y-3">
                         {settlement_forwarded_events ?
                           <ExplorerLink
@@ -432,7 +448,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                   </div>
                   <div className="flex justify-between gap-x-4">
                     <div className="flex flex-col gap-y-2 sm:gap-y-4">
-                      <span className="text-blue-600 dark:text-blue-500 text-2xs font-medium whitespace-nowrap">Settlement Filled</span>
+                      <span className="text-blue-600 dark:text-blue-500 text-2xs font-medium whitespace-nowrap">
+                        Settlement Filled
+                      </span>
                       <div className="flex flex-col gap-y-3">
                         {settlement_filled_events ?
                           <ExplorerLink
@@ -458,7 +476,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                   </div>
                   <div className="flex justify-between gap-x-4">
                     <div className="flex flex-col gap-y-2 sm:gap-y-4">
-                      <span className="text-blue-600 dark:text-blue-500 text-2xs font-medium whitespace-nowrap">Tokens Released</span>
+                      <span className="text-blue-600 dark:text-blue-500 text-2xs font-medium whitespace-nowrap">
+                        Tokens Released
+                      </span>
                       <div className="flex flex-col gap-y-3">
                         {settlement_filled_events ?
                           <ExplorerLink
@@ -738,7 +758,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
           {(!data.originData || data.originData.executed) && executed && isNumber(gasData?.gas_paid_amount) && isNumber(gasData.gas_remain_amount) && (refundedData?.receipt?.status || timeDiff((data.originData?.executed || executed).block_timestamp * 1000) >= 300) && (
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
               <dt className="flex items-center text-zinc-900 dark:text-zinc-100 text-sm font-medium">
-                <span className="whitespace-nowrap mr-1">Gas Charged</span>
+                <span className="whitespace-nowrap mr-1">
+                  Gas Charged
+                </span>
                 <Tooltip content="The total gas charged to users. This amount may be less than the gas used (Gas Used) due to Axelar's gas subsidy policy." className="w-40 text-xs">
                   <PiInfo className="text-zinc-400 dark:text-zinc-500" />
                 </Tooltip>
@@ -795,7 +817,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
               {(!data.originData || data.originData.executed) && executed && isNumber(gasData?.gas_used_amount) && (
                 <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
                   <dt className="flex items-center text-zinc-900 dark:text-zinc-100 text-sm font-medium">
-                    <span className="whitespace-nowrap mr-1">Gas Used</span>
+                    <span className="whitespace-nowrap mr-1">
+                      Gas Used
+                    </span>
                     <Tooltip content="The total gas used to accommodate the cross-chain transaction." className="w-44 text-xs">
                       <PiInfo className="text-zinc-400 dark:text-zinc-500" />
                     </Tooltip>
@@ -854,7 +878,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                 {d.fees.source_confirm_fee > 0 && (
                                   <>
                                     <div className="flex items-center gap-x-1 ml-3">
-                                      <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Confirm Fee:</span>
+                                      <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">
+                                        - Confirm Fee:
+                                      </span>
                                       <Number
                                         value={d.fees.source_confirm_fee}
                                         format="0,0.000000"
@@ -873,7 +899,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                       )}
                                     </div>
                                     <div className="flex items-center gap-x-1 ml-3">
-                                      <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Approve Fee:</span>
+                                      <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">
+                                        - Approve Fee:
+                                      </span>
                                       <Number
                                         value={d.fees.base_fee - d.fees.source_confirm_fee}
                                         format="0,0.000000"
@@ -931,7 +959,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                   <>
                                     {isNumber(d.fees.source_express_fee.relayer_fee) && (
                                       <div className="flex items-center gap-x-1 ml-3">
-                                        <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Relayer Fee:</span>
+                                        <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">
+                                          - Relayer Fee:
+                                        </span>
                                         <Number
                                           value={d.fees.source_express_fee.relayer_fee}
                                           format="0,0.000000"
@@ -952,7 +982,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                     )}
                                     {isNumber(d.fees.source_express_fee.express_gas_overhead_fee) && (
                                       <div className="flex items-center gap-x-1 ml-3">
-                                        <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Overhead Fee:</span>
+                                        <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">
+                                          - Overhead Fee:
+                                        </span>
                                         <Number
                                           value={d.fees.source_express_fee.express_gas_overhead_fee}
                                           format="0,0.000000"
@@ -1008,7 +1040,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                           {fees.source_confirm_fee > 0 && (
                             <>
                               <div className="flex items-center gap-x-1 ml-3">
-                                <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Confirm Fee:</span>
+                                <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">
+                                  - Confirm Fee:
+                                </span>
                                 <Number
                                   value={fees.source_confirm_fee}
                                   format="0,0.000000"
@@ -1027,7 +1061,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                 )}
                               </div>
                               <div className="flex items-center gap-x-1 ml-3">
-                                <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Approve Fee:</span>
+                                <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">
+                                  - Approve Fee:
+                                </span>
                                 <Number
                                   value={fees.base_fee - fees.source_confirm_fee}
                                   format="0,0.000000"
@@ -1079,7 +1115,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                             <>
                               {isNumber(fees.source_express_fee.relayer_fee) && (
                                 <div className="flex items-center gap-x-1 ml-3">
-                                  <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Relayer Fee:</span>
+                                  <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">
+                                    - Relayer Fee:
+                                  </span>
                                   <Number
                                     value={fees.source_express_fee.relayer_fee}
                                     format="0,0.000000"
@@ -1100,7 +1138,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                               )}
                               {isNumber(fees.source_express_fee.express_gas_overhead_fee) && (
                                 <div className="flex items-center gap-x-1 ml-3">
-                                  <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">- Overhead Fee:</span>
+                                  <span className="text-zinc-700 dark:text-zinc-300 text-xs whitespace-nowrap">
+                                    - Overhead Fee:
+                                  </span>
                                   <Number
                                     value={fees.source_express_fee.express_gas_overhead_fee}
                                     format="0,0.000000"
@@ -1132,7 +1172,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                   <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">messageId</dt>
                   <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                     <Copy value={messageId} childrenClassName="min-w-min">
-                      <span className="break-all">{messageId}</span>
+                      <span className="break-all">
+                        {messageId}
+                      </span>
                     </Copy>
                   </dd>
                 </div>
@@ -1142,7 +1184,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                   <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">commandId</dt>
                   <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                     <Copy value={commandId} childrenClassName="min-w-min">
-                      <span className="break-all">{commandId}</span>
+                      <span className="break-all">
+                        {commandId}
+                      </span>
                     </Copy>
                   </dd>
                 </div>
@@ -1172,7 +1216,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                   <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">sourceAddress</dt>
                   <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                     <Copy value={sourceAddress} childrenClassName="min-w-min">
-                      <span className="break-all">{sourceAddress}</span>
+                      <span className="break-all">
+                        {sourceAddress}
+                      </span>
                     </Copy>
                   </dd>
                 </div>
@@ -1182,7 +1228,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                   <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">destinationContractAddress</dt>
                   <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                     <Copy value={destinationContractAddress} childrenClassName="min-w-min">
-                      <span className="break-all">{destinationContractAddress}</span>
+                      <span className="break-all">
+                        {destinationContractAddress}
+                      </span>
                     </Copy>
                   </dd>
                 </div>
@@ -1192,7 +1240,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                   <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">payloadHash</dt>
                   <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                     <Copy value={payloadHash} childrenClassName="min-w-min">
-                      <span className="break-all">{payloadHash}</span>
+                      <span className="break-all">
+                        {payloadHash}
+                      </span>
                     </Copy>
                   </dd>
                 </div>
@@ -1202,7 +1252,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                   <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">payload</dt>
                   <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                     <Copy size={16} value={payload} childrenClassName="min-w-min !items-start">
-                      <span className="text-xs break-all">{payload}</span>
+                      <span className="text-xs break-all">
+                        {payload}
+                      </span>
                     </Copy>
                   </dd>
                 </div>
@@ -1242,7 +1294,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                   <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">executeData</dt>
                   <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                     <Copy size={16} value={executeData} childrenClassName="min-w-min !items-start">
-                      <span className="text-xs break-all">{executeData}</span>
+                      <span className="text-xs break-all">
+                        {executeData}
+                      </span>
                     </Copy>
                   </dd>
                 </div>
@@ -1418,7 +1472,9 @@ function Details({ data }) {
                     if (isNumber(logIndex)) {
                       stepMoreInfos.push((
                         <div key={stepMoreInfos.length} className="flex items-center gap-x-1">
-                          <span className="text-zinc-700 dark:text-zinc-300 text-xs">LogIndex:</span>
+                          <span className="text-zinc-700 dark:text-zinc-300 text-xs">
+                            LogIndex:
+                          </span>
                           <ExplorerLink
                             value={transactionHash}
                             chain={d.chainData?.id}
@@ -1438,7 +1494,9 @@ function Details({ data }) {
                     if (d.id === 'send' && isNumber(eventIndex)) {
                       stepMoreInfos.push((
                         <div key={stepMoreInfos.length} className="flex items-center gap-x-1">
-                          <span className="text-zinc-700 dark:text-zinc-300 text-xs">EventIndex:</span>
+                          <span className="text-zinc-700 dark:text-zinc-300 text-xs">
+                            EventIndex:
+                          </span>
                           <ExplorerLink
                             value={transactionHash}
                             chain={d.chainData?.id}
@@ -1628,7 +1686,9 @@ function Details({ data }) {
             return (
               <tr key={i} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
                 <td className="pl-4 sm:pl-0 pr-3 py-4 text-left">
-                  <span className="text-zinc-700 dark:text-zinc-300 font-medium">{d.title}</span>
+                  <span className="text-zinc-700 dark:text-zinc-300 font-medium">
+                    {d.title}
+                  </span>
                 </td>
                 <td className="px-3 py-4 text-left">
                   <div className="flex flex-col gap-y-2">
@@ -1695,13 +1755,17 @@ function Details({ data }) {
                   <div className="flex flex-col gap-y-1.5">
                     {fromAddress && (
                       <div className="flex items-center gap-x-4">
-                        <span className="w-8">From:</span>
+                        <span className="w-8">
+                          From:
+                        </span>
                         <Profile address={fromAddress} chain={d.chainData?.id} />
                       </div>
                     )}
                     {toAddress && (
                       <div className="flex items-center gap-x-4">
-                        <span className="w-8">To:</span>
+                        <span className="w-8">
+                          To:
+                        </span>
                         <Profile address={toAddress} chain={d.data?.axelarTransactionHash ? destinationChainData?.id : d.chainData?.id} />
                       </div>
                     )}
@@ -2496,14 +2560,14 @@ export function GMP({ tx, lite }) {
               {data.originData && (
                 <Details data={{
                   ...data.originData,
-                  callbackData: Object.fromEntries(Object.entries(data).filter(([k, v]) => !['originData', 'callbackData'].includes(k))),
+                  callbackData: Object.fromEntries(Object.entries(data).filter(([k, v]) => !find(k, ['originData', 'callbackData']))),
                 }} />
               )}
               <Details data={data} />
               {data.callbackData && (
                 <Details data={{
                   ...data.callbackData,
-                  originData: Object.fromEntries(Object.entries(data).filter(([k, v]) => !['originData', 'callbackData'].includes(k))),
+                  originData: Object.fromEntries(Object.entries(data).filter(([k, v]) => !find(k, ['originData', 'callbackData']))),
                 }} />
               )}
             </>

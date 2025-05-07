@@ -76,7 +76,7 @@ function Filters() {
     { label: 'Poll ID', name: 'pollId' },
     { label: 'Tx Hash', name: 'transactionId' },
     { label: 'Chain', name: 'chain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).filter(d => d.chain_type === 'evm' && (!d.no_inflation || d.deprecated)).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
-    { label: 'Event Type', name: 'event', type: 'select', multiple: true, options: _.concat({ title: 'Any' }, types.map(d => ({ value: d, title: split(toTitle(d), { delimiter: ' ' }).map(s => capitalize(s)).join('') }))) },
+    { label: 'Event Type', name: 'event', type: 'select', multiple: true, options: _.concat({ title: 'Any' }, types.map(d => ({ value: d, title: toTitle(d, '_', true, true) }))) },
     { label: 'Status', name: 'status', type: 'select', multiple: true, options: _.concat({ title: 'Any' }, ['completed', 'failed', 'expired', 'confirmed', 'pending'].map(d => ({ value: d, title: capitalize(d) }))) },
     { label: 'Voter (Broadcaster Address)', name: 'voter' },
     params.voter?.startsWith('axelar') && { label: 'Vote', name: 'vote', type: 'select', options: _.concat({ title: 'Any' }, ['yes', 'no', 'unsubmitted'].map(d => ({ value: d, title: capitalize(d) }))) },
@@ -344,7 +344,7 @@ export function EVMPolls() {
                 confirmation_txhash: txhashConfirm,
                 votes: _.orderBy(votes, ['height', 'created_at'], ['desc', 'desc']),
                 voteOptions: _.orderBy(voteOptions, ['i'], ['asc']),
-                eventName: d.event ? split(eventName, { delimiter: '_' }).map(s => capitalize(s)).join('') : eventName,
+                eventName: d.event ? toTitle(eventName, '_', true, true) : eventName,
                 url: includesSomePatterns(eventName, ['operator', 'token_deployed']) ?
                   `${url}${transaction_path?.replace('{tx}', d.transaction_id)}` :
                   `/${includesSomePatterns(eventName, ['contract_call', 'ContractCall']) || !(includesSomePatterns(eventName, ['transfer', 'Transfer']) || d.deposit_address) ? 'gmp' : 'transfer'}/${d.transaction_id ? d.transaction_id : d.transfer_id ? `?transferId=${d.transfer_id}` : ''}`,

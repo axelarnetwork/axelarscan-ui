@@ -346,7 +346,7 @@ export function Profile({
       if (d[f]?.address) {
         addresses.push({
           address: d[f].address,
-          name: `${d.name} ${split(f, { delimiter: '_' }).map(s => capitalize(s)).join(' ')} Address`,
+          name: `${d.name} ${toTitle(f, '_', true)}`,
           image: AXELAR_LOGO,
         })
       }

@@ -20,7 +20,7 @@ import { useGlobalStore } from '@/components/Global'
 import { searchEVMPolls } from '@/lib/api/validator'
 import { getChainData, getAssetData } from '@/lib/config'
 import { toJson, split, toArray, getValuesOfAxelarAddressKey } from '@/lib/parser'
-import { equalsIgnoreCase, capitalize, find, includesSomePatterns, ellipse, toTitle } from '@/lib/string'
+import { equalsIgnoreCase, find, includesSomePatterns, ellipse, toTitle } from '@/lib/string'
 import { isNumber, toNumber, formatUnits, numberFormat } from '@/lib/number'
 import { timeDiff, TIME_FORMAT } from '@/lib/time'
 
@@ -524,7 +524,7 @@ export function EVMPoll({ id }) {
           confirmation_txhash: txhashConfirm,
           votes: _.orderBy(votes, ['height', 'created_at'], ['desc', 'desc']),
           voteOptions: _.orderBy(voteOptions, ['i'], ['asc']),
-          eventName: d.event ? split(eventName, { delimiter: '_' }).map(s => capitalize(s)).join('') : eventName,
+          eventName: d.event ? toTitle(eventName, '_', true, true) : eventName,
           url: includesSomePatterns(eventName, ['operator', 'token_deployed']) ?
             `${url}${transaction_path?.replace('{tx}', d.transaction_id)}` :
             `/${includesSomePatterns(eventName, ['contract_call', 'ContractCall']) || !(includesSomePatterns(eventName, ['transfer', 'Transfer']) || d.deposit_address) ? 'gmp' : 'transfer'}/${d.transaction_id ? d.transaction_id : d.transfer_id ? `?transferId=${d.transfer_id}` : ''}`,

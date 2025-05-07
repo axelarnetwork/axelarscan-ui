@@ -471,7 +471,9 @@ function StatsBarChart({
       <div className="bg-zinc-50 dark:bg-zinc-800 rounded-lg flex flex-col gap-y-1.5 p-2">
         {toArray(values).map((d, i) => (
           <div key={i} className="flex items-center justify-between gap-x-4">
-            <span className="capitalize text-xs font-semibold">{toTitle(d.key === 'gmp' ? 'GMPs' : d.key)}</span>
+            <span className="capitalize text-xs font-semibold">
+              {toTitle(d.key === 'gmp' ? 'GMPs' : d.key)}
+            </span>
             <Number
               value={d.value}
               format={valueFormat}
