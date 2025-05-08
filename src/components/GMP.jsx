@@ -2504,7 +2504,7 @@ export function GMP({ tx, lite }) {
             onClick={() => approve(data)}
             className={clsx('h-6 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1', processing ? 'pointer-events-none bg-blue-400 dark:bg-blue-400' : 'bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600')}
           >
-            {!confirm && !isAxelar(call.chain) && call.chain_type !== 'cosmos' ? 'Confirm' : call.chain_type === 'cosmos' ? 'Execut' : 'Approv'}{processing ? 'ing...' : !confirm && !isAxelar(call.chain) && call.chain_type !== 'cosmos' ? '' : 'e'}
+            {(!confirm || !data.confirm_failed) && !isAxelar(call.chain) && call.chain_type !== 'cosmos' ? 'Confirm' : call.chain_type === 'cosmos' ? 'Execut' : 'Approv'}{processing ? 'ing...' : (!confirm || !data.confirm_failed) && !isAxelar(call.chain) && call.chain_type !== 'cosmos' ? '' : 'e'}
           </button>
         </div>
       )
@@ -2550,7 +2550,7 @@ export function GMP({ tx, lite }) {
             buttons={Object.fromEntries(Object.entries({
               pay_gas: addGasButton,
               execute: executeButton,
-              [!confirm && !isAxelar(call.chain) && sourceChainData?.chain_type !== 'cosmos' ? 'confirm' : sourceChainData?.chain_type === 'cosmos' && !executeButton ? 'execute' : 'approve']: approveButton,
+              [(!confirm || !data.confirm_failed) && !isAxelar(call.chain) && sourceChainData?.chain_type !== 'cosmos' ? 'confirm' : sourceChainData?.chain_type === 'cosmos' && !executeButton ? 'execute' : 'approve']: approveButton,
             }).filter(([k, v]) => v))}
             tx={tx}
             lite={lite}
