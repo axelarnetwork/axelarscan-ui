@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/react-query'
 import { defaultWagmiConfig } from '@web3modal/wagmi/react/config'
 import { createWeb3Modal } from '@web3modal/wagmi/react'
-import { mainnet, sepolia, bsc, bscTestnet, polygon, polygonAmoy, avalanche, avalancheFuji, fantom, fantomTestnet, moonbeam, moonbaseAlpha, arbitrum, arbitrumSepolia, optimism, optimismSepolia, base, baseSepolia, mantle, mantleSepoliaTestnet, celo, celoAlfajores, kava, kavaTestnet, filecoin, filecoinCalibration, linea, lineaSepolia, scroll, scrollSepolia, immutableZkEvm, immutableZkEvmTestnet, fraxtal, fraxtalTestnet, blast, blastSepolia, flowMainnet, flowTestnet, hedera, hederaTestnet } from 'wagmi/chains'
+import { mainnet, sepolia, bsc, bscTestnet, polygon, polygonAmoy, avalanche, avalancheFuji, fantom, fantomTestnet, moonbeam, moonbaseAlpha, arbitrum, arbitrumSepolia, optimism, optimismSepolia, base, baseSepolia, mantle, mantleSepoliaTestnet, celo, celoAlfajores, kava, kavaTestnet, filecoin, filecoinCalibration, linea, lineaSepolia, scroll, scrollSepolia, immutableZkEvm, immutableZkEvmTestnet, fraxtal, fraxtalTestnet, blast, blastSepolia, flowMainnet, flowTestnet, hedera, hederaTestnet, plumeTestnet } from 'wagmi/chains'
 
 import { ENVIRONMENT } from '@/lib/config'
 import { toArray } from '@/lib/parser'
@@ -29,6 +29,7 @@ export const CHAINS = toArray(ENVIRONMENT === 'mainnet' ?
     { _id: 'blast', ...blast },
     { _id: 'flow', ...flowMainnet },
     { _id: 'hedera', ...hedera },
+    { _id: 'xrpl-evm', id: 1440000, network: 'xrpl-evm', name: 'XRP Ledger EVM', nativeCurrency: { name: 'Ripple', symbol: 'XRP', decimals: 18 }, rpcUrls: { default: { http: ['https://rpc.xrplevm.org'] } }, blockExplorers: { default: { name: 'XRP Ledger EVM', url: 'https://explorer.xrplevm.org' } } },
   ] :
   [
     ['testnet', 'stagenet'].includes(ENVIRONMENT) && { _id: 'ethereum-sepolia', ...sepolia },
@@ -59,6 +60,11 @@ export const CHAINS = toArray(ENVIRONMENT === 'mainnet' ?
     { _id: 'flow', ...flowTestnet },
     ['testnet', 'stagenet'].includes(ENVIRONMENT) && { _id: 'hedera', ...hederaTestnet },
     ['devnet-amplifier'].includes(ENVIRONMENT) && { _id: 'hedera-testnet', ...hederaTestnet },
+    ['testnet', 'stagenet'].includes(ENVIRONMENT) && { _id: 'xrpl-evm', id: 1449000, network: 'xrpl-evm', name: 'XRP Ledger EVM', nativeCurrency: { name: 'Ripple', symbol: 'XRP', decimals: 18 }, rpcUrls: { default: { http: ['https://rpc.testnet.xrplevm.org'] } }, blockExplorers: { default: { name: 'XRP Ledger EVM', url: 'https://explorer.testnet.xrplevm.org' } }, testnet: true },
+    ['devnet-amplifier'].includes(ENVIRONMENT) && { _id: 'xrpl-evm-2', id: 1440002, network: 'xrpl-evm-2', name: 'XRP Ledger EVM 2', nativeCurrency: { name: 'Ripple', symbol: 'XRP', decimals: 18 }, rpcUrls: { default: { http: ['https://rpc.devnet.xrplevm.org'] } }, blockExplorers: { default: { name: 'XRP Ledger EVM', url: 'https://explorer.devnet.xrplevm.org' } }, testnet: true },
+    ['stagenet'].includes(ENVIRONMENT) && { _id: 'plume', ...plumeTestnet },
+    ['devnet-amplifier'].includes(ENVIRONMENT) && { _id: 'plume-2', ...plumeTestnet },
+    ['devnet-amplifier'].includes(ENVIRONMENT) && { _id: 'hyperliquid', id: 998, network: 'hyperliquid', name: 'Hyperliquid', nativeCurrency: { name: 'Hyperliquid', symbol: 'HYPE', decimals: 18 }, rpcUrls: { default: { http: ['https://rpc.hyperliquid-testnet.xyz/evm'] } }, blockExplorers: { default: { name: 'Hyperliquid', url: 'https://app.hyperliquid-testnet.xyz/explorer' } }, testnet: true },
   ]
 )
 
