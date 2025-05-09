@@ -7,12 +7,16 @@ import TagManager from 'react-gtm-module'
 import { IntercomProvider } from 'react-use-intercom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { useWeb3ModalTheme } from '@web3modal/wagmi/react'
-import { createNetworkConfig, SuiClientProvider, WalletProvider } from '@mysten/dapp-kit'
+import { createNetworkConfig, SuiClientProvider, WalletProvider as SuiWalletProvider } from '@mysten/dapp-kit'
 import { getFullnodeUrl } from '@mysten/sui/client'
+import { WalletProvider as XRPLWalletProvider } from '@xrpl-wallet-standard/react'
+import { CrossmarkWallet } from '@xrpl-wallet-adapter/crossmark'
+import { LedgerWallet } from '@xrpl-wallet-adapter/ledger'
+import { WalletConnectWallet as XRPLWalletConnectWallet } from '@xrpl-wallet-adapter/walletconnect'
 
 import { Global } from '@/components/Global'
 import WagmiConfigProvider from '@/lib/provider/WagmiConfigProvider'
-import { queryClient } from '@/lib/provider/wagmi'
+import { queryClient, xrplConfig } from '@/lib/provider/wagmi'
 import * as ga from '@/lib/ga'
 import { ENVIRONMENT } from '@/lib/config'
 
@@ -53,6 +57,7 @@ export function Providers({ children }) {
     setRendered(true)
   }, [])
 
+  // google tag manager
   useEffect(() => {
     if (process.env.NEXT_PUBLIC_GTM_ID && rendered && !tagManagerInitiated) {
       TagManager.initialize({ gtmId: process.env.NEXT_PUBLIC_GTM_ID })
@@ -60,6 +65,7 @@ export function Providers({ children }) {
     }
   }, [rendered, tagManagerInitiated, setTagManagerInitiated])
 
+  // google analytics
   useEffect(() => {
     if (pathname && searchParams) {
       const qs = searchParams.toString()
@@ -67,10 +73,18 @@ export function Providers({ children }) {
     }
   }, [pathname, searchParams])
 
+  // sui
   const { networkConfig } = createNetworkConfig({
     testnet: { url: 'https://sui-testnet-rpc.publicnode.com' || getFullnodeUrl('testnet') },
     mainnet: { url: 'https://sui-rpc.publicnode.com' || getFullnodeUrl('mainnet') },
   })
+
+  // xrpl
+  const registerWallets = [
+    new CrossmarkWallet(),
+    new LedgerWallet(),
+    new XRPLWalletConnectWallet(xrplConfig),
+  ]
 
   return (
     <ThemeProvider attribute="class" disableTransitionOnChange>
@@ -79,11 +93,13 @@ export function Providers({ children }) {
         <Global />
         <QueryClientProvider client={client}>
           <WagmiConfigProvider>
-            <SuiClientProvider networks={networkConfig} defaultNetwork={ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}>
-              <WalletProvider>
-                {children}
-              </WalletProvider>
-            </SuiClientProvider>
+            <XRPLWalletProvider registerWallets={registerWallets}>
+              <SuiClientProvider networks={networkConfig} defaultNetwork={ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}>
+                <SuiWalletProvider>
+                  {children}
+                </SuiWalletProvider>
+              </SuiClientProvider>
+            </XRPLWalletProvider>
           </WagmiConfigProvider>
         </QueryClientProvider>
       </IntercomProvider>
