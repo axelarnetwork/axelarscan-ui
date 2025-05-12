@@ -489,9 +489,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                           toArray(data.settlementFilledData).map((d, i) => (
                             <ExplorerLink
                               key={i}
-                              value={d.executed.transactionHash}
-                              chain={d.executed.chain}
-                              title={ellipse(d.executed.transactionHash, 6, '0x')}
+                              value={d.executed?.transactionHash}
+                              chain={d.executed?.chain}
+                              title={ellipse(d.executed?.transactionHash, 6, '0x')}
                               iconOnly={false}
                             />
                           ))
