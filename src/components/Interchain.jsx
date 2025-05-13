@@ -25,7 +25,7 @@ import { Number } from '@/components/Number'
 import { Profile, ChainProfile, AssetProfile } from '@/components/Profile'
 import { TimeAgo, TimeSpent } from '@/components/Time'
 import { useGlobalStore } from '@/components/Global'
-import { GMPStats, GMPStatsByChains, GMPStatsByContracts, GMPChart, GMPTotalVolume, GMPTopUsers, GMPTopITSAssets } from '@/lib/api/gmp'
+import { GMPStatsByChains, GMPStatsByContracts, GMPStatsAVGTimes, GMPChart, GMPTotalVolume, GMPTopUsers, GMPTopITSAssets } from '@/lib/api/gmp'
 import { transfersStats, transfersChart, transfersTotalVolume, transfersTopUsers } from '@/lib/api/token-transfer'
 import { ENVIRONMENT, getChainData, getAssetData, getITSAssetData } from '@/lib/config'
 import { toCase, split, toArray } from '@/lib/parser'
@@ -1503,7 +1503,7 @@ export function Interchain() {
                   resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPStatsByContracts(params))])
                   break
                 case 'GMPStatsAVGTimes':
-                  resolve([d, types.includes('gmp') && await GMPStats({ ...params, avg_times: true, fromTime: params.fromTime || moment().subtract(1, 'months').startOf('day').unix() })])
+                  resolve([d, types.includes('gmp') && await GMPStatsAVGTimes({ ...params, fromTime: params.fromTime || moment().subtract(1, 'months').startOf('day').unix() })])
                   break
                 case 'GMPChart':
                   resolve([d, types.includes('gmp') && ((noFilter && stats[d]) || await GMPChart({ ...params, granularity }))])
@@ -1635,9 +1635,8 @@ export function Interchain() {
         setTimeSpentData({
           ...timeSpentData,
           [generateKeyByParams(params)]: {
-            GMPStatsAVGTimes: types.includes('gmp') && await GMPStats({
+            GMPStatsAVGTimes: types.includes('gmp') && await GMPStatsAVGTimes({
               ...params,
-              avg_times: true,
               fromTime: params.fromTime || moment().subtract(3, 'months').startOf('day').unix(),
             }),
           },
