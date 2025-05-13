@@ -1457,6 +1457,7 @@ export function Interchain() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [params, setParams] = useState(getParams(searchParams))
+  const [types, setTypes] = useState(params.transfersType || ['gmp', 'transfers'])
   const [data, setData] = useState(null)
   const [timeSpentData, setTimeSpentData] = useState(null)
   const [refresh, setRefresh] = useState(null)
@@ -1465,12 +1466,6 @@ export function Interchain() {
 
   const { transfersType, contractMethod, contractAddress, fromTime, toTime } = { ...params }
 
-  let types = transfersType || ['gmp', 'transfers']
-
-  if (contractMethod) {
-    types = ['gmp']
-  }
-
   const granularity = getGranularity(fromTime, toTime)
 
   useEffect(() => {
@@ -1478,9 +1473,17 @@ export function Interchain() {
 
     if (!_.isEqual(_params, params)) {
       setParams(_params)
+
+      if (_params.contractMethod) {
+        setTypes(['gmp'])
+      }
+      else {
+        setTypes(_params.transfersType || ['gmp', 'transfers'])
+      }
+
       setRefresh(true)
     }
-  }, [searchParams, params, setParams])
+  }, [searchParams, params, setParams, setTypes])
 
   useEffect(() => {
     const metrics = ['GMPStatsByChains', 'GMPStatsByContracts', 'GMPChart', 'GMPTotalVolume', 'GMPTopUsers', 'GMPTopITSUsers', 'GMPTopITSUsersByVolume', 'GMPTopITSAssets', 'GMPTopITSAssetsByVolume', 'transfersStats', 'transfersChart', 'transfersTotalVolume', 'transfersTopUsers', 'transfersTopUsersByVolume']
