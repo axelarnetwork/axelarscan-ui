@@ -567,7 +567,7 @@ export function GMPs({ address }) {
                                         value={d.call.returnValues.destinationContractAddress}
                                         chain={d.call.returnValues.destinationChain}
                                         type="address"
-                                        title="via Axelar"
+                                        title="via"
                                         iconOnly={false}
                                         width={12}
                                         height={12}
