@@ -569,10 +569,10 @@ export function GMPs({ address }) {
                                         type="address"
                                         title="via"
                                         iconOnly={false}
-                                        width={12}
-                                        height={12}
+                                        width={11}
+                                        height={11}
                                         containerClassName="!gap-x-1"
-                                        nonIconClassName="text-blue-600 dark:text-blue-500 text-xs"
+                                        nonIconClassName="text-blue-600 dark:text-blue-500 !text-opacity-75 text-xs"
                                       />
                                     </div>
                                   )}
