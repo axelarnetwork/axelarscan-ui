@@ -31,7 +31,7 @@ import { ExplorerLink } from '@/components/ExplorerLink'
 import { useEVMWalletStore, EVMWallet, useCosmosWalletStore, CosmosWallet, useSuiWalletStore, SuiWallet, useStellarWalletStore, StellarWallet, useXRPLWalletStore, XRPLWallet } from '@/components/Wallet'
 import { getEvent, customData } from '@/components/GMPs'
 import { useGlobalStore } from '@/components/Global'
-import { searchGMP, estimateTimeSpent } from '@/lib/api/gmp'
+import { estimateITSFee, searchGMP, estimateTimeSpent } from '@/lib/api/gmp'
 import { isAxelar } from '@/lib/chain'
 import { getProvider } from '@/lib/chain/evm'
 import { ENVIRONMENT, getChainData, getAssetData } from '@/lib/config'
@@ -2047,6 +2047,8 @@ export function GMP({ tx, lite }) {
           'centrifuge-2': 1000000,
           scroll: 500000,
           fraxtal: 400000,
+          'xrpl-evm': 7000000,
+          'xrpl-evm-2': 7000000,
         }[toCase(destinationChain, 'lower')] || 700000)
       }
     }
@@ -2199,7 +2201,49 @@ export function GMP({ tx, lite }) {
 
         const gasLimit = isNumber(estimatedGasUsed) ? estimatedGasUsed : 700000
         const decimals = source_token?.decimals || (headString(chain) === 'sui' ? 9 : 18)
-        const gasAddedAmount = toBigNumber(BigInt(parseUnits((base_fee + express_fee) * 1.1, decimals)) + BigInt(parseUnits(gasLimit * source_token?.gas_price, decimals)))
+
+        let gasAddedAmount
+
+        if (isAxelar(destinationChain)) {
+          let nextHopDestinationChain
+
+          if (data.interchain_transfer?.destinationChain) {
+            nextHopDestinationChain = data.interchain_transfer.destinationChain
+          }
+          else if (data.interchain_token_deployment_started?.destinationChain) {
+            nextHopDestinationChain = data.interchain_token_deployment_started.destinationChain
+          }
+          else {
+            switch (headString(chain)) {
+              case 'xrpl-evm':
+                nextHopDestinationChain = ENVIRONMENT === 'devnet-amplifier' ? 'xrpl-dev2' : 'xrpl'
+                break
+              case 'xrpl':
+                nextHopDestinationChain = ENVIRONMENT === 'devnet-amplifier' ? 'xrpl-evm-2' : 'xrpl-evm'
+                break
+              default:
+                nextHopDestinationChain = ENVIRONMENT === 'mainnet' ? 'ethereum' : ENVIRONMENT === 'devnet-amplifier' ? 'eth-sepolia' : 'ethereum-sepolia'
+                break
+            }
+          }
+
+          const totalGasAmount = await estimateITSFee({
+            sourceChain: chain,
+            destinationChain: nextHopDestinationChain,
+            sourceTokenSymbol: source_token?.symbol,
+            gasLimit,
+            gasMultiplier: 1.1,
+            event: data.interchain_token_deployment_started ? 'InterchainTokenDeployment' : undefined,
+          })
+
+          if (totalGasAmount) {
+            gasAddedAmount = toBigNumber(totalGasAmount)
+          }
+        }
+
+        if (!gasAddedAmount) {
+          gasAddedAmount = toBigNumber(BigInt(parseUnits((base_fee + express_fee) * 1.1, decimals)) + BigInt(parseUnits(gasLimit * source_token?.gas_price, decimals)))
+        }
 
         if (chain_type === 'evm' || isNumber(sourceChainData?.chain_id)) {
           console.log('[addGas request]', { chain, destinationChain, transactionHash, logIndex, estimatedGasUsed: gasLimit, refundAddress: address })

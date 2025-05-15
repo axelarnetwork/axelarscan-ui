@@ -5,6 +5,7 @@ const request = async (method, params) => {
 
 export const getContracts = async () => await request('getContracts')
 export const getConfigurations = async () => await request('getConfigurations')
+export const estimateITSFee = async params => await request('estimateITSFee', params)
 export const searchGMP = async params => await request('searchGMP', params)
 export const GMPStatsByChains = async params => await request('GMPStatsByChains', params)
 export const GMPStatsByContracts = async params => await request('GMPStatsByContracts', params)
