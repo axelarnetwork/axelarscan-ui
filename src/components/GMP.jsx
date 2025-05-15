@@ -2487,7 +2487,7 @@ export function GMP({ tx, lite }) {
       // not amplifier call
       call.chain_type !== 'vm' &&
       // not approved
-      !(call.destination_chain_type === 'cosmos' ? (call.chain_type === 'cosmos' && executed?.transactionHash) || (confirm && confirm.poll_id !== data.confirm_failed_event?.poll_id) : approved) && !data.is_executed &&
+      !(call.destination_chain_type === 'cosmos' ? (call.chain_type === 'cosmos' && executed?.transactionHash) || (confirm && confirm.poll_id !== data.confirm_failed_event?.poll_id) : approved || call.destination_chain_type === 'vm') && !data.is_executed &&
       // not executed / wait for IBC
       (!executed || (executed.axelarTransactionHash && !executed.transactionHash && (error || timeDiff(executed.block_timestamp * 1000) >= 3600))) &&
       // confirmed / confirm failed / called more than finality
