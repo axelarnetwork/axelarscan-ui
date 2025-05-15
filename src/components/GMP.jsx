@@ -2508,7 +2508,9 @@ export function GMP({ tx, lite }) {
         // not executed / approved / not cosmos call or called more than 1 min
         !executed && !data.is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) &&
         // no gas paid or not enough gas
-        (!(gas_paid || data.gas_paid_to_callback) || data.is_insufficient_fee || data.is_invalid_gas_paid || data.not_enough_gas_to_execute || gas?.gas_remain_amount < 0.000001)
+        (!(gas_paid || data.gas_paid_to_callback) || data.is_insufficient_fee || data.is_invalid_gas_paid || data.not_enough_gas_to_execute || gas?.gas_remain_amount < 0.000001) &&
+        // no gas added response
+        response?.message !== 'Pay gas successful'
       ) {
         addGasButton = (
           <div key="addGas" className="flex items-center gap-x-1">
