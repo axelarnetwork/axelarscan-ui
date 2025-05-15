@@ -2146,7 +2146,7 @@ export function GMP({ tx, lite }) {
     if (chainType !== 'vm') return true
 
     // amplifier chain that actually evm chain
-    if (isNumber(getChainData(chain, chains)?.chain_id)) return true
+    if (isNumber(getChainData(chain, chains)?.chain_id)) return false
 
     // amplifier chains that already custom addGas function
     return ['sui', 'stellar', 'xrpl'].includes(headString(chain))
