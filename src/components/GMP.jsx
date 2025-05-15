@@ -1579,8 +1579,8 @@ function Details({ data }) {
                   }
 
                   // gas added / refunded more
-                  if ((d.id === 'pay_gas' && data.gas_added_transactions) || (d.id === 'refund' && data.refunded_more_transactions)) {
-                    for (const { transactionHash } of toArray(d.id === 'pay_gas' ? data.gas_added_transactions : data.refunded_more_transactions)) {
+                  if ((d.id === 'pay_gas' && (isString(d.data) ? data.originData?.gas_added_transactions : data.gas_added_transactions)) || (d.id === 'refund' && data.refunded_more_transactions)) {
+                    for (const { transactionHash } of toArray(d.id === 'pay_gas' ? isString(d.data) ? data.originData.gas_added_transactions : data.gas_added_transactions : data.refunded_more_transactions)) {
                       stepMoreTransactions.push((
                         <div key={stepMoreTransactions.length} className="flex items-center gap-x-1">
                           <Copy size={16} value={transactionHash}>
