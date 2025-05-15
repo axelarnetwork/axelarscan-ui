@@ -2013,43 +2013,17 @@ export function GMP({ tx, lite }) {
     const getEstimatedGasUsed = async () => {
       if (!estimatedGasUsed && (data?.is_insufficient_fee || (data?.call && !data.gas_paid)) && !data.confirm && !data.approved && data.call?.returnValues?.destinationChain && data.call.returnValues.destinationContractAddress) {
         const { destinationChain, destinationContractAddress } = { ...data.call.returnValues }
-        const { express_executed, executed } = { ..._.head((await searchGMP({
+
+        const { express_executed, executed } = { ...(await searchGMP({
           destinationChain,
           destinationContractAddress,
           status: 'executed',
           size: 1,
-        }))?.data) }
+        }))?.data?.[0] }
 
         const { gasUsed } = { ...(express_executed || executed)?.receipt }
 
-        setEstimatedGasUsed(gasUsed ? toNumber(gasUsed) : {
-          ethereum: 400000,
-          binance: 150000,
-          polygon: 400000,
-          'polygon-sepolia': 400000,
-          avalanche: 500000,
-          fantom: 400000,
-          arbitrum: 1000000,
-          'arbitrum-sepolia': 1000000,
-          optimism: 400000,
-          'optimism-sepolia': 400000,
-          base: 400000,
-          'base-sepolia': 400000,
-          mantle: 3000000000,
-          'mantle-sepolia': 3000000000,
-          celo: 400000,
-          kava: 400000,
-          filecoin: 200000000,
-          'filecoin-2': 200000000,
-          linea: 400000,
-          'linea-sepolia': 400000,
-          centrifuge: 1000000,
-          'centrifuge-2': 1000000,
-          scroll: 500000,
-          fraxtal: 400000,
-          'xrpl-evm': 7000000,
-          'xrpl-evm-2': 7000000,
-        }[toCase(destinationChain, 'lower')] || 700000)
+        setEstimatedGasUsed(gasUsed ? toNumber(gasUsed) : getDefaultGasLimit(destinationChain))
       }
     }
 
@@ -2188,6 +2162,35 @@ export function GMP({ tx, lite }) {
 
   const needSwitchChain = (id, chainType) => id !== (chainType === 'cosmos' ? cosmosWalletStore?.chainId : isNumber(id) ? chainId : id)
 
+  const getDefaultGasLimit = chain => ({
+    ethereum: 400000,
+    binance: 150000,
+    polygon: 400000,
+    'polygon-sepolia': 400000,
+    avalanche: 500000,
+    fantom: 400000,
+    arbitrum: 1000000,
+    'arbitrum-sepolia': 1000000,
+    optimism: 400000,
+    'optimism-sepolia': 400000,
+    base: 400000,
+    'base-sepolia': 400000,
+    mantle: 3000000000,
+    'mantle-sepolia': 3000000000,
+    celo: 400000,
+    kava: 400000,
+    filecoin: 200000000,
+    'filecoin-2': 200000000,
+    linea: 400000,
+    'linea-sepolia': 400000,
+    centrifuge: 1000000,
+    'centrifuge-2': 1000000,
+    scroll: 500000,
+    fraxtal: 400000,
+    'xrpl-evm': 7000000,
+    'xrpl-evm-2': 7000000,
+  }[toCase(chain, 'lower')] || 700000)
+
   // addNativeGas for evm, addGasToCosmosChain for cosmos, amplifier (addGasToSuiChain, addGasToStellarChain, addGasToXrplChain)
   const addGas = async data => {
     if (data?.call && sdk && isWalletConnected(data.call.chain, data.call.chain_type)) {
@@ -2198,9 +2201,6 @@ export function GMP({ tx, lite }) {
         const { chain, chain_type, destination_chain_type, transactionHash, logIndex } = { ...data.call }
         const { sender, destinationChain, messageId } = { ...data.call.returnValues }
         const { base_fee, express_fee, source_token } = { ...data.fees }
-
-        const gasLimit = isNumber(estimatedGasUsed) ? estimatedGasUsed : 700000
-        const decimals = source_token?.decimals || (headString(chain) === 'sui' ? 9 : 18)
 
         let gasAddedAmount
 
@@ -2231,7 +2231,7 @@ export function GMP({ tx, lite }) {
             sourceChain: chain,
             destinationChain: nextHopDestinationChain,
             sourceTokenSymbol: source_token?.symbol,
-            gasLimit,
+            gasLimit: getDefaultGasLimit(nextHopDestinationChain),
             gasMultiplier: 1.1,
             event: data.interchain_token_deployment_started ? 'InterchainTokenDeployment' : undefined,
           })
@@ -2240,6 +2240,9 @@ export function GMP({ tx, lite }) {
             gasAddedAmount = toBigNumber(totalGasAmount)
           }
         }
+
+        const gasLimit = isNumber(estimatedGasUsed) ? estimatedGasUsed : 700000
+        const decimals = source_token?.decimals || (headString(chain) === 'sui' ? 9 : 18)
 
         if (!gasAddedAmount) {
           gasAddedAmount = toBigNumber(BigInt(parseUnits((base_fee + express_fee) * 1.1, decimals)) + BigInt(parseUnits(gasLimit * source_token?.gas_price, decimals)))
