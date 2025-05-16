@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form'
 import { Dialog, Listbox, Transition } from '@headlessui/react'
 import clsx from 'clsx'
 import _ from 'lodash'
+import { HiOutlineArrowRightStartOnRectangle, HiOutlineArrowRightEndOnRectangle } from 'react-icons/hi2'
 import { MdOutlineRefresh, MdOutlineFilterList, MdClose, MdCheck, MdOutlineTimer } from 'react-icons/md'
 import { LuChevronsUpDown } from 'react-icons/lu'
 import { PiWarningCircle } from 'react-icons/pi'
@@ -530,7 +531,9 @@ export function GMPs({ address }) {
                                 </div>
                               </Tooltip>
                             </div> :
-                            <ChainProfile value={d.call.returnValues?.destinationChain} titleClassName="font-semibold" />
+                            (!isAxelar(d.call.returnValues?.destinationChain) || !d.customValues?.recipientAddress) && (
+                              <ChainProfile value={d.call.returnValues?.destinationChain} titleClassName="font-semibold" />
+                            )
                           }
                           {d.is_invalid_contract_address ?
                             <div className="flex">
@@ -542,20 +545,44 @@ export function GMPs({ address }) {
                               </Tooltip>
                             </div> :
                             <>
-                              <Tooltip content="Destination Contract" parentClassName="!justify-start">
-                                <Profile
-                                  address={d.call.returnValues?.destinationContractAddress}
-                                  chain={d.call.returnValues?.destinationChain}
-                                  useContractLink={true}
-                                />
-                              </Tooltip>
-                              {d.customValues?.recipientAddress && (
-                                <Tooltip content={`${d.customValues.projectName ? d.customValues.projectName : 'Final User'} Recipient`} parentClassName="!justify-start">
+                              {(!isAxelar(d.call.returnValues?.destinationChain) || !d.customValues?.recipientAddress) && (
+                                <Tooltip content="Destination Contract" parentClassName="!justify-start">
                                   <Profile
-                                    address={d.customValues.recipientAddress}
-                                    chain={d.customValues.destinationChain || d.call.returnValues?.destinationChain}
+                                    address={d.call.returnValues?.destinationContractAddress}
+                                    chain={d.call.returnValues?.destinationChain}
+                                    useContractLink={true}
                                   />
                                 </Tooltip>
+                              )}
+                              {d.customValues?.recipientAddress && (
+                                <>
+                                  {isAxelar(d.call.returnValues?.destinationChain) && (
+                                    <div className="flex items-center gap-x-2">
+                                      <ChainProfile
+                                        value={d.customValues.destinationChain}
+                                        className="h-6"
+                                        titleClassName="font-semibold"
+                                      />
+                                      <ExplorerLink
+                                        value={d.call.returnValues.destinationContractAddress}
+                                        chain={d.call.returnValues.destinationChain}
+                                        type="address"
+                                        title="via"
+                                        iconOnly={false}
+                                        width={11}
+                                        height={11}
+                                        containerClassName="!gap-x-1"
+                                        nonIconClassName="text-blue-600 dark:text-blue-500 !text-opacity-75 text-xs"
+                                      />
+                                    </div>
+                                  )}
+                                  <Tooltip content={isAxelar(d.call.returnValues?.destinationChain) && d.customValues.projectName === 'ITS' ? 'Destination Address' : `${d.customValues.projectName ? d.customValues.projectName : 'Final User'} Recipient`} parentClassName="!justify-start">
+                                    <Profile
+                                      address={d.customValues.recipientAddress}
+                                      chain={d.customValues.destinationChain || d.call.returnValues?.destinationChain}
+                                    />
+                                  </Tooltip>
+                                </>
                               )}
                             </>
                           }
@@ -601,6 +628,22 @@ export function GMPs({ address }) {
                                 toTimestamp={d.time_spent.total * 1000}
                                 className="text-xs"
                               />
+                            </div>
+                          )}
+                          {isAxelar(d.call.returnValues?.destinationChain) && (
+                            <div className="flex items-center text-zinc-400 dark:text-zinc-500 gap-x-1">
+                              <HiOutlineArrowRightEndOnRectangle size={16} />
+                              <span className="text-xs">
+                                1st hop
+                              </span>
+                            </div>
+                          )}
+                          {isAxelar(d.call.chain) && (
+                            <div className="flex items-center text-zinc-400 dark:text-zinc-500 gap-x-1">
+                              <HiOutlineArrowRightStartOnRectangle size={16} />
+                              <span className="text-xs">
+                                2nd hop
+                              </span>
                             </div>
                           )}
                         </div>
