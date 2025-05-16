@@ -319,7 +319,7 @@ export function Transfers({ address }) {
           <div className="flex items-center justify-between gap-x-4">
             <div className="sm:flex-auto">
               <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">
-                Token Transfers
+                Legacy Token Transfers
               </h1>
               <p className="mt-2 text-zinc-400 dark:text-zinc-500 text-sm">
                 <Number value={total} suffix={` result${total > 1 ? 's' : ''}`} /> 

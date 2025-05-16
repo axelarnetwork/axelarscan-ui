@@ -88,7 +88,7 @@ function Filters() {
     { label: 'Transfers Type', name: 'transfersType', type: 'select', options:[
       { title: 'Any' },
       { value: 'gmp', title: 'General Message Passing' },
-      { value: 'transfers', title: 'Token Transfers' },
+      { value: 'transfers', title: 'Legacy Token Transfers' },
     ] },
     { label: 'Source Chain', name: 'sourceChain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
     { label: 'Destination Chain', name: 'destinationChain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
