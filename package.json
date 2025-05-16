@@ -51,6 +51,7 @@
     "ethers": "^5.8.0",
     "framer-motion": "^12.9.2",
     "html-react-parser": "^5.2.3",
+    "idb-keyval": "6.2.1",
     "lodash": "^4.17.21",
     "moment": "^2.30.1",
     "next": "^14.2.28",
