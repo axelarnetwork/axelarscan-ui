@@ -47,7 +47,7 @@ export const getInputType = (string, chainsData) => {
 
   return _.head(
     Object.entries(regexMap).filter(([k, v]) => k === 'cosmosAddress' ?
-      Object.values(v).findIndex(v => string.match(v)) > -1 :
+      Object.entries(v).findIndex(([k, v]) => string.match(v) && string.startsWith(chainsData.find(d => d.id === k)?.prefix_address)) > -1 :
       string.match(v)
     ).map(([k, v]) => k)
   ) || (!isNaN(string) ? 'block' : 'tx')
