@@ -284,11 +284,11 @@ function Filters() {
 }
 
 export const getEvent = data => {
-  const { call, interchain_transfer, token_manager_deployment_started, interchain_token_deployment_started, settlement_forwarded_events, settlement_filled_events, interchain_transfers } = { ...data }
+  const { call, interchain_transfer, token_manager_deployment_started, interchain_token_deployment_started, settlement_forwarded_events, settlement_filled_events, interchain_transfers, originData } = { ...data }
 
-  if (interchain_transfer) return 'InterchainTransfer'
-  if (token_manager_deployment_started) return 'TokenManagerDeployment'
-  if (interchain_token_deployment_started) return 'InterchainTokenDeployment'
+  if (interchain_transfer || originData?.interchain_transfer) return 'InterchainTransfer'
+  if (token_manager_deployment_started || originData?.token_manager_deployment_started) return 'TokenManagerDeployment'
+  if (interchain_token_deployment_started || originData?.interchain_token_deployment_started) return 'InterchainTokenDeployment'
   if (settlement_forwarded_events) return 'SquidCoralSettlementForwarded'
   if (settlement_filled_events || interchain_transfers) return 'SquidCoralSettlementFilled'
 

@@ -125,8 +125,12 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
   const sourceChainData = getChainData(sourceChain, chains)
   const { url, transaction_path } = { ...sourceChainData?.explorer }
 
-  const symbol = call?.returnValues?.symbol || interchain_transfer?.symbol || data.token_manager_deployment_started?.symbol || data.interchain_token_deployment_started?.tokenSymbol
+  let symbol = call?.returnValues?.symbol || interchain_transfer?.symbol || data.token_manager_deployment_started?.symbol || data.interchain_token_deployment_started?.tokenSymbol
   const { addresses } = { ...getAssetData(symbol, assets) }
+
+  if (!symbol && data.originData) {
+    symbol = data.originData.call?.returnValues?.symbol || data.originData.interchain_transfer?.symbol || data.originData.token_manager_deployment_started?.symbol || data.originData.interchain_token_deployment_started?.tokenSymbol
+  }
 
   const isMultihop = !!(data.originData || data.callbackData)
 
@@ -552,8 +556,8 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
               <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                 <AssetProfile
                   value={symbol}
-                  chain={sourceChain}
-                  amount={data.amount}
+                  chain={data.originData?.call.chain || sourceChain}
+                  amount={data.originData?.amount || data.amount}
                   ITSPossible={true}
                   onlyITS={!getEvent(data)?.includes('ContractCall')}
                   width={16}
@@ -564,12 +568,12 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
               </dd>
             </div>
           )}
-          {interchain_transfer?.contract_address && (
+          {(data.originData?.interchain_transfer?.contract_address || interchain_transfer?.contract_address) && (
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Token Address</dt>
               <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                 <Profile
-                  address={interchain_transfer.contract_address}
+                  address={data.originData?.interchain_transfer?.contract_address || interchain_transfer.contract_address}
                   chain={data.originData?.call?.chain || sourceChain}
                   noResolveName={true}
                 />
