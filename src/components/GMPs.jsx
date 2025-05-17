@@ -516,7 +516,27 @@ export function GMPs({ address }) {
                       </td>
                       <td className="px-3 py-4 text-left">
                         <div className="flex flex-col gap-y-1">
-                          <ChainProfile value={isAxelar(d.call.chain) && d.origin_chain ? d.origin_chain : d.call.chain} titleClassName="font-semibold" />
+                          {isAxelar(d.call.chain) && d.origin_chain ?
+                            <div className="flex items-center gap-x-2">
+                              <ChainProfile
+                                value={d.origin_chain}
+                                className="h-6"
+                                titleClassName="font-semibold"
+                              />
+                              <ExplorerLink
+                                value={d.call.returnValues.destinationContractAddress}
+                                chain={d.call.chain}
+                                type="address"
+                                title="via"
+                                iconOnly={false}
+                                width={11}
+                                height={11}
+                                containerClassName="!gap-x-1"
+                                nonIconClassName="text-blue-600 dark:text-blue-500 !text-opacity-75 text-xs"
+                              />
+                            </div> :
+                            <ChainProfile value={d.call.chain} titleClassName="font-semibold" />
+                          }
                           {isAxelar(d.call.chain) && d.origin_chain ?
                             null :
                             <Profile address={d.call.transaction?.from} chain={d.call.chain} />
