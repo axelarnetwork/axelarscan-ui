@@ -516,8 +516,31 @@ export function GMPs({ address }) {
                       </td>
                       <td className="px-3 py-4 text-left">
                         <div className="flex flex-col gap-y-1">
-                          <ChainProfile value={d.call.chain} titleClassName="font-semibold" />
-                          <Profile address={d.call.transaction?.from} chain={d.call.chain} />
+                          {isAxelar(d.call.chain) && d.origin_chain ?
+                            <div className="flex items-center gap-x-2">
+                              <ChainProfile
+                                value={d.origin_chain}
+                                className="h-6"
+                                titleClassName="font-semibold"
+                              />
+                              <ExplorerLink
+                                value={d.call.returnValues.destinationContractAddress}
+                                chain={d.call.chain}
+                                type="address"
+                                title="via"
+                                iconOnly={false}
+                                width={11}
+                                height={11}
+                                containerClassName="!gap-x-1"
+                                nonIconClassName="text-blue-600 dark:text-blue-500 !text-opacity-75 text-xs"
+                              />
+                            </div> :
+                            <ChainProfile value={d.call.chain} titleClassName="font-semibold" />
+                          }
+                          {isAxelar(d.call.chain) && d.origin_chain ?
+                            null :
+                            <Profile address={d.call.transaction?.from} chain={d.call.chain} />
+                          }
                         </div>
                       </td>
                       <td className="px-3 py-4 text-left">
@@ -554,12 +577,12 @@ export function GMPs({ address }) {
                                   />
                                 </Tooltip>
                               )}
-                              {d.customValues?.recipientAddress && (
+                              {(d.callback_chain || d.customValues?.recipientAddress) && (
                                 <>
                                   {isAxelar(d.call.returnValues?.destinationChain) && (
                                     <div className="flex items-center gap-x-2">
                                       <ChainProfile
-                                        value={d.customValues.destinationChain}
+                                        value={d.callback_chain || d.customValues?.destinationChain}
                                         className="h-6"
                                         titleClassName="font-semibold"
                                       />
@@ -576,12 +599,14 @@ export function GMPs({ address }) {
                                       />
                                     </div>
                                   )}
-                                  <Tooltip content={isAxelar(d.call.returnValues?.destinationChain) && d.customValues.projectName === 'ITS' ? 'Destination Address' : `${d.customValues.projectName ? d.customValues.projectName : 'Final User'} Recipient`} parentClassName="!justify-start">
-                                    <Profile
-                                      address={d.customValues.recipientAddress}
-                                      chain={d.customValues.destinationChain || d.call.returnValues?.destinationChain}
-                                    />
-                                  </Tooltip>
+                                  {(d.customValues?.recipientAddress || d.callback_destination_address) && (
+                                    <Tooltip content={isAxelar(d.call.returnValues?.destinationChain) && (d.customValues?.projectName === 'ITS' || (!d.customValues?.recipientAddress && d.callback_destination_address)) ? 'Destination Address' : `${d.customValues?.projectName ? d.customValues.projectName : 'Final User'} Recipient`} parentClassName="!justify-start">
+                                      <Profile
+                                        address={d.customValues?.recipientAddress || d.callback_destination_address}
+                                        chain={d.callback_chain || d.customValues?.destinationChain || d.call.returnValues?.destinationChain}
+                                      />
+                                    </Tooltip>
+                                  )}
                                 </>
                               )}
                             </>
