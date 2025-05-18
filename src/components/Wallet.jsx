@@ -183,7 +183,7 @@ export const useCosmosWalletStore = create()(set => ({
 }))
 
 export function CosmosWallet({ connectChainId, children, className }) {
-  const { chainId, provider, signer, setChainId, setAddress, setProvider, setSigner } = useCosmosWalletStore()
+  const { chainId, address, provider, signer, setChainId, setAddress, setProvider, setSigner } = useCosmosWalletStore()
 
   useEffect(() => {
     if (chainId && signer && address) {
