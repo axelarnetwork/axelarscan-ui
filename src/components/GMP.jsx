@@ -29,7 +29,7 @@ import { Profile, ChainProfile, AssetProfile } from '@/components/Profile'
 import { TimeAgo, TimeSpent, TimeUntil } from '@/components/Time'
 import { ExplorerLink } from '@/components/ExplorerLink'
 import { useEVMWalletStore, EVMWallet, useCosmosWalletStore, CosmosWallet, useSuiWalletStore, SuiWallet, useStellarWalletStore, StellarWallet, useXRPLWalletStore, XRPLWallet } from '@/components/Wallet'
-import { getEvent, customData } from '@/components/GMPs'
+import { getEvent, customData, checkNeedMoreGasFromError } from '@/components/GMPs'
 import { useGlobalStore } from '@/components/Global'
 import { estimateITSFee, searchGMP, estimateTimeSpent } from '@/lib/api/gmp'
 import { isAxelar } from '@/lib/chain'
@@ -1839,128 +1839,133 @@ export function GMP({ tx, lite }) {
       const d = await customData(_.head(data))
 
       if (d) {
-        if (['received', 'failed'].includes(d.simplified_status) && (d.executed || d.error) && (d.refunded || d.not_to_refund)) {
-          setEnded(true)
+        if (d.call?.parentMessageID) {
+          router.push(`/gmp/${d.call.parentMessageID}`)
         }
+        else {
+          if (['received', 'failed'].includes(d.simplified_status) && (d.executed || d.error) && (d.refunded || d.not_to_refund)) {
+            setEnded(true)
+          }
 
-        // callback
-        if (d.callback?.transactionHash) {
-          const { data } = { ...await searchGMP({
-            txHash: d.callback.transactionHash,
-            txIndex: d.callback.transactionIndex,
-            txLogIndex: d.callback.logIndex,
-          }) }
-
-          d.callbackData = toArray(data).find(_d => equalsIgnoreCase(_d.call?.transactionHash, d.callback.transactionHash))
-          d.callbackData = await customData(d.callbackData)
-        }
-        else if (d.executed?.transactionHash) {
-          const { data } = { ...await searchGMP({ txHash: d.executed.transactionHash }) }
-
-          d.callbackData = toArray(data).find(_d => equalsIgnoreCase(_d.call?.transactionHash, d.executed.transactionHash))
-          d.callbackData = await customData(d.callbackData)
-        }
-        else if (d.callback?.messageIdHash) {
-          const messageId = `${d.callback.messageIdHash}-${d.callback.messageIdIndex}`
-          const { data } = { ...await searchGMP({ messageId }) }
-
-          d.callbackData = toArray(data).find(_d => equalsIgnoreCase(_d.call?.returnValues?.messageId, messageId))
-          d.callbackData = await customData(d.callbackData)
-        }
-        else if (toArray(d.executed?.childMessageIDs) > 0) {
-          const { data } = { ...await searchGMP({ messageId: _.head(d.executed.childMessageIDs) }) }
-
-          d.callbackData = toArray(data).find(_d => equalsIgnoreCase(_d.call?.returnValues?.messageId, _.head(d.executed.childMessageIDs)))
-          d.callbackData = await customData(d.callbackData)
-        }
-
-        // origin
-        if (d.call && (d.gas_paid_to_callback || d.is_call_from_relayer)) {
-          const { data } = { ...await searchGMP(d.call.transactionHash ? { txHash: d.call.transactionHash } : { messageId: d.call.parentMessageID }) }
-
-          d.originData = toArray(data).find(_d => d.call.transactionHash ?
-            toArray([_d.express_executed?.transactionHash, _d.executed?.transactionHash]).findIndex(tx => equalsIgnoreCase(tx, d.call.transactionHash)) > -1 :
-            toArray([_d.express_executed?.messageId, _d.executed?.messageId, _d.executed?.returnValues?.messageId]).findIndex(id => equalsIgnoreCase(id, d.call.parentMessageID)) > -1
-          )
-          d.originData = await customData(d.originData)
-        }
-
-        // settlement filled
-        if (d.settlement_forwarded_events) {
-          const size = 10
-          let i = 0
-          let from = 0
-          let total
-          let data = []
-
-          while ((!isNumber(total) || total > data.length || from < total) && i < 10) {
-            const response = { ...await searchGMP({
-              event: 'SquidCoralSettlementFilled',
-              squidCoralOrderHash: d.settlement_forwarded_events.map(e => e.orderHash),
-              from,
-              size,
+          // callback
+          if (d.callback?.transactionHash) {
+            const { data } = { ...await searchGMP({
+              txHash: d.callback.transactionHash,
+              txIndex: d.callback.transactionIndex,
+              txLogIndex: d.callback.logIndex,
             }) }
 
-            if (isNumber(response.total)) {
-              total = response.total
-            }
+            d.callbackData = toArray(data).find(_d => equalsIgnoreCase(_d.call?.transactionHash, d.callback.transactionHash))
+            d.callbackData = await customData(d.callbackData)
+          }
+          else if (d.executed?.transactionHash) {
+            const { data } = { ...await searchGMP({ txHash: d.executed.transactionHash }) }
 
-            if (response.data) {
-              data = _.uniqBy(_.concat(data, response.data), 'id')
-              from = data.length
-            }
-            else {
-              break
-            }
+            d.callbackData = toArray(data).find(_d => equalsIgnoreCase(_d.call?.transactionHash, d.executed.transactionHash))
+            d.callbackData = await customData(d.callbackData)
+          }
+          else if (d.callback?.messageIdHash) {
+            const messageId = `${d.callback.messageIdHash}-${d.callback.messageIdIndex}`
+            const { data } = { ...await searchGMP({ messageId }) }
 
-            i++
+            d.callbackData = toArray(data).find(_d => equalsIgnoreCase(_d.call?.returnValues?.messageId, messageId))
+            d.callbackData = await customData(d.callbackData)
+          }
+          else if (toArray(d.executed?.childMessageIDs) > 0) {
+            const { data } = { ...await searchGMP({ messageId: _.head(d.executed.childMessageIDs) }) }
+
+            d.callbackData = toArray(data).find(_d => equalsIgnoreCase(_d.call?.returnValues?.messageId, _.head(d.executed.childMessageIDs)))
+            d.callbackData = await customData(d.callbackData)
           }
 
-          if (data.length > 0) {
-            d.settlementFilledData = data
+          // origin
+          if (d.call && (d.gas_paid_to_callback || d.is_call_from_relayer)) {
+            const { data } = { ...await searchGMP(d.call.transactionHash ? { txHash: d.call.transactionHash } : { messageId: d.call.parentMessageID }) }
+
+            d.originData = toArray(data).find(_d => d.call.transactionHash ?
+              toArray([_d.express_executed?.transactionHash, _d.executed?.transactionHash]).findIndex(tx => equalsIgnoreCase(tx, d.call.transactionHash)) > -1 :
+              toArray([_d.express_executed?.messageId, _d.executed?.messageId, _d.executed?.returnValues?.messageId]).findIndex(id => equalsIgnoreCase(id, d.call.parentMessageID)) > -1
+            )
+            d.originData = await customData(d.originData)
           }
+
+          // settlement filled
+          if (d.settlement_forwarded_events) {
+            const size = 10
+            let i = 0
+            let from = 0
+            let total
+            let data = []
+
+            while ((!isNumber(total) || total > data.length || from < total) && i < 10) {
+              const response = { ...await searchGMP({
+                event: 'SquidCoralSettlementFilled',
+                squidCoralOrderHash: d.settlement_forwarded_events.map(e => e.orderHash),
+                from,
+                size,
+              }) }
+
+              if (isNumber(response.total)) {
+                total = response.total
+              }
+
+              if (response.data) {
+                data = _.uniqBy(_.concat(data, response.data), 'id')
+                from = data.length
+              }
+              else {
+                break
+              }
+
+              i++
+            }
+
+            if (data.length > 0) {
+              d.settlementFilledData = data
+            }
+          }
+
+          // settlement forwarded
+          if (d.settlement_filled_events) {
+            const size = 10
+            let i = 0
+            let from = 0
+            let total
+            let data = []
+
+            while ((!isNumber(total) || total > data.length || from < total) && i < 10) {
+              const response = { ...await searchGMP({
+                event: 'SquidCoralSettlementForwarded',
+                squidCoralOrderHash: d.settlement_filled_events.map(e => e.orderHash),
+                from,
+                size,
+              }) }
+
+              if (isNumber(response.total)) {
+                total = response.total
+              }
+
+              if (response.data) {
+                data = _.uniqBy(_.concat(data, response.data), 'id')
+                from = data.length
+              }
+              else {
+                break
+              }
+
+              i++
+            }
+
+            if (data.length > 0) {
+              d.settlementForwardedData = data
+            }
+          }
+
+          console.log('[data]', d)
+          setData(d)
+
+          return d
         }
-
-        // settlement forwarded
-        if (d.settlement_filled_events) {
-          const size = 10
-          let i = 0
-          let from = 0
-          let total
-          let data = []
-
-          while ((!isNumber(total) || total > data.length || from < total) && i < 10) {
-            const response = { ...await searchGMP({
-              event: 'SquidCoralSettlementForwarded',
-              squidCoralOrderHash: d.settlement_filled_events.map(e => e.orderHash),
-              from,
-              size,
-            }) }
-
-            if (isNumber(response.total)) {
-              total = response.total
-            }
-
-            if (response.data) {
-              data = _.uniqBy(_.concat(data, response.data), 'id')
-              from = data.length
-            }
-            else {
-              break
-            }
-
-            i++
-          }
-
-          if (data.length > 0) {
-            d.settlementForwardedData = data
-          }
-        }
-
-        console.log('[data]', d)
-        setData(d)
-
-        return d
       }
     }
 
@@ -2509,12 +2514,22 @@ export function GMP({ tx, lite }) {
       if (
         // supported chain
         isChainSupportedAddGas(call.chain, call.chain_type) &&
-        // not executed / approved / not cosmos call or called more than 1 min
-        !executed && !data.is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) &&
-        // no gas paid or not enough gas
-        (!(gas_paid || data.gas_paid_to_callback) || data.is_insufficient_fee || data.is_invalid_gas_paid || data.not_enough_gas_to_execute || gas?.gas_remain_amount < 0.000001) &&
         // no gas added response
-        response?.message !== 'Pay gas successful'
+        response?.message !== 'Pay gas successful' &&
+        // when need more gas by itself
+        ((
+          // not executed / approved / not cosmos call or called more than 1 min
+          !executed && !data.is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) &&
+          // no gas paid or not enough gas
+          (!(gas_paid || data.gas_paid_to_callback) || data.is_insufficient_fee || data.is_invalid_gas_paid || data.not_enough_gas_to_execute || gas?.gas_remain_amount < 0.000001)
+        ) ||
+        // when need more gas by another
+        (
+          data.callbackData && (
+            // some patterns of error is detected
+            checkNeedMoreGasFromError(data.callbackData.error)
+          )
+        ))
       ) {
         addGasButton = (
           <div key="addGas" className="flex items-center gap-x-1">
