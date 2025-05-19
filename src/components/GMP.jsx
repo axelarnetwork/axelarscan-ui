@@ -1960,12 +1960,12 @@ export function GMP({ tx, lite }) {
               d.settlementForwardedData = data
             }
           }
+
+          console.log('[data]', d)
+          setData(d)
+
+          return d
         }
-
-        console.log('[data]', d)
-        setData(d)
-
-        return d
       }
     }
 
