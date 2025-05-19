@@ -37,7 +37,7 @@ import { getProvider } from '@/lib/chain/evm'
 import { ENVIRONMENT, getChainData, getAssetData } from '@/lib/config'
 import { toCase, split, toArray, parseError } from '@/lib/parser'
 import { sleep, getParams } from '@/lib/operator'
-import { isString, equalsIgnoreCase, headString, find, ellipse, toTitle } from '@/lib/string'
+import { isString, equalsIgnoreCase, headString, find, includesSomePatterns, ellipse, toTitle } from '@/lib/string'
 import { isNumber, toNumber, toBigNumber, formatUnits, parseUnits, numberFormat } from '@/lib/number'
 import { timeDiff } from '@/lib/time'
 import IAxelarExecutable from '@/data/interfaces/gmp/IAxelarExecutable.json'
@@ -2509,12 +2509,22 @@ export function GMP({ tx, lite }) {
       if (
         // supported chain
         isChainSupportedAddGas(call.chain, call.chain_type) &&
-        // not executed / approved / not cosmos call or called more than 1 min
-        !executed && !data.is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) &&
-        // no gas paid or not enough gas
-        (!(gas_paid || data.gas_paid_to_callback) || data.is_insufficient_fee || data.is_invalid_gas_paid || data.not_enough_gas_to_execute || gas?.gas_remain_amount < 0.000001) &&
         // no gas added response
-        response?.message !== 'Pay gas successful'
+        response?.message !== 'Pay gas successful' &&
+        // when need more gas by itself
+        ((
+          // not executed / approved / not cosmos call or called more than 1 min
+          !executed && !data.is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) &&
+          // no gas paid or not enough gas
+          (!(gas_paid || data.gas_paid_to_callback) || data.is_insufficient_fee || data.is_invalid_gas_paid || data.not_enough_gas_to_execute || gas?.gas_remain_amount < 0.000001)
+        ) ||
+        // when need more gas by another
+        (
+          data.callbackData && (
+            // some patterns of error is detected
+            data.callbackData.error && includesSomePatterns([data.callbackData.error.error?.reason, data.callbackData.error.error?.message], ['INSUFFICIENT_GAS'])
+          )
+        ))
       ) {
         addGasButton = (
           <div key="addGas" className="flex items-center gap-x-1">
