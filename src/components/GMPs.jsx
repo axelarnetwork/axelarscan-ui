@@ -456,7 +456,7 @@ export function GMPs({ address }) {
                         <div className="flex items-center gap-x-1">
                           <Copy value={key}>
                             <Link
-                              href={`/gmp/${d.message_id ? d.message_id : `${d.call.chain_type === 'cosmos' && isNumber(d.call.messageIdIndex) ? d.call.axelarTransactionHash : d.call.transactionHash}${isNumber(d.call.logIndex) ? `:${d.call.logIndex}` : d.call.chain_type === 'cosmos' && isNumber(d.call.messageIdIndex) ? `-${d.call.messageIdIndex}` : ''}`}`}
+                              href={`/gmp/${d.call.parentMessageID ? d.call.parentMessageID : d.message_id ? d.message_id : `${d.call.chain_type === 'cosmos' && isNumber(d.call.messageIdIndex) ? d.call.axelarTransactionHash : d.call.transactionHash}${isNumber(d.call.logIndex) ? `:${d.call.logIndex}` : d.call.chain_type === 'cosmos' && isNumber(d.call.messageIdIndex) ? `-${d.call.messageIdIndex}` : ''}`}`}
                               target="_blank"
                               className="text-blue-600 dark:text-blue-500 font-semibold"
                             >
