@@ -33,7 +33,7 @@ import { isAxelar } from '@/lib/chain'
 import { ENVIRONMENT } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
 import { getParams, getQueryString, generateKeyByParams, isFiltered } from '@/lib/operator'
-import { isString, equalsIgnoreCase, capitalize, toBoolean, ellipse } from '@/lib/string'
+import { isString, equalsIgnoreCase, capitalize, toBoolean, includesSomePatterns, ellipse } from '@/lib/string'
 import { isNumber } from '@/lib/number'
 import customGMPs from '@/data/custom/gmp'
 
@@ -340,6 +340,8 @@ export const customData = async data => {
 
   return data
 }
+
+export const checkNeedMoreGasFromError = error => !!error && includesSomePatterns([error.error?.reason, error.error?.message], ['INSUFFICIENT_GAS'])
 
 export function GMPs({ address }) {
   const searchParams = useSearchParams()
