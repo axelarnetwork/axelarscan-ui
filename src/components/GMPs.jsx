@@ -33,7 +33,7 @@ import { isAxelar } from '@/lib/chain'
 import { ENVIRONMENT } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
 import { getParams, getQueryString, generateKeyByParams, isFiltered } from '@/lib/operator'
-import { isString, equalsIgnoreCase, capitalize, toBoolean, find, ellipse } from '@/lib/string'
+import { isString, equalsIgnoreCase, capitalize, toBoolean, includesSomePatterns, ellipse } from '@/lib/string'
 import { isNumber } from '@/lib/number'
 import customGMPs from '@/data/custom/gmp'
 
@@ -343,6 +343,8 @@ export const customData = async data => {
   return data
 }
 
+export const checkNeedMoreGasFromError = error => !!error && includesSomePatterns([error.error?.reason, error.error?.message], ['INSUFFICIENT_GAS'])
+
 export function GMPs({ address, contractMethod }) {
   const searchParams = useSearchParams()
   const [params, setParams] = useState(null)
@@ -466,7 +468,7 @@ export function GMPs({ address, contractMethod }) {
                         <div className="flex items-center gap-x-1">
                           <Copy value={key}>
                             <Link
-                              href={`/gmp/${d.message_id ? d.message_id : `${d.call.chain_type === 'cosmos' && isNumber(d.call.messageIdIndex) ? d.call.axelarTransactionHash : d.call.transactionHash}${isNumber(d.call.logIndex) ? `:${d.call.logIndex}` : d.call.chain_type === 'cosmos' && isNumber(d.call.messageIdIndex) ? `-${d.call.messageIdIndex}` : ''}`}`}
+                              href={`/gmp/${d.call.parentMessageID ? d.call.parentMessageID : d.message_id ? d.message_id : `${d.call.chain_type === 'cosmos' && isNumber(d.call.messageIdIndex) ? d.call.axelarTransactionHash : d.call.transactionHash}${isNumber(d.call.logIndex) ? `:${d.call.logIndex}` : d.call.chain_type === 'cosmos' && isNumber(d.call.messageIdIndex) ? `-${d.call.messageIdIndex}` : ''}`}`}
                               target="_blank"
                               className="text-blue-600 dark:text-blue-500 font-semibold"
                             >
