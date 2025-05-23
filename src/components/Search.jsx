@@ -59,14 +59,30 @@ export function Search() {
       }
       // transaction
       else if (['txhash', 'tx'].includes(type)) {
-        if ((await searchGMP({ txHash: _input, size: 0 }))?.total) {
+        const gmpTotal = (await searchGMP({ txHash: _input, size: 0 }))?.total
+
+        if (gmpTotal > 0) {
+          if (gmpTotal > 1) {
+            _input = `search?txHash=${_input}`
+          }
+
           type = 'gmp'
         }
-        else if ((await searchTransfers({ txHash: _input, size: 0 }))?.total) {
-          type = 'transfer'
-        }
         else {
-          type = type === 'txhash' ? 'gmp' : 'tx'
+          const transfersTotal = (await searchTransfers({ txHash: _input, size: 0 }))?.total
+        
+          if (transfersTotal > 0) {
+            if (transfersTotal > 1) {
+              _input = `search?txHash=${_input}`
+              type = 'transfers'
+            }
+            else {
+              type = 'transfer'
+            }
+          }
+          else {
+            type = type === 'txhash' ? 'gmp' : 'tx'
+          }
         }
       }
 
