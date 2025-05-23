@@ -2526,6 +2526,8 @@ export function GMP({ tx, lite }) {
         // when need more gas by another
         (
           data.callbackData && (
+            // not enough gas
+            data.callbackData.is_insufficient_fee || data.callbackData.not_enough_gas_to_execute ||
             // some patterns of error is detected
             checkNeedMoreGasFromError(data.callbackData.error)
           )
