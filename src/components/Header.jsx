@@ -21,7 +21,8 @@ const NAVIGATIONS = [
     children: [
       { title: 'Statistics', href: '/interchain' },
       { title: 'General Message Passing', href: '/gmp/search' },
-      { title: 'Token Transfers', href: '/transfers/search' },
+      { title: 'Interchain Transfers', href: '/interchain-transfers/search' },
+      { title: 'Legacy Token Transfers', href: '/transfers/search' },
     ],
   },
   {
