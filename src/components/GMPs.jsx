@@ -35,6 +35,7 @@ import { split, toArray } from '@/lib/parser'
 import { getParams, getQueryString, generateKeyByParams, isFiltered } from '@/lib/operator'
 import { isString, equalsIgnoreCase, capitalize, toBoolean, includesSomePatterns, ellipse } from '@/lib/string'
 import { isNumber } from '@/lib/number'
+import { timeDiff } from '@/lib/time'
 import customGMPs from '@/data/custom/gmp'
 
 const size = 25
@@ -401,7 +402,9 @@ export function GMPs({ address }) {
         <div>
           <div className="flex items-center justify-between gap-x-4">
             <div className="sm:flex-auto">
-              <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">General Message Passing</h1>
+              <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">
+                General Message Passing
+              </h1>
               <p className="mt-2 text-zinc-400 dark:text-zinc-500 text-sm">
                 <Number value={total} suffix={` result${total > 1 ? 's' : ''}`} /> 
               </p>
@@ -625,16 +628,20 @@ export function GMPs({ address }) {
                               {d.simplified_status === 'received' && <ExplorerLink value={receivedTransactionHash} chain={d.call.returnValues?.destinationChain} />}
                             </div>
                           )}
-                          {d.is_insufficient_fee && (
+                          {d.is_insufficient_fee && (!isAxelar(d.call.chain) || timeDiff(d.call.created_at?.ms) > 60) && (
                             <div className="flex items-center text-red-600 dark:text-red-500 gap-x-1">
                               <PiWarningCircle size={16} />
-                              <span className="text-xs">Insufficient Fee</span>
+                              <span className="text-xs">
+                                Insufficient Fee
+                              </span>
                             </div>
                           )}
                           {d.is_invalid_gas_paid && (
                             <div className="flex items-center text-red-600 dark:text-red-500 gap-x-1">
                               <PiWarningCircle size={16} />
-                              <span className="text-xs">Invalid Gas Paid</span>
+                              <span className="text-xs">
+                                Invalid Gas Paid
+                              </span>
                             </div>
                           )}
                           {d.time_spent?.call_express_executed > 0 && ['express_executed', 'executed'].includes(d.status) && (
