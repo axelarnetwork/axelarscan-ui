@@ -560,7 +560,7 @@ export function GMPs({ address, useAnotherHopChain = false }) {
                                 </div>
                               </Tooltip>
                             </div> :
-                            (!isAxelar(d.call.returnValues?.destinationChain) || !d.customValues?.recipientAddress) && (
+                            (!isAxelar(d.call.returnValues?.destinationChain) || !d.customValues?.recipientAddress || !useAnotherHopChain) && (
                               <ChainProfile value={d.call.returnValues?.destinationChain} titleClassName="font-semibold" />
                             )
                           }
@@ -588,7 +588,7 @@ export function GMPs({ address, useAnotherHopChain = false }) {
                                   {isAxelar(d.call.returnValues?.destinationChain) && (
                                     <div className="flex items-center gap-x-2">
                                       <ChainProfile
-                                        value={(useAnotherHopChain && (d.callback_chain || d.customValues?.destinationChain)) || d.call.returnValues.destinationChain}
+                                        value={useAnotherHopChain && (d.callback_chain || d.customValues?.destinationChain)}
                                         className="h-6"
                                         titleClassName="font-semibold"
                                       />
