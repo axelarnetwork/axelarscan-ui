@@ -345,7 +345,7 @@ export const customData = async data => {
 
 export const checkNeedMoreGasFromError = error => !!error && includesSomePatterns([error.error?.reason, error.error?.message], ['INSUFFICIENT_GAS'])
 
-export function GMPs({ address }) {
+export function GMPs({ address, useAnotherHopChain = false }) {
   const searchParams = useSearchParams()
   const [params, setParams] = useState(null)
   const [searchResults, setSearchResults] = useState(null)
@@ -522,7 +522,7 @@ export function GMPs({ address }) {
                       </td>
                       <td className="px-3 py-4 text-left">
                         <div className="flex flex-col gap-y-1">
-                          {isAxelar(d.call.chain) && d.origin_chain ?
+                          {useAnotherHopChain && isAxelar(d.call.chain) && d.origin_chain ?
                             <div className="flex items-center gap-x-2">
                               <ChainProfile
                                 value={d.origin_chain}
@@ -543,7 +543,7 @@ export function GMPs({ address }) {
                             </div> :
                             <ChainProfile value={d.call.chain} titleClassName="font-semibold" />
                           }
-                          {isAxelar(d.call.chain) && d.origin_chain ?
+                          {useAnotherHopChain && isAxelar(d.call.chain) && d.origin_chain ?
                             null :
                             <Profile address={d.call.transaction?.from} chain={d.call.chain} />
                           }
@@ -585,7 +585,7 @@ export function GMPs({ address }) {
                               )}
                               {(d.callback_chain || d.customValues?.recipientAddress) && (
                                 <>
-                                  {isAxelar(d.call.returnValues?.destinationChain) && (
+                                  {useAnotherHopChain && isAxelar(d.call.returnValues?.destinationChain) && (
                                     <div className="flex items-center gap-x-2">
                                       <ChainProfile
                                         value={d.callback_chain || d.customValues?.destinationChain}
@@ -605,11 +605,11 @@ export function GMPs({ address }) {
                                       />
                                     </div>
                                   )}
-                                  {(d.customValues?.recipientAddress || d.callback_destination_address) && (
+                                  {(d.customValues?.recipientAddress || (useAnotherHopChain && d.callback_destination_address)) && (
                                     <Tooltip content={isAxelar(d.call.returnValues?.destinationChain) && (d.customValues?.projectName === 'ITS' || (!d.customValues?.recipientAddress && d.callback_destination_address)) ? 'Destination Address' : `${d.customValues?.projectName ? d.customValues.projectName : 'Final User'} Recipient`} parentClassName="!justify-start">
                                       <Profile
-                                        address={d.customValues?.recipientAddress || d.callback_destination_address}
-                                        chain={d.callback_chain || d.customValues?.destinationChain || d.call.returnValues?.destinationChain}
+                                        address={d.customValues?.recipientAddress || (useAnotherHopChain && d.callback_destination_address)}
+                                        chain={(useAnotherHopChain && d.callback_chain) || d.customValues?.destinationChain || d.call.returnValues?.destinationChain}
                                       />
                                     </Tooltip>
                                   )}
