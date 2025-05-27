@@ -1,4 +1,4 @@
-import { WagmiConfig } from 'wagmi'
+import { WagmiProvider } from 'wagmi'
 
 import NonSSRWrapper from '@/components/NonSSRWrapper'
 import { wagmiConfig } from '@/lib/provider/wagmi'
@@ -6,9 +6,9 @@ import { wagmiConfig } from '@/lib/provider/wagmi'
 export default function WagmiConfigProvider({ children }) {
   return (
     <NonSSRWrapper>
-      <WagmiConfig config={wagmiConfig}>
+      <WagmiProvider config={wagmiConfig}>
         {children}
-      </WagmiConfig>
+      </WagmiProvider>
     </NonSSRWrapper>
   )
 }

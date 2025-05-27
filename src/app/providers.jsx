@@ -6,7 +6,7 @@ import { ThemeProvider, useTheme } from 'next-themes'
 import TagManager from 'react-gtm-module'
 import { IntercomProvider } from 'react-use-intercom'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { useWeb3ModalTheme } from '@web3modal/wagmi/react'
+import { useAppKitTheme } from '@reown/appkit/react'
 import { createNetworkConfig, SuiClientProvider, WalletProvider as SuiWalletProvider } from '@mysten/dapp-kit'
 import { getFullnodeUrl } from '@mysten/sui/client'
 import { WalletProvider as XRPLWalletProvider } from '@xrpl-wallet-standard/react'
@@ -22,7 +22,7 @@ import { ENVIRONMENT } from '@/lib/config'
 
 function ThemeWatcher() {
   const { resolvedTheme, setTheme } = useTheme()
-  const { setThemeMode } = useWeb3ModalTheme()
+  const { setThemeMode } = useAppKitTheme()
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)')
