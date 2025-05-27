@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query'
-import { defaultWagmiConfig } from '@web3modal/wagmi/react/config'
-import { createWeb3Modal } from '@web3modal/wagmi/react'
+import { createAppKit } from '@reown/appkit/react'
+import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
 import { mainnet, sepolia, bsc, bscTestnet, polygon, polygonAmoy, avalanche, avalancheFuji, fantom, fantomTestnet, moonbeam, moonbaseAlpha, arbitrum, arbitrumSepolia, optimism, optimismSepolia, base, baseSepolia, mantle, mantleSepoliaTestnet, celo, celoAlfajores, kava, kavaTestnet, filecoin, filecoinCalibration, linea, lineaSepolia, scroll, scrollSepolia, immutableZkEvm, immutableZkEvmTestnet, fraxtal, fraxtalTestnet, blast, blastSepolia, flowMainnet, flowTestnet, hedera, hederaTestnet, plumeTestnet } from 'wagmi/chains'
 
 import { ENVIRONMENT } from '@/lib/config'
@@ -70,15 +70,29 @@ export const CHAINS = toArray(ENVIRONMENT === 'mainnet' ?
 
 export const queryClient = new QueryClient()
 
-export const wagmiConfig = defaultWagmiConfig({
-  chains: CHAINS,
+const wagmiAdapter = new WagmiAdapter({
+  networks: CHAINS,
+  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
+})
+
+createAppKit({
+  adapters: [wagmiAdapter],
+  networks: CHAINS,
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
   metadata: {
     name: 'Axelarscan',
     description: process.env.NEXT_PUBLIC_DEFAULT_TITLE,
+    url: process.env.NEXT_PUBLIC_APP_URL,
     icons: ['/icons/favicon-32x32.png'],
   },
+  allWallets: 'SHOW',
+  features: {
+    email: false,
+    socials: [],
+  },
 })
+
+export const wagmiConfig = wagmiAdapter.wagmiConfig
 
 export const xrplConfig = {
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
@@ -89,11 +103,3 @@ export const xrplConfig = {
   },
   networks: [`xrpl:${ENVIRONMENT === 'mainnet' ? 'mainnet' : ENVIRONMENT === 'devnet-amplifier' ? 'devnet' : 'testnet'}`],
 }
-
-export const Web3Modal = createWeb3Modal({
-  wagmiConfig,
-  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
-  chains: CHAINS,
-  themeVariables: {},
-  excludeWalletIds: ['19177a98252e07ddfc9af2083ba8e07ef627cb6103467ffebb3f8f4205fd7927'],
-})
