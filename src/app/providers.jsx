@@ -51,6 +51,7 @@ export function Providers({ children }) {
   const searchParams = useSearchParams()
   const [rendered, setRendered] = useState(false)
   const [tagManagerInitiated, setTagManagerInitiated] = useState(false)
+  const [xrplRegisterWallets, setXRPLlRegisterWallets] = useState(null)
   const [client] = useState(() => queryClient)
 
   useEffect(() => {
@@ -80,11 +81,15 @@ export function Providers({ children }) {
   })
 
   // xrpl
-  const registerWallets = [
-    new CrossmarkWallet(),
-    new LedgerWallet(),
-    new XRPLWalletConnectWallet(xrplConfig),
-  ]
+  useEffect(() => {
+    if (rendered) {
+      setXRPLlRegisterWallets([
+        new CrossmarkWallet(),
+        new LedgerWallet(),
+        new XRPLWalletConnectWallet(xrplConfig),
+      ])
+    }
+  }, [rendered, setXRPLlRegisterWallets])
 
   return (
     <ThemeProvider attribute="class" disableTransitionOnChange>
@@ -93,7 +98,7 @@ export function Providers({ children }) {
         <Global />
         <QueryClientProvider client={client}>
           <WagmiConfigProvider>
-            <XRPLWalletProvider registerWallets={registerWallets}>
+            <XRPLWalletProvider registerWallets={xrplRegisterWallets}>
               <SuiClientProvider networks={networkConfig} defaultNetwork={ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}>
                 <SuiWalletProvider>
                   {children}
