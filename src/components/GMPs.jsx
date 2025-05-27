@@ -574,7 +574,7 @@ export function GMPs({ address, useAnotherHopChain = false }) {
                               </Tooltip>
                             </div> :
                             <>
-                              {(!isAxelar(d.call.returnValues?.destinationChain) || !d.customValues?.recipientAddress) && (
+                              {(!isAxelar(d.call.returnValues?.destinationChain) || !d.customValues?.recipientAddress || !useAnotherHopChain) && (
                                 <Tooltip content="Destination Contract" parentClassName="!justify-start">
                                   <Profile
                                     address={d.call.returnValues?.destinationContractAddress}
