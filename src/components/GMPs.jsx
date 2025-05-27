@@ -347,7 +347,7 @@ export const customData = async data => {
 
 export const checkNeedMoreGasFromError = error => !!error && includesSomePatterns([error.error?.reason, error.error?.message], ['INSUFFICIENT_GAS'])
 
-export function GMPs({ address, contractMethod }) {
+export function GMPs({ address, contractMethod, useAnotherHopChain = false }) {
   const searchParams = useSearchParams()
   const [params, setParams] = useState(null)
   const [searchResults, setSearchResults] = useState(null)
@@ -532,7 +532,7 @@ export function GMPs({ address, contractMethod }) {
                       </td>
                       <td className="px-3 py-4 text-left">
                         <div className="flex flex-col gap-y-1">
-                          {isAxelar(d.call.chain) && d.origin_chain ?
+                          {useAnotherHopChain && isAxelar(d.call.chain) && d.origin_chain ?
                             <div className="flex items-center gap-x-2">
                               <ChainProfile
                                 value={d.origin_chain}
@@ -553,7 +553,7 @@ export function GMPs({ address, contractMethod }) {
                             </div> :
                             <ChainProfile value={d.call.chain} titleClassName="font-semibold" />
                           }
-                          {isAxelar(d.call.chain) && d.origin_chain ?
+                          {useAnotherHopChain && isAxelar(d.call.chain) && d.origin_chain ?
                             null :
                             <Profile address={d.call.transaction?.from} chain={d.call.chain} />
                           }
@@ -570,7 +570,7 @@ export function GMPs({ address, contractMethod }) {
                                 </div>
                               </Tooltip>
                             </div> :
-                            (!isAxelar(d.call.returnValues?.destinationChain) || !d.customValues?.recipientAddress) && (
+                            (!isAxelar(d.call.returnValues?.destinationChain) || !d.customValues?.recipientAddress || !useAnotherHopChain) && (
                               <ChainProfile value={d.call.returnValues?.destinationChain} titleClassName="font-semibold" />
                             )
                           }
@@ -584,7 +584,7 @@ export function GMPs({ address, contractMethod }) {
                               </Tooltip>
                             </div> :
                             <>
-                              {(!isAxelar(d.call.returnValues?.destinationChain) || !d.customValues?.recipientAddress) && (
+                              {(!isAxelar(d.call.returnValues?.destinationChain) || !d.customValues?.recipientAddress || !useAnotherHopChain) && (
                                 <Tooltip content="Destination Contract" parentClassName="!justify-start">
                                   <Profile
                                     address={d.call.returnValues?.destinationContractAddress}
@@ -598,28 +598,30 @@ export function GMPs({ address, contractMethod }) {
                                   {isAxelar(d.call.returnValues?.destinationChain) && (
                                     <div className="flex items-center gap-x-2">
                                       <ChainProfile
-                                        value={d.callback_chain || d.customValues?.destinationChain}
+                                        value={useAnotherHopChain && (d.callback_chain || d.customValues?.destinationChain)}
                                         className="h-6"
                                         titleClassName="font-semibold"
                                       />
-                                      <ExplorerLink
-                                        value={d.call.returnValues.destinationContractAddress}
-                                        chain={d.call.returnValues.destinationChain}
-                                        type="address"
-                                        title="via"
-                                        iconOnly={false}
-                                        width={11}
-                                        height={11}
-                                        containerClassName="!gap-x-1"
-                                        nonIconClassName="text-blue-600 dark:text-blue-500 !text-opacity-75 text-xs"
-                                      />
+                                      {useAnotherHopChain && (
+                                        <ExplorerLink
+                                          value={d.call.returnValues.destinationContractAddress}
+                                          chain={d.call.returnValues.destinationChain}
+                                          type="address"
+                                          title="via"
+                                          iconOnly={false}
+                                          width={11}
+                                          height={11}
+                                          containerClassName="!gap-x-1"
+                                          nonIconClassName="text-blue-600 dark:text-blue-500 !text-opacity-75 text-xs"
+                                        />
+                                      )}
                                     </div>
                                   )}
-                                  {(d.customValues?.recipientAddress || d.callback_destination_address) && (
+                                  {(d.customValues?.recipientAddress || (useAnotherHopChain && d.callback_destination_address)) && (
                                     <Tooltip content={isAxelar(d.call.returnValues?.destinationChain) && (d.customValues?.projectName === 'ITS' || (!d.customValues?.recipientAddress && d.callback_destination_address)) ? 'Destination Address' : `${d.customValues?.projectName ? d.customValues.projectName : 'Final User'} Recipient`} parentClassName="!justify-start">
                                       <Profile
-                                        address={d.customValues?.recipientAddress || d.callback_destination_address}
-                                        chain={d.callback_chain || d.customValues?.destinationChain || d.call.returnValues?.destinationChain}
+                                        address={d.customValues?.recipientAddress || (useAnotherHopChain && d.callback_destination_address)}
+                                        chain={(useAnotherHopChain && d.callback_chain) || d.customValues?.destinationChain || d.call.returnValues?.destinationChain}
                                       />
                                     </Tooltip>
                                   )}
