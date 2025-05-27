@@ -57,6 +57,25 @@ export function Providers({ children }) {
     setRendered(true)
   }, [])
 
+  // permissions
+  useEffect(() => {
+    const checkPermissions = async () => {
+      if (rendered) {
+        try {
+          const result = await navigator.permissions.query({ name: 'clipboard-read' })
+
+          if (result.state !== 'granted') {
+            try {
+              await navigator.clipboard.readText()
+            } catch (error) {}
+          }
+        } catch (error) {}
+      }
+    }
+
+    checkPermissions()
+  }, [rendered])
+
   // google tag manager
   useEffect(() => {
     if (process.env.NEXT_PUBLIC_GTM_ID && rendered && !tagManagerInitiated) {
