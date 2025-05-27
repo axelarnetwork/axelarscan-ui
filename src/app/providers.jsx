@@ -6,7 +6,7 @@ import { ThemeProvider, useTheme } from 'next-themes'
 import TagManager from 'react-gtm-module'
 import { IntercomProvider } from 'react-use-intercom'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { useWeb3ModalTheme } from '@web3modal/wagmi/react'
+import { useAppKitTheme } from '@reown/appkit/react'
 import { createNetworkConfig, SuiClientProvider, WalletProvider as SuiWalletProvider } from '@mysten/dapp-kit'
 import { getFullnodeUrl } from '@mysten/sui/client'
 import { WalletProvider as XRPLWalletProvider } from '@xrpl-wallet-standard/react'
@@ -22,7 +22,7 @@ import { ENVIRONMENT } from '@/lib/config'
 
 function ThemeWatcher() {
   const { resolvedTheme, setTheme } = useTheme()
-  const { setThemeMode } = useWeb3ModalTheme()
+  const { setThemeMode } = useAppKitTheme()
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-color-scheme: dark)')
@@ -51,6 +51,7 @@ export function Providers({ children }) {
   const searchParams = useSearchParams()
   const [rendered, setRendered] = useState(false)
   const [tagManagerInitiated, setTagManagerInitiated] = useState(false)
+  const [xrplRegisterWallets, setXRPLlRegisterWallets] = useState(null)
   const [client] = useState(() => queryClient)
 
   useEffect(() => {
@@ -80,11 +81,15 @@ export function Providers({ children }) {
   })
 
   // xrpl
-  const registerWallets = [
-    new CrossmarkWallet(),
-    new LedgerWallet(),
-    new XRPLWalletConnectWallet(xrplConfig),
-  ]
+  useEffect(() => {
+    if (rendered) {
+      setXRPLlRegisterWallets([
+        new CrossmarkWallet(),
+        new LedgerWallet(),
+        new XRPLWalletConnectWallet(xrplConfig),
+      ])
+    }
+  }, [rendered, setXRPLlRegisterWallets])
 
   return (
     <ThemeProvider attribute="class" disableTransitionOnChange>
@@ -93,7 +98,7 @@ export function Providers({ children }) {
         <Global />
         <QueryClientProvider client={client}>
           <WagmiConfigProvider>
-            <XRPLWalletProvider registerWallets={registerWallets}>
+            <XRPLWalletProvider registerWallets={xrplRegisterWallets}>
               <SuiClientProvider networks={networkConfig} defaultNetwork={ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}>
                 <SuiWalletProvider>
                   {children}

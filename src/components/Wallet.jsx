@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useWeb3Modal } from '@web3modal/wagmi/react'
+import { useAppKit } from '@reown/appkit/react'
 import { usePublicClient, useChainId, useSwitchChain, useWalletClient, useAccount, useDisconnect, useSignMessage } from 'wagmi'
 import { hashMessage, parseAbiItem, verifyMessage } from 'viem'
 import { ConnectButton as SuiConnectButton, useCurrentAccount as useSuiCurrentAccount } from '@mysten/dapp-kit'
@@ -93,7 +93,7 @@ export function EVMWallet({ connectChainId, children, className }) {
   const { chainId, provider, setChainId, setAddress, setProvider, setSigner } = useEVMWalletStore()
   const [signatureValid, setSignatureValid] = useState(null)
 
-  const { open } = useWeb3Modal()
+  const { open } = useAppKit()
   const publicClient = usePublicClient()
   const chainIdConnected = useChainId()
   const { switchChain } = useSwitchChain()
