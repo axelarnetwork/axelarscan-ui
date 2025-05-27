@@ -588,7 +588,7 @@ export function GMPs({ address, useAnotherHopChain = false }) {
                                   {isAxelar(d.call.returnValues?.destinationChain) && (
                                     <div className="flex items-center gap-x-2">
                                       <ChainProfile
-                                        value={(useAnotherHopChain && d.callback_chain) || d.customValues?.destinationChain}
+                                        value={(useAnotherHopChain && (d.callback_chain || d.customValues?.destinationChain)) || d.call.returnValues.destinationChain}
                                         className="h-6"
                                         titleClassName="font-semibold"
                                       />
