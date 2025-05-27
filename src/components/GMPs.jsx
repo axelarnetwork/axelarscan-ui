@@ -540,7 +540,7 @@ export function GMPs({ address, contractMethod }) {
                                 titleClassName="font-semibold"
                               />
                               <ExplorerLink
-                                value={d.call.returnValues.destinationContractAddress}
+                                value={d.call.returnValues.sender}
                                 chain={d.call.chain}
                                 type="address"
                                 title="via"
