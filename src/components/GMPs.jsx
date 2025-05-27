@@ -106,6 +106,7 @@ function Filters() {
       { value: 'not_enough_gas_to_execute', title: 'Not Enough Gas' },
     ] },
     { label: 'Sender', name: 'senderAddress' },
+    { label: 'Source Address', name: 'sourceAddress' },
     { label: 'Destination Contract', name: 'destinationContractAddress' },
     { label: 'Command ID', name: 'commandId' },
     { label: 'Time', name: 'time', type: 'datetimeRange' },
