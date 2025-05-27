@@ -585,24 +585,26 @@ export function GMPs({ address, useAnotherHopChain = false }) {
                               )}
                               {(d.callback_chain || d.customValues?.recipientAddress) && (
                                 <>
-                                  {useAnotherHopChain && isAxelar(d.call.returnValues?.destinationChain) && (
+                                  {isAxelar(d.call.returnValues?.destinationChain) && (
                                     <div className="flex items-center gap-x-2">
                                       <ChainProfile
-                                        value={d.callback_chain || d.customValues?.destinationChain}
+                                        value={(useAnotherHopChain && d.callback_chain) || d.customValues?.destinationChain}
                                         className="h-6"
                                         titleClassName="font-semibold"
                                       />
-                                      <ExplorerLink
-                                        value={d.call.returnValues.destinationContractAddress}
-                                        chain={d.call.returnValues.destinationChain}
-                                        type="address"
-                                        title="via"
-                                        iconOnly={false}
-                                        width={11}
-                                        height={11}
-                                        containerClassName="!gap-x-1"
-                                        nonIconClassName="text-blue-600 dark:text-blue-500 !text-opacity-75 text-xs"
-                                      />
+                                      {useAnotherHopChain && (
+                                        <ExplorerLink
+                                          value={d.call.returnValues.destinationContractAddress}
+                                          chain={d.call.returnValues.destinationChain}
+                                          type="address"
+                                          title="via"
+                                          iconOnly={false}
+                                          width={11}
+                                          height={11}
+                                          containerClassName="!gap-x-1"
+                                          nonIconClassName="text-blue-600 dark:text-blue-500 !text-opacity-75 text-xs"
+                                        />
+                                      )}
                                     </div>
                                   )}
                                   {(d.customValues?.recipientAddress || (useAnotherHopChain && d.callback_destination_address)) && (
