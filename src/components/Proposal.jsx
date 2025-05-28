@@ -24,7 +24,7 @@ import { equalsIgnoreCase, ellipse, toTitle } from '@/lib/string'
 import { toNumber } from '@/lib/number'
 import { TIME_FORMAT } from '@/lib/time'
 
-function Info({ data, end, voteOptions }) {
+function Info({ id, data, end, voteOptions }) {
   const { chains } = useGlobalStore()
 
   const { proposal_id, type, content, status, submit_time, deposit_end_time, voting_start_time, voting_end_time, total_deposit, final_tally_result } = { ...data }
@@ -38,7 +38,7 @@ function Info({ data, end, voteOptions }) {
           {title || plan?.name}
         </h3>
         <p className="max-w-2xl text-zinc-400 dark:text-zinc-500 text-sm leading-6 mt-1">
-          Proposal ID: {proposal_id}
+          Proposal ID: {proposal_id || id}
         </p>
       </div>
       <div className="border-t border-zinc-200 dark:border-zinc-700">
@@ -56,9 +56,11 @@ function Info({ data, end, voteOptions }) {
           <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
             <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Status</dt>
             <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-              <Tag className={clsx('w-fit', ['UNSPECIFIED', 'DEPOSIT_PERIOD'].includes(status) ? '' : ['VOTING_PERIOD'].includes(status) ? 'bg-yellow-400 dark:bg-yellow-500' : ['REJECTED', 'FAILED'].includes(status) ? 'bg-red-600 dark:bg-red-500' : 'bg-green-600 dark:bg-green-500')}>
-                {status}
-              </Tag>
+              {status && (
+                <Tag className={clsx('w-fit', ['UNSPECIFIED', 'DEPOSIT_PERIOD'].includes(status) ? '' : ['VOTING_PERIOD'].includes(status) ? 'bg-yellow-400 dark:bg-yellow-500' : ['REJECTED', 'FAILED'].includes(status) ? 'bg-red-600 dark:bg-red-500' : 'bg-green-600 dark:bg-green-500')}>
+                  {status}
+                </Tag>
+              )}
             </dd>
           </div>
           {type && (
@@ -169,13 +171,21 @@ function Info({ data, end, voteOptions }) {
           <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
             <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Deposit Period</dt>
             <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-              {moment(submit_time).format(TIME_FORMAT)} - {moment(deposit_end_time).format(TIME_FORMAT)}
+              {!!proposal_id && (
+                <>
+                  {moment(submit_time).format(TIME_FORMAT)} - {moment(deposit_end_time).format(TIME_FORMAT)}
+                </>
+              )}
             </dd>
           </div>
           <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
             <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Voting Period</dt>
             <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-              {moment(voting_start_time).format(TIME_FORMAT)} - {moment(voting_end_time).format(TIME_FORMAT)}
+              {!!proposal_id && (
+                <>
+                  {moment(voting_start_time).format(TIME_FORMAT)} - {moment(voting_end_time).format(TIME_FORMAT)}
+                </>
+              )}
             </dd>
           </div>
           <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
@@ -362,9 +372,10 @@ export function Proposal({ id }) {
 
   return (
     <Container className="sm:mt-8">
-      {!(data && toNumber(id) === toNumber(proposal_id)) ? <Spinner /> :
+      {!(data && (!proposal_id || toNumber(id) === toNumber(proposal_id))) ? <Spinner /> :
         <div className="max-w-4xl flex flex-col gap-y-4 sm:gap-y-6">
           <Info
+            id={id}
             data={data}
             end={end}
             voteOptions={voteOptions}

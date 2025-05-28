@@ -81,7 +81,7 @@ function Info({ data, height, validatorSets }) {
           <div className="px-4 sm:px-6 py-6 flex flex-col gap-y-2">
             <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Block Time</dt>
             <dd className="text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1">
-              {moment(time).format(TIME_FORMAT)}
+              {time && moment(time).format(TIME_FORMAT)}
             </dd>
           </div>
           {isNumber(data.round) && (
@@ -156,11 +156,13 @@ function Info({ data, height, validatorSets }) {
           <div className="px-4 sm:px-6 py-6 flex flex-col gap-y-2">
             <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">No. Transactions</dt>
             <dd className="text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1">
-              <Number
-                value={toArray(txs).length}
-                format="0,0"
-                className="text-zinc-700 dark:text-zinc-300 font-medium"
-              />
+              {txs && (
+                <Number
+                  value={txs.length}
+                  format="0,0"
+                  className="text-zinc-700 dark:text-zinc-300 font-medium"
+                />
+              )}
             </dd>
           </div>
         </dl>
