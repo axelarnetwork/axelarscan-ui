@@ -66,7 +66,7 @@ export const CHAINS = toArray(ENVIRONMENT === 'mainnet' ?
     ['devnet-amplifier'].includes(ENVIRONMENT) && { _id: 'plume-2', ...plumeTestnet },
     ['testnet', 'stagenet', 'devnet-amplifier'].includes(ENVIRONMENT) && { _id: 'hyperliquid', id: 998, network: 'hyperliquid', name: 'Hyperliquid', nativeCurrency: { name: 'Hyperliquid', symbol: 'HYPE', decimals: 18 }, rpcUrls: { default: { http: ['https://rpc.hyperliquid-testnet.xyz/evm'] } }, blockExplorers: { default: { name: 'Hyperliquid', url: 'https://app.hyperliquid-testnet.xyz/explorer' } }, testnet: true },
     ['stagenet', 'devnet-amplifier'].includes(ENVIRONMENT) && { _id: 'berachain', id: 80069, network: 'berachain', name: 'Berachain', nativeCurrency: { name: 'Berachain', symbol: 'BERA', decimals: 18 }, rpcUrls: { default: { http: ['https://bepolia.rpc.berachain.com'] } }, blockExplorers: { default: { name: 'Berascan', url: 'https://testnet.berascan.com' } }, testnet: true },
-    ['devnet-amplifier'].includes(ENVIRONMENT) && { _id: 'monad', id: 10143, network: 'monad', name: 'Monad', nativeCurrency: { name: 'Monad', symbol: 'MON', decimals: 18 }, rpcUrls: { default: { http: ['https://testnet-rpc.monad.xyz'] } }, blockExplorers: { default: { name: 'Monad', url: 'https://testnet.monadexplorer.com' } }, testnet: true },
+    ['stagenet'].includes(ENVIRONMENT) && { _id: 'monad', id: 10143, network: 'monad', name: 'Monad', nativeCurrency: { name: 'Monad', symbol: 'MON', decimals: 18 }, rpcUrls: { default: { http: ['https://testnet-rpc.monad.xyz'] } }, blockExplorers: { default: { name: 'Monad', url: 'https://testnet.monadexplorer.com' } }, testnet: true },
   ]
 )
 
