@@ -2306,7 +2306,7 @@ export function GMP({ tx, lite }) {
           if (success) {
             const _data = await getData()
 
-            if (_data && (destination_chain_type === 'cosmos' ? !data.executed && !_data.executed : !data.approved && !_data.approved)) {
+            if (_data && chain_type !== 'vm' && (destination_chain_type === 'cosmos' ? !data.executed && !_data.executed : !data.approved && !_data.approved)) {
               await approve(_data, true)
             }
           }
