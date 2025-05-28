@@ -12,6 +12,7 @@ import { Image } from '@/components/Image'
 import { Copy } from '@/components/Copy'
 import { Tooltip } from '@/components/Tooltip'
 import { Spinner } from '@/components/Spinner'
+import { Response } from '@/components/Response'
 import { Tag } from '@/components/Tag'
 import { Number } from '@/components/Number'
 import { Profile } from '@/components/Profile'
@@ -560,6 +561,13 @@ export function Validator({ address }) {
             setData(_data)
           }
         }
+        else if (!data) {
+          setData({
+            status: 'error',
+            code: 404,
+            message: `Validator: ${address} not found`,
+          })
+        }
       }
     }
 
@@ -569,7 +577,7 @@ export function Validator({ address }) {
   // set validator metrics
   useEffect(() => {
     const getData = async () => {
-      if (address && data) {
+      if (address && data && data.status !== 'error') {
         const { consensus_address, broadcaster_address } = { ...data }
         const { latest_block_height } = { ...await getRPCStatus() }
 
@@ -673,6 +681,7 @@ export function Validator({ address }) {
   return (
     <Container className="sm:mt-8">
       {!data ? <Spinner /> :
+        data.status === 'error' ? <Response data={data} /> :
         <div className="grid md:grid-cols-3 md:gap-x-4 gap-y-4 md:gap-y-0">
           <div className="md:col-span-2">
             <Info

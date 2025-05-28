@@ -82,19 +82,19 @@ function Info({ data, id }) {
 
                   const { url, transaction_path } = { ...getChainData(m.source_chain, chains)?.explorer }
 
-                  return (
+                  return m.message_id && (
                     <div key={i} className="flex items-center gap-x-4">
                       <ChainProfile value={m.source_chain} />
                       <div className="flex items-center gap-x-1">
                         <Copy value={m.message_id}>
-                            <Link
-                              href={`${url}${transaction_path?.replace('{tx}', headString(m.message_id))}`}
-                              target="_blank"
-                              className="text-blue-600 dark:text-blue-500 font-semibold"
-                            >
-                              {ellipse(m.message_id)}
-                            </Link>
-                          </Copy>
+                          <Link
+                            href={`${url}${transaction_path?.replace('{tx}', headString(m.message_id))}`}
+                            target="_blank"
+                            className="text-blue-600 dark:text-blue-500 font-semibold"
+                          >
+                            {ellipse(m.message_id)}
+                          </Link>
+                        </Copy>
                         <ExplorerLink value={headString(m.message_id)} chain={m.source_chain} />
                       </div>
                     </div>
@@ -214,7 +214,7 @@ function Info({ data, id }) {
           <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
             <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Created</dt>
             <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-              {moment(created_at?.ms).format(TIME_FORMAT)}
+              {created_at?.ms && moment(created_at.ms).format(TIME_FORMAT)}
             </dd>
           </div>
           {updated_at?.ms > created_at?.ms && (
@@ -228,18 +228,20 @@ function Info({ data, id }) {
           <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-3 sm:gap-4">
             <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">{`Participants${toArray(participants).length > 1 ? ` (${toArray(participants).length})` : ''}`}</dt>
             <dd className="sm:col-span-2 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-              <div className="w-fit flex items-center">
-                {signOptions.map((s, i) => (
-                  <Number
-                    key={i}
-                    value={s.value}
-                    format="0,0"
-                    suffix={` ${toTitle(s.option.substring(0, ['unsubmitted'].includes(s.option) ? 2 : undefined))}`}
-                    noTooltip={true}
-                    className={clsx('rounded-xl uppercase text-xs mr-2 px-2.5 py-1', ['signed'].includes(s.option) ? 'bg-green-600 dark:bg-green-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500')}
-                  />
-                ))}
-              </div>
+              {signOptions && (
+                <div className="w-fit flex items-center">
+                  {signOptions.map((s, i) => (
+                    <Number
+                      key={i}
+                      value={s.value}
+                      format="0,0"
+                      suffix={` ${toTitle(s.option.substring(0, ['unsubmitted'].includes(s.option) ? 2 : undefined))}`}
+                      noTooltip={true}
+                      className={clsx('rounded-xl uppercase text-xs mr-2 px-2.5 py-1', ['signed'].includes(s.option) ? 'bg-green-600 dark:bg-green-500 text-white' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500')}
+                    />
+                  ))}
+                </div>
+              )}
             </dd>
           </div>
         </dl>
