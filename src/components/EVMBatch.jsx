@@ -38,7 +38,7 @@ function Info({ data, chain, id, executeButton }) {
   const { gateway, explorer } = { ...getChainData(chain, chains) }
   const { url, address_path, transaction_path } = { ...explorer }
 
-  const executed = toArray(commands).length === toArray(commands).filter(c => c.executed).length
+  const executed = commands && commands.length === commands.filter(c => c.executed).length
   const status = executed ? 'executed' : toCase(data?.status?.replace('BATCHED_COMMANDS_STATUS_', ''), 'lower')
 
   return (
@@ -114,7 +114,7 @@ function Info({ data, chain, id, executeButton }) {
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
-                      {toArray(commands).map((c, i) => {
+                      {commands.map((c, i) => {
                         const { type, deposit_address } = { ...c }
                         const { amount, name, cap, account, salt, newOwners, newOperators, newWeights, newThreshold, sourceChain, sourceTxHash, contractAddress } = { ...c.params }
                         let { symbol, decimals } = { ...c.params }
@@ -349,7 +349,7 @@ function Info({ data, chain, id, executeButton }) {
           <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
             <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Time</dt>
             <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-              {moment(created_at?.ms).format(TIME_FORMAT)}
+              {created_at?.ms && moment(created_at.ms).format(TIME_FORMAT)}
             </dd>
           </div>
           <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
@@ -410,7 +410,7 @@ export function EVMBatch({ chain, id }) {
   const { chain_id, gateway } = { ...getChainData(chain, chains) }
 
   const { commands, created_at, execute_data } = { ...data }
-  const executed = toArray(commands).length === toArray(commands).filter(c => c.executed).length
+  const executed = commands && commands.length === commands.filter(c => c.executed).length
 
   useEffect(() => {
     const getData = async () => {

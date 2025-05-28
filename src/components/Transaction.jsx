@@ -14,6 +14,7 @@ import { Switch } from '@/components/Switch'
 import { JSONView } from '@/components/JSONView'
 import { Copy } from '@/components/Copy'
 import { Spinner } from '@/components/Spinner'
+import { Response } from '@/components/Response'
 import { Tag } from '@/components/Tag'
 import { Number } from '@/components/Number'
 import { Profile, ChainProfile } from '@/components/Profile'
@@ -514,6 +515,13 @@ export function Transaction({ tx }) {
         console.log('[data]', data)
         setData(data)
       }
+      else {
+        setData({
+          status: 'error',
+          code: 404,
+          message: `Transaction: ${tx} not found`,
+        })
+      }
     }
 
     getData()
@@ -522,6 +530,7 @@ export function Transaction({ tx }) {
   return (
     <Container className="sm:mt-8">
       {!data ? <Spinner /> :
+        data.status === 'error' ? <Response data={data} /> :
         <div className="max-w-4xl flex flex-col gap-y-8 sm:gap-y-12">
           <Info data={data} tx={tx} />
           <Data data={data} />

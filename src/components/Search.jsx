@@ -59,7 +59,7 @@ export function Search() {
       }
       // transaction
       else if (['txhash', 'tx'].includes(type)) {
-        const gmpTotal = (await searchGMP({ txHash: _input, size: 0 }))?.total
+        const gmpTotal = (await searchGMP({ txHash: _input, noRecover: true, size: 0 }))?.total
 
         if (gmpTotal > 0) {
           if (gmpTotal > 1) {
@@ -69,7 +69,7 @@ export function Search() {
           type = 'gmp'
         }
         else {
-          const transfersTotal = (await searchTransfers({ txHash: _input, size: 0 }))?.total
+          const transfersTotal = (await searchTransfers({ txHash: _input, noRecover: true, size: 0 }))?.total
         
           if (transfersTotal > 0) {
             if (transfersTotal > 1) {

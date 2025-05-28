@@ -12,6 +12,7 @@ import { Container } from '@/components/Container'
 import { Image } from '@/components/Image'
 import { Copy } from '@/components/Copy'
 import { Spinner } from '@/components/Spinner'
+import { Response } from '@/components/Response'
 import { Tag } from '@/components/Tag'
 import { Number } from '@/components/Number'
 import { Profile, ChainProfile } from '@/components/Profile'
@@ -718,17 +719,33 @@ export function Transfer({ tx, lite }) {
             console.log('[data]', d)
             setData(d)
           }
+          else {
+            setData({
+              status: 'error',
+              code: 404,
+              message: `Transaction: ${tx} not found`,
+            })
+          }
         }
       }
       else if (transferId) {
         const { data } = { ...await searchTransfers({ transferId }) }
         const d = data?.[0]
 
-        if (d?.send?.txhash) {
-          router.push(`/transfer/${d.send.txhash}`)
+        if (d) {
+          if (d.send?.txhash) {
+            router.push(`/transfer/${d.send.txhash}`)
+          }
+          else {
+            setData(d)
+          }
         }
         else {
-          setData({ ...d })
+          setData({
+            status: 'error',
+            code: 404,
+            message: `Transfer ID: ${transferId} not found`,
+          })
         }
       }
     }
@@ -742,6 +759,7 @@ export function Transfer({ tx, lite }) {
   return (
     <Container className="sm:mt-8">
       {!data ? <Spinner /> :
+        data.status === 'error' ? <Response data={data} /> :
         <div className="max-w-5xl flex flex-col gap-y-4">
           <Info data={data} tx={tx} />
           {!lite && <Details data={data} />}
