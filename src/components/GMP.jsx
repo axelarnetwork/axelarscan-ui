@@ -23,6 +23,7 @@ import { Image } from '@/components/Image'
 import { Copy } from '@/components/Copy'
 import { Tooltip } from '@/components/Tooltip'
 import { Spinner } from '@/components/Spinner'
+import { Response } from '@/components/Response'
 import { Tag } from '@/components/Tag'
 import { Number } from '@/components/Number'
 import { Profile, ChainProfile, AssetProfile } from '@/components/Profile'
@@ -1825,18 +1826,27 @@ export function GMP({ tx, lite }) {
 
     if (commandId) {
       const { data } = { ...await searchGMP({ commandId }) }
-      const d = await customData(_.head(data))
+      const d = await customData(data?.[0])
 
-      if (d?.call?.transactionHash) {
-        router.push(`/gmp/${d.call.transactionHash}`)
+      if (d) {
+        if (d.call?.transactionHash) {
+          router.push(`/gmp/${d.call.transactionHash}`)
+        }
+        else {
+          setData(d)
+        }
       }
       else {
-        setData({ ...d })
+        setData({
+          status: 'error',
+          code: 404,
+          message: `Command ID: ${commandId} not found`,
+        })
       }
     }
     else if (tx && chains && assets && !ended) {
       const { data } = { ...await searchGMP(tx.includes('-') ? { messageId: tx } : { txHash: tx }) }
-      const d = await customData(_.head(data))
+      const d = await customData(data?.[0])
 
       if (d) {
         if (d.call?.parentMessageID) {
@@ -1872,9 +1882,9 @@ export function GMP({ tx, lite }) {
             d.callbackData = await customData(d.callbackData)
           }
           else if (toArray(d.executed?.childMessageIDs) > 0) {
-            const { data } = { ...await searchGMP({ messageId: _.head(d.executed.childMessageIDs) }) }
+            const { data } = { ...await searchGMP({ messageId: d.executed.childMessageIDs?.[0] }) }
 
-            d.callbackData = toArray(data).find(_d => equalsIgnoreCase(_d.call?.returnValues?.messageId, _.head(d.executed.childMessageIDs)))
+            d.callbackData = toArray(data).find(_d => equalsIgnoreCase(_d.call?.returnValues?.messageId, d.executed.childMessageIDs?.[0]))
             d.callbackData = await customData(d.callbackData)
           }
 
@@ -1966,6 +1976,13 @@ export function GMP({ tx, lite }) {
 
           return d
         }
+      }
+      else {
+        setData({
+          status: 'error',
+          code: 404,
+          message: `GMP: ${tx} not found`,
+        })
       }
     }
 
@@ -2611,6 +2628,7 @@ export function GMP({ tx, lite }) {
   return (
     <Container className="sm:mt-8">
       {!data ? <Spinner /> :
+        data.status === 'error' ? <Response data={data} /> :
         <div className="max-w-7xl flex flex-col gap-y-4">
           <Toaster />
           <Info
