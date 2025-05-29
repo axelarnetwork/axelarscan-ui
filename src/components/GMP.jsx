@@ -1838,7 +1838,7 @@ export function GMP({ tx, lite }) {
       }
       else {
         setData({
-          status: 'error',
+          status: 'errorOnGetData',
           code: 404,
           message: `Command ID: ${commandId} not found`,
         })
@@ -1979,7 +1979,7 @@ export function GMP({ tx, lite }) {
       }
       else {
         setData({
-          status: 'error',
+          status: 'errorOnGetData',
           code: 404,
           message: `GMP: ${tx} not found`,
         })
@@ -2628,7 +2628,7 @@ export function GMP({ tx, lite }) {
   return (
     <Container className="sm:mt-8">
       {!data ? <Spinner /> :
-        data.status === 'error' ? <Response data={data} /> :
+        data.status === 'errorOnGetData' ? <Response data={data} /> :
         <div className="max-w-7xl flex flex-col gap-y-4">
           <Toaster />
           <Info
