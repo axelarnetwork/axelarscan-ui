@@ -1849,7 +1849,7 @@ export function GMP({ tx, lite }) {
       const d = await customData(data?.[0])
 
       if (d) {
-        if (d.call?.parentMessageID && !d.executed?.childMessageIDs) {
+        if (d.call?.parentMessageID && (!d.executed?.childMessageIDs || isAxelar(d.call.chain))) {
           router.push(`/gmp/${d.call.parentMessageID}`)
         }
         else {
@@ -1888,6 +1888,10 @@ export function GMP({ tx, lite }) {
             d.callbackData = await customData(d.callbackData)
           }
 
+          if (isAxelar(d.callbackData?.call?.returnValues?.destinationChain)) {
+            d.callbackData = undefined
+          }
+
           // origin
           if (d.call && (d.gas_paid_to_callback || d.is_call_from_relayer)) {
             const { data } = { ...await searchGMP(d.call.transactionHash ? { txHash: d.call.transactionHash } : { messageId: d.call.parentMessageID }) }
@@ -1897,6 +1901,10 @@ export function GMP({ tx, lite }) {
               toArray([_d.express_executed?.messageId, _d.executed?.messageId, _d.executed?.returnValues?.messageId]).findIndex(id => equalsIgnoreCase(id, d.call.parentMessageID)) > -1
             )
             d.originData = await customData(d.originData)
+          }
+
+          if (isAxelar(d.originData?.call?.chain)) {
+            d.originData = undefined
           }
 
           // settlement filled
