@@ -563,7 +563,7 @@ export function Validator({ address }) {
         }
         else if (!data) {
           setData({
-            status: 'error',
+            status: 'errorOnGetData',
             code: 404,
             message: `Validator: ${address} not found`,
           })
@@ -681,7 +681,7 @@ export function Validator({ address }) {
   return (
     <Container className="sm:mt-8">
       {!data ? <Spinner /> :
-        data.status === 'error' ? <Response data={data} /> :
+        data.status === 'errorOnGetData' ? <Response data={data} /> :
         <div className="grid md:grid-cols-3 md:gap-x-4 gap-y-4 md:gap-y-0">
           <div className="md:col-span-2">
             <Info
