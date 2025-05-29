@@ -1849,7 +1849,7 @@ export function GMP({ tx, lite }) {
       const d = await customData(data?.[0])
 
       if (d) {
-        if (d.call?.parentMessageID) {
+        if (d.call?.parentMessageID && !d.executed?.childMessageIDs) {
           router.push(`/gmp/${d.call.parentMessageID}`)
         }
         else {
@@ -2148,7 +2148,7 @@ export function GMP({ tx, lite }) {
     if (chainType !== 'vm') return true
 
     // amplifier chain that actually evm chain
-    if (isNumber(getChainData(chain, chains)?.chain_id)) return false
+    if (isNumber(getChainData(chain, chains)?.chain_id)) return true
 
     // amplifier chains that already custom addGas function
     return ['sui', 'stellar', 'xrpl'].includes(headString(chain))
@@ -2306,7 +2306,7 @@ export function GMP({ tx, lite }) {
           if (success) {
             const _data = await getData()
 
-            if (_data && (destination_chain_type === 'cosmos' ? !data.executed && !_data.executed : !data.approved && !_data.approved)) {
+            if (_data && chain_type !== 'vm' && (destination_chain_type === 'cosmos' ? !data.executed && !_data.executed : !data.approved && !_data.approved)) {
               await approve(_data, true)
             }
           }
