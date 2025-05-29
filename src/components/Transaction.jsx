@@ -517,7 +517,7 @@ export function Transaction({ tx }) {
       }
       else {
         setData({
-          status: 'error',
+          status: 'errorOnGetData',
           code: 404,
           message: `Transaction: ${tx} not found`,
         })
@@ -530,7 +530,7 @@ export function Transaction({ tx }) {
   return (
     <Container className="sm:mt-8">
       {!data ? <Spinner /> :
-        data.status === 'error' ? <Response data={data} /> :
+        data.status === 'errorOnGetData' ? <Response data={data} /> :
         <div className="max-w-4xl flex flex-col gap-y-8 sm:gap-y-12">
           <Info data={data} tx={tx} />
           <Data data={data} />

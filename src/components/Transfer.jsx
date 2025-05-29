@@ -721,7 +721,7 @@ export function Transfer({ tx, lite }) {
           }
           else {
             setData({
-              status: 'error',
+              status: 'errorOnGetData',
               code: 404,
               message: `Transaction: ${tx} not found`,
             })
@@ -742,7 +742,7 @@ export function Transfer({ tx, lite }) {
         }
         else {
           setData({
-            status: 'error',
+            status: 'errorOnGetData',
             code: 404,
             message: `Transfer ID: ${transferId} not found`,
           })
@@ -759,7 +759,7 @@ export function Transfer({ tx, lite }) {
   return (
     <Container className="sm:mt-8">
       {!data ? <Spinner /> :
-        data.status === 'error' ? <Response data={data} /> :
+        data.status === 'errorOnGetData' ? <Response data={data} /> :
         <div className="max-w-5xl flex flex-col gap-y-4">
           <Info data={data} tx={tx} />
           {!lite && <Details data={data} />}
