@@ -1004,6 +1004,7 @@ const data = [
   {address:'axelar1uu6hl8uvkxjzwpuacaxwvh7ph3qjyragk62n2e',name:'P-OPS Team',environment:'mainnet'},
   {address:'axelar1zqnwrhv35cyf65u0059a8rvw8njtqeqjckzhlx',name:'Polkachu',environment:'mainnet'},
   {address:'axelar1ejv5td70estc7ed4avnxnqqv4tpef2zafdkgms',name:'Quantnode',environment:'mainnet'},
+  {address:'axelar1g92hckcernmgm60tm527njl6j2cxysm7zg6ulk',name:'Quantnode',environment:'mainnet'},
   {address:'axelar1up6evve8slwnflmx0x096klxqh4ufaahsk9y0s',name:'Qubelabs',environment:'mainnet'},
   {address:'axelar1kr5f2wrq9l2denmvfqfky7f8rd07wk9kygxjak',name:'Redbooker',environment:'mainnet'},
   {address:'axelar1x0a0ylzsjrr57v2ymnsl0d770nt3pwktet9npg',name:'Rockaway Infra',environment:'mainnet'},
