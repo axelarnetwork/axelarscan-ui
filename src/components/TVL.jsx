@@ -49,16 +49,26 @@ export function TVL() {
 
   const loading = !(data && assets && data.length >= assets.filter(d => !d.no_tvl).length - 3)
   const filteredData = toArray(data).filter(d => includeITS || d.assetType !== 'its')
-  const chainsTVL = !loading && _.orderBy(_.uniqBy(chains.filter(d => !d.no_inflation && !d.no_tvl && (d.chain_type !== 'vm' || filteredData.filter(_d => _d.tvl?.[d.id]).length > 0)).map(d => {
-    return {
-      ...d,
-      total_value: _.sumBy(filteredData.map(_d => {
-        const { supply, total } = { ..._d.tvl?.[d.id] }
-        const isITSNotCanonical = _d.assetType === 'its' && Object.values({ ..._d.tvl }).findIndex(d => d.contract_data.token_manager_type?.startsWith('lockUnlock')) < 0
-        return { ..._d, value: isITSNotCanonical ? 0 : toNumber((supply || total) * _d.price) }
-      }).filter(d => d.value > 0), 'value'),
-    }
-  }), 'id'), ['total_value'], ['desc'])
+
+  const chainsTVL = !loading && _.orderBy(_.uniqBy(chains.filter(d => !d.no_inflation && !d.no_tvl && (d.chain_type !== 'vm' || filteredData.filter(_d => _d.tvl?.[d.id]).length > 0)).map(d => ({
+    ...d,
+    total_value: _.sumBy(filteredData.map(_d => {
+      const { supply, total } = { ..._d.tvl?.[d.id] }
+      const isITSNotCanonical = _d.assetType === 'its' && Object.values({ ..._d.tvl }).findIndex(d => d.contract_data.token_manager_type?.startsWith('lockUnlock')) < 0
+
+      let { price } = { ..._d }
+
+      if (!isITSNotCanonical && !price) {
+        const assetData = _d.assetType === 'its' ? getITSAssetData(_d.asset, itsAssets) : getAssetData(_d.asset, assets)
+        price = toNumber(isNumber(assetData?.price) ? assetData.price : 0)
+      }
+
+      return {
+        ..._d,
+        value: isITSNotCanonical ? 0 : toNumber((supply || total) * price),
+      }
+    }).filter(d => d.value > 0), 'value'),
+  })), 'id'), ['total_value'], ['desc'])
 
   return (
     <Container className={clsx(!loading ? 'max-w-none sm:mt-0 lg:-mt-4' : 'sm:mt-8')}>
@@ -69,7 +79,9 @@ export function TVL() {
               <tr className="text-zinc-800 dark:text-zinc-200 text-sm font-semibold">
                 <th scope="col" className="px-3 py-4 text-left">
                   <div className="flex flex-col gap-y-0.5">
-                    <span className="whitespace-nowrap">Asset</span>
+                    <span className="whitespace-nowrap">
+                      Asset
+                    </span>
                     <Switch
                       value={includeITS}
                       onChange={v => setIncludeITS(v)}
@@ -84,13 +96,17 @@ export function TVL() {
                 </th>
                 <th scope="col" className="whitespace-nowrap px-3 py-4 text-left">
                   <div className="flex flex-col gap-y-0.5">
-                    <span className="whitespace-nowrap">Native Chain</span>
+                    <span className="whitespace-nowrap">
+                      Native Chain
+                    </span>
                     <div className="h-4" />
                   </div>
                 </th>
                 <th scope="col" className="px-3 py-4 text-right">
                   <div className="flex flex-col items-end gap-y-0.5">
-                    <span className="whitespace-nowrap">Total Locked</span>
+                    <span className="whitespace-nowrap">
+                      Total Locked
+                    </span>
                     <Number
                       value={_.sumBy(filteredData.filter(d => d.value > 0), 'value')}
                       format="0,0.00a"
@@ -102,7 +118,9 @@ export function TVL() {
                 </th>
                 <th scope="col" className="px-3 py-4 text-right">
                   <div className="flex flex-col items-end gap-y-0.5">
-                    <span className="whitespace-nowrap">Moved to EVM</span>
+                    <span className="whitespace-nowrap">
+                      Moved to EVM
+                    </span>
                     <Number
                       value={_.sumBy(filteredData.filter(d => d.value_on_evm > 0), 'value_on_evm')}
                       format="0,0.00a"
@@ -114,7 +132,9 @@ export function TVL() {
                 </th>
                 <th scope="col" className="px-3 py-4 text-right">
                   <div className="flex flex-col items-end gap-y-0.5">
-                    <span className="whitespace-nowrap">Moved to Cosmos</span>
+                    <span className="whitespace-nowrap">
+                      Moved to Cosmos
+                    </span>
                     <Number
                       value={_.sumBy(filteredData.filter(d => d.value_on_cosmos > 0), 'value_on_cosmos')}
                       format="0,0.00a"
@@ -134,7 +154,9 @@ export function TVL() {
                           width={18}
                           height={18}
                         />
-                        <span className="whitespace-nowrap">{d.name}</span>
+                        <span className="whitespace-nowrap">
+                          {d.name}
+                        </span>
                       </div>
                       <Number
                         value={d.total_value}
@@ -161,7 +183,9 @@ export function TVL() {
                       />
                       {d.assetType === 'its' && (
                         <Tooltip content={Object.values({ ...d.tvl }).findIndex(d => d.token_manager_type?.startsWith('lockUnlock')) > -1 ? 'canonical ITS token' : 'custom ITS token'} className="whitespace-nowrap">
-                          <Tag className="w-fit bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100">ITS</Tag>
+                          <Tag className="w-fit bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100">
+                            ITS
+                          </Tag>
                         </Tooltip>
                       )}
                     </div>
@@ -183,6 +207,7 @@ export function TVL() {
                       )
 
                       const isITSNotCanonical = d.assetType === 'its' && Object.values({ ...d.tvl }).findIndex(d => d.contract_data.token_manager_type?.startsWith('lockUnlock')) < 0
+
                       return (
                         <div key={d.asset} className="flex flex-col items-end gap-y-1">
                           <div className="flex items-center space-x-1">
