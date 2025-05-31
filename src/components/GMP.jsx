@@ -226,7 +226,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                       <nav aria-label="Progress" className="h-20 overflow-x-auto">
                         <ol role="list" className="flex items-center">
                           {steps.map((d, i) => {
-                            const { transactionHash, blockNumber, confirmation_txhash, contract_address, poll_id, axelarTransactionHash, proposal_id } = { ...d.data }
+                            const { transactionHash, blockNumber, confirmation_txhash, contract_address, poll_id, axelarTransactionHash, proposal_id, parentMessageID, childMessageIDs } = { ...d.data }
                             const { url, block_path, transaction_path } = { ...d.chainData?.explorer }
 
                             let stepURL
@@ -287,14 +287,38 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                 <div className={clsx('relative w-8 h-8 rounded-full flex items-center justify-center', d.status === 'failed' ? 'bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-400' : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400')}>
                                   {d.status === 'failed' ? <MdClose className="w-5 h-5 text-white" /> : <MdCheck className="w-5 h-5 text-white" />}
                                 </div>
-                                <span className={clsx('absolute text-2xs font-medium whitespace-nowrap mt-1', d.status === 'failed' ? 'text-red-600 dark:text-red-500' : 'text-blue-600 dark:text-blue-500', d.title?.length <= 5 ? 'ml-1' : '')}>{d.title}</span>
+                                <span className={clsx('absolute text-2xs font-medium whitespace-nowrap mt-1', d.status === 'failed' ? 'text-red-600 dark:text-red-500' : 'text-blue-600 dark:text-blue-500', d.title?.length <= 5 ? 'ml-1' : '')}>
+                                  {d.title}
+                                </span>
                                 {d.id === 'express' && (
                                   <div className="absolute mt-3">
-                                    <span className="text-2xs font-medium text-green-600 dark:text-green-500">
+                                    <span className="text-green-600 dark:text-green-500 text-2xs font-medium">
                                       Received
                                     </span>
                                   </div>
                                 )}
+                                {!isAxelar(sourceChain) && parentMessageID && (
+                                  <div className="absolute mt-3">
+                                    <Link
+                                      href={`/gmp/${parentMessageID}`}
+                                      target="_blank"
+                                      className="text-blue-600 dark:text-blue-500 text-xs font-bold whitespace-nowrap"
+                                    >
+                                      (← prev GMP)
+                                    </Link>
+                                  </div>
+                                )}
+                                {!isAxelar(destinationChain) && toArray(childMessageIDs).map(id => (
+                                  <div key={id} className="absolute mt-3">
+                                    <Link
+                                      href={`/gmp/${id}`}
+                                      target="_blank"
+                                      className="text-blue-600 dark:text-blue-500 text-xs font-bold whitespace-nowrap"
+                                    >
+                                      (next GMP →)
+                                    </Link>
+                                  </div>
+                                ))}
                               </>
                             )
 
