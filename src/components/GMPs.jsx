@@ -631,7 +631,7 @@ export function GMPs({ address, useAnotherHopChain = false }) {
                               {d.simplified_status === 'received' && <ExplorerLink value={receivedTransactionHash} chain={d.call.returnValues?.destinationChain} />}
                             </div>
                           )}
-                          {d.is_insufficient_fee && (!isAxelar(d.call.chain) || timeDiff(d.call.created_at?.ms) > 60) && (
+                          {d.is_insufficient_fee && ((!isAxelar(d.call.chain) && !isAxelar(d.call.returnValues?.destinationChain)) || timeDiff(d.call.created_at?.ms) > 300) && (
                             <div className="flex items-center text-red-600 dark:text-red-500 gap-x-1">
                               <PiWarningCircle size={16} />
                               <span className="text-xs">
