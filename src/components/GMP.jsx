@@ -342,7 +342,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                           })}
                         </ol>
                       </nav>
-                      {d.is_insufficient_fee && !(d.confirm || d.approved) && (
+                      {d.is_insufficient_fee && !(d.confirm || d.approved) && ((!isAxelar(d.call.chain) && !isAxelar(d.call.returnValues?.destinationChain)) || timeDiff(d.call.created_at?.ms) > 120) && (
                         <div className="flex items-center text-red-600 dark:text-red-500 gap-x-1">
                           <PiWarningCircle size={16} />
                           <span className="text-xs">
