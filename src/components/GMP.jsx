@@ -2664,7 +2664,7 @@ export function GMP({ tx, lite }) {
             data.callbackData.is_insufficient_fee || data.callbackData.not_enough_gas_to_execute ||
             // some patterns of error is detected
             checkNeedMoreGasFromError(data.callbackData.error)
-          )
+          ) && timeDiff(data.callbackData.created_at?.ms) > 60
         ))
       ) {
         addGasButton = (
