@@ -116,7 +116,7 @@ function ContractCallData({ data, executeData }) {
 
   const { call, approved } = { ...data }
 
-  const sourceChain = approved?.returnValues?.sourceChain || getChainData(call?.chain, chains)?.chain_name || call?.chain
+  const sourceChain = approved?.returnValues?.sourceChain || (isAxelar(call?.chain) ? call.chain : getChainData(call?.chain, chains)?.chain_name || call?.chain)
   const destinationChain = call?.returnValues?.destinationChain || getChainData(approved?.chain, chains)?.chain_name || approved?.chain
   const symbol = call?.returnValues?.symbol || data.interchain_transfer?.symbol || data.token_manager_deployment_started?.symbol || data.interchain_token_deployment_started?.tokenSymbol
   const { addresses } = { ...getAssetData(symbol, assets) }
