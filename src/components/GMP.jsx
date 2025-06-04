@@ -1868,7 +1868,7 @@ export function GMP({ tx, lite }) {
         })
       }
     }
-    else if (tx && chains && assets && !ended) {
+    else if (tx && !ended) {
       const { data } = { ...await searchGMP(tx.includes('-') ? { messageId: tx } : { txHash: tx }) }
       const d = await customData(data?.[0])
 
@@ -2019,7 +2019,7 @@ export function GMP({ tx, lite }) {
     }
 
     return
-  }, [tx, router, searchParams, chains, assets, ended, setData])
+  }, [tx, router, searchParams, ended, setData])
 
   // set EstimatedTimeSpent
   useEffect(() => {
