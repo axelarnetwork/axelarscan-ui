@@ -11,7 +11,7 @@ export const axelarContracts = [
   'axelar1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqecnww6',
 ]
 
-export const axelarContractFields = ['router', 'service_registry', 'rewards', 'multisig', 'multisig_prover', 'voting_verifier']
+export const axelarContractFields = ['router', 'service_registry', 'rewards', 'multisig', 'gateway', 'multisig_prover', 'voting_verifier']
 
 export const getAxelarContractAddresses = chainsData => {
   if (!chainsData) return []
