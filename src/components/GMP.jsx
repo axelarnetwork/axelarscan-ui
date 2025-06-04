@@ -109,12 +109,12 @@ export function getStep(data, chains) {
   ])
 }
 
-function ContractCallData({ data, executeData }) {
+function ContractCallData({ data, executeData, isMultihop }) {
   const { chains, assets } = useGlobalStore()
 
   if (!data) return
 
-  const { call, approved } = { ...data }
+  const { call, approved, time_spent, status } = { ...data }
 
   const sourceChain = approved?.returnValues?.sourceChain || (isAxelar(call?.chain) ? call.chain : getChainData(call?.chain, chains)?.chain_name || call?.chain)
   const destinationChain = call?.returnValues?.destinationChain || getChainData(approved?.chain, chains)?.chain_name || approved?.chain
@@ -156,13 +156,34 @@ function ContractCallData({ data, executeData }) {
           </dd>
         </div>
         <div className="px-4 sm:px-6 py-6 grid gap-2">
-          <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">status</dt>
+          <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Status</dt>
           <dd className="text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1">
             <Tag className={clsx('w-fit capitalize', data.simplified_status === 'received' ? 'bg-green-600 dark:bg-green-500' : data.simplified_status === 'approved' ? 'bg-orange-500 dark:bg-orange-600' : data.simplified_status === 'failed' ? 'bg-red-600 dark:bg-red-500' : 'bg-yellow-400 dark:bg-yellow-500')}>
               {data.simplified_status === 'received' && (getEvent(data) === 'ContractCall' || (getEvent(data) === 'InterchainTransfer' && isAxelar(call.returnValues?.destinationChain))) ? 'Executed' : data.simplified_status}
             </Tag>
           </dd>
         </div>
+        {isMultihop && ((time_spent?.call_express_executed > 0 && ['express_executed', 'executed'].includes(status)) || (time_spent?.total > 0 && status === 'executed')) && (
+          <div className="px-4 sm:px-6 py-6 grid gap-2">
+            <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Time Spent</dt>
+            <dd className="text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1">
+              <div className="flex flex-col gap-y-2">
+                {time_spent.call_express_executed > 0 && ['express_executed', 'executed'].includes(status) && (
+                  <div className="flex items-center text-green-600 dark:text-green-500 gap-x-1">
+                    <RiTimerFlashLine size={20} />
+                    <TimeSpent fromTimestamp={0} toTimestamp={time_spent.call_express_executed * 1000} />
+                  </div>
+                )}
+                {time_spent.total > 0 && status === 'executed' && (
+                  <div className="flex items-center text-zinc-400 dark:text-zinc-500 gap-x-1">
+                    <MdOutlineTimer size={20} />
+                    <TimeSpent fromTimestamp={0} toTimestamp={time_spent.total * 1000} />
+                  </div>
+                )}
+              </div>
+            </dd>
+          </div>
+        )}
         {messageId && (
           <div className="px-4 sm:px-6 py-6 grid gap-2">
             <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">messageId</dt>
@@ -847,40 +868,11 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Time Spent</dt>
               <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
                 <div className="flex items-center gap-x-4">
-                  {executedGMPsData.length > 1 && (
-                    <>
-                      <div className="flex items-center text-zinc-400 dark:text-zinc-500 gap-x-1">
-                        <MdOutlineTimer size={20} />
-                        <TimeSpent fromTimestamp={0} toTimestamp={_.sumBy(executedGMPsData, 'time_spent.total') * 1000} />
-                      </div>
-                      <span className="text-zinc-400 dark:text-zinc-500">
-                        (
-                      </span>
-                    </>
-                  )}
-                  {executedGMPsData.map((d, i) => (
-                    <div key={i} className="flex items-center gap-x-4">
-                      {i > 0 && <FiPlus size={18} className="text-zinc-400 dark:text-zinc-500" />}
-                      <div className="flex flex-col gap-y-2">
-                        {d.time_spent.call_express_executed > 0 && ['express_executed', 'executed'].includes(d.status) && (
-                          <div className="flex items-center text-green-600 dark:text-green-500 gap-x-1">
-                            <RiTimerFlashLine size={20} />
-                            <TimeSpent fromTimestamp={0} toTimestamp={d.time_spent.call_express_executed * 1000} />
-                          </div>
-                        )}
-                        {d.time_spent.total > 0 && d.status === 'executed' && (
-                          <div className="flex items-center text-zinc-400 dark:text-zinc-500 gap-x-1">
-                            <MdOutlineTimer size={20} />
-                            <TimeSpent fromTimestamp={0} toTimestamp={d.time_spent.total * 1000} />
-                          </div>
-                        )}
-                      </div>
+                  {executedGMPsData.length > 0 && (
+                    <div className="flex items-center text-zinc-400 dark:text-zinc-500 gap-x-1">
+                      <MdOutlineTimer size={20} />
+                      <TimeSpent fromTimestamp={0} toTimestamp={_.sumBy(executedGMPsData, 'time_spent.total') * 1000} />
                     </div>
-                  ))}
-                  {executedGMPsData.length > 1 && (
-                    <span className="text-zinc-400 dark:text-zinc-500">
-                      )
-                    </span>
                   )}
                 </div>
               </dd>
@@ -1406,6 +1398,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                     key={i}
                     data={d}
                     executeData={i === 0 ? executeData : undefined}
+                    isMultihop={isMultihop}
                   />
                 ))}
               </div>
