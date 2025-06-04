@@ -2652,8 +2652,8 @@ export function GMP({ tx, lite }) {
         response?.message !== 'Pay gas successful' &&
         // when need more gas by itself
         ((
-          // not executed / approved / not cosmos call or called more than 1 min
-          !executed && !data.is_executed && !approved && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) &&
+          // not executed / approved / confirmed / not cosmos call or called more than 1 min
+          !executed && !data.is_executed && !approved && !(confirm && !data.confirm_failed) && (call.chain_type !== 'cosmos' || timeDiff(call.block_timestamp * 1000) >= 60) &&
           // no gas paid or not enough gas
           (!(gas_paid || data.gas_paid_to_callback) || data.is_insufficient_fee || data.is_invalid_gas_paid || data.not_enough_gas_to_execute || gas?.gas_remain_amount < 0.000001)
         ) ||
