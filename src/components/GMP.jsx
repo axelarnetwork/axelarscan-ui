@@ -814,29 +814,28 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Asset</dt>
               <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                <AssetProfile
-                  value={symbol}
-                  chain={data.originData?.call.chain || sourceChain}
-                  amount={data.originData?.amount || data.amount}
-                  ITSPossible={true}
-                  onlyITS={!getEvent(data)?.includes('ContractCall')}
-                  width={16}
-                  height={16}
-                  className="w-fit h-6 bg-zinc-100 dark:bg-zinc-800 rounded-xl px-2.5 py-1"
-                  titleClassName="text-xs"
-                />
-              </dd>
-            </div>
-          )}
-          {(data.originData?.interchain_transfer?.contract_address || interchain_transfer?.contract_address) && (
-            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
-              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Token Address</dt>
-              <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                <Profile
-                  address={data.originData?.interchain_transfer?.contract_address || interchain_transfer.contract_address}
-                  chain={data.originData?.call?.chain || sourceChain}
-                  noResolveName={true}
-                />
+                <div className="flex items-center gap-x-4">
+                  <AssetProfile
+                    value={symbol}
+                    chain={data.originData?.call.chain || sourceChain}
+                    amount={data.originData?.amount || data.amount}
+                    ITSPossible={true}
+                    onlyITS={!getEvent(data)?.includes('ContractCall')}
+                    width={16}
+                    height={16}
+                    className="w-fit h-6 bg-zinc-100 dark:bg-zinc-800 rounded-xl px-2.5 py-1"
+                    titleClassName="text-xs"
+                  />
+                  {(data.originData?.interchain_transfer?.contract_address || interchain_transfer?.contract_address) && (
+                    <Tooltip content="Token Address" className="whitespace-nowrap">
+                      <Profile
+                        address={data.originData?.interchain_transfer?.contract_address || interchain_transfer.contract_address}
+                        chain={data.originData?.call?.chain || sourceChain}
+                        noResolveName={true}
+                      />
+                    </Tooltip>
+                  )}
+                </div>
               </dd>
             </div>
           )}
