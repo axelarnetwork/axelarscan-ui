@@ -946,20 +946,22 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
               <Profile address={data.originData?.call?.transaction?.from || senderAddress} chain={data.originData?.call?.chain || sourceChain} />
             </dd>
           </div>
-          <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
-            <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Source Address</dt>
-            <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-              <div className="flex flex-col gap-y-2">
-                <Profile address={data.originData?.call?.returnValues?.sender || sourceAddress} chain={data.originData?.call?.chain || sourceChain} />
-                {data.originData?.is_invalid_source_address || data.is_invalid_source_address && (
-                  <div className="h-6 flex items-center text-red-600 dark:text-red-500 gap-x-1.5">
-                    <PiWarningCircle size={20} />
-                    <span>Invalid Address</span>
-                  </div>
-                )}
-              </div>
-            </dd>
-          </div>
+          {!lite && seeMore && (
+            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
+              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Source Address</dt>
+              <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                <div className="flex flex-col gap-y-2">
+                  <Profile address={data.originData?.call?.returnValues?.sender || sourceAddress} chain={data.originData?.call?.chain || sourceChain} />
+                  {data.originData?.is_invalid_source_address || data.is_invalid_source_address && (
+                    <div className="h-6 flex items-center text-red-600 dark:text-red-500 gap-x-1.5">
+                      <PiWarningCircle size={20} />
+                      <span>Invalid Address</span>
+                    </div>
+                  )}
+                </div>
+              </dd>
+            </div>
+          )}
           <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
             <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Destination Contract</dt>
             <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
