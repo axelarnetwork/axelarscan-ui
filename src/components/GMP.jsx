@@ -2002,7 +2002,7 @@ export function GMP({ tx, lite }) {
           }
 
           // origin
-          if (d.call && (d.gas_paid_to_callback || d.is_call_from_relayer)) {
+          if (d.call && (d.gas_paid_to_callback || (!d.is_call_from_relayer && isAxelar(d.call.returnValues?.destinationChain)))) {
             const { data } = { ...await searchGMP(d.call.transactionHash ? { txHash: d.call.transactionHash } : { messageId: d.call.parentMessageID }) }
 
             d.originData = toArray(data).find(_d => d.call.transactionHash ?
