@@ -791,16 +791,12 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                 </div>
               </dd>
             </div> :
-            <>
-              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
-                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Source Chain</dt>
-                <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
+              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Path</dt>
+              <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                <div className="flex items-center gap-x-3">
                   <ChainProfile value={sourceChain} />
-                </dd>
-              </div>
-              <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
-                <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Destination Chain</dt>
-                <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+                  <MdKeyboardArrowRight size={24} />
                   <div className="flex flex-col gap-y-2">
                     <ChainProfile value={destinationChain} />
                     {data.is_invalid_destination_chain && (
@@ -810,9 +806,9 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                       </div>
                     )}
                   </div>
-                </dd>
-              </div>
-            </>
+                </div>
+              </dd>
+            </div>
           }
           {symbol && (
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
