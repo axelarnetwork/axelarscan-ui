@@ -609,6 +609,41 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
               </dd>
             </div>
           )}
+          <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
+            <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Path</dt>
+            <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
+              <div className="flex items-center gap-x-3">
+                {isMultihop ?
+                  <>
+                    <ChainProfile value={data.originData?.call?.chain || sourceChain} titleClassName="text-base font-semibold" />
+                    <MdKeyboardArrowRight size={24} />
+                    <ChainProfile value={data.originData?.call?.returnValues?.destinationChain || destinationChain} titleClassName="text-base font-semibold" />
+                    <MdKeyboardArrowRight size={24} />
+                    {data.originData?.call && data.callbackData?.call && (
+                      <>
+                        <ChainProfile value={data.callbackData.call.chain} titleClassName="text-base font-semibold" />
+                        <MdKeyboardArrowRight size={24} />
+                      </>
+                    )}
+                    <ChainProfile value={data.callbackData?.call?.returnValues?.destinationChain || destinationChain} titleClassName="text-base font-semibold" />
+                  </> :
+                  <>
+                    <ChainProfile value={sourceChain} />
+                    <MdKeyboardArrowRight size={24} />
+                    <div className="flex flex-col gap-y-2">
+                      <ChainProfile value={destinationChain} />
+                      {data.is_invalid_destination_chain && (
+                        <div className="h-6 flex items-center text-red-600 dark:text-red-500 gap-x-1.5">
+                          <PiWarningCircle size={20} />
+                          <span>Invalid Chain</span>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                }
+              </div>
+            </dd>
+          </div>
           {((settlement_forwarded_events && executed) || (settlement_filled_events && data.settlementForwardedData)) && (
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Settlement Status</dt>
@@ -772,44 +807,6 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
               </dd>
             </div>
           )}
-          {isMultihop ?
-            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
-              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Path</dt>
-              <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                <div className="flex items-center gap-x-3">
-                  <ChainProfile value={data.originData?.call?.chain || sourceChain} titleClassName="text-base font-semibold" />
-                  <MdKeyboardArrowRight size={24} />
-                  <ChainProfile value={data.originData?.call?.returnValues?.destinationChain || destinationChain} titleClassName="text-base font-semibold" />
-                  <MdKeyboardArrowRight size={24} />
-                  {data.originData?.call && data.callbackData?.call && (
-                    <>
-                      <ChainProfile value={data.callbackData.call.chain} titleClassName="text-base font-semibold" />
-                      <MdKeyboardArrowRight size={24} />
-                    </>
-                  )}
-                  <ChainProfile value={data.callbackData?.call?.returnValues?.destinationChain || destinationChain} titleClassName="text-base font-semibold" />
-                </div>
-              </dd>
-            </div> :
-            <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
-              <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Path</dt>
-              <dd className="sm:col-span-3 text-zinc-700 dark:text-zinc-300 text-sm leading-6 mt-1 sm:mt-0">
-                <div className="flex items-center gap-x-3">
-                  <ChainProfile value={sourceChain} />
-                  <MdKeyboardArrowRight size={24} />
-                  <div className="flex flex-col gap-y-2">
-                    <ChainProfile value={destinationChain} />
-                    {data.is_invalid_destination_chain && (
-                      <div className="h-6 flex items-center text-red-600 dark:text-red-500 gap-x-1.5">
-                        <PiWarningCircle size={20} />
-                        <span>Invalid Chain</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </dd>
-            </div>
-          }
           {symbol && (
             <div className="px-4 sm:px-6 py-6 sm:grid sm:grid-cols-4 sm:gap-4">
               <dt className="text-zinc-900 dark:text-zinc-100 text-sm font-medium">Asset</dt>
