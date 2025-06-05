@@ -1132,7 +1132,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                         - Approve Fee:
                                       </span>
                                       <Number
-                                        value={d.fees.base_fee - d.fees.source_confirm_fee}
+                                        value={d.fees.base_fee - d.fees.source_confirm_fee > 0 ? d.fees.base_fee - d.fees.source_confirm_fee : 0}
                                         format="0,0.000000"
                                         suffix={` ${d.fees.source_token?.symbol}`}
                                         noTooltip={true}
@@ -1140,7 +1140,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                       />
                                       {d.fees.source_token?.token_price?.usd > 0 > 0 && (
                                         <Number
-                                          value={(d.fees.base_fee - d.fees.source_confirm_fee) * d.fees.source_token.token_price.usd}
+                                          value={(d.fees.base_fee - d.fees.source_confirm_fee > 0 ? d.fees.base_fee - d.fees.source_confirm_fee : 0) * d.fees.source_token.token_price.usd}
                                           prefix="($"
                                           suffix=")"
                                           noTooltip={true}
@@ -1294,7 +1294,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                   - Approve Fee:
                                 </span>
                                 <Number
-                                  value={fees.base_fee - fees.source_confirm_fee}
+                                  value={fees.base_fee - fees.source_confirm_fee > 0 ? fees.base_fee - fees.source_confirm_fee : 0}
                                   format="0,0.000000"
                                   suffix={` ${fees.source_token?.symbol}`}
                                   noTooltip={true}
@@ -1302,7 +1302,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                 />
                                 {fees.source_token?.token_price?.usd > 0 > 0 && (
                                   <Number
-                                    value={(fees.base_fee - fees.source_confirm_fee) * fees.source_token.token_price.usd}
+                                    value={(fees.base_fee - fees.source_confirm_fee > 0 ? fees.base_fee - fees.source_confirm_fee : 0) * fees.source_token.token_price.usd}
                                     prefix="($"
                                     suffix=")"
                                     noTooltip={true}
