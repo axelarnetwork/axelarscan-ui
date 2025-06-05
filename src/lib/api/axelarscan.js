@@ -1,6 +1,6 @@
 import { objToQS } from '@/lib/parser'
 
-const request = async (method, params, requestMethod = 'GET') => {
+const request = async (method, params, requestMethod = 'POST') => {
   requestMethod = Object.values({ ...params }).findIndex(v => v && typeof v === 'object') > -1 ? 'POST' : requestMethod
   const response = await fetch(`${process.env.NEXT_PUBLIC_AXELARSCAN_API_URL}/${method}${requestMethod === 'GET' ? objToQS(params) : ''}`, { method: requestMethod, body: requestMethod === 'GET' ? undefined : JSON.stringify(params) }).catch(error => { return null })
   return response && await response.json()
