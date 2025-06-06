@@ -50,7 +50,7 @@ export function Address({ address }) {
                 type === transfersType ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300' : 'text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-400',
               )}
             >
-              {type === 'gmp' ? 'General Message Passing' : type === 'transfers' ? 'Token Transfers' : type}
+              {type === 'gmp' ? 'General Message Passing' : type === 'transfers' ? 'Legacy Token Transfers' : type}
             </button>
           ))}
         </nav>

@@ -40,7 +40,7 @@ import customGMPs from '@/data/custom/gmp'
 
 const size = 25
 
-function Filters() {
+function Filters({ contractMethod }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -73,14 +73,14 @@ function Filters() {
     { label: 'Source Chain', name: 'sourceChain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
     { label: 'Destination Chain', name: 'destinationChain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
     { label: 'From / To Chain', name: 'chain', type: 'select', multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
-    { label: 'Asset Type', name: 'assetType', type: 'select', options: [
+    !contractMethod && { label: 'Asset Type', name: 'assetType', type: 'select', options: [
       { title: 'Any' },
       { value: 'gateway', title: 'Gateway Token' },
       { value: 'its', title: 'ITS Token' },
     ] },
-    { label: 'Asset', name: 'asset', type: 'select', multiple: true, options: _.orderBy(toArray(_.concat(params.assetType !== 'its' && toArray(assets).map(d => ({ value: d.id, title: `${d.symbol} (${d.id})` })), params.assetType !== 'gateway' && toArray(itsAssets).map(d => ({ value: d.symbol, title: `${d.symbol} (ITS)` })))), ['title'], ['asc']) },
-    params.assetType === 'its' && { label: 'ITS Token Address', name: 'itsTokenAddress' },
-    { label: 'Method', name: 'contractMethod', type: 'select', options: [
+    { label: 'Asset', name: 'asset', type: 'select', multiple: true, options: _.orderBy(toArray(_.concat(params.assetType !== 'its' && !isITSEvent(contractMethod) && toArray(assets).map(d => ({ value: d.id, title: `${d.symbol} (${d.id})` })), params.assetType !== 'gateway' && toArray(itsAssets).map(d => ({ value: d.symbol, title: `${d.symbol} (ITS)` })))), ['title'], ['asc']) },
+    (params.assetType === 'its' || isITSEvent(contractMethod)) && { label: 'ITS Token Address', name: 'itsTokenAddress' },
+    !contractMethod && { label: 'Method', name: 'contractMethod', type: 'select', options: [
       { title: 'Any' },
       { value: 'callContract', title: 'CallContract' },
       { value: 'callContractWithToken', title: 'CallContractWithToken' },
@@ -115,7 +115,7 @@ function Filters() {
       { value: 'time', title: 'ContractCall Time' },
       { value: 'value', title: 'Token Value' },
     ] },
-    { label: 'Proposal ID', name: 'proposalId' },
+    !contractMethod && { label: 'Proposal ID', name: 'proposalId' },
   ])
 
   const filtered = isFiltered(params)
@@ -297,6 +297,8 @@ export const getEvent = data => {
   return call?.event
 }
 
+export const isITSEvent = contractMethod => !!find(contractMethod, ['InterchainTransfer', 'InterchainTokenDeployment', 'TokenManagerDeployment'])
+
 export const customData = async data => {
   const { call, interchain_transfer, interchain_transfers } = { ...data }
   const { destinationContractAddress, payload } = { ...call?.returnValues }
@@ -345,7 +347,7 @@ export const customData = async data => {
 
 export const checkNeedMoreGasFromError = error => !!error && includesSomePatterns([error.error?.reason, error.error?.message], ['INSUFFICIENT_GAS'])
 
-export function GMPs({ address, useAnotherHopChain = false }) {
+export function GMPs({ address, contractMethod, useAnotherHopChain = false }) {
   const searchParams = useSearchParams()
   const [params, setParams] = useState(null)
   const [searchResults, setSearchResults] = useState(null)
@@ -356,6 +358,14 @@ export function GMPs({ address, useAnotherHopChain = false }) {
 
     if (address) {
       _params.address = address
+    }
+
+    if (contractMethod) {
+      _params.contractMethod = contractMethod
+
+      if (isITSEvent(contractMethod)) {
+        _params.assetType = 'its'
+      }
     }
 
     if (!_.isEqual(_params, params)) {
@@ -404,14 +414,14 @@ export function GMPs({ address, useAnotherHopChain = false }) {
           <div className="flex items-center justify-between gap-x-4">
             <div className="sm:flex-auto">
               <h1 className="text-zinc-900 dark:text-zinc-100 text-base font-semibold leading-6">
-                General Message Passing
+                {contractMethod === 'InterchainTransfer' ? 'Interchain Transfers' : 'General Message Passing'}
               </h1>
               <p className="mt-2 text-zinc-400 dark:text-zinc-500 text-sm">
                 <Number value={total} suffix={` result${total > 1 ? 's' : ''}`} /> 
               </p>
             </div>
             <div className="flex items-center gap-x-2">
-              {!address && <Filters />}
+              {!address && <Filters contractMethod={contractMethod} />}
               {refresh && refresh !== 'true' ? <Spinner /> :
                 <Button
                   color="default"
