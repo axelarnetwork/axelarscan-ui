@@ -2025,11 +2025,7 @@ export function GMP({ tx, lite }) {
   useEffect(() => {
     const getEstimateTimeSpent = async () => {
       if (!estimatedTimeSpent && data?.call?.chain) {
-        const response = await estimateTimeSpent({
-          sourceChain: data.call.chain,
-          destinationChain: data.call.returnValues?.destinationChain,
-        })
-
+        const response = await estimateTimeSpent({ sourceChain: data.call.chain })
         setEstimatedTimeSpent(toArray(response).find(d => d.key === data.call.chain))
       }
     }
