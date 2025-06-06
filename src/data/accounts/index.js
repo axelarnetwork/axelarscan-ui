@@ -69,18 +69,6 @@ const data = [
     environment: 'testnet',
   },
   {
-    address: 'rfmS3zqrQrka8wVyhXifEeyTwe8AMz2Yhw',
-    name: 'Axelar Gateway',
-    image: '/logos/accounts/axelarnet.svg',
-    environment: 'mainnet',
-  },
-  {
-    address: 'rNrjh1KGZk2jBR3wPfAQnoidtFFYQKbQn2',
-    name: 'Axelar Gateway',
-    image: '/logos/accounts/axelarnet.svg',
-    environment: 'testnet',
-  },
-  {
     address: 'axelar1ggfhcn9e8kye4susvd9d30kdw3zhcsl8gxysv3',
     name: 'Imperator: IBC Relayer',
     image: '/logos/accounts/imperator.svg',

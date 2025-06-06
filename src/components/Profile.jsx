@@ -336,9 +336,24 @@ export function Profile({
   // contracts
   const { interchain_token_service_contract, gateway_contracts, gas_service_contracts } = { ...contracts }
 
-  const itss = toArray(interchain_token_service_contract?.addresses).map(a => ({ address: a, name: 'Interchain Token Service', image: AXELAR_LOGO }))
-  const gateways = Object.values({ ...gateway_contracts }).filter(d => d.address).map(d => ({ ...d, name: 'Axelar Gateway', image: AXELAR_LOGO }))
-  const gasServices = Object.values({ ...gas_service_contracts }).filter(d => d.address).map(d => ({ ...d, name: 'Axelar Gas Service', image: AXELAR_LOGO }))
+  const itss = toArray(interchain_token_service_contract?.addresses).map(a => ({
+    address: a,
+    name: 'Interchain Token Service',
+    image: getChainData(chain, chains)?.image || AXELAR_LOGO,
+  }))
+
+  const gateways = Object.entries({ ...gateway_contracts }).filter(([k, v]) => v.address).map(([k, v]) => ({
+    ...v,
+    name: 'Axelar Gateway',
+    image: getChainData(k, chains)?.image || AXELAR_LOGO,
+  }))
+
+  const gasServices = Object.entries({ ...gas_service_contracts }).filter(([k, v]) => v.address).map(([k, v]) => ({
+    ...v,
+    name: 'Axelar Gas Service',
+    image: getChainData(k, chains)?.image || AXELAR_LOGO,
+  }))
+
   const axelarContractAddresses = toArray(chains).flatMap(d => {
     const addresses = []
 
@@ -347,7 +362,7 @@ export function Profile({
         addresses.push({
           address: d[f].address,
           name: `${d.name} ${toTitle(f, '_', true)}`,
-          image: AXELAR_LOGO,
+          image: d.image || AXELAR_LOGO,
         })
       }
     }
