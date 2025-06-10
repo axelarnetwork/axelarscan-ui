@@ -442,7 +442,7 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                           />
                         </div>
                       )}
-                      <nav aria-label="Progress" className="h-20 overflow-x-auto">
+                      <nav aria-label="Progress" className={clsx('overflow-x-auto', (isAxelar(sourceChain) && toArray(d.executed?.childMessageIDs).length > 0) || (isAxelar(destinationChain) && d.call.parentMessageID) ? 'h-24' : 'h-20')}>
                         <ol role="list" className="flex items-center">
                           {steps.map((d, i) => {
                             const { transactionHash, blockNumber, confirmation_txhash, contract_address, poll_id, axelarTransactionHash, proposal_id, parentMessageID, childMessageIDs } = { ...d.data }
@@ -517,24 +517,24 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
                                   </div>
                                 )}
                                 {!isAxelar(sourceChain) && parentMessageID && (
-                                  <div className="absolute mt-3">
+                                  <div className="absolute mt-6">
                                     <Link
                                       href={`/gmp/${parentMessageID}`}
                                       target="_blank"
-                                      className="text-blue-600 dark:text-blue-500 text-xs font-bold whitespace-nowrap"
+                                      className="border border-blue-600 dark:border-blue-500 rounded-md text-blue-600 dark:text-blue-500 text-base font-semibold whitespace-nowrap py-1.5 px-2"
                                     >
-                                      (← prev GMP)
+                                      ← prev Hop
                                     </Link>
                                   </div>
                                 )}
                                 {!isAxelar(destinationChain) && toArray(childMessageIDs).map(id => (
-                                  <div key={id} className="absolute mt-3">
+                                  <div key={id} className="absolute mt-6">
                                     <Link
                                       href={`/gmp/${id}`}
                                       target="_blank"
-                                      className="text-blue-600 dark:text-blue-500 text-xs font-bold whitespace-nowrap"
+                                      className="border border-blue-600 dark:border-blue-500 rounded-md text-blue-600 dark:text-blue-500 text-base font-semibold whitespace-nowrap py-1.5 px-2"
                                     >
-                                      (next GMP →)
+                                      next Hop →
                                     </Link>
                                   </div>
                                 ))}
