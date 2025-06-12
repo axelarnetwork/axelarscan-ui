@@ -29,7 +29,7 @@ export const CHAINS = toArray(ENVIRONMENT === 'mainnet' ?
     { _id: 'blast', ...blast },
     { _id: 'flow', ...flowMainnet },
     { _id: 'hedera', ...hedera },
-    { _id: 'xrpl-evm', id: 1440000, network: 'xrpl-evm', name: 'XRP Ledger EVM', nativeCurrency: { name: 'Ripple', symbol: 'XRP', decimals: 18 }, rpcUrls: { default: { http: ['https://rpc.xrplevm.org'] } }, blockExplorers: { default: { name: 'XRP Ledger EVM', url: 'https://explorer.xrplevm.org' } } },
+    { _id: 'xrpl-evm', id: 1440000, network: 'xrpl-evm', name: 'XRP Ledger EVM', nativeCurrency: { name: 'Ripple', symbol: 'XRP', decimals: 18 }, rpcUrls: { default: { http: ['https://rpc-mainnet.aws.peersyst.tech'] } }, blockExplorers: { default: { name: 'XRP Ledger EVM', url: 'https://explorer-mainnet.aws.peersyst.tech' } } },
     { _id: 'plume', id: 98866, network: 'plume', name: 'Plume', nativeCurrency: { name: 'Plume', symbol: 'PLUME', decimals: 18 }, rpcUrls: { default: { http: ['https://rpc.plume.org'] } }, blockExplorers: { default: { name: 'Plume', url: 'https://explorer.plume.org' } } },
     { _id: 'berachain', id: 80094, network: 'berachain', name: 'Berachain', nativeCurrency: { name: 'Berachain', symbol: 'BERA', decimals: 18 }, rpcUrls: { default: { http: ['https://rpc.berachain.com'] } }, blockExplorers: { default: { name: 'Berascan', url: 'https://berascan.com' } } },
   ] :
