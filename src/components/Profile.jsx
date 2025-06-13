@@ -345,12 +345,14 @@ export function Profile({
   const gateways = Object.entries({ ...gateway_contracts }).filter(([k, v]) => v.address).map(([k, v]) => ({
     ...v,
     name: 'Axelar Gateway',
+    chain: k,
     image: getChainData(k, chains)?.image || AXELAR_LOGO,
   }))
 
   const gasServices = Object.entries({ ...gas_service_contracts }).filter(([k, v]) => v.address).map(([k, v]) => ({
     ...v,
     name: 'Axelar Gas Service',
+    chain: k,
     image: getChainData(k, chains)?.image || AXELAR_LOGO,
   }))
 
@@ -377,7 +379,7 @@ export function Profile({
   const expressRelayers = _.uniq(toArray(express_relayers)).map(a => ({ address: a, name: 'Axelar Express Relayer', image: AXELAR_LOGO }))
 
   // get custom profile
-  let { name, image } = { ..._.concat(accounts, itss, gateways, gasServices, axelarContractAddresses, executorRelayers, expressRelayers).find(d => equalsIgnoreCase(d.address, address) && (!d.environment || equalsIgnoreCase(d.environment, ENVIRONMENT))) }
+  let { name, image } = { ..._.concat(accounts, itss, gateways, gasServices, axelarContractAddresses, executorRelayers, expressRelayers).find(d => equalsIgnoreCase(d.address, address) && (!d.chain || !chain || equalsIgnoreCase(d.chain, chain)) && (!d.environment || equalsIgnoreCase(d.environment, ENVIRONMENT))) }
 
   // validator | verifier
   let isValidator
