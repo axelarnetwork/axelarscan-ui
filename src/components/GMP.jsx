@@ -2420,7 +2420,7 @@ export function GMP({ tx, lite }) {
           const sendOptions = {
             environment: ENVIRONMENT,
             offlineSigner: cosmosWalletStore.signer,
-            txFee: { gas: '280000', amount: [{ denom: sourceChainData?.native_token?.denom, amount: '30000' }] },
+            txFee: { gas: '300000', amount: [{ denom: sourceChainData?.native_token?.denom, amount: '30000' }] },
           }
 
           console.log('[addGas request]', { chain, transactionHash, messageId, estimatedGasUsed: gasLimit, token, sendOptions })
