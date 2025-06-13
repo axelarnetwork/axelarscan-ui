@@ -80,8 +80,7 @@ function Filters() {
     { label: 'Recipient', name: 'recipientAddress' },
     { label: 'Time', name: 'time', type: 'datetimeRange' },
     { label: 'Sort By', name: 'sortBy', type: 'select', options: [
-      { title: 'Any' },
-      { value: 'time', title: 'Transfer Time' },
+      { title: 'Transfer Time' },
       { value: 'value', title: 'Transfer Value' },
     ] },
   ]
