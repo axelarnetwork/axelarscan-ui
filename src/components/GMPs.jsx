@@ -111,8 +111,7 @@ function Filters() {
     { label: 'Command ID', name: 'commandId' },
     { label: 'Time', name: 'time', type: 'datetimeRange' },
     { label: 'Sort By', name: 'sortBy', type: 'select', options: [
-      { title: 'Any' },
-      { value: 'time', title: 'ContractCall Time' },
+      { title: 'ContractCall Time' },
       { value: 'value', title: 'Token Value' },
     ] },
     { label: 'Proposal ID', name: 'proposalId' },
