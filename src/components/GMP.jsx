@@ -2705,7 +2705,7 @@ export function GMP({ tx, lite }) {
     if (call.destination_chain_type !== 'vm' && !isAxelar(call.returnValues?.destinationChain) && call.returnValues?.payload) {
       if (
         // approved
-        (call.destination_chain_type === 'cosmos' ? confirm : approved) &&
+        (call.destination_chain_type === 'cosmos' ? confirm || call.chain_type === 'cosmos' : approved) &&
         // no executed txhash or the same with error txhash
         (!executed?.transactionHash || equalsIgnoreCase(executed.transactionHash, error?.transactionHash)) && !data.is_executed &&
         // error or confirmed / approved or called more than 5 mins for cosmos, 2 mins for evm
