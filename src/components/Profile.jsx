@@ -363,7 +363,7 @@ export function Profile({
       if (d[f]?.address) {
         addresses.push({
           address: d[f].address,
-          name: `${d.name} ${toTitle(f, '_', true)}`,
+          name: `${d.name} ${f === 'interchain_token_service_hub' ? 'ITS Hub' : toTitle(f, '_', true)}`,
           image: d.image || AXELAR_LOGO,
         })
       }
