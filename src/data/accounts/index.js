@@ -42,6 +42,11 @@ const data = [
     image: '/logos/accounts/axelarnet.svg',
   },
   {
+    address: 'axelar1aqcj54lzz0rk22gvqgcn8fr5tx4rzwdv5wv5j9dmnacgefvd7wzsy2j2mr',
+    name: 'Interchain Token Service Hub',
+    image: '/logos/accounts/axelarnet.svg',
+  },
+  {
     address: '0x83a93500d23Fbc3e82B410aD07A6a9F7A0670D66',
     name: 'Interchain Token Factory',
     image: '/logos/accounts/axelarnet.svg',
