@@ -44,6 +44,7 @@ export const CHAINS = toArray(ENVIRONMENT === 'mainnet' ?
     ['testnet', 'stagenet'].includes(ENVIRONMENT) && { _id: 'test-avalanche', ...avalancheFuji, name: `${avalancheFuji.name} (Amplifier)` },
     ['devnet-amplifier'].includes(ENVIRONMENT) && { _id: 'core-avalanche', ...avalancheFuji },
     ['devnet-amplifier'].includes(ENVIRONMENT) && { _id: 'avalanche-fuji', ...avalancheFuji, name: `${avalancheFuji.name} (Amplifier)` },
+    ['devnet-amplifier'].includes(ENVIRONMENT) && { _id: 'avalanche-test', ...avalancheFuji, name: `${avalancheFuji.name} (Amplifier)` },
     { _id: 'fantom', ...fantomTestnet },
     { _id: 'moonbeam', ...moonbaseAlpha },
     { _id: 'arbitrum-sepolia', ...arbitrumSepolia },
