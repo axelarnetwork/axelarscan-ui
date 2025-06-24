@@ -118,7 +118,7 @@ function ContractCallData({ data, executeData, isMultihop }) {
 
   const sourceChain = approved?.returnValues?.sourceChain || (isAxelar(call?.chain) ? call.chain : getChainData(call?.chain, chains)?.chain_name || call?.chain)
   const destinationChain = call?.returnValues?.destinationChain || getChainData(approved?.chain, chains)?.chain_name || approved?.chain
-  const symbol = call?.returnValues?.symbol || data.interchain_transfer?.symbol || data.token_manager_deployment_started?.symbol || data.interchain_token_deployment_started?.tokenSymbol
+  const symbol = call?.returnValues?.symbol || data.interchain_transfer?.symbol || data.token_manager_deployment_started?.symbol || data.interchain_token_deployment_started?.tokenSymbol || data.link_token_started?.symbol || data.token_metadata_registered?.symbol
   const { addresses } = { ...getAssetData(symbol, assets) }
 
   const messageId = data.message_id
@@ -356,10 +356,10 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
   const sourceChainData = getChainData(sourceChain, chains)
   const { url, transaction_path } = { ...sourceChainData?.explorer }
 
-  let symbol = call?.returnValues?.symbol || interchain_transfer?.symbol || data.token_manager_deployment_started?.symbol || data.interchain_token_deployment_started?.tokenSymbol
+  let symbol = call?.returnValues?.symbol || interchain_transfer?.symbol || data.token_manager_deployment_started?.symbol || data.interchain_token_deployment_started?.tokenSymbol || data.link_token_started?.symbol || data.token_metadata_registered?.symbol
 
   if (!symbol && data.originData) {
-    symbol = data.originData.call?.returnValues?.symbol || data.originData.interchain_transfer?.symbol || data.originData.token_manager_deployment_started?.symbol || data.originData.interchain_token_deployment_started?.tokenSymbol
+    symbol = data.originData.call?.returnValues?.symbol || data.originData.interchain_transfer?.symbol || data.originData.token_manager_deployment_started?.symbol || data.originData.interchain_token_deployment_started?.tokenSymbol || data.originData.link_token_started?.symbol || data.originData.token_metadata_registered?.symbol
   }
 
   const isMultihop = !!(data.originData || data.callbackData)
