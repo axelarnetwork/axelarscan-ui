@@ -2343,6 +2343,9 @@ export function GMP({ tx, lite }) {
           else if (data.interchain_token_deployment_started?.destinationChain) {
             nextHopDestinationChain = data.interchain_token_deployment_started.destinationChain
           }
+          else if (data.link_token_started?.destinationChain) {
+            nextHopDestinationChain = data.link_token_started.destinationChain
+          }
           else {
             switch (headString(chain)) {
               case 'xrpl-evm':
@@ -2363,7 +2366,10 @@ export function GMP({ tx, lite }) {
             sourceTokenSymbol: source_token?.symbol,
             gasLimit: getDefaultGasLimit(nextHopDestinationChain),
             gasMultiplier: 1.1,
-            event: data.interchain_token_deployment_started ? 'InterchainTokenDeployment' : undefined,
+            event: data.interchain_token_deployment_started ? 'InterchainTokenDeployment' :
+              data.link_token_started ? 'LinkToken' :
+              data.token_metadata_registered ? 'TokenMetadataRegistered' :
+              undefined,
           })
 
           if (totalGasAmount) {
