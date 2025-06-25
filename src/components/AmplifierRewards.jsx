@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Fragment, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Dialog, Listbox, Transition } from '@headlessui/react'
+import { Combobox, Dialog, Listbox, Transition } from '@headlessui/react'
 import clsx from 'clsx'
 import _ from 'lodash'
 import { MdOutlineRefresh, MdOutlineFilterList, MdClose, MdCheck } from 'react-icons/md'
@@ -27,7 +27,7 @@ import { searchRewardsDistribution, getRewardsPool } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
 import { split, toArray } from '@/lib/parser'
 import { getParams, getQueryString, generateKeyByParams, isFiltered } from '@/lib/operator'
-import { equalsIgnoreCase, toBoolean, find, ellipse, toTitle } from '@/lib/string'
+import { equalsIgnoreCase, toBoolean, find, ellipse, toTitle, filterSearchInput } from '@/lib/string'
 import { isNumber, formatUnits } from '@/lib/number'
 
 function Info({ chain, rewardsPool, cumulativeRewards }) {
@@ -264,7 +264,14 @@ function Filters() {
   const searchParams = useSearchParams()
   const [open, setOpen] = useState(false)
   const [params, setParams] = useState(getParams(searchParams, size))
+  const [searchInput, setSearchInput] = useState({})
   const { handleSubmit } = useForm()
+
+  useEffect(() => {
+    if (params) {
+      setSearchInput({})
+    }
+  }, [params, setSearchInput])
 
   const onSubmit = (e1, e2, _params) => {
     if (!_params) {
@@ -352,69 +359,141 @@ function Filters() {
                               </label>
                               <div className="mt-2">
                                 {d.type === 'select' ?
-                                  <Listbox value={d.multiple ? split(params[d.name]) : params[d.name]} onChange={v => setParams({ ...params, [d.name]: d.multiple ? v.join(',') : v })} multiple={d.multiple}>
-                                    {({ open }) => {
-                                      const isSelected = v => d.multiple ? split(params[d.name]).includes(v) : v === params[d.name] || equalsIgnoreCase(v, params[d.name])
-                                      const selectedValue = d.multiple ? toArray(d.options).filter(o => isSelected(o.value)) : toArray(d.options).find(o => isSelected(o.value))
+                                  d.searchable ?
+                                    <Combobox value={d.multiple ? split(params[d.name]) : params[d.name]} onChange={v => setParams({ ...params, [d.name]: d.multiple ? v.join(',') : v })} multiple={d.multiple}>
+                                      {({ open }) => {
+                                        const isSelected = v => d.multiple ? split(params[d.name]).includes(v) : v === params[d.name] || equalsIgnoreCase(v, params[d.name])
+                                        const selectedValue = d.multiple ? toArray(d.options).filter(o => isSelected(o.value)) : toArray(d.options).find(o => isSelected(o.value))
 
-                                      return (
-                                        <div className="relative">
-                                          <Listbox.Button className="relative w-full cursor-pointer rounded-md shadow-sm border border-zinc-200 text-zinc-900 sm:text-sm sm:leading-6 text-left pl-3 pr-10 py-1.5">
-                                            {d.multiple ?
-                                              <div className={clsx('flex flex-wrap', selectedValue.length !== 0 && 'my-1')}>
-                                                {selectedValue.length === 0 ?
-                                                  <span className="block truncate">
-                                                    Any
-                                                  </span> :
-                                                  selectedValue.map((v, j) => (
-                                                    <div
-                                                      key={j}
-                                                      onClick={() => setParams({ ...params, [d.name]: selectedValue.filter(v => v.value !== v.value).map(v => v.value).join(',') })}
-                                                      className="min-w-fit h-6 bg-zinc-100 rounded-xl flex items-center text-zinc-900 mr-2 my-1 px-2.5 py-1"
-                                                    >
-                                                      {v.title}
-                                                    </div>
-                                                  ))
-                                                }
-                                              </div> :
-                                              <span className="block truncate">
-                                                {selectedValue?.title}
+                                        return (
+                                          <div className="relative">
+                                            <Combobox.Button className="relative w-full cursor-pointer rounded-md shadow-sm border border-zinc-200 text-zinc-900 sm:text-sm sm:leading-6 text-left pl-3 pr-10 py-1.5">
+                                              {d.multiple ?
+                                                <div className={clsx('flex flex-wrap', selectedValue.length !== 0 && 'my-1')}>
+                                                  {selectedValue.length === 0 ?
+                                                    <span className="block truncate">
+                                                      Any
+                                                    </span> :
+                                                    selectedValue.map((v, j) => (
+                                                      <div
+                                                        key={j}
+                                                        onClick={() => setParams({ ...params, [d.name]: selectedValue.filter(v => v.value !== v.value).map(v => v.value).join(',') })}
+                                                        className="min-w-fit h-6 bg-zinc-100 rounded-xl flex items-center text-zinc-900 mr-2 my-1 px-2.5 py-1"
+                                                      >
+                                                        {v.title}
+                                                      </div>
+                                                    ))
+                                                  }
+                                                </div> :
+                                                <span className="block truncate">
+                                                  {selectedValue?.title}
+                                                </span>
+                                              }
+                                              <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                                <LuChevronsUpDown size={20} className="text-zinc-400" />
                                               </span>
-                                            }
-                                            <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                                              <LuChevronsUpDown size={20} className="text-zinc-400" />
-                                            </span>
-                                          </Listbox.Button>
-                                          <Transition
-                                            show={open}
-                                            as={Fragment}
-                                            leave="transition ease-in duration-100"
-                                            leaveFrom="opacity-100"
-                                            leaveTo="opacity-0"
-                                          >
-                                            <Listbox.Options className="absolute z-10 w-full max-h-60 bg-white overflow-auto rounded-md shadow-lg text-base sm:text-sm mt-1 py-1">
-                                              {toArray(d.options).map((o, j) => (
-                                                <Listbox.Option key={j} value={o.value} className={({ active }) => clsx('relative cursor-default select-none pl-3 pr-9 py-2', active ? 'bg-blue-600 text-white' : 'text-zinc-900')}>
-                                                  {({ selected, active }) => (
-                                                    <>
-                                                      <span className={clsx('block truncate', selected ? 'font-semibold' : 'font-normal')}>
-                                                        {o.title}
-                                                      </span>
-                                                      {selected && (
-                                                        <span className={clsx('absolute inset-y-0 right-0 flex items-center pr-4', active ? 'text-white' : 'text-blue-600')}>
-                                                          <MdCheck size={20} />
-                                                        </span>
+                                            </Combobox.Button>
+                                            <Transition
+                                              show={open}
+                                              as={Fragment}
+                                              leave="transition ease-in duration-100"
+                                              leaveFrom="opacity-100"
+                                              leaveTo="opacity-0"
+                                            >
+                                              <div className="gap-y-2 mt-2">
+                                                <Combobox.Input
+                                                  placeholder={`Search ${d.label}`}
+                                                  value={searchInput[d.name]}
+                                                  onChange={e => setSearchInput({ ...searchInput, [d.name]: e.target.value })}
+                                                  className="w-full rounded-md shadow-sm border border-zinc-200 focus:border-blue-600 focus:ring-0 text-zinc-900 placeholder:text-zinc-400 sm:text-sm sm:leading-6 py-1.5"
+                                                />
+                                                <Combobox.Options className="absolute z-10 w-full max-h-60 bg-white overflow-auto rounded-md shadow-lg text-base sm:text-sm mt-1 py-1">
+                                                  {toArray(d.options).filter(o => filterSearchInput(o.value, searchInput[d.name])).map((o, j) => (
+                                                    <Combobox.Option key={j} value={o.value} className={({ active }) => clsx('relative cursor-default select-none pl-3 pr-9 py-2', active ? 'bg-blue-600 text-white' : 'text-zinc-900')}>
+                                                      {({ selected, active }) => (
+                                                        <>
+                                                          <span className={clsx('block truncate', selected ? 'font-semibold' : 'font-normal')}>
+                                                            {o.title}
+                                                          </span>
+                                                          {selected && (
+                                                            <span className={clsx('absolute inset-y-0 right-0 flex items-center pr-4', active ? 'text-white' : 'text-blue-600')}>
+                                                              <MdCheck size={20} />
+                                                            </span>
+                                                          )}
+                                                        </>
                                                       )}
-                                                    </>
-                                                  )}
-                                                </Listbox.Option>
-                                              ))}
-                                            </Listbox.Options>
-                                          </Transition>
-                                        </div>
-                                      )
-                                    }}
-                                  </Listbox> :
+                                                    </Combobox.Option>
+                                                  ))}
+                                                </Combobox.Options>
+                                              </div>
+                                            </Transition>
+                                          </div>
+                                        )
+                                      }}
+                                    </Combobox> :
+                                    <Listbox value={d.multiple ? split(params[d.name]) : params[d.name]} onChange={v => setParams({ ...params, [d.name]: d.multiple ? v.join(',') : v })} multiple={d.multiple}>
+                                      {({ open }) => {
+                                        const isSelected = v => d.multiple ? split(params[d.name]).includes(v) : v === params[d.name] || equalsIgnoreCase(v, params[d.name])
+                                        const selectedValue = d.multiple ? toArray(d.options).filter(o => isSelected(o.value)) : toArray(d.options).find(o => isSelected(o.value))
+
+                                        return (
+                                          <div className="relative">
+                                            <Listbox.Button className="relative w-full cursor-pointer rounded-md shadow-sm border border-zinc-200 text-zinc-900 sm:text-sm sm:leading-6 text-left pl-3 pr-10 py-1.5">
+                                              {d.multiple ?
+                                                <div className={clsx('flex flex-wrap', selectedValue.length !== 0 && 'my-1')}>
+                                                  {selectedValue.length === 0 ?
+                                                    <span className="block truncate">
+                                                      Any
+                                                    </span> :
+                                                    selectedValue.map((v, j) => (
+                                                      <div
+                                                        key={j}
+                                                        onClick={() => setParams({ ...params, [d.name]: selectedValue.filter(v => v.value !== v.value).map(v => v.value).join(',') })}
+                                                        className="min-w-fit h-6 bg-zinc-100 rounded-xl flex items-center text-zinc-900 mr-2 my-1 px-2.5 py-1"
+                                                      >
+                                                        {v.title}
+                                                      </div>
+                                                    ))
+                                                  }
+                                                </div> :
+                                                <span className="block truncate">
+                                                  {selectedValue?.title}
+                                                </span>
+                                              }
+                                              <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                                <LuChevronsUpDown size={20} className="text-zinc-400" />
+                                              </span>
+                                            </Listbox.Button>
+                                            <Transition
+                                              show={open}
+                                              as={Fragment}
+                                              leave="transition ease-in duration-100"
+                                              leaveFrom="opacity-100"
+                                              leaveTo="opacity-0"
+                                            >
+                                              <Listbox.Options className="absolute z-10 w-full max-h-60 bg-white overflow-auto rounded-md shadow-lg text-base sm:text-sm mt-1 py-1">
+                                                {toArray(d.options).map((o, j) => (
+                                                  <Listbox.Option key={j} value={o.value} className={({ active }) => clsx('relative cursor-default select-none pl-3 pr-9 py-2', active ? 'bg-blue-600 text-white' : 'text-zinc-900')}>
+                                                    {({ selected, active }) => (
+                                                      <>
+                                                        <span className={clsx('block truncate', selected ? 'font-semibold' : 'font-normal')}>
+                                                          {o.title}
+                                                        </span>
+                                                        {selected && (
+                                                          <span className={clsx('absolute inset-y-0 right-0 flex items-center pr-4', active ? 'text-white' : 'text-blue-600')}>
+                                                            <MdCheck size={20} />
+                                                          </span>
+                                                        )}
+                                                      </>
+                                                    )}
+                                                  </Listbox.Option>
+                                                ))}
+                                              </Listbox.Options>
+                                            </Transition>
+                                          </div>
+                                        )
+                                      }}
+                                    </Listbox> :
                                   d.type === 'datetimeRange' ?
                                     <DateRangePicker params={params} onChange={v => setParams({ ...params, ...v })} /> :
                                     <input
