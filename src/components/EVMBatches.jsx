@@ -190,12 +190,11 @@ function Filters() {
                                               <div className="gap-y-2 mt-2">
                                                 <Combobox.Input
                                                   placeholder={`Search ${d.label}`}
-                                                  value={searchInput[d.name]}
                                                   onChange={e => setSearchInput({ ...searchInput, [d.name]: e.target.value })}
                                                   className="w-full rounded-md shadow-sm border border-zinc-200 focus:border-blue-600 focus:ring-0 text-zinc-900 placeholder:text-zinc-400 sm:text-sm sm:leading-6 py-1.5"
                                                 />
                                                 <Combobox.Options className="absolute z-10 w-full max-h-60 bg-white overflow-auto rounded-md shadow-lg text-base sm:text-sm mt-1 py-1">
-                                                  {toArray(d.options).filter(o => filterSearchInput(o.value, searchInput[d.name])).map((o, j) => (
+                                                  {toArray(d.options).filter(o => filterSearchInput([o.title, o.value], searchInput[d.name])).map((o, j) => (
                                                     <Combobox.Option key={j} value={o.value} className={({ active }) => clsx('relative cursor-default select-none pl-3 pr-9 py-2', active ? 'bg-blue-600 text-white' : 'text-zinc-900')}>
                                                       {({ selected, active }) => (
                                                         <>
