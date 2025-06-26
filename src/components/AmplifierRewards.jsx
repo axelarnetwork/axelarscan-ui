@@ -403,6 +403,7 @@ function Filters() {
                                               <div className="gap-y-2 mt-2">
                                                 <Combobox.Input
                                                   placeholder={`Search ${d.label}`}
+                                                  value={searchInput[d.name] || ''}
                                                   onChange={e => setSearchInput({ ...searchInput, [d.name]: e.target.value })}
                                                   className="w-full rounded-md shadow-sm border border-zinc-200 focus:border-blue-600 focus:ring-0 text-zinc-900 placeholder:text-zinc-400 sm:text-sm sm:leading-6 py-1.5"
                                                 />
