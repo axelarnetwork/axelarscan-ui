@@ -94,6 +94,8 @@ function Filters() {
       { value: 'InterchainTransfer', title: 'InterchainTransfer' },
       { value: 'InterchainTokenDeployment', title: 'InterchainTokenDeployment' },
       { value: 'TokenManagerDeployment', title: 'TokenManagerDeployment' },
+      { value: 'LinkToken', title: 'LinkToken' },
+      { value: 'TokenMetadataRegistered', title: 'TokenMetadataRegistered' },
       { value: 'SquidCoral', title: 'SquidCoral' },
       { value: 'SquidCoralSettlementForwarded', title: 'SquidCoralSettlementForwarded' },
       { value: 'SquidCoralSettlementFilled', title: 'SquidCoralSettlementFilled' },
@@ -363,11 +365,13 @@ function Filters() {
 }
 
 export const getEvent = data => {
-  const { call, interchain_transfer, token_manager_deployment_started, interchain_token_deployment_started, settlement_forwarded_events, settlement_filled_events, interchain_transfers, originData } = { ...data }
+  const { call, interchain_transfer, token_manager_deployment_started, interchain_token_deployment_started, link_token_started, token_metadata_registered, settlement_forwarded_events, settlement_filled_events, interchain_transfers, originData } = { ...data }
 
   if (interchain_transfer || originData?.interchain_transfer) return 'InterchainTransfer'
   if (token_manager_deployment_started || originData?.token_manager_deployment_started) return 'TokenManagerDeployment'
   if (interchain_token_deployment_started || originData?.interchain_token_deployment_started) return 'InterchainTokenDeployment'
+  if (link_token_started || originData?.link_token_started) return 'LinkToken'
+  if (token_metadata_registered || originData?.token_metadata_registered) return 'TokenMetadataRegistered'
   if (settlement_forwarded_events) return 'SquidCoralSettlementForwarded'
   if (settlement_filled_events || interchain_transfers) return 'SquidCoralSettlementFilled'
 
@@ -527,7 +531,7 @@ export function GMPs({ address, useAnotherHopChain = false }) {
               </thead>
               <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
                 {data.map(d => {
-                  const symbol = d.call.returnValues?.symbol || d.interchain_transfer?.symbol || d.token_manager_deployment_started?.symbol || d.interchain_token_deployment_started?.tokenSymbol
+                  const symbol = d.call.returnValues?.symbol || d.interchain_transfer?.symbol || d.token_manager_deployment_started?.symbol || d.interchain_token_deployment_started?.tokenSymbol || d.link_token_started?.symbol || d.token_metadata_registered?.symbol
                   const receivedTransactionHash = d.express_executed?.transactionHash || d.executed?.transactionHash
                   const key = d.message_id || d.call.transactionHash
 

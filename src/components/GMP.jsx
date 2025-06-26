@@ -118,7 +118,7 @@ function ContractCallData({ data, executeData, isMultihop }) {
 
   const sourceChain = approved?.returnValues?.sourceChain || (isAxelar(call?.chain) ? call.chain : getChainData(call?.chain, chains)?.chain_name || call?.chain)
   const destinationChain = call?.returnValues?.destinationChain || getChainData(approved?.chain, chains)?.chain_name || approved?.chain
-  const symbol = call?.returnValues?.symbol || data.interchain_transfer?.symbol || data.token_manager_deployment_started?.symbol || data.interchain_token_deployment_started?.tokenSymbol
+  const symbol = call?.returnValues?.symbol || data.interchain_transfer?.symbol || data.token_manager_deployment_started?.symbol || data.interchain_token_deployment_started?.tokenSymbol || data.link_token_started?.symbol || data.token_metadata_registered?.symbol
   const { addresses } = { ...getAssetData(symbol, assets) }
 
   const messageId = data.message_id
@@ -356,10 +356,10 @@ function Info({ data, estimatedTimeSpent, executeData, buttons, tx, lite }) {
   const sourceChainData = getChainData(sourceChain, chains)
   const { url, transaction_path } = { ...sourceChainData?.explorer }
 
-  let symbol = call?.returnValues?.symbol || interchain_transfer?.symbol || data.token_manager_deployment_started?.symbol || data.interchain_token_deployment_started?.tokenSymbol
+  let symbol = call?.returnValues?.symbol || interchain_transfer?.symbol || data.token_manager_deployment_started?.symbol || data.interchain_token_deployment_started?.tokenSymbol || data.link_token_started?.symbol || data.token_metadata_registered?.symbol
 
   if (!symbol && data.originData) {
-    symbol = data.originData.call?.returnValues?.symbol || data.originData.interchain_transfer?.symbol || data.originData.token_manager_deployment_started?.symbol || data.originData.interchain_token_deployment_started?.tokenSymbol
+    symbol = data.originData.call?.returnValues?.symbol || data.originData.interchain_transfer?.symbol || data.originData.token_manager_deployment_started?.symbol || data.originData.interchain_token_deployment_started?.tokenSymbol || data.originData.link_token_started?.symbol || data.originData.token_metadata_registered?.symbol
   }
 
   const isMultihop = !!(data.originData || data.callbackData)
@@ -2343,6 +2343,9 @@ export function GMP({ tx, lite }) {
           else if (data.interchain_token_deployment_started?.destinationChain) {
             nextHopDestinationChain = data.interchain_token_deployment_started.destinationChain
           }
+          else if (data.link_token_started?.destinationChain) {
+            nextHopDestinationChain = data.link_token_started.destinationChain
+          }
           else {
             switch (headString(chain)) {
               case 'xrpl-evm':
@@ -2363,7 +2366,10 @@ export function GMP({ tx, lite }) {
             sourceTokenSymbol: source_token?.symbol,
             gasLimit: getDefaultGasLimit(nextHopDestinationChain),
             gasMultiplier: 1.1,
-            event: data.interchain_token_deployment_started ? 'InterchainTokenDeployment' : undefined,
+            event: data.interchain_token_deployment_started ? 'InterchainTokenDeployment' :
+              data.link_token_started ? 'LinkToken' :
+              data.token_metadata_registered ? 'TokenMetadataRegistered' :
+              undefined,
           })
 
           if (totalGasAmount) {
