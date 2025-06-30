@@ -14,3 +14,4 @@ export const find = (x, elements) => toArray(elements).find(e => equalsIgnoreCas
 export const includesSomePatterns = (string, patterns) => toArray(patterns).findIndex(p => toArray(string).findIndex(s => s.includes(p)) > -1) > -1
 export const ellipse = (string, length = 10, prefix = '') => !isString(string) || !string ? '' : string.length < (length * 2) + 3 ? string : `${string.startsWith(prefix) ? prefix : ''}${string.replace(prefix, '').slice(0, length)}...${string.replace(prefix, '').slice(-length)}`
 export const toTitle = (string, delimiter = '_', isCapitalize = false, noSpace = false) => split(string, { delimiter }).map(s => isCapitalize ? capitalize(s) : s).join(noSpace ? '' : ' ')
+export const filterSearchInput = (string, pattern) => !pattern || (pattern.length > 2 ? includesSomePatterns(string, pattern) : toArray(string).findIndex(s => toCase(s, 'lower').startsWith(toCase(pattern, 'lower'))) > -1)
