@@ -2348,11 +2348,13 @@ export function GMP({ tx, lite }) {
           }
           else {
             switch (headString(chain)) {
-              case 'xrpl-evm':
-                nextHopDestinationChain = ENVIRONMENT === 'devnet-amplifier' ? 'xrpl-dev2' : 'xrpl'
-                break
               case 'xrpl':
-                nextHopDestinationChain = ENVIRONMENT === 'devnet-amplifier' ? 'xrpl-evm-2' : 'xrpl-evm'
+                if (chain.startsWith('xrpl-evm')) {
+                  nextHopDestinationChain = ENVIRONMENT === 'devnet-amplifier' ? 'xrpl-dev2' : 'xrpl'
+                }
+                else {
+                  nextHopDestinationChain = ENVIRONMENT === 'devnet-amplifier' ? 'xrpl-evm-2' : 'xrpl-evm'
+                }
                 break
               default:
                 nextHopDestinationChain = ENVIRONMENT === 'mainnet' ? 'ethereum' : ENVIRONMENT === 'devnet-amplifier' ? 'eth-sepolia' : 'ethereum-sepolia'
