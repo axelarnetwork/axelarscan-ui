@@ -182,7 +182,7 @@ export function TVL() {
                         titleClassName="font-bold"
                       />
                       {d.assetType === 'its' && (
-                        <Tooltip content={Object.values({ ...d.tvl }).findIndex(d => d.token_manager_type?.startsWith('lockUnlock') && !d.assetData.type?.includes('custom')) > -1 ? 'canonical ITS token' : 'custom ITS token'} className="whitespace-nowrap">
+                        <Tooltip content={Object.values({ ...d.tvl }).findIndex(d => d.token_manager_type?.startsWith('lockUnlock')) > -1 && !d.assetData.type?.includes('custom') ? 'canonical ITS token' : 'custom ITS token'} className="whitespace-nowrap">
                           <Tag className="w-fit bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100">
                             ITS
                           </Tag>
