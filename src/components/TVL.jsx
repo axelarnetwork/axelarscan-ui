@@ -54,18 +54,18 @@ export function TVL() {
     ...d,
     total_value: _.sumBy(filteredData.map(_d => {
       const { supply, total } = { ..._d.tvl?.[d.id] }
-      const isITSNotCanonical = _d.assetType === 'its' && Object.values({ ..._d.tvl }).findIndex(d => d.contract_data.token_manager_type?.startsWith('lockUnlock')) < 0
+      const isLockUnlock = _d.assetType === 'its' && Object.values({ ..._d.tvl }).findIndex(d => d.contract_data.token_manager_type?.startsWith('lockUnlock')) < 0
 
       let { price } = { ..._d }
 
-      if (!isITSNotCanonical && !price) {
+      if (!isLockUnlock && !price) {
         const assetData = _d.assetType === 'its' ? getITSAssetData(_d.asset, itsAssets) : getAssetData(_d.asset, assets)
         price = toNumber(isNumber(assetData?.price) ? assetData.price : 0)
       }
 
       return {
         ..._d,
-        value: isITSNotCanonical ? 0 : toNumber((supply || total) * price),
+        value: isLockUnlock ? 0 : toNumber((supply || total) * price),
       }
     }).filter(d => d.value > 0), 'value'),
   })), 'id'), ['total_value'], ['desc'])
@@ -182,7 +182,7 @@ export function TVL() {
                         titleClassName="font-bold"
                       />
                       {d.assetType === 'its' && (
-                        <Tooltip content={Object.values({ ...d.tvl }).findIndex(d => d.token_manager_type?.startsWith('lockUnlock')) > -1 ? 'canonical ITS token' : 'custom ITS token'} className="whitespace-nowrap">
+                        <Tooltip content={Object.values({ ...d.tvl }).findIndex(d => d.token_manager_type?.startsWith('lockUnlock')) > -1 && !d.assetData.type?.includes('custom') ? 'canonical ITS token' : 'custom ITS token'} className="whitespace-nowrap">
                           <Tag className="w-fit bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100">
                             ITS
                           </Tag>
@@ -206,7 +206,7 @@ export function TVL() {
                         />
                       )
 
-                      const isITSNotCanonical = d.assetType === 'its' && Object.values({ ...d.tvl }).findIndex(d => d.contract_data.token_manager_type?.startsWith('lockUnlock')) < 0
+                      const isLockUnlock = d.assetType === 'its' && Object.values({ ...d.tvl }).findIndex(d => d.contract_data.token_manager_type?.startsWith('lockUnlock')) < 0
 
                       return (
                         <div key={d.asset} className="flex flex-col items-end gap-y-1">
@@ -221,7 +221,7 @@ export function TVL() {
                               </Link> :
                               element
                             }
-                            {isITSNotCanonical && (
+                            {isLockUnlock && (
                               <Tooltip content="The circulating supply retrieved from CoinGecko used for TVL tracking." className="w-56 text-xs text-left">
                                 <PiInfo className="text-zinc-400 dark:text-zinc-500 mb-0.5" />
                               </Tooltip>
