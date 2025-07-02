@@ -2102,7 +2102,14 @@ export function GMP({ tx, lite }) {
     const getEstimateTimeSpent = async () => {
       if (!estimatedTimeSpent && data?.call?.chain) {
         const response = await estimateTimeSpent({ sourceChain: data.call.chain })
-        setEstimatedTimeSpent(toArray(response).find(d => d.key === data.call.chain))
+        const chainEstimatedTimeSpent = toArray(response).find(d => d.key === data.call.chain)
+
+        // fix finality time for cosmos chain
+        if (data.call.chain_type === 'cosmos' && chainEstimatedTimeSpent?.confirm > 30) {
+          chainEstimatedTimeSpent.confirm = 30
+        }
+
+        setEstimatedTimeSpent(chainEstimatedTimeSpent)
       }
     }
 
