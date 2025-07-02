@@ -2317,7 +2317,7 @@ export function GMP({ tx, lite }) {
     'centrifuge-2': 1000000,
     scroll: 500000,
     fraxtal: 400000,
-    'xrpl-evm': 7000000,
+    'xrpl-evm': 500000,
     'xrpl-evm-2': 7000000,
   }[toCase(chain, 'lower')] || 700000)
 
