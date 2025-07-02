@@ -73,7 +73,7 @@ function Filters() {
     { label: 'Source Chain', name: 'sourceChain', type: 'select', searchable: true, multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
     { label: 'Destination Chain', name: 'destinationChain', type: 'select', searchable: true, multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
     { label: 'From / To Chain', name: 'chain', type: 'select', searchable: true, multiple: true, options: _.orderBy(toArray(chains).map((d, i) => ({ ...d, i })), ['deprecated', 'name', 'i'], ['desc', 'asc', 'asc']).map(d => ({ value: d.id, title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}` })) },
-    { label: 'Asset', name: 'asset', type: 'select', multiple: true, options: _.orderBy(toArray(assets).map(d => ({ value: d.id, title: d.symbol })), ['title'], ['asc']) },
+    { label: 'Asset', name: 'asset', type: 'select', multiple: true, options: _.orderBy(_.uniqBy(toArray(assets).map(d => ({ value: d.id, title: d.symbol })), 'value'), ['title'], ['asc']) },
     { label: 'Type', name: 'type', type: 'select', options: [
       { title: 'Any' },
       { value: 'deposit_address', title: 'Deposit Address' },
