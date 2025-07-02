@@ -85,7 +85,7 @@ function Filters() {
       { value: 'gateway', title: 'Gateway Token' },
       { value: 'its', title: 'ITS Token' },
     ] },
-    { label: 'Asset', name: 'asset', type: 'select', multiple: true, options: _.orderBy(toArray(_.concat(params.assetType !== 'its' && toArray(assets).map(d => ({ value: d.id, title: `${d.symbol} (${d.id})` })), params.assetType !== 'gateway' && toArray(itsAssets).map(d => ({ value: d.symbol, title: `${d.symbol} (ITS)` })))), ['title'], ['asc']) },
+    { label: 'Asset', name: 'asset', type: 'select', multiple: true, options: _.orderBy(_.uniqBy(toArray(_.concat(params.assetType !== 'its' && toArray(assets).map(d => ({ value: d.id, title: `${d.symbol} (${d.id})` })), params.assetType !== 'gateway' && toArray(itsAssets).map(d => ({ value: d.symbol, title: `${d.symbol} (ITS)` })))), 'value'), ['title'], ['asc']) },
     params.assetType === 'its' && { label: 'ITS Token Address', name: 'itsTokenAddress' },
     { label: 'Method', name: 'contractMethod', type: 'select', options: [
       { title: 'Any' },
