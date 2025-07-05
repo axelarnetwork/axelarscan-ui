@@ -570,11 +570,11 @@ export function GMPs({ address, useAnotherHopChain = false }) {
                               titleClassName="text-xs"
                             />
                           )}
-                          {d.interchain_transfer?.contract_address && (!isAxelar(d.call.chain) || d.origin_chain) && (
+                          {d.interchain_transfer?.contract_address && !isAxelar(d.call.chain) && (
                             <Tooltip content="Token Address" className="whitespace-nowrap" parentClassName="!justify-start">
                               <Profile
                                 address={d.interchain_transfer.contract_address}
-                                chain={isAxelar(d.call.chain) && d.origin_chain ? d.origin_chain : d.call.chain}
+                                chain={d.call.chain}
                                 width={16}
                                 height={16}
                                 noResolveName={true}
