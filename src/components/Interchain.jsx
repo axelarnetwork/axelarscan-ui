@@ -1568,7 +1568,8 @@ export function Interchain() {
     const metrics = ['GMPStatsByChains', 'GMPStatsByContracts', 'GMPChart', 'GMPTotalVolume', 'GMPTopUsers', 'GMPTopITSUsers', 'GMPTopITSUsersByVolume', 'GMPTopITSAssets', 'GMPTopITSAssetsByVolume', 'transfersStats', 'transfersChart', 'transfersTotalVolume', 'transfersTopUsers', 'transfersTopUsersByVolume']
 
     const getData = async () => {
-      if (params && toBoolean(refresh) && stats) {
+      // assets data need when filtering asset
+      if (params && toBoolean(refresh) && stats && (!params.asset || (assets && globalStore.itsAssets))) {
         setData({
           ...data,
           [generateKeyByParams(params)]: Object.fromEntries(
