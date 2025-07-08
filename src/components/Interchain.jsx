@@ -984,7 +984,7 @@ function Top({
             <Spinner />
           </div> :
           <div className={clsx('overflow-y-auto flex flex-col gap-y-1', className)}>
-            {toArray(data).filter(d => type !== 'chain' || split(d.key, { delimiter: '_' }).filter(k => !getChainData(k, chains)).length < 1).map((d, i) => {
+            {toArray(data).filter(d => (type !== 'chain' || split(d.key, { delimiter: '_' }).filter(k => !getChainData(k, chains)).length < 1) && d[field] > 0).map((d, i) => {
               const keys = split(d.key, { delimiter: '_' })
 
               return keys.length > 0 && (
