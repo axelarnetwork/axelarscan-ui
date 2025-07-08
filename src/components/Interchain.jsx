@@ -722,7 +722,7 @@ export function SankeyChart({
   const keyString = d ? d.key : undefined
 
   const chartData = _.slice(
-    _.orderBy(toArray(data).map(d => ({
+    _.orderBy(toArray(data).filter(d => d[field] > 0).map(d => ({
       source: headString(d.key, '_'),
       target: lastString(d.key, '_'),
       value: parseInt(d[field]),
