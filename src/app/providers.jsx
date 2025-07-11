@@ -13,6 +13,8 @@ import { WalletProvider as XRPLWalletProvider } from '@xrpl-wallet-standard/reac
 import { CrossmarkWallet } from '@xrpl-wallet-adapter/crossmark'
 import { LedgerWallet } from '@xrpl-wallet-adapter/ledger'
 import { WalletConnectWallet as XRPLWalletConnectWallet } from '@xrpl-wallet-adapter/walletconnect'
+import { ConnectionProvider as SolanaConnectionProvider, WalletProvider as SolanaWalletProvider } from '@solana/wallet-adapter-react'
+import { clusterApiUrl as SolanaClusterAPIUrl } from '@solana/web3.js'
 
 import { Global } from '@/components/Global'
 import WagmiConfigProvider from '@/lib/provider/WagmiConfigProvider'
@@ -98,13 +100,17 @@ export function Providers({ children }) {
         <Global />
         <QueryClientProvider client={client}>
           <WagmiConfigProvider>
-            <XRPLWalletProvider registerWallets={xrplRegisterWallets}>
-              <SuiClientProvider networks={networkConfig} defaultNetwork={ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}>
-                <SuiWalletProvider>
-                  {children}
-                </SuiWalletProvider>
-              </SuiClientProvider>
-            </XRPLWalletProvider>
+            <SolanaConnectionProvider endpoint={SolanaClusterAPIUrl(ENVIRONMENT === 'mainnet' ? 'mainnet-beta' : ENVIRONMENT === 'testnet' ? 'testnet' : 'devnet')}>
+              <SolanaWalletProvider wallets={[]}>
+                <XRPLWalletProvider registerWallets={xrplRegisterWallets}>
+                  <SuiClientProvider networks={networkConfig} defaultNetwork={ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}>
+                    <SuiWalletProvider>
+                      {children}
+                    </SuiWalletProvider>
+                  </SuiClientProvider>
+                </XRPLWalletProvider>
+              </SolanaWalletProvider>
+            </SolanaConnectionProvider>
           </WagmiConfigProvider>
         </QueryClientProvider>
       </IntercomProvider>
