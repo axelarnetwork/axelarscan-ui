@@ -7,6 +7,8 @@ import { hashMessage, parseAbiItem, verifyMessage } from 'viem'
 import { ConnectButton as SuiConnectButton, useCurrentAccount as useSuiCurrentAccount } from '@mysten/dapp-kit'
 import freighter from '@stellar/freighter-api'
 import { useWallets as useXRPLWallets, useAccount as useXRPLAccount, useConnect as useXRPLConnect, useDisconnect as useXRPLDisconnect } from '@xrpl-wallet-standard/react'
+import { useConnection as useSolanaConnection, useWallet as useSolanaWallet } from '@solana/wallet-adapter-react'
+import { WalletModalProvider as SolanaWalletModalProvider, WalletMultiButton as SolanaWalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import { providers } from 'ethers'
 // import { BrowserProvider, FallbackProvider, JsonRpcProvider, JsonRpcSigner } from 'ethers'
 import { create } from 'zustand'
@@ -17,6 +19,7 @@ import { ENVIRONMENT } from '@/lib/config'
 import { toArray } from '@/lib/parser'
 
 import '@mysten/dapp-kit/dist/index.css'
+import '@solana/wallet-adapter-react-ui/styles.css'
 
 const publicClientToProvider = publicClient => {
   const { chain, transport } = { ...publicClient }
@@ -453,4 +456,47 @@ export function XRPLWallet({ children, className }) {
         </button>
       ))}
     </div>
+}
+
+export const useSolanaWalletStore = create()(set => ({
+  address: null,
+  provider: null,
+  connection: null,
+  setAddress: data => set(state => ({ ...state, address: data })),
+  setProvider: data => set(state => ({ ...state, provider: data })),
+  setConnection: data => set(state => ({ ...state, connection: data })),
+}))
+
+export function SolanaWallet({ children, className }) {
+  const { address, setAddress, setProvider, setConnection } = useSolanaWalletStore()
+
+  const { connection } = useSolanaConnection()
+  const wallet = useSolanaWallet()
+
+  useEffect(() => {
+    if (connection && wallet?.publicKey) {
+      setAddress(wallet.publicKey.toBase58())
+      setProvider(wallet)
+      setConnection(connection)
+    }
+    else {
+      setAddress(null)
+      setProvider(null)
+      setConnection(null)
+    }
+  }, [connection, wallet, setAddress, setProvider, setConnection])
+
+  return address ?
+    <button onClick={() => wallet.disconnect()} className={clsx(className)}>
+      {children || (
+        <div className="h-6 bg-red-600 hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-600 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1">
+          Disconnect
+        </div>
+      )}
+    </button> :
+    <SolanaWalletModalProvider>
+      <SolanaWalletMultiButton>
+        {children}
+      </SolanaWalletMultiButton>
+    </SolanaWalletModalProvider>
 }

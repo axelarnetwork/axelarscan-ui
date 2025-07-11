@@ -29,7 +29,7 @@ import { Number } from '@/components/Number'
 import { Profile, ChainProfile, AssetProfile } from '@/components/Profile'
 import { TimeAgo, TimeSpent, TimeUntil } from '@/components/Time'
 import { ExplorerLink } from '@/components/ExplorerLink'
-import { useEVMWalletStore, EVMWallet, useCosmosWalletStore, CosmosWallet, useSuiWalletStore, SuiWallet, useStellarWalletStore, StellarWallet, useXRPLWalletStore, XRPLWallet } from '@/components/Wallet'
+import { useEVMWalletStore, EVMWallet, useCosmosWalletStore, CosmosWallet, useSuiWalletStore, SuiWallet, useStellarWalletStore, StellarWallet, useXRPLWalletStore, XRPLWallet, useSolanaWalletStore, SolanaWallet } from '@/components/Wallet'
 import { getEvent, customData, checkNeedMoreGasFromError } from '@/components/GMPs'
 import { useGlobalStore } from '@/components/Global'
 import { estimateITSFee, searchGMP, estimateTimeSpent } from '@/lib/api/gmp'
@@ -1918,6 +1918,7 @@ export function GMP({ tx, lite }) {
   const suiWalletStore = useSuiWalletStore()
   const stellarWalletStore = useStellarWalletStore()
   const xrplWalletStore = useXRPLWalletStore()
+  const solanaWalletStore = useSolanaWalletStore()
   const { mutateAsync: suiSignAndExecuteTransaction } = useSuiSignAndExecuteTransaction()
   const xrplSignAndSubmitTransaction = useXRPLSignAndSubmitTransaction()
 
@@ -2262,7 +2263,7 @@ export function GMP({ tx, lite }) {
     if (isNumber(getChainData(chain, chains)?.chain_id)) return true
 
     // amplifier chains that already custom addGas function
-    return ['sui', 'stellar', 'xrpl'].includes(headString(chain))
+    return ['sui', 'stellar', 'xrpl', 'solana'].includes(headString(chain))
   }
 
   const isWalletConnected = (chain, chainType) => {
@@ -2276,6 +2277,7 @@ export function GMP({ tx, lite }) {
     if (chain === 'sui') return !!suiWalletStore?.address
     if (chain === 'stellar') return !!stellarWalletStore?.address
     if (chain === 'xrpl') return !!xrplWalletStore?.address
+    if (chain === 'solana') return !!solanaWalletStore?.address
 
     return
   }
@@ -2293,6 +2295,7 @@ export function GMP({ tx, lite }) {
     if (chain === 'sui') return <SuiWallet />
     if (chain === 'stellar') return <StellarWallet />
     if (chain === 'xrpl') return <XRPLWallet />
+    if (chain === 'solana') return <SolanaWallet />
 
     return
   }
@@ -2328,7 +2331,7 @@ export function GMP({ tx, lite }) {
     'xrpl-evm-2': 7000000,
   }[toCase(chain, 'lower')] || 700000)
 
-  // addNativeGas for evm, addGasToCosmosChain for cosmos, amplifier (addGasToSuiChain, addGasToStellarChain, addGasToXrplChain)
+  // addNativeGas for evm, addGasToCosmosChain for cosmos, amplifier (addGasToSuiChain, addGasToStellarChain, addGasToXrplChain, addGasToSolanaChain)
   const addGas = async data => {
     if (data?.call && sdk && isWalletConnected(data.call.chain, data.call.chain_type)) {
       setProcessing(true)
@@ -2552,6 +2555,29 @@ export function GMP({ tx, lite }) {
               status: response?.tx_json?.meta?.TransactionResult === 'tesSUCCESS' ? 'success' : 'failed',
               message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
               hash: response?.tx_hash,
+              chain,
+            })
+          }
+        }
+
+        else if (headString(chain) === 'solana') {
+          console.log('[addGas request]', { chain, messageId, gasAddedAmount, refundAddress: solanaWalletStore.address })
+
+          let response = await sdk.addGasToSolanaChain({
+            senderAddress: solanaWalletStore.address,
+            messageId,
+            amount: gasAddedAmount,
+          })
+
+          if (response) {
+            response = await solanaWalletStore.provider.sendTransaction(response, solanaWalletStore.connection)
+
+            console.log('[addGas response]', response)
+
+            setResponse({
+              status: response ? 'success' : 'failed',
+              message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
+              hash: response,
               chain,
             })
           }
