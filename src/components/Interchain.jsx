@@ -391,7 +391,13 @@ export function Summary({ data, params }) {
     _.uniq(contracts.flatMap(d => d.chains)) :
     toArray(globalStore.chains).filter(d => !d.deprecated && (!d.maintainer_id || d.gateway?.address))
 
-  const tvlData = toArray(globalStore.tvl?.data)
+  const tvlData = toArray(globalStore.tvl?.data).map(d => {
+    // set price from other assets with the same symbol
+    const assetData = d.assetType === 'its' ? getITSAssetData(d.asset, globalStore.itsAssets) : getAssetData(d.asset, globalStore.assets) || (d.total_on_contracts > 0 || d.total_on_tokens > 0 ? { ...Object.values({ ...d.tvl }).find(d => d.contract_data?.is_custom)?.contract_data } : undefined)
+    d.price = toNumber(isNumber(d.price) ? d.price : isNumber(assetData?.price) ? assetData.price : -1)
+
+    return { ...d, value: toNumber(d.total) * d.price }
+  })
 
   console.log('[destinationContracts]', contracts.map(d => d.key))
 
