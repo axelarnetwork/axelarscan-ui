@@ -2693,7 +2693,9 @@ export function GMP({ tx, lite }) {
             // some patterns of error is detected
             checkNeedMoreGasFromError(data.callbackData.error)
           ) && timeDiff(data.callbackData.created_at?.ms) > 60
-        ))
+        )) ||
+        // when need more gas by itself on destination axelar
+        (isAxelar(call.returnValues?.destinationChain) && checkNeedMoreGasFromError(error))
       ) {
         addGasButton = (
           <div key="addGas" className="flex items-center gap-x-1">
