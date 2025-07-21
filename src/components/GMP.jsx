@@ -2559,25 +2559,26 @@ export function GMP({ tx, lite }) {
             })
           }
         }
-
         else if (headString(chain) === 'solana') {
           console.log('[addGas request]', { chain, messageId, gasAddedAmount, refundAddress: solanaWalletStore.address })
 
           let response = await sdk.addGasToSolanaChain({
-            senderAddress: solanaWalletStore.address,
             messageId,
-            amount: gasAddedAmount,
+            gasFeeAmount: gasAddedAmount,
+            sender: solanaWalletStore.address,
+            refundAddress: solanaWalletStore.address,
           })
 
           if (response) {
-            response = await solanaWalletStore.provider.sendTransaction(response, solanaWalletStore.connection)
+            const signature = await solanaWalletStore.provider.sendTransaction(response, solanaWalletStore.connection)
+            response = await solanaWalletStore.connection.confirmTransaction(signature)
 
             console.log('[addGas response]', response)
 
             setResponse({
-              status: response ? 'success' : 'failed',
-              message: parseError(response?.error)?.message || response?.error || 'Pay gas successful',
-              hash: response,
+              status: !response?.err ? 'success' : 'failed',
+              message: parseError(response?.error)?.message || response?.error || response?.err || 'Pay gas successful',
+              hash: signature,
               chain,
             })
           }
