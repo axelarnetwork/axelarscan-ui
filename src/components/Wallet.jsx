@@ -487,7 +487,7 @@ export function SolanaWallet({ children, className }) {
   }, [connection, wallet, setAddress, setProvider, setConnection])
 
   return address ?
-    <button onClick={() => wallet.disconnect()} className={clsx(className)}>
+    <button onClick={() => wallet?.disconnect()} className={clsx(className)}>
       {children || (
         <div className="h-6 bg-red-600 hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-600 rounded-xl flex items-center font-display text-white whitespace-nowrap px-2.5 py-1">
           Disconnect
