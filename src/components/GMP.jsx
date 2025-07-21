@@ -2576,8 +2576,8 @@ export function GMP({ tx, lite }) {
             console.log('[addGas response]', response)
 
             setResponse({
-              status: !response?.err ? 'success' : 'failed',
-              message: parseError(response?.error)?.message || response?.error || response?.err || 'Pay gas successful',
+              status: !response?.value?.err ? 'success' : 'failed',
+              message: parseError(response?.error)?.message || response?.error || response?.value?.err || 'Pay gas successful',
               hash: signature,
               chain,
             })
