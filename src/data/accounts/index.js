@@ -1074,6 +1074,12 @@ const data = [
     environment: 'mainnet',
     image: '/logos/accounts/baby_doge.png'
   },
+    {
+    address: "0x52271c9a29d0f97c350bbe32b3377cdd26026d0a",
+    name: "Centrifuge V3",
+    image: "/logos/chains/centrifuge.svg",
+    environment: "mainnet",
+  },
 ]
 
 export default data
