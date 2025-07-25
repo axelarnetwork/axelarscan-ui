@@ -1871,7 +1871,11 @@ function Details({ data }) {
                         <span className="w-8">
                           To:
                         </span>
-                        <Profile address={toAddress} chain={d.data?.axelarTransactionHash ? destinationChainData?.id : d.chainData?.id} />
+                        <Profile
+                          address={toAddress}
+                          chain={d.data?.axelarTransactionHash ? destinationChainData?.id : d.chainData?.id}
+                          useContractLink={d.id === 'execute' && ['stellar'].includes(headString(d.chainData?.id))}
+                        />
                       </div>
                     )}
                   </div>
