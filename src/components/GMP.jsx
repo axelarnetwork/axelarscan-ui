@@ -1874,7 +1874,7 @@ function Details({ data }) {
                         <Profile
                           address={toAddress}
                           chain={d.data?.axelarTransactionHash ? destinationChainData?.id : d.chainData?.id}
-                          useContractLink={d.id === 'execute' && ['stellar'].includes(headString(d.chainData?.id))}
+                          useContractLink={d.id === 'execute' && ['stellar'].includes(headString(d.data?.axelarTransactionHash ? destinationChainData?.id : d.chainData?.id))}
                         />
                       </div>
                     )}
