@@ -510,7 +510,7 @@ export function AmplifierProofs() {
                                         target="_blank"
                                         className="text-blue-600 dark:text-blue-500 font-semibold"
                                       >
-                                        {ellipse(removeHexPrefix(m.message_id))}
+                                        {ellipse(removeHexPrefix(m.message_id)).toUpperCase()}
                                       </Link>
                                     </Copy>
                                   <ExplorerLink value={headString(removeHexPrefix(m.message_id))} chain={m.source_chain} />
