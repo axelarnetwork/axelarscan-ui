@@ -2,10 +2,6 @@
 
 # 🔍 Axelarscan UI
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen)](https://nodejs.org/)
-[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
-
 *The official UI for Axelarscan - Cross-chain explorer for the Axelar Network*
 
 </div>
