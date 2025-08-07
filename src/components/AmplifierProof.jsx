@@ -19,7 +19,7 @@ import { useGlobalStore } from '@/components/Global'
 import { getRPCStatus, searchAmplifierProofs } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
 import { toArray, getValuesOfAxelarAddressKey } from '@/lib/parser'
-import { equalsIgnoreCase, headString, lastString, find, ellipse, toTitle } from '@/lib/string'
+import { equalsIgnoreCase, headString, lastString, find, ellipse, toTitle, removeHexPrefix } from '@/lib/string'
 import { TIME_FORMAT } from '@/lib/time'
 
 function Info({ data, id }) {
@@ -86,16 +86,16 @@ function Info({ data, id }) {
                     <div key={i} className="flex items-center gap-x-4">
                       <ChainProfile value={m.source_chain} />
                       <div className="flex items-center gap-x-1">
-                        <Copy value={m.message_id}>
+                        <Copy value={removeHexPrefix(m.message_id)}>
                           <Link
-                            href={`${url}${transaction_path?.replace('{tx}', headString(m.message_id))}`}
+                            href={`${url}${transaction_path?.replace('{tx}', headString(removeHexPrefix(m.message_id)))}`}
                             target="_blank"
                             className="text-blue-600 dark:text-blue-500 font-semibold"
                           >
-                            {ellipse(m.message_id)}
+                            {ellipse(removeHexPrefix(m.message_id)).toUpperCase()}
                           </Link>
                         </Copy>
-                        <ExplorerLink value={headString(m.message_id)} chain={m.source_chain} />
+                        <ExplorerLink value={headString(removeHexPrefix(m.message_id))} chain={m.source_chain} />
                       </div>
                     </div>
                   )

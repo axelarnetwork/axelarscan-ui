@@ -28,7 +28,7 @@ import { getRPCStatus, searchAmplifierProofs } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
 import { split, toArray, getValuesOfAxelarAddressKey } from '@/lib/parser'
 import { getParams, getQueryString, generateKeyByParams, isFiltered } from '@/lib/operator'
-import { equalsIgnoreCase, capitalize, toBoolean, headString, ellipse, toTitle, filterSearchInput } from '@/lib/string'
+import { equalsIgnoreCase, capitalize, toBoolean, headString, ellipse, toTitle, filterSearchInput, removeHexPrefix } from '@/lib/string'
 
 const size = 25
 
@@ -504,16 +504,16 @@ export function AmplifierProofs() {
                               <div key={i} className="flex items-center gap-x-4">
                                 <ChainProfile value={m.source_chain} />
                                 <div className="flex items-center gap-x-1">
-                                  <Copy value={m.message_id}>
+                                  <Copy value={removeHexPrefix(m.message_id)}>
                                       <Link
-                                        href={`${url}${transaction_path?.replace('{tx}', headString(m.message_id))}`}
+                                        href={`${url}${transaction_path?.replace('{tx}', headString(removeHexPrefix(m.message_id)))}`}
                                         target="_blank"
                                         className="text-blue-600 dark:text-blue-500 font-semibold"
                                       >
-                                        {ellipse(m.message_id)}
+                                        {ellipse(removeHexPrefix(m.message_id)).toUpperCase()}
                                       </Link>
                                     </Copy>
-                                  <ExplorerLink value={headString(m.message_id)} chain={m.source_chain} />
+                                  <ExplorerLink value={headString(removeHexPrefix(m.message_id))} chain={m.source_chain} />
                                 </div>
                               </div>
                             )
