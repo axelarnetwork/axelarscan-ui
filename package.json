@@ -1,6 +1,6 @@
 {
   "name": "axelarscan-ui",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "description": "Axelarscan UI",
   "scripts": {
     "dev": "next dev",
@@ -28,7 +28,7 @@
   "homepage": "https://github.com/axelarnetwork/axelarscan-ui#readme",
   "browserslist": "defaults, not ie <= 11",
   "dependencies": {
-    "@axelar-network/axelarjs-sdk": "0.17.5-alpha.7",
+    "@axelar-network/axelarjs-sdk": "0.17.5-alpha.11",
     "@headlessui/react": "^2.2.2",
     "@headlessui/tailwindcss": "^0.2.2",
     "@mysten/dapp-kit": "^0.16.1",
@@ -37,6 +37,10 @@
     "@reown/appkit": "^1.7.6",
     "@reown/appkit-adapter-wagmi": "^1.7.6",
     "@siddomains/sidjs": "^0.1.29",
+    "@solana/wallet-adapter-base": "^0.9.27",
+    "@solana/wallet-adapter-react": "^0.15.39",
+    "@solana/wallet-adapter-react-ui": "^0.9.39",
+    "@solana/web3.js": "^1.98.2",
     "@stellar/freighter-api": "^4.1.0",
     "@stellar/stellar-sdk": "^13.3.0",
     "@tailwindcss/forms": "^0.5.10",
