@@ -37,6 +37,7 @@ export const CHAINS = toArray(ENVIRONMENT === 'mainnet' ?
   [
     ['testnet', 'stagenet'].includes(ENVIRONMENT) && { _id: 'ethereum-sepolia', ...sepolia },
     ['testnet', 'stagenet'].includes(ENVIRONMENT) && { _id: 'test-sepolia', ...sepolia, name: `${sepolia.name} (Amplifier)` },
+    ['testnet', 'stagenet'].includes(ENVIRONMENT) && { _id: 'celo-sepolia',  id: 11142220, network: 'celo-sepolia', name: 'Celo Sepolia', nativeCurrency: { name: 'Celo', symbol: 'CELO', decimals: 18 }, rpcUrls: { default: { http: ['https://forno.celo-sepolia.celo-testnet.org/'] } }, blockExplorers: { default: { name: 'Celo Sepolia', url: 'https://celo-sepolia.blockscout.com/' } }, testnet: true },
     ['devnet-amplifier'].includes(ENVIRONMENT) && { _id: 'core-ethereum', ...sepolia },
     ['devnet-amplifier'].includes(ENVIRONMENT) && { _id: 'eth-sepolia', ...sepolia, name: `${sepolia.name} (Amplifier)` },
     { _id: 'binance', ...bscTestnet },
