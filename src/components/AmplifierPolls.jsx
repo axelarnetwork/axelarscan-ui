@@ -445,7 +445,7 @@ export function AmplifierPolls() {
               <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
                 {data.map(d => {
                   const explorer = { ...getChainData(d.sender_chain, chains)?.explorer }
-                  const txHref = buildExplorerURL(d.transaction_id, 'tx', false, false, explorer)
+                  const txHref = buildExplorerURL({ value: d.transaction_id, type: 'tx', useContractLink: false, hasEventLog: false, explorer })
 
                   return (
                     <tr key={d.id} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
