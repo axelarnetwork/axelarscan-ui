@@ -43,7 +43,7 @@ export const buildExplorerURL = ({ value, type, useContractLink, hasEventLog, ex
       }
 
       suffix = ''
-      if (hasEventLog && value?.startsWith('0x')) {
+      if (hasEventLog && processedValue?.startsWith('0x')) {
         suffix = '#eventlog'
       }
 
