@@ -14,7 +14,7 @@ import { Tag } from '@/components/Tag'
 import { Number } from '@/components/Number'
 import { Profile, ChainProfile } from '@/components/Profile'
 import { TimeAgo } from '@/components/Time'
-import { ExplorerLink } from '@/components/ExplorerLink'
+import { ExplorerLink, buildExplorerURL } from '@/components/ExplorerLink'
 import { useGlobalStore } from '@/components/Global'
 import { getRPCStatus, searchAmplifierPolls } from '@/lib/api/validator'
 import { getChainData } from '@/lib/config'
@@ -28,7 +28,9 @@ function Info({ data, id }) {
 
   const { contract_address, transaction_id, event_index, sender_chain, status, height, initiated_txhash, confirmation_txhash, completed_txhash, expired_height, participants, voteOptions, created_at, updated_at } = { ...data }
 
-  const { url, transaction_path } = { ...getChainData(sender_chain, chains)?.explorer }
+  const explorer = { ...getChainData(sender_chain, chains)?.explorer }
+
+  const txHref = buildExplorerURL({ value: transaction_id, type: 'tx', useContractLink: false, hasEventLog: false, explorer });
 
   return (
     <div className="overflow-hidden bg-zinc-50/75 dark:bg-zinc-800/25 shadow sm:rounded-lg">
@@ -43,7 +45,7 @@ function Info({ data, id }) {
             <div className="flex items-center gap-x-1">
               <Copy value={transaction_id}>
                 <Link
-                  href={`${url}${transaction_path?.replace('{tx}', transaction_id)}`}
+                  href={txHref}
                   target="_blank"
                   className="text-blue-600 dark:text-blue-500 font-semibold"
                 >

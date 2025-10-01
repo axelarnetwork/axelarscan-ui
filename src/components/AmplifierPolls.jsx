@@ -20,7 +20,7 @@ import { Spinner } from '@/components/Spinner'
 import { Tag } from '@/components/Tag'
 import { Number } from '@/components/Number'
 import { ChainProfile } from '@/components/Profile'
-import { ExplorerLink } from '@/components/ExplorerLink'
+import { ExplorerLink, buildExplorerURL } from '@/components/ExplorerLink'
 import { TimeAgo } from '@/components/Time'
 import { Pagination } from '@/components/Pagination'
 import { useGlobalStore } from '@/components/Global'
@@ -444,7 +444,8 @@ export function AmplifierPolls() {
               </thead>
               <tbody className="bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
                 {data.map(d => {
-                  const { url, transaction_path } = { ...getChainData(d.sender_chain, chains)?.explorer }
+                  const explorer = { ...getChainData(d.sender_chain, chains)?.explorer }
+                  const txHref = buildExplorerURL({ value: d.transaction_id, type: 'tx', useContractLink: false, hasEventLog: false, explorer })
 
                   return (
                     <tr key={d.id} className="align-top text-zinc-400 dark:text-zinc-500 text-sm">
@@ -463,7 +464,7 @@ export function AmplifierPolls() {
                             <div className="flex items-center gap-x-1">
                               <Copy value={d.transaction_id}>
                                 <Link
-                                  href={`${url}${transaction_path?.replace('{tx}', d.transaction_id)}`}
+                                  href={txHref}
                                   target="_blank"
                                   className="text-blue-600 dark:text-blue-500 font-semibold"
                                 >
