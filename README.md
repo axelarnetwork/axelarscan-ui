@@ -17,14 +17,16 @@ _The official UI for Axelarscan - Cross-chain explorer for the Axelar Network_
 
 ### Prerequisites
 
-- Node.js >= 20.0.0
-- npm or yarn
+- Node.js 20.19.4 (specified in `.nvmrc`) - Install via [nvm](https://github.com/nvm-sh/nvm)
 
 ### Local Development
 
 Run the application locally on [localhost:3000](http://localhost:3000):
 
 ```bash
+# Switch to the correct Node.js version
+nvm use
+
 # Install dependencies
 npm ci
 
