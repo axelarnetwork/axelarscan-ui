@@ -1,4 +1,4 @@
-import { Button } from '@/components/Button'
+import { Button } from '@/components/Button';
 
 export default function NotFound() {
   return (
@@ -20,5 +20,5 @@ export default function NotFound() {
         </main>
       </div>
     </div>
-  )
+  );
 }

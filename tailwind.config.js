@@ -1,5 +1,5 @@
-const formsPlugin = require('@tailwindcss/forms')
-const headlessuiPlugin = require('@headlessui/tailwindcss')
+const formsPlugin = require('@tailwindcss/forms');
+const headlessuiPlugin = require('@headlessui/tailwindcss');
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -28,14 +28,14 @@ module.exports = {
         display: 'var(--font-lexend)',
       },
       height: {
-        '112': '28rem',
-        '144': '36rem',
+        112: '28rem',
+        144: '36rem',
       },
       width: {
-        'tvl': '7301px',
+        tvl: '7301px',
       },
       minWidth: {
-        'md': '28rem',
+        md: '28rem',
       },
       maxWidth: {
         '2xl': '40rem',
@@ -48,4 +48,4 @@ module.exports = {
     },
   },
   plugins: [formsPlugin, headlessuiPlugin],
-}
+};

@@ -1,5 +1,5 @@
-import { Transfer } from '@/components/Transfer'
+import { Transfer } from '@/components/Transfer';
 
 export default function TransferPage({ params }) {
-  return <Transfer lite={true} {...params} />
+  return <Transfer lite={true} {...params} />;
 }

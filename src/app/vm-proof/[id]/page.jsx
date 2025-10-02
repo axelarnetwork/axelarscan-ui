@@ -1,5 +1,5 @@
-import { AmplifierProof } from '@/components/AmplifierProof'
+import { AmplifierProof } from '@/components/AmplifierProof';
 
 export default function VMProofPage({ params }) {
-  return <AmplifierProof {...params} />
+  return <AmplifierProof {...params} />;
 }

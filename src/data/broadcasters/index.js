@@ -2507,6 +2507,6 @@ const data = {
     axelar1jprrkwvz7ctupqjffk6rpksyku7ezfp08e525d: 'axlsvcbroadcaster-1000',
     axelar10dwjv6xj0flfj5m3ce4t5v7xpjmrt5du7h6zs6: 'controller-1',
   },
-}
+};
 
-export default data
+export default data;

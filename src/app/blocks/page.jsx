@@ -1,5 +1,5 @@
-import { Blocks } from '@/components/Blocks'
+import { Blocks } from '@/components/Blocks';
 
 export default function BlocksPage() {
-  return <Blocks />
+  return <Blocks />;
 }

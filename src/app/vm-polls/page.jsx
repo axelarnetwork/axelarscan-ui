@@ -1,5 +1,5 @@
-import { AmplifierPolls } from '@/components/AmplifierPolls'
+import { AmplifierPolls } from '@/components/AmplifierPolls';
 
 export default function VMPollsPage() {
-  return <AmplifierPolls />
+  return <AmplifierPolls />;
 }

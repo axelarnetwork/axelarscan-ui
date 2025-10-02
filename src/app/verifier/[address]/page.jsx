@@ -1,5 +1,5 @@
-import { Verifier } from '@/components/Verifier'
+import { Verifier } from '@/components/Verifier';
 
 export default function VerifierPage({ params }) {
-  return <Verifier {...params} />
+  return <Verifier {...params} />;
 }

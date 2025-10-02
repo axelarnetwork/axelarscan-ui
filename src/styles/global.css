@@ -1,9 +1,9 @@
 .status-message a {
-  @apply underline font-bold;
+  @apply font-bold underline;
 }
 
 .linkify a {
-  @apply text-blue-600 dark:text-blue-500 font-semibold;
+  @apply font-semibold text-blue-600 dark:text-blue-500;
 }
 
 .ant-btn-primary {

@@ -1,5 +1,5 @@
-import { Proposals } from '@/components/Proposals'
+import { Proposals } from '@/components/Proposals';
 
 export default function ProposalsPage() {
-  return <Proposals />
+  return <Proposals />;
 }

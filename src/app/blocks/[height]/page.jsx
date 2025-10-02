@@ -1,5 +1,5 @@
-import { Block } from '@/components/Block'
+import { Block } from '@/components/Block';
 
 export default function BlockPage({ params }) {
-  return <Block {...params} />
+  return <Block {...params} />;
 }

@@ -1,3 +1,4 @@
-import { toCase } from '@/lib/parser'
+import { toCase } from '@/lib/parser';
 
-export const isAxelar = chain => ['axelarnet', 'axelar'].includes(toCase(chain, 'lower'))
+export const isAxelar = chain =>
+  ['axelarnet', 'axelar'].includes(toCase(chain, 'lower'));

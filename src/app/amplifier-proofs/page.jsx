@@ -1,5 +1,5 @@
-import { AmplifierProofs } from '@/components/AmplifierProofs'
+import { AmplifierProofs } from '@/components/AmplifierProofs';
 
 export default function AmplifierProofsPage() {
-  return <AmplifierProofs />
+  return <AmplifierProofs />;
 }
