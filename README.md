@@ -34,6 +34,22 @@ npm ci
 npm run dev
 ```
 
+### Code Quality
+
+```bash
+# Format code with Prettier
+npm run format
+
+# Check code formatting
+npm run format:check
+
+# Run ESLint and fix issues
+npm run lint
+
+# Check for linting issues
+npm run lint:check
+```
+
 ## 🚀 Deployment and Release Process
 
 ### 📋 Overview
