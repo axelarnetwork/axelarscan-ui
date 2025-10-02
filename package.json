@@ -29,6 +29,10 @@
     "url": "https://github.com/axelarnetwork/axelarscan-ui/issues"
   },
   "homepage": "https://github.com/axelarnetwork/axelarscan-ui#readme",
+  "engines": {
+    "node": "20.19.4",
+    "npm": ">=10.0.0"
+  },
   "browserslist": "defaults, not ie <= 11",
   "dependencies": {
     "@axelar-network/axelarjs-sdk": "0.17.9",
