@@ -38,10 +38,10 @@ jobs:
           echo "INDEXER_URL=http://localhost:9200" >> $GITHUB_ENV
           echo "DD_TRACE_ENABLED=false" >> $GITHUB_ENV
 
-      - name: Run linting check (non-blocking)
+      - name: Run linting check
         run: |
           echo "Running ESLint..."
-          npm run lint:check || echo "Linting failed but continuing..."
+          npm run lint:check
           echo "Linting completed"
 
       - name: Run formatting check
