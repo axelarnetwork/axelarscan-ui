@@ -145,7 +145,7 @@ export function ExplorerLink({
       {explorer?.icon ? (
         <Image
           src={explorer.icon}
-          alt=""
+          alt={explorer.name ? `${explorer.name} icon` : 'Explorer icon'}
           width={width}
           height={height}
           className={clsx(
@@ -156,7 +156,6 @@ export function ExplorerLink({
       ) : (
         <LuSearch
           size={width}
-          height={height}
           className={clsx(
             'rounded-full opacity-60 hover:opacity-100',
             className
