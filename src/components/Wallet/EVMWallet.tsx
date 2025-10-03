@@ -3,15 +3,12 @@
 import { useAppKit } from '@reown/appkit/react';
 import clsx from 'clsx';
 import { providers } from 'ethers';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import type { WalletClient } from 'viem';
-import { hashMessage, parseAbiItem, verifyMessage } from 'viem';
 import {
   useAccount,
   useChainId,
   useDisconnect,
-  usePublicClient,
-  useSignMessage,
   useSwitchChain,
   useWalletClient,
 } from 'wagmi';
@@ -83,20 +80,13 @@ export function EVMWallet({
 }: EVMWalletProps) {
   const { chainId, provider, setChainId, setAddress, setProvider, setSigner } =
     useEVMWalletStore();
-  const [signatureValid, setSignatureValid] = useState<boolean | null>(null);
 
   const { open } = useAppKit();
-  const publicClient = usePublicClient();
   const chainIdConnected = useChainId();
   const { switchChain } = useSwitchChain();
   const { data: walletClient } = useWalletClient();
   const { address } = useAccount();
   const { disconnect } = useDisconnect();
-
-  const message = process.env.NEXT_PUBLIC_APP_URL as string;
-  const { data: signature } = useSignMessage({
-    message: message || '',
-  } as unknown as Parameters<typeof useSignMessage>[0]);
 
   useEffect(() => {
     if (chainIdConnected && walletClient && address) {
@@ -112,7 +102,6 @@ export function EVMWallet({
     }
   }, [
     chainIdConnected,
-    publicClient,
     walletClient,
     address,
     setChainId,
@@ -120,39 +109,6 @@ export function EVMWallet({
     setProvider,
     setSigner,
   ]);
-
-  // validate signature
-  useEffect(() => {
-    const validateSignature = async () => {
-      try {
-        if (await publicClient.getBytecode({ address })) {
-          const response = await publicClient.readContract({
-            address,
-            abi: [
-              parseAbiItem(
-                'function isValidSignature(bytes32 hash, bytes signature) view returns (bytes4)'
-              ),
-            ],
-            functionName: 'isValidSignature',
-            args: [hashMessage(message), signature],
-          });
-
-          // https://eips.ethereum.org/EIPS/eip-1271
-          setSignatureValid(response === '0x1626ba7e');
-        } else {
-          setSignatureValid(
-            await verifyMessage({ address, message, signature })
-          );
-        }
-      } catch {
-        // Handle error silently
-      }
-    };
-
-    if (!signatureValid && publicClient) {
-      validateSignature();
-    }
-  }, [signatureValid, publicClient, address, message, signature]);
 
   if (!provider) {
     return (
