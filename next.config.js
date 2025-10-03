@@ -4,6 +4,6 @@ const nextConfig = {
     missingSuspenseWithCSRBailout: false,
   },
   transpilePackages: ['@xrpl-wallet-standard/core'],
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;

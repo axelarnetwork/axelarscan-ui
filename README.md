@@ -2,34 +2,52 @@
 
 # 🔍 Axelarscan UI
 
-*The official UI for Axelarscan - Cross-chain explorer for the Axelar Network*
+_The official UI for Axelarscan - Cross-chain explorer for the Axelar Network_
 
 </div>
 
 ## 🌐 Live Environments
 
-| Environment | URL |
-|-------------|-----|
-| 🚀 **Mainnet** | [https://axelarscan.io](https://axelarscan.io) |
+| Environment    | URL                                                            |
+| -------------- | -------------------------------------------------------------- |
+| 🚀 **Mainnet** | [https://axelarscan.io](https://axelarscan.io)                 |
 | 🧪 **Testnet** | [https://testnet.axelarscan.io](https://testnet.axelarscan.io) |
 
 ## 🛠️ Development Setup
 
 ### Prerequisites
 
-- Node.js >= 20.0.0
-- npm or yarn
+- Node.js 20.19.4 (specified in `.nvmrc`) - Install via [nvm](https://github.com/nvm-sh/nvm)
 
 ### Local Development
 
 Run the application locally on [localhost:3000](http://localhost:3000):
 
 ```bash
+# Switch to the correct Node.js version
+nvm use
+
 # Install dependencies
-npm i
+npm ci
 
 # Start development server
 npm run dev
+```
+
+### Code Quality
+
+```bash
+# Format code with Prettier
+npm run format
+
+# Check code formatting
+npm run format:check
+
+# Run ESLint and fix issues
+npm run lint
+
+# Check for linting issues
+npm run lint:check
 ```
 
 ## 🚀 Deployment and Release Process
@@ -78,15 +96,18 @@ Each environment uses environment-specific variables loaded from corresponding `
 ### 🔄 Release Process
 
 1. **👨‍💻 Development**:
+
    - Create feature branches from `main` using the naming convention `feat/*` or `chore/*`
    - Example: `feat/add-new-chart` or `chore/update-dependencies`
 
 2. **🔍 Preview Deployments**:
+
    - Vercel automatically creates preview deployments for branches with the `feat/*` or `chore/*` prefix
    - Preview URLs are available directly in the GitHub UI for each commit
    - Branches with other naming patterns (e.g., `bugfix/*`, `hotfix/*`) will not trigger preview builds
 
 3. **🧪 Testing**:
+
    - Test your changes on the Vercel preview URL
    - Make any necessary adjustments in your feature branch
 
@@ -98,9 +119,9 @@ Each environment uses environment-specific variables loaded from corresponding `
 
 The repository includes a `vercel.deployment.sh` script that controls which branches get deployed:
 
-| Status | Condition |
-|--------|----------|
-| ✅ **Builds proceed when** | • Branch is `main`, `feat/*`, or `chore/*`<br>• AND the Vercel URL doesn't contain "v1" or "v0" |
+| Status                         | Condition                                                                                                 |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| ✅ **Builds proceed when**     | • Branch is `main`, `feat/*`, or `chore/*`<br>• AND the Vercel URL doesn't contain "v1" or "v0"           |
 | 🛑 **Builds are skipped when** | • Any other branch naming pattern<br>• OR any deployment URL containing "v1" or "v0" (legacy deployments) |
 
 ### 📝 Notes

@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
-import Image from 'next/image'
-import { useTheme } from 'next-themes'
-import clsx from 'clsx'
+import Image from 'next/image';
+import { useTheme } from 'next-themes';
+import clsx from 'clsx';
 
 export function Logo(props) {
-  const { resolvedTheme } = useTheme()
+  const { resolvedTheme } = useTheme();
 
   return (
     <div {...props} className={clsx('flex items-center', props.className)}>
@@ -15,11 +15,11 @@ export function Logo(props) {
         width={24}
         height={24}
         unoptimized
-        className="min-w-4 mr-3"
+        className="mr-3 min-w-4"
       />
-      <span className="hidden md:block uppercase text-sm font-bold">
+      <span className="hidden text-sm font-bold uppercase md:block">
         Axelarscan
       </span>
     </div>
-  )
+  );
 }

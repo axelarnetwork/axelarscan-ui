@@ -1,5 +1,5 @@
-import { GMP } from '@/components/GMP'
+import { GMP } from '@/components/GMP';
 
 export default function GMPPage({ params }) {
-  return <GMP {...params} />
+  return <GMP {...params} />;
 }

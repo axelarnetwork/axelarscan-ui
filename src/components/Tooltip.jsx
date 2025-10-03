@@ -1,18 +1,20 @@
-'use client'
+'use client';
 
-import clsx from 'clsx'
+import clsx from 'clsx';
 
 export function Tooltip({ content, className, children, parentClassName }) {
   return (
-    <div className={clsx('group relative flex justify-center', parentClassName)}>
-      <div className="hidden group-hover:block absolute z-50 bg-black -top-10 px-2 py-1 rounded-lg">
-        <div className={clsx('text-white text-sm font-normal', className)}>
+    <div
+      className={clsx('group relative flex justify-center', parentClassName)}
+    >
+      <div className="absolute -top-10 z-50 hidden rounded-lg bg-black px-2 py-1 group-hover:block">
+        <div className={clsx('text-sm font-normal text-white', className)}>
           {content}
         </div>
       </div>
       {children}
     </div>
-  )
+  );
 }
 
-export const TooltipComponent = Tooltip
+export const TooltipComponent = Tooltip;

@@ -1,5 +1,5 @@
-import { GMPs } from '@/components/GMPs'
+import { GMPs } from '@/components/GMPs';
 
 export default function GMPsPage() {
-  return <GMPs />
+  return <GMPs />;
 }

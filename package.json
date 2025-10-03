@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
     "dev-staging": "env-cmd -f .env.staging next dev",
     "build-staging": "env-cmd -f .env.staging next build",
     "dev-testnet": "env-cmd -f .env.testnet next dev",
@@ -26,6 +29,10 @@
     "url": "https://github.com/axelarnetwork/axelarscan-ui/issues"
   },
   "homepage": "https://github.com/axelarnetwork/axelarscan-ui#readme",
+  "engines": {
+    "node": "20.19.4",
+    "npm": ">=10.0.0"
+  },
   "browserslist": "defaults, not ie <= 11",
   "dependencies": {
     "@axelar-network/axelarjs-sdk": "0.17.9",

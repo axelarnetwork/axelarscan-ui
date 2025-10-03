@@ -1,11 +1,16 @@
-'use client'
+'use client';
 
-import clsx from 'clsx'
+import clsx from 'clsx';
 
 export function Tag({ children, className }) {
   return (
-    <div className={clsx('bg-blue-600 dark:bg-blue-500 rounded-xl font-display text-white text-xs font-medium px-2.5 py-1', className)}>
+    <div
+      className={clsx(
+        'rounded-xl bg-blue-600 px-2.5 py-1 font-display text-xs font-medium text-white dark:bg-blue-500',
+        className
+      )}
+    >
       {children}
     </div>
-  )
+  );
 }

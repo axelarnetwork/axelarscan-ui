@@ -1,5 +1,5 @@
-import { EVMPoll } from '@/components/EVMPoll'
+import { EVMPoll } from '@/components/EVMPoll';
 
 export default function PollPage({ params }) {
-  return <EVMPoll {...params} />
+  return <EVMPoll {...params} />;
 }

@@ -1,64 +1,84 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import { constants } from 'ethers'
-const { AddressZero: ZeroAddress } = { ...constants }
-import clsx from 'clsx'
+import Link from 'next/link';
+import { constants } from 'ethers';
+const { AddressZero: ZeroAddress } = { ...constants };
+import clsx from 'clsx';
 
-import { Image } from '@/components/Image'
-import { useGlobalStore } from '@/components/Global'
-import { getChainData } from '@/lib/config'
-import { getInputType } from '@/lib/parser'
-import { isString } from '@/lib/string'
-import { isNumber } from '@/lib/number'
+import { Image } from '@/components/Image';
+import { useGlobalStore } from '@/components/Global';
+import { getChainData } from '@/lib/config';
+import { getInputType } from '@/lib/parser';
+import { isString } from '@/lib/string';
+import { isNumber } from '@/lib/number';
 
-export const buildExplorerURL = ({ value, type, useContractLink, hasEventLog, explorer }) => {
-  const { url, address_path, contract_path, contract_0_path, transaction_path, block_path, no_0x, cannot_link_contract_via_address_path } = { ...explorer }
+export const buildExplorerURL = ({
+  value,
+  type,
+  useContractLink,
+  hasEventLog,
+  explorer,
+}) => {
+  const {
+    url,
+    address_path,
+    contract_path,
+    contract_0_path,
+    transaction_path,
+    block_path,
+    no_0x,
+    cannot_link_contract_via_address_path,
+  } = { ...explorer };
 
   // Return a fallback URL if url or value are falsy
   if (!url || !value) {
-    return '#'
+    return '#';
   }
 
-  let path
-  let href
-  let processedValue
-  let suffix
+  let path;
+  let href;
+  let processedValue;
+  let suffix;
 
   switch (type) {
     case 'address':
-      path = useContractLink && cannot_link_contract_via_address_path && contract_path ? contract_path : address_path
-      href = `${url}${path?.replace(`{address}`, value)}`
+      path =
+        useContractLink &&
+        cannot_link_contract_via_address_path &&
+        contract_path
+          ? contract_path
+          : address_path;
+      href = `${url}${path?.replace(`{address}`, value)}`;
       break;
     case 'contract':
-      path = (value === ZeroAddress && contract_0_path) || contract_path
-      href = `${url}${path?.replace(`{address}`, value)}`
+      path = (value === ZeroAddress && contract_0_path) || contract_path;
+      href = `${url}${path?.replace(`{address}`, value)}`;
       break;
     case 'tx':
-      path = transaction_path
+      path = transaction_path;
 
-      processedValue = value
+      processedValue = value;
       if (no_0x && value?.startsWith('0x')) {
-        processedValue = value.substring(2)
+        processedValue = value.substring(2);
       }
 
-      suffix = ''
+      suffix = '';
       if (hasEventLog && processedValue?.startsWith('0x')) {
-        suffix = '#eventlog'
+        suffix = '#eventlog';
       }
 
-      href = `${url}${path?.replace(`{tx}`, processedValue)}${suffix}`
+      href = `${url}${path?.replace(`{tx}`, processedValue)}${suffix}`;
       break;
     case 'block':
-      path = block_path
-      href = `${url}${path?.replace(`{block}`, value)}`
+      path = block_path;
+      href = `${url}${path?.replace(`{block}`, value)}`;
       break;
     default:
-      return '#'
+      return '#';
   }
 
-  return href
-}
+  return href;
+};
 
 export function ExplorerLink({
   value,
@@ -75,34 +95,41 @@ export function ExplorerLink({
   nonIconClassName,
   className = 'h-4',
 }) {
-  const { chains } = useGlobalStore()
-  const { explorer } = { ...getChainData(chain, chains) }
+  const { chains } = useGlobalStore();
+  const { explorer } = { ...getChainData(chain, chains) };
 
   if (type === 'tx') {
     // update type from input value
     switch (getInputType(value, chains)) {
       case 'evmAddress':
-        type = 'address'
-        break
+        type = 'address';
+        break;
       case 'block':
         if (isNumber(value) && (!isString(value) || !value.startsWith('0x'))) {
-          type = 'block'
+          type = 'block';
         }
-        break
+        break;
       default:
-        break
+        break;
     }
   }
 
-  const href = customURL || buildExplorerURL({ value, type, useContractLink, hasEventLog, explorer })
+  const href =
+    customURL ||
+    buildExplorerURL({ value, type, useContractLink, hasEventLog, explorer });
 
-  if (!href) { return null }
+  if (!href) {
+    return null;
+  }
 
   return (
     <Link
       href={href}
       target="_blank"
-      className={clsx('min-w-max flex items-center gap-x-2', containerClassName)}
+      className={clsx(
+        'flex min-w-max items-center gap-x-2',
+        containerClassName
+      )}
     >
       {!iconOnly && (
         <span className={clsx('font-medium', nonIconClassName)}>
@@ -117,5 +144,5 @@ export function ExplorerLink({
         className={clsx('rounded-full opacity-60 hover:opacity-100', className)}
       />
     </Link>
-  )
+  );
 }

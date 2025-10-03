@@ -1,5 +1,5 @@
-import { Account } from '@/components/Account'
+import { Account } from '@/components/Account';
 
 export default function AccountPage({ params }) {
-  return <Account {...params} />
+  return <Account {...params} />;
 }

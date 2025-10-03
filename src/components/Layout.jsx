@@ -1,22 +1,22 @@
-'use client'
+'use client';
 
-import { usePathname } from 'next/navigation'
-import { motion } from 'framer-motion'
-import clsx from 'clsx'
-import Linkify from 'react-linkify'
-import parse from 'html-react-parser'
+import { usePathname } from 'next/navigation';
+import { motion } from 'framer-motion';
+import clsx from 'clsx';
+import Linkify from 'react-linkify';
+import parse from 'html-react-parser';
 
-import { Footer } from '@/components/Footer'
-import { Header } from '@/components/Header'
+import { Footer } from '@/components/Footer';
+import { Header } from '@/components/Header';
 
 export function Layout({ children }) {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
-  const lite = pathname.startsWith('/lite/')
+  const lite = pathname.startsWith('/lite/');
 
-  const noHeader = lite
-  const noStatusMessage = lite || ['/tvl'].includes(pathname)
-  const noFooter = lite || ['/tvl'].includes(pathname)
+  const noHeader = lite;
+  const noStatusMessage = lite || ['/tvl'].includes(pathname);
+  const noFooter = lite || ['/tvl'].includes(pathname);
 
   return (
     <div className="h-full">
@@ -24,8 +24,8 @@ export function Layout({ children }) {
         <>
           <motion.header layoutScroll className="contents lg:z-40">
             {process.env.NEXT_PUBLIC_STATUS_MESSAGE && !noStatusMessage && (
-              <div className="w-full bg-blue-600 dark:bg-blue-700 overflow-x-auto flex items-center p-3">
-                <div className="flex flex-wrap items-center text-white text-sm font-medium text-center gap-x-2 mx-auto">
+              <div className="flex w-full items-center overflow-x-auto bg-blue-600 p-3 dark:bg-blue-700">
+                <div className="mx-auto flex flex-wrap items-center gap-x-2 text-center text-sm font-medium text-white">
                   <span className="status-message">
                     <Linkify>
                       {parse(process.env.NEXT_PUBLIC_STATUS_MESSAGE)}
@@ -39,11 +39,9 @@ export function Layout({ children }) {
         </>
       )}
       <div className={clsx('relative flex flex-col', !noFooter && 'h-full')}>
-        <main className="bg-white dark:bg-zinc-900 flex-auto">
-          {children}
-        </main>
+        <main className="flex-auto bg-white dark:bg-zinc-900">{children}</main>
         {!noFooter && <Footer />}
       </div>
     </div>
-  )
+  );
 }

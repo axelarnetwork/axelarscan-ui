@@ -15,12 +15,14 @@ const data = [
     environment: 'testnet',
   },
   {
-    address: 'axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5',
+    address:
+      'axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5',
     name: 'Axelar GMP Account',
     image: '/logos/accounts/axelarnet.svg',
   },
   {
-    address: 'axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5s',
+    address:
+      'axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7jtdvu72npnt5zhq05ejcsn5qme5s',
     name: 'Axelar GMP Account',
     image: '/logos/accounts/axelarnet.svg',
   },
@@ -848,13 +850,15 @@ const data = [
     image: '/logos/accounts/skip.svg',
   },
   {
-    address: 'neutron1emhzj4a8c0423mcgkmrkfuu6xxa2xt9ndmhaq0l3heef35m7jfwq2rhmke',
+    address:
+      'neutron1emhzj4a8c0423mcgkmrkfuu6xxa2xt9ndmhaq0l3heef35m7jfwq2rhmke',
     name: 'Skip',
     image: '/logos/accounts/skip.svg',
     environment: 'mainnet',
   },
   {
-    address: 'neutron18jgzyha8r25ltxn6u5ng9zajwflhnwzzunlnfunyktjfpextuqfqyjre7j',
+    address:
+      'neutron18jgzyha8r25ltxn6u5ng9zajwflhnwzzunlnfunyktjfpextuqfqyjre7j',
     name: 'Skip',
     image: '/logos/accounts/skip.svg',
     environment: 'testnet',
@@ -937,70 +941,326 @@ const data = [
     image: '/logos/accounts/recall.svg',
     environment: 'mainnet',
   },
-  {address:'axelar1y2a43qhk7clgy0aa8fuul8746mqed379kv84u6',name:'0base.vc',environment:'testnet'},
-  {address:'axelar1afj2uhx69pjclgcspfufj9dq9x87zfv0avf6we',name:'4SV',environment:'testnet'},
-  {address:'axelar1lg0d9rt4syalck9ux0hhmeeayq7njmjjdguxd6',name:'AlexZ',environment:'testnet'},
-  {address:'axelar1ed7zk4g6rmlph6z00p6swky65qyldxrpxw9759',name:'AutoStake',environment:'testnet'},
-  {address:'axelar12umz2ds9gvtnkkmcwhukl7lm5asxjc9533dkj8',name:'B-Harvest',environment:'testnet'},
-  {address:'axelar16dxsfhyegy40e4eqfxee5jw5gyy2xxtcw4t2na',name:'Bokoblinet',environment:'testnet'},
-  {address:'axelar1aeylef34xqhrxn4mf8hpl94cya0rww9ld3ymep',name:'Brightlystake',environment:'testnet'},
-  {address:'axelar189twvmrax309e7hvke0zjgn5p55avy5ukafhc2',name:'BwareLabs',environment:'testnet'},
-  {address:'axelar1wkvh8zavznfcmsapdzxxuf2pntvktf8vzkknwa',name:'Chainlayer',environment:'testnet'},
-  {address:'axelar1xt9eevxhcmrx90gc06n87em5dz4nw6v3nvxs7d',name:'Chainode Tech',environment:'testnet'},
-  {address:'axelar19xvkln5jypz8k0x9sq66mmzawkshqxfvl9h5y8',name:'ContributionDAO',environment:'testnet'},
-  {address:'axelar14eh260ptse8qsk80ztmeyua9qklhccyv62h9yw',name:'Cosmostation',environment:'testnet'},
-  {address:'axelar1u37w5l93vx8uts5eazm8w489h9q22k026dklaq',name:'DSRV',environment:'testnet'},
-  {address:'axelar1gc40fw08ee4vamhvtgcszladfsrd8tyhc75l3j',name:'Encapsulate',environment:'testnet'},
-  {address:'axelar19l32d5nhhwnwemzfd788j4ld095a3n6k05mmry',name:'Enigma',environment:'testnet'},
-  {address:'axelar1lpseq7mscuag7j9yehxmgdxh6k4ehe4hgfvfgw',name:'Figment',environment:'testnet'},
-  {address:'axelar1yf58f0xkgu65stqlgf99nhmqfuzc84w2qme92m',name:'Imperator',environment:'testnet'},
-  {address:'axelar1l65q24tc9e8z4dj8wj6g7t08reztazf5ur6ux2',name:'Inter Blockchain Services',environment:'testnet'},
-  {address:'axelar1awmhk4xhzh3224ydnrwxthpkz00tf7d5hw5kzk',name:'LunaNova',environment:'testnet'},
-  {address:'axelar1y5dkjhyeuqmkhq42wydaxvjt8j00d86t4xnjsu',name:'Node.monster',environment:'testnet'},
-  {address:'axelar1pcdufjvqegu5dfqr7w4ltlfjvnpf403gt5h99n',name:'Nodiums',environment:'testnet'},
-  {address:'axelar1melmdxuzk5mzs252kvykcjw2vyrqmqnke0mdyx',name:'P-OPS Team',environment:'testnet'},
-  {address:'axelar1zqnwrhv35cyf65u0059a8rvw8njtqeqjckzhlx',name:'Polkachu',environment:'testnet'},
-  {address:'axelar1ejv5td70estc7ed4avnxnqqv4tpef2zafdkgms',name:'Quantnode',environment:'testnet'},
-  {address:'axelar12uqmh4qkax6ct0dr67c0ffurplwhrv7h5t9x42',name:'Qubelabs',environment:'testnet'},
-  {address:'axelar1avayd50dt4mneu6s2s03yuwlc0swwmmzvf7f9f',name:'Redbooker',environment:'testnet'},
-  {address:'axelar1verw7xy2cwhwhq6c3df0alyfxr2pl7jgy7pv5e',name:'Rockaway Infra',environment:'testnet'},
-  {address:'axelar16rfnanrns0u2cxm06ugvxej438y0gktzv9hwcl',name:'Squid',environment:'testnet'},
-  {address:'axelar1j3u6kd4027wln9vnvmg449hmc3xj2m2g5uh69q',name:'Stakin',environment:'testnet'},
-  {address:'axelar1j9w5c54z5erz2awtkmztfqlues9d329x5fqps0',name:'Validatrium',environment:'testnet'},
-  {address:'axelar1wue2mm6xqk52wpynuqjlzwwux4kp3dkva5dpzw',name:'Whispernode',environment:'testnet'},
-  {address:'axelar16ulxkme882pcwpp43rtmz7cxn95x9cqalmas5h',name:'0base.vc',environment:'mainnet'},
-  {address:'axelar1t23g23u5pcuh9y2stzesf4cx5z3jr66zykkffm',name:'4SV',environment:'mainnet'},
-  {address:'axelar1qgwu4jjgeapqm82w4nslhwlzxa3mjd8fvn4xdx',name:'AlexZ',environment:'mainnet'},
-  {address:'axelar1x9qfct58w0yxecmc294k0z39j8fqpa6nzhwwas',name:'AutoStake',environment:'mainnet'},
-  {address:'axelar104jgwmkat4xn2800r6yd44djjhgw2ejrjvqkaj',name:'B-Harvest',environment:'mainnet'},
-  {address:'axelar15jgwuakp87hjr0z24f5dhurhas6hdy9h64jfrc',name:'Bokoblinet',environment:'mainnet'},
-  {address:'axelar1zhazt54ewqhva5pujhfyhr7sf39hm7myatmjtd',name:'Brightlystake',environment:'mainnet'},
-  {address:'axelar19f26mhy2x488my9pc6wr5x74t4gde8l8scq34g',name:'BlockHunters',environment:'mainnet'},
-  {address:'axelar18mrzfgk63sv455c84gx0p70kl2e329gxnsmgsu',name:'Chainlayer',environment:'mainnet'},
-  {address:'axelar1nrk5wk4446342lgcdpjllen4ydc2f2c35h9ynf',name:'Chainode Tech',environment:'mainnet'},
-  {address:'axelar1dqqeuwvpvn2dr7gw7clayshzdemgu7j9cluehl',name:'ContributionDAO',environment:'mainnet'},
-  {address:'axelar16g3c4z0dx3qcplhqfln92p20mkqdj9cr0wyrsh',name:'Cosmostation',environment:'mainnet'},
-  {address:'axelar1lkg5zs5zgywc0ua9mpd9d63gdnl3ka9n07r5fg',name:'DSRV',environment:'mainnet'},
-  {address:'axelar1nppclnu328tgvxyvu0fmd6yder3r9mrrgusrj3',name:'Encapsulate',environment:'mainnet'},
-  {address:'axelar1hm3qzhevpsfpkxnwz89j9eu6fy8lf36sl6nsd8',name:'Enigma',environment:'mainnet'},
-  {address:'axelar1wuckkey0xug0547lr3pwnuag79zpns5xt49j9a',name:'Figment',environment:'mainnet'},
-  {address:'axelar1k22ud8g8k7dqx4u5a77gklf6f6exth0u474vt2',name:'Imperator',environment:'mainnet'},
-  {address:'axelar1s2cf963rm0u6kxgker95dh5urmq0utqq3rezdn',name:'Inter Blockchain Services',environment:'mainnet'},
-  {address:'axelar1d8xyrpwpqgp9m2xuaa8gwhgraqvq8y5unv924h',name:'LunaNova',environment:'mainnet'},
-  {address:'axelar1kaeq00sgqvy65sngedc8dqwxerqzsg2xf7e72z',name:'Node.monster',environment:'mainnet'},
-  {address:'axelar1ym6xeu9xc8gfu5vh40a0httefxe63j537x5rle',name:'Nodiums',environment:'mainnet'},
-  {address:'axelar1uu6hl8uvkxjzwpuacaxwvh7ph3qjyragk62n2e',name:'P-OPS Team',environment:'mainnet'},
-  {address:'axelar1zqnwrhv35cyf65u0059a8rvw8njtqeqjckzhlx',name:'Polkachu',environment:'mainnet'},
-  {address:'axelar1ejv5td70estc7ed4avnxnqqv4tpef2zafdkgms',name:'Quantnode',environment:'mainnet'},
-  {address:'axelar1g92hckcernmgm60tm527njl6j2cxysm7zg6ulk',name:'Quantnode',environment:'mainnet'},
-  {address:'axelar1up6evve8slwnflmx0x096klxqh4ufaahsk9y0s',name:'Qubelabs',environment:'mainnet'},
-  {address:'axelar1kr5f2wrq9l2denmvfqfky7f8rd07wk9kygxjak',name:'Redbooker',environment:'mainnet'},
-  {address:'axelar1x0a0ylzsjrr57v2ymnsl0d770nt3pwktet9npg',name:'Rockaway Infra',environment:'mainnet'},
-  {address:'axelar1mpp7huuq45qfv0585wej7h76nk545e2jkrxpez',name:'Squid',environment:'mainnet'},
-  {address:'axelar15k8d4hqgytdxmcx3lhph2qagvt0r7683cchglj',name:'Stakin',environment:'mainnet'},
-  {address:'axelar1eu4zvmhum66mz7sd82sfnp6w2vfqj06gd4t8f5',name:'Validatrium',environment:'mainnet'},
-  {address:'axelar1ensvyl4p5gkdmjcezgjd5se5ykxmdqagl67xgm',name:'Whispernode',environment:'mainnet'},
-  {address:'axelar1p0z7ff4wru5yq0v2ny5h6vx5e6ceg06kqnhfpg',name:'Axelar',environment:'mainnet'},
+  {
+    address: 'axelar1y2a43qhk7clgy0aa8fuul8746mqed379kv84u6',
+    name: '0base.vc',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1afj2uhx69pjclgcspfufj9dq9x87zfv0avf6we',
+    name: '4SV',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1lg0d9rt4syalck9ux0hhmeeayq7njmjjdguxd6',
+    name: 'AlexZ',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1ed7zk4g6rmlph6z00p6swky65qyldxrpxw9759',
+    name: 'AutoStake',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar12umz2ds9gvtnkkmcwhukl7lm5asxjc9533dkj8',
+    name: 'B-Harvest',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar16dxsfhyegy40e4eqfxee5jw5gyy2xxtcw4t2na',
+    name: 'Bokoblinet',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1aeylef34xqhrxn4mf8hpl94cya0rww9ld3ymep',
+    name: 'Brightlystake',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar189twvmrax309e7hvke0zjgn5p55avy5ukafhc2',
+    name: 'BwareLabs',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1wkvh8zavznfcmsapdzxxuf2pntvktf8vzkknwa',
+    name: 'Chainlayer',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1xt9eevxhcmrx90gc06n87em5dz4nw6v3nvxs7d',
+    name: 'Chainode Tech',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar19xvkln5jypz8k0x9sq66mmzawkshqxfvl9h5y8',
+    name: 'ContributionDAO',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar14eh260ptse8qsk80ztmeyua9qklhccyv62h9yw',
+    name: 'Cosmostation',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1u37w5l93vx8uts5eazm8w489h9q22k026dklaq',
+    name: 'DSRV',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1gc40fw08ee4vamhvtgcszladfsrd8tyhc75l3j',
+    name: 'Encapsulate',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar19l32d5nhhwnwemzfd788j4ld095a3n6k05mmry',
+    name: 'Enigma',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1lpseq7mscuag7j9yehxmgdxh6k4ehe4hgfvfgw',
+    name: 'Figment',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1yf58f0xkgu65stqlgf99nhmqfuzc84w2qme92m',
+    name: 'Imperator',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1l65q24tc9e8z4dj8wj6g7t08reztazf5ur6ux2',
+    name: 'Inter Blockchain Services',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1awmhk4xhzh3224ydnrwxthpkz00tf7d5hw5kzk',
+    name: 'LunaNova',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1y5dkjhyeuqmkhq42wydaxvjt8j00d86t4xnjsu',
+    name: 'Node.monster',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1pcdufjvqegu5dfqr7w4ltlfjvnpf403gt5h99n',
+    name: 'Nodiums',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1melmdxuzk5mzs252kvykcjw2vyrqmqnke0mdyx',
+    name: 'P-OPS Team',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1zqnwrhv35cyf65u0059a8rvw8njtqeqjckzhlx',
+    name: 'Polkachu',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1ejv5td70estc7ed4avnxnqqv4tpef2zafdkgms',
+    name: 'Quantnode',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar12uqmh4qkax6ct0dr67c0ffurplwhrv7h5t9x42',
+    name: 'Qubelabs',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1avayd50dt4mneu6s2s03yuwlc0swwmmzvf7f9f',
+    name: 'Redbooker',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1verw7xy2cwhwhq6c3df0alyfxr2pl7jgy7pv5e',
+    name: 'Rockaway Infra',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar16rfnanrns0u2cxm06ugvxej438y0gktzv9hwcl',
+    name: 'Squid',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1j3u6kd4027wln9vnvmg449hmc3xj2m2g5uh69q',
+    name: 'Stakin',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1j9w5c54z5erz2awtkmztfqlues9d329x5fqps0',
+    name: 'Validatrium',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar1wue2mm6xqk52wpynuqjlzwwux4kp3dkva5dpzw',
+    name: 'Whispernode',
+    environment: 'testnet',
+  },
+  {
+    address: 'axelar16ulxkme882pcwpp43rtmz7cxn95x9cqalmas5h',
+    name: '0base.vc',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1t23g23u5pcuh9y2stzesf4cx5z3jr66zykkffm',
+    name: '4SV',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1qgwu4jjgeapqm82w4nslhwlzxa3mjd8fvn4xdx',
+    name: 'AlexZ',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1x9qfct58w0yxecmc294k0z39j8fqpa6nzhwwas',
+    name: 'AutoStake',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar104jgwmkat4xn2800r6yd44djjhgw2ejrjvqkaj',
+    name: 'B-Harvest',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar15jgwuakp87hjr0z24f5dhurhas6hdy9h64jfrc',
+    name: 'Bokoblinet',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1zhazt54ewqhva5pujhfyhr7sf39hm7myatmjtd',
+    name: 'Brightlystake',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar19f26mhy2x488my9pc6wr5x74t4gde8l8scq34g',
+    name: 'BlockHunters',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar18mrzfgk63sv455c84gx0p70kl2e329gxnsmgsu',
+    name: 'Chainlayer',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1nrk5wk4446342lgcdpjllen4ydc2f2c35h9ynf',
+    name: 'Chainode Tech',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1dqqeuwvpvn2dr7gw7clayshzdemgu7j9cluehl',
+    name: 'ContributionDAO',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar16g3c4z0dx3qcplhqfln92p20mkqdj9cr0wyrsh',
+    name: 'Cosmostation',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1lkg5zs5zgywc0ua9mpd9d63gdnl3ka9n07r5fg',
+    name: 'DSRV',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1nppclnu328tgvxyvu0fmd6yder3r9mrrgusrj3',
+    name: 'Encapsulate',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1hm3qzhevpsfpkxnwz89j9eu6fy8lf36sl6nsd8',
+    name: 'Enigma',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1wuckkey0xug0547lr3pwnuag79zpns5xt49j9a',
+    name: 'Figment',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1k22ud8g8k7dqx4u5a77gklf6f6exth0u474vt2',
+    name: 'Imperator',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1s2cf963rm0u6kxgker95dh5urmq0utqq3rezdn',
+    name: 'Inter Blockchain Services',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1d8xyrpwpqgp9m2xuaa8gwhgraqvq8y5unv924h',
+    name: 'LunaNova',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1kaeq00sgqvy65sngedc8dqwxerqzsg2xf7e72z',
+    name: 'Node.monster',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1ym6xeu9xc8gfu5vh40a0httefxe63j537x5rle',
+    name: 'Nodiums',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1uu6hl8uvkxjzwpuacaxwvh7ph3qjyragk62n2e',
+    name: 'P-OPS Team',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1zqnwrhv35cyf65u0059a8rvw8njtqeqjckzhlx',
+    name: 'Polkachu',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1ejv5td70estc7ed4avnxnqqv4tpef2zafdkgms',
+    name: 'Quantnode',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1g92hckcernmgm60tm527njl6j2cxysm7zg6ulk',
+    name: 'Quantnode',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1up6evve8slwnflmx0x096klxqh4ufaahsk9y0s',
+    name: 'Qubelabs',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1kr5f2wrq9l2denmvfqfky7f8rd07wk9kygxjak',
+    name: 'Redbooker',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1x0a0ylzsjrr57v2ymnsl0d770nt3pwktet9npg',
+    name: 'Rockaway Infra',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1mpp7huuq45qfv0585wej7h76nk545e2jkrxpez',
+    name: 'Squid',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar15k8d4hqgytdxmcx3lhph2qagvt0r7683cchglj',
+    name: 'Stakin',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1eu4zvmhum66mz7sd82sfnp6w2vfqj06gd4t8f5',
+    name: 'Validatrium',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1ensvyl4p5gkdmjcezgjd5se5ykxmdqagl67xgm',
+    name: 'Whispernode',
+    environment: 'mainnet',
+  },
+  {
+    address: 'axelar1p0z7ff4wru5yq0v2ny5h6vx5e6ceg06kqnhfpg',
+    name: 'Axelar',
+    environment: 'mainnet',
+  },
   {
     address: 'osmo1n6ney9tsf55etz9nrmzyd8wa7e64qd3s06a74fqs30ka8pps6cvqtsycr6',
     name: 'Squid',
@@ -1035,12 +1295,13 @@ const data = [
     name: 'Axelar DVN Adapter',
   },
   {
-    address: 'neutron1ujsy9sga0lza95gahwz557xt4r3pdacfs2hn84n4v8wd3lwq74jqxx6zha',
+    address:
+      'neutron1ujsy9sga0lza95gahwz557xt4r3pdacfs2hn84n4v8wd3lwq74jqxx6zha',
     name: 'Skip Swap Entry Point',
   },
   {
     address: '0x901D602dCADE00e2d7384e3940a70Ef772A355c3',
-    name: 'Rango Satellite Middleware'
+    name: 'Rango Satellite Middleware',
   },
   {
     address: '0x6c9B3A74ae4779da5Ca999371eE8950e8DB3407f',
@@ -1054,32 +1315,32 @@ const data = [
     address: '0xc748673057861a797275cd8a068abb95a902e8de',
     name: 'BabyDoge Coin',
     environment: 'mainnet',
-    image: '/logos/accounts/baby_doge.png'
+    image: '/logos/accounts/baby_doge.png',
   },
   {
     address: '0x9F0d4f965F8d7503046093F1BdA6052eFE6948b8',
     name: 'BabyDoge BridgeAssistAxelar',
     environment: 'mainnet',
-    image: '/logos/accounts/baby_doge.png'
+    image: '/logos/accounts/baby_doge.png',
   },
   {
     address: '0x7d77aC40BF16fF72DF9f48266F8e115aA1Bc30F7',
     name: 'BabyDoge BridgeAssistAxelar',
     environment: 'mainnet',
-    image: '/logos/accounts/baby_doge.png'
+    image: '/logos/accounts/baby_doge.png',
   },
   {
     address: '0x58ecEF26335Af7b04A998105a6603B0Dc475aF33',
     name: 'BabyDoge Coin',
     environment: 'mainnet',
-    image: '/logos/accounts/baby_doge.png'
+    image: '/logos/accounts/baby_doge.png',
   },
-    {
-    address: "0x52271c9a29d0f97c350bbe32b3377cdd26026d0a",
-    name: "Centrifuge V3",
-    image: "/logos/chains/centrifuge.svg",
-    environment: "mainnet",
+  {
+    address: '0x52271c9a29d0f97c350bbe32b3377cdd26026d0a',
+    name: 'Centrifuge V3',
+    image: '/logos/chains/centrifuge.svg',
+    environment: 'mainnet',
   },
-]
+];
 
-export default data
+export default data;
