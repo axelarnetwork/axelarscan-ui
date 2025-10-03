@@ -38,6 +38,9 @@ jobs:
           echo "INDEXER_URL=http://localhost:9200" >> $GITHUB_ENV
           echo "DD_TRACE_ENABLED=false" >> $GITHUB_ENV
 
+      - name: Build
+        run: npm run build
+
       - name: Run linting check
         run: |
           echo "Running ESLint..."
