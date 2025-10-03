@@ -17,6 +17,7 @@ import { WalletProvider as XRPLWalletProvider } from '@xrpl-wallet-standard/reac
 import { CrossmarkWallet } from '@xrpl-wallet-adapter/crossmark';
 import { LedgerWallet } from '@xrpl-wallet-adapter/ledger';
 import { WalletConnectWallet as XRPLWalletConnectWallet } from '@xrpl-wallet-adapter/walletconnect';
+import { MetaMaskWallet } from '@xrpl-wallet-adapter/metamask'
 
 import { Global } from '@/components/Global';
 import WagmiConfigProvider from '@/lib/provider/WagmiConfigProvider';
@@ -96,6 +97,7 @@ export function Providers({ children }) {
         new CrossmarkWallet(),
         new LedgerWallet(),
         new XRPLWalletConnectWallet(xrplConfig),
+        new MetaMaskWallet(),
       ]);
     }
   }, [rendered, setXRPLlRegisterWallets]);
