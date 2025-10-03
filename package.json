@@ -12,13 +12,13 @@
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "dev-staging": "env-cmd -f .env.staging next dev",
-    "build-staging": "env-cmd -f .env.staging next build",
+    "build-staging": "tsc && env-cmd -f .env.staging next build",
     "dev-testnet": "env-cmd -f .env.testnet next dev",
-    "build-testnet": "env-cmd -f .env.testnet next build",
+    "build-testnet": "tsc && env-cmd -f .env.testnet next build",
     "dev-stagenet": "env-cmd -f .env.stagenet next dev",
-    "build-stagenet": "env-cmd -f .env.stagenet next build",
+    "build-stagenet": "tsc && env-cmd -f .env.stagenet next build",
     "dev-devnet-amplifier": "env-cmd -f .env.devnet-amplifier next dev",
-    "build-devnet-amplifier": "env-cmd -f .env.devnet-amplifier next build"
+    "build-devnet-amplifier": "tsc && env-cmd -f .env.devnet-amplifier next build"
   },
   "repository": {
     "type": "git",
