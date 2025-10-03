@@ -4,20 +4,21 @@
   "description": "Axelarscan UI",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "tsc && next build",
     "start": "next start",
+    "tsc": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "dev-staging": "env-cmd -f .env.staging next dev",
-    "build-staging": "env-cmd -f .env.staging next build",
+    "build-staging": "tsc && env-cmd -f .env.staging next build",
     "dev-testnet": "env-cmd -f .env.testnet next dev",
-    "build-testnet": "env-cmd -f .env.testnet next build",
+    "build-testnet": "tsc && env-cmd -f .env.testnet next build",
     "dev-stagenet": "env-cmd -f .env.stagenet next dev",
-    "build-stagenet": "env-cmd -f .env.stagenet next build",
+    "build-stagenet": "tsc && env-cmd -f .env.stagenet next build",
     "dev-devnet-amplifier": "env-cmd -f .env.devnet-amplifier next dev",
-    "build-devnet-amplifier": "env-cmd -f .env.devnet-amplifier next build"
+    "build-devnet-amplifier": "tsc && env-cmd -f .env.devnet-amplifier next build"
   },
   "repository": {
     "type": "git",
@@ -83,6 +84,12 @@
     "zustand": "^5.0.3"
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.20",
+    "@types/node": "^24.6.2",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.45.0",
+    "@typescript-eslint/parser": "^8.45.0",
     "axios": "^1.9.0",
     "brace-expansion": "^2.0.2",
     "eslint": "^8.57.1",
@@ -92,6 +99,7 @@
     "pino-pretty": "^13.0.0",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
-    "sharp": "^0.34.1"
+    "sharp": "^0.34.1",
+    "typescript": "^5.9.3"
   }
 }

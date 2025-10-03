@@ -1,32 +1,33 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useAppKit } from '@reown/appkit/react';
-import {
-  usePublicClient,
-  useChainId,
-  useSwitchChain,
-  useWalletClient,
-  useAccount,
-  useDisconnect,
-  useSignMessage,
-} from 'wagmi';
-import { hashMessage, parseAbiItem, verifyMessage } from 'viem';
 import {
   ConnectButton as SuiConnectButton,
   useCurrentAccount as useSuiCurrentAccount,
 } from '@mysten/dapp-kit';
+import { useAppKit } from '@reown/appkit/react';
 import freighter from '@stellar/freighter-api';
 import {
-  useWallets as useXRPLWallets,
   useAccount as useXRPLAccount,
   useConnect as useXRPLConnect,
   useDisconnect as useXRPLDisconnect,
+  useWallets as useXRPLWallets,
 } from '@xrpl-wallet-standard/react';
 import { providers } from 'ethers';
+import { useEffect, useState } from 'react';
+import type { PublicClient, WalletClient } from 'viem';
+import { hashMessage, parseAbiItem, verifyMessage } from 'viem';
+import {
+  useAccount,
+  useChainId,
+  useDisconnect,
+  usePublicClient,
+  useSignMessage,
+  useSwitchChain,
+  useWalletClient,
+} from 'wagmi';
 // import { BrowserProvider, FallbackProvider, JsonRpcProvider, JsonRpcSigner } from 'ethers'
-import { create } from 'zustand';
 import clsx from 'clsx';
+import { create } from 'zustand';
 
 import { Image } from '@/components/Image';
 import { ENVIRONMENT } from '@/lib/config';
@@ -34,7 +35,93 @@ import { toArray } from '@/lib/parser';
 
 import '@mysten/dapp-kit/dist/index.css';
 
-const publicClientToProvider = publicClient => {
+// Type declarations for global objects
+
+interface SuiAccount {
+  address?: string;
+}
+
+interface KeplrChain {
+  chainId: string;
+  chainName: string;
+  rpc: string;
+  rest: string;
+  bip44: {
+    coinType: number;
+  };
+  bech32Config: {
+    bech32PrefixAccAddr: string;
+    bech32PrefixAccPub: string;
+    bech32PrefixValAddr: string;
+    bech32PrefixValPub: string;
+    bech32PrefixConsAddr: string;
+    bech32PrefixConsPub: string;
+  };
+  currencies: Array<{
+    coinDenom: string;
+    coinMinimalDenom: string;
+    coinDecimals: number;
+  }>;
+  feeCurrencies: Array<{
+    coinDenom: string;
+    coinMinimalDenom: string;
+    coinDecimals: number;
+  }>;
+  stakeCurrency: {
+    coinDenom: string;
+    coinMinimalDenom: string;
+    coinDecimals: number;
+  };
+  features: string[];
+}
+
+interface KeplrSigner {
+  getAccounts(): Promise<Array<{ address: string }>>;
+  signAmino(
+    signerAddress: string,
+    signDoc: Record<string, unknown>
+  ): Promise<Record<string, unknown>>;
+  signDirect(
+    signerAddress: string,
+    signDoc: Record<string, unknown>
+  ): Promise<Record<string, unknown>>;
+}
+
+interface KeplrWallet {
+  enable(chainId: string): Promise<void>;
+  experimentalSuggestChain(chain: KeplrChain): Promise<void>;
+  getOfflineSignerAuto(chainId: string): Promise<KeplrSigner>;
+}
+
+interface CrossmarkWallet {
+  isConnected: boolean;
+  connect(): Promise<void>;
+  disconnect(): Promise<void>;
+}
+
+interface StellarNetwork {
+  network: string;
+  networkUrl: string;
+  networkPassphrase: string;
+}
+
+interface StellarProvider {
+  getAddress(): Promise<{ address: string } & { error?: unknown }>;
+  getNetworkDetails(): Promise<StellarNetwork>;
+  setAllowed(): Promise<{ isAllowed: boolean } & { error?: unknown }>;
+}
+
+declare global {
+  interface Window {
+    keplr?: KeplrWallet;
+    crossmark?: CrossmarkWallet;
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const publicClientToProvider = (
+  publicClient: PublicClient
+): providers.Provider => {
   const { chain, transport } = { ...publicClient };
 
   const network = {
@@ -66,7 +153,9 @@ const publicClientToProvider = publicClient => {
   return new providers.JsonRpcProvider(transport.url, network);
 };
 
-const walletClientToProvider = walletClient => {
+const walletClientToProvider = (
+  walletClient: WalletClient
+): providers.Web3Provider => {
   const { chain, transport } = { ...walletClient };
 
   const network = {
@@ -77,10 +166,12 @@ const walletClientToProvider = walletClient => {
 
   // const provider = new BrowserProvider(transport, network)
 
-  return new providers.Web3Provider(transport, network);
+  return new providers.Web3Provider(transport as unknown, network);
 };
 
-const walletClientToSigner = walletClient => {
+const walletClientToSigner = (
+  walletClient: WalletClient
+): providers.JsonRpcSigner => {
   const { account, chain, transport } = { ...walletClient };
 
   const network = {
@@ -92,13 +183,24 @@ const walletClientToSigner = walletClient => {
   // const provider = new BrowserProvider(transport, network)
   // const signer = new JsonRpcSigner(provider, account.address)
 
-  const provider = new providers.Web3Provider(transport, network);
+  const provider = new providers.Web3Provider(transport as unknown, network);
   const signer = provider.getSigner(account.address);
 
   return signer;
 };
 
-export const useEVMWalletStore = create()(set => ({
+interface EVMWalletState {
+  chainId: number | null;
+  address: string | null;
+  provider: providers.Web3Provider | null;
+  signer: providers.JsonRpcSigner | null;
+  setChainId: (chainId: number | null) => void;
+  setAddress: (address: string | null) => void;
+  setProvider: (provider: providers.Web3Provider | null) => void;
+  setSigner: (signer: providers.JsonRpcSigner | null) => void;
+}
+
+export const useEVMWalletStore = create<EVMWalletState>()(set => ({
   chainId: null,
   address: null,
   provider: null,
@@ -109,10 +211,20 @@ export const useEVMWalletStore = create()(set => ({
   setSigner: data => set(state => ({ ...state, signer: data })),
 }));
 
-export function EVMWallet({ connectChainId, children, className }) {
+interface EVMWalletProps {
+  connectChainId?: number;
+  children?: React.ReactNode;
+  className?: string;
+}
+
+export function EVMWallet({
+  connectChainId,
+  children,
+  className,
+}: EVMWalletProps) {
   const { chainId, provider, setChainId, setAddress, setProvider, setSigner } =
     useEVMWalletStore();
-  const [signatureValid, setSignatureValid] = useState(null);
+  const [signatureValid, setSignatureValid] = useState<boolean | null>(null);
 
   const { open } = useAppKit();
   const publicClient = usePublicClient();
@@ -122,8 +234,10 @@ export function EVMWallet({ connectChainId, children, className }) {
   const { address } = useAccount();
   const { disconnect } = useDisconnect();
 
-  const message = process.env.NEXT_PUBLIC_APP_URL;
-  const { data: signature } = useSignMessage({ message });
+  const message = process.env.NEXT_PUBLIC_APP_URL as string;
+  const { data: signature } = useSignMessage({
+    message: message || '',
+  } as unknown as Parameters<typeof useSignMessage>[0]);
 
   useEffect(() => {
     if (chainIdConnected && walletClient && address) {
@@ -149,7 +263,7 @@ export function EVMWallet({ connectChainId, children, className }) {
     setSigner,
   ]);
 
-  // validatate signature
+  // validate signature
   useEffect(() => {
     const validateSignature = async () => {
       try {
@@ -172,7 +286,9 @@ export function EVMWallet({ connectChainId, children, className }) {
             await verifyMessage({ address, message, signature })
           );
         }
-      } catch (error) {}
+      } catch {
+        // Handle error silently
+      }
     };
 
     if (!signatureValid && publicClient) {
@@ -212,7 +328,18 @@ export function EVMWallet({ connectChainId, children, className }) {
   );
 }
 
-export const useCosmosWalletStore = create()(set => ({
+interface CosmosWalletState {
+  chainId: string | null;
+  address: string | null;
+  provider: KeplrWallet | null;
+  signer: KeplrSigner | null;
+  setChainId: (chainId: string | null) => void;
+  setAddress: (address: string | null) => void;
+  setProvider: (provider: KeplrWallet | null) => void;
+  setSigner: (signer: KeplrSigner | null) => void;
+}
+
+export const useCosmosWalletStore = create<CosmosWalletState>()(set => ({
   chainId: null,
   address: null,
   provider: null,
@@ -223,7 +350,17 @@ export const useCosmosWalletStore = create()(set => ({
   setSigner: data => set(state => ({ ...state, signer: data })),
 }));
 
-export function CosmosWallet({ connectChainId, children, className }) {
+interface CosmosWalletProps {
+  connectChainId?: string;
+  children?: React.ReactNode;
+  className?: string;
+}
+
+export function CosmosWallet({
+  connectChainId,
+  children,
+  className,
+}: CosmosWalletProps) {
   const {
     chainId,
     address,
@@ -247,7 +384,15 @@ export function CosmosWallet({ connectChainId, children, className }) {
       setProvider(null);
       setSigner(null);
     }
-  }, [chainId, setChainId, address, setAddress, setProvider, setSigner]);
+  }, [
+    chainId,
+    signer,
+    address,
+    setChainId,
+    setAddress,
+    setProvider,
+    setSigner,
+  ]);
 
   const enable = async (chainId = connectChainId) => {
     try {
@@ -259,31 +404,41 @@ export function CosmosWallet({ connectChainId, children, className }) {
         try {
           const response = await fetch(
             `https://${ENVIRONMENT === 'mainnet' ? '' : 'testnet.'}api.0xsquid.com/v1/chains`
-          ).catch(error => null);
-          const { chains } = { ...(await response.json()) };
+          ).catch(() => null);
+          if (response) {
+            const { chains } = { ...(await response.json()) };
 
-          await window.keplr.experimentalSuggestChain(
-            toArray(chains).find(d => d.chainId === chainId)
-          );
-          await window.keplr.enable(chainId);
-        } catch (error) {}
+            await window.keplr.experimentalSuggestChain(
+              toArray(chains).find(d => d.chainId === chainId)
+            );
+            await window.keplr.enable(chainId);
+          }
+        } catch {
+          // Handle error silently
+        }
       }
     }
   };
 
-  const getSigner = async (chainId = connectChainId) => {
+  const getSigner = async (
+    chainId = connectChainId
+  ): Promise<KeplrSigner | undefined> => {
     if (!chainId) return;
 
     await enable(chainId);
 
     try {
       return await window.keplr.getOfflineSignerAuto(chainId);
-    } catch (error) {}
+    } catch {
+      // Handle error silently
+    }
 
     return;
   };
 
-  const getAddress = async (chainId = connectChainId) => {
+  const getAddress = async (
+    chainId = connectChainId
+  ): Promise<string | undefined> => {
     if (!chainId) return;
 
     const signer = await getSigner(chainId);
@@ -346,14 +501,24 @@ export function CosmosWallet({ connectChainId, children, className }) {
   );
 }
 
-export const useSuiWalletStore = create()(set => ({
+interface SuiWalletState {
+  address: string | null;
+  setAddress: (address: string | null) => void;
+}
+
+export const useSuiWalletStore = create<SuiWalletState>()(set => ({
   address: null,
   setAddress: data => set(state => ({ ...state, address: data })),
 }));
 
-export function SuiWallet({ children, className }) {
+interface SuiWalletProps {
+  children?: React.ReactNode;
+  className?: string;
+}
+
+export function SuiWallet({ children, className }: SuiWalletProps) {
   const { address, setAddress } = useSuiWalletStore();
-  const account = useSuiCurrentAccount();
+  const account: SuiAccount | null = useSuiCurrentAccount();
 
   useEffect(() => {
     const address = account?.address;
@@ -396,7 +561,16 @@ export function SuiWallet({ children, className }) {
   );
 }
 
-export const useStellarWalletStore = create()(set => ({
+interface StellarWalletState {
+  address: string | null;
+  provider: StellarProvider | null;
+  network: StellarNetwork | null;
+  setAddress: (address: string | null) => void;
+  setProvider: (provider: StellarProvider | null) => void;
+  setNetwork: (network: StellarNetwork | null) => void;
+}
+
+export const useStellarWalletStore = create<StellarWalletState>()(set => ({
   address: null,
   provider: null,
   network: null,
@@ -405,8 +579,13 @@ export const useStellarWalletStore = create()(set => ({
   setNetwork: data => set(state => ({ ...state, network: data })),
 }));
 
-export function StellarWallet({ children, className }) {
-  const { address, provider, setAddress, setProvider, setNetwork } =
+interface StellarWalletProps {
+  children?: React.ReactNode;
+  className?: string;
+}
+
+export function StellarWallet({ children, className }: StellarWalletProps) {
+  const { address, setAddress, setProvider, setNetwork } =
     useStellarWalletStore();
 
   useEffect(() => {
@@ -425,12 +604,13 @@ export function StellarWallet({ children, className }) {
     getData();
   }, [address, setAddress, setProvider, setNetwork]);
 
-  const getAddress = async () => {
+  const getAddress = async (): Promise<string | undefined> => {
     const { address } = { ...(await freighter.getAddress()) };
     return address;
   };
 
-  const getNetwork = async () => await freighter.getNetworkDetails();
+  const getNetwork = async (): Promise<StellarNetwork> =>
+    await freighter.getNetworkDetails();
 
   const connect = async () => {
     await freighter.setAllowed();
@@ -468,12 +648,22 @@ export function StellarWallet({ children, className }) {
   );
 }
 
-export const useXRPLWalletStore = create()(set => ({
+interface XRPLWalletState {
+  address: string | null;
+  setAddress: (address: string | null) => void;
+}
+
+export const useXRPLWalletStore = create<XRPLWalletState>()(set => ({
   address: null,
   setAddress: data => set(state => ({ ...state, address: data })),
 }));
 
-export function XRPLWallet({ children, className }) {
+interface XRPLWalletProps {
+  children?: React.ReactNode;
+  className?: string;
+}
+
+export function XRPLWallet({ children, className }: XRPLWalletProps) {
   const { address, setAddress } = useXRPLWalletStore();
 
   const wallets = useXRPLWallets();
@@ -510,7 +700,7 @@ export function XRPLWallet({ children, className }) {
             className={clsx(className)}
           >
             <div className="flex h-6 w-fit items-center gap-x-1.5 whitespace-nowrap rounded-xl bg-blue-600 px-2.5 py-1 font-display text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
-              <Image src={w.icon} alt="" width={16} height={16} />
+              <Image src={w.icon} alt="" width={16} height={16} className="" />
               {w.name}
             </div>
           </button>
