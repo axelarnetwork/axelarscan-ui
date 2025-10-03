@@ -1,6 +1,7 @@
 'use client';
 
 import { useAppKit } from '@reown/appkit/react';
+import clsx from 'clsx';
 import { providers } from 'ethers';
 import { useEffect, useState } from 'react';
 import type { WalletClient } from 'viem';
@@ -14,8 +15,6 @@ import {
   useSwitchChain,
   useWalletClient,
 } from 'wagmi';
-// import { BrowserProvider, FallbackProvider, JsonRpcProvider, JsonRpcSigner } from 'ethers'
-import clsx from 'clsx';
 import { create } from 'zustand';
 
 const walletClientToProvider = (
@@ -28,8 +27,6 @@ const walletClientToProvider = (
     name: chain?.name,
     ensAddress: chain?.contracts?.ensRegistry?.address,
   };
-
-  // const provider = new BrowserProvider(transport, network)
 
   return new providers.Web3Provider(transport as unknown, network);
 };
@@ -44,9 +41,6 @@ const walletClientToSigner = (
     name: chain?.name,
     ensAddress: chain?.contracts?.ensRegistry?.address,
   };
-
-  // const provider = new BrowserProvider(transport, network)
-  // const signer = new JsonRpcSigner(provider, account.address)
 
   const provider = new providers.Web3Provider(transport as unknown, network);
   const signer = provider.getSigner(account.address);
@@ -108,7 +102,6 @@ export function EVMWallet({
     if (chainIdConnected && walletClient && address) {
       setChainId(chainIdConnected);
       setAddress(address);
-      // setProvider(publicClientToProvider(publicClient))
       setProvider(walletClientToProvider(walletClient));
       setSigner(walletClientToSigner(walletClient));
     } else {
@@ -161,8 +154,20 @@ export function EVMWallet({
     }
   }, [signatureValid, publicClient, address, message, signature]);
 
-  return provider ? (
-    connectChainId && connectChainId !== chainId ? (
+  if (!provider) {
+    return (
+      <button onClick={() => open()} className={clsx(className)}>
+        {children || (
+          <div className="flex h-6 items-center whitespace-nowrap rounded-xl bg-blue-600 px-2.5 py-1 font-display text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
+            Connect
+          </div>
+        )}
+      </button>
+    );
+  }
+
+  if (connectChainId && connectChainId !== chainId) {
+    return (
       <button
         onClick={() => switchChain({ chainId: connectChainId })}
         className={clsx(className)}
@@ -173,20 +178,14 @@ export function EVMWallet({
           </div>
         )}
       </button>
-    ) : (
-      <button onClick={() => disconnect()} className={clsx(className)}>
-        {children || (
-          <div className="flex h-6 items-center whitespace-nowrap rounded-xl bg-red-600 px-2.5 py-1 font-display text-white hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-600">
-            Disconnect
-          </div>
-        )}
-      </button>
-    )
-  ) : (
-    <button onClick={() => open()} className={clsx(className)}>
+    );
+  }
+
+  return (
+    <button onClick={() => disconnect()} className={clsx(className)}>
       {children || (
-        <div className="flex h-6 items-center whitespace-nowrap rounded-xl bg-blue-600 px-2.5 py-1 font-display text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
-          Connect
+        <div className="flex h-6 items-center whitespace-nowrap rounded-xl bg-red-600 px-2.5 py-1 font-display text-white hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-600">
+          Disconnect
         </div>
       )}
     </button>

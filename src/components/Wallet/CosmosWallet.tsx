@@ -1,12 +1,10 @@
 'use client';
 
-import { useEffect } from 'react';
-// import { BrowserProvider, FallbackProvider, JsonRpcProvider, JsonRpcSigner } from 'ethers'
-import clsx from 'clsx';
-import { create } from 'zustand';
-
 import { ENVIRONMENT } from '@/lib/config';
 import { toArray } from '@/lib/parser';
+import clsx from 'clsx';
+import { useEffect } from 'react';
+import { create } from 'zustand';
 
 interface KeplrChain {
   chainId: string;
@@ -159,7 +157,7 @@ export function CosmosWallet({
             await window.keplr.enable(chainId);
           }
         } catch {
-          // Handle error silently
+          console.error(error);
         }
       }
     }
@@ -174,8 +172,8 @@ export function CosmosWallet({
 
     try {
       return await window.keplr.getOfflineSignerAuto(chainId);
-    } catch {
-      // Handle error silently
+    } catch (error) {
+      console.error(error);
     }
 
     return;
@@ -214,32 +212,41 @@ export function CosmosWallet({
     setSigner(null);
   };
 
-  return provider ? (
-    connectChainId && connectChainId !== chainId ? (
+  if (!provider) {
+    return (
+      <button
+        onClick={() => connect(connectChainId)}
+        className={clsx(className)}
+      >
+        {children || (
+          <div className="flex h-6 items-center whitespace-nowrap rounded-xl bg-blue-600 px-2.5 py-1 font-display text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
+            Connect
+          </div>
+        )}
+      </button>
+    );
+  }
+
+  if (connectChainId && connectChainId !== chainId) {
+    return (
       <button
         onClick={() => connect(connectChainId)}
         className={clsx(className)}
       >
         {children || (
           <div className="flex h-6 items-center whitespace-nowrap rounded-xl bg-zinc-100 px-2.5 py-1 font-display text-zinc-900 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700">
-            Connect
+            Switch Network
           </div>
         )}
       </button>
-    ) : (
-      <button onClick={() => disconnect()} className={clsx(className)}>
-        {children || (
-          <div className="flex h-6 items-center whitespace-nowrap rounded-xl bg-red-600 px-2.5 py-1 font-display text-white hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-600">
-            Disconnect
-          </div>
-        )}
-      </button>
-    )
-  ) : (
-    <button onClick={() => connect(connectChainId)} className={clsx(className)}>
+    );
+  }
+
+  return (
+    <button onClick={() => disconnect()} className={clsx(className)}>
       {children || (
-        <div className="flex h-6 items-center whitespace-nowrap rounded-xl bg-blue-600 px-2.5 py-1 font-display text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
-          Connect
+        <div className="flex h-6 items-center whitespace-nowrap rounded-xl bg-red-600 px-2.5 py-1 font-display text-white hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-600">
+          Disconnect
         </div>
       )}
     </button>

@@ -1,9 +1,8 @@
 'use client';
 
 import freighter from '@stellar/freighter-api';
-import { useEffect } from 'react';
-// import { BrowserProvider, FallbackProvider, JsonRpcProvider, JsonRpcSigner } from 'ethers'
 import clsx from 'clsx';
+import { useEffect } from 'react';
 import { create } from 'zustand';
 
 interface StellarNetwork {
@@ -86,15 +85,19 @@ export function StellarWallet({ children, className }: StellarWalletProps) {
     setNetwork(null);
   };
 
-  return address ? (
-    <button onClick={() => disconnect()} className={clsx(className)}>
-      {children || (
-        <div className="flex h-6 items-center whitespace-nowrap rounded-xl bg-red-600 px-2.5 py-1 font-display text-white hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-600">
-          Disconnect
-        </div>
-      )}
-    </button>
-  ) : (
+  if (address) {
+    return (
+      <button onClick={() => disconnect()} className={clsx(className)}>
+        {children || (
+          <div className="flex h-6 items-center whitespace-nowrap rounded-xl bg-red-600 px-2.5 py-1 font-display text-white hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-600">
+            Disconnect
+          </div>
+        )}
+      </button>
+    );
+  }
+
+  return (
     <button onClick={() => connect()} className={clsx(className)}>
       {children || (
         <div className="flex h-6 items-center whitespace-nowrap rounded-xl bg-blue-600 px-2.5 py-1 font-display text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
