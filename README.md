@@ -50,6 +50,20 @@ npm run lint
 npm run lint:check
 ```
 
+### TypeScript Support
+
+This project supports both JavaScript and TypeScript files. You can gradually migrate existing JavaScript files to TypeScript or create new TypeScript files.
+
+#### TypeScript Commands
+
+```bash
+# Run TypeScript type checking (no emit)
+npm run tsc
+
+# Build project with TypeScript checking
+npm run build
+```
+
 ## 🚀 Deployment and Release Process
 
 ### 📋 Overview
