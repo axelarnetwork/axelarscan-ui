@@ -267,26 +267,24 @@ export function EVMWallet({
   useEffect(() => {
     const validateSignature = async () => {
       try {
-        if (address && signature && publicClient) {
-          if (await publicClient.getBytecode({ address })) {
-            const response = await publicClient.readContract({
-              address,
-              abi: [
-                parseAbiItem(
-                  'function isValidSignature(bytes32 hash, bytes signature) view returns (bytes4)'
-                ),
-              ],
-              functionName: 'isValidSignature',
-              args: [hashMessage(message), signature],
-            });
+        if (await publicClient.getBytecode({ address })) {
+          const response = await publicClient.readContract({
+            address,
+            abi: [
+              parseAbiItem(
+                'function isValidSignature(bytes32 hash, bytes signature) view returns (bytes4)'
+              ),
+            ],
+            functionName: 'isValidSignature',
+            args: [hashMessage(message), signature],
+          });
 
-            // https://eips.ethereum.org/EIPS/eip-1271
-            setSignatureValid(response === '0x1626ba7e');
-          } else {
-            setSignatureValid(
-              await verifyMessage({ address, message, signature })
-            );
-          }
+          // https://eips.ethereum.org/EIPS/eip-1271
+          setSignatureValid(response === '0x1626ba7e');
+        } else {
+          setSignatureValid(
+            await verifyMessage({ address, message, signature })
+          );
         }
       } catch {
         // Handle error silently
@@ -398,7 +396,7 @@ export function CosmosWallet({
 
   const enable = async (chainId = connectChainId) => {
     try {
-      if (chainId && window.keplr) {
+      if (chainId) {
         await window.keplr.enable(chainId);
       }
     } catch (error) {
@@ -410,12 +408,10 @@ export function CosmosWallet({
           if (response) {
             const { chains } = { ...(await response.json()) };
 
-            if (window.keplr) {
-              await window.keplr.experimentalSuggestChain(
-                toArray(chains).find(d => d.chainId === chainId)
-              );
-              await window.keplr.enable(chainId);
-            }
+            await window.keplr.experimentalSuggestChain(
+              toArray(chains).find(d => d.chainId === chainId)
+            );
+            await window.keplr.enable(chainId);
           }
         } catch {
           // Handle error silently
@@ -432,9 +428,7 @@ export function CosmosWallet({
     await enable(chainId);
 
     try {
-      if (window.keplr) {
-        return await window.keplr.getOfflineSignerAuto(chainId);
-      }
+      return await window.keplr.getOfflineSignerAuto(chainId);
     } catch {
       // Handle error silently
     }
