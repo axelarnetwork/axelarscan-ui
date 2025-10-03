@@ -48,16 +48,15 @@ import { TimeAgo, TimeSpent, TimeUntil } from '@/components/Time';
 import { Tooltip } from '@/components/Tooltip';
 import {
   CosmosWallet,
-  EVMWallet,
-  StellarWallet,
-  SuiWallet,
   useCosmosWalletStore,
-  useEVMWalletStore,
+} from '@/components/Wallet/CosmosWallet';
+import { EVMWallet, useEVMWalletStore } from '@/components/Wallet/EVMWallet';
+import {
+  StellarWallet,
   useStellarWalletStore,
-  useSuiWalletStore,
-  useXRPLWalletStore,
-  XRPLWallet,
-} from '@/components/Wallet/Wallet';
+} from '@/components/Wallet/StellarWallet';
+import { SuiWallet, useSuiWalletStore } from '@/components/Wallet/SuiWallet';
+import { XRPLWallet, useXRPLWalletStore } from '@/components/Wallet/XRPLWallet';
 import IAxelarExecutable from '@/data/interfaces/gmp/IAxelarExecutable.json';
 import { estimateITSFee, estimateTimeSpent, searchGMP } from '@/lib/api/gmp';
 import { isAxelar } from '@/lib/chain';

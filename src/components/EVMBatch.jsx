@@ -19,7 +19,7 @@ import { ChainProfile, Profile } from '@/components/Profile';
 import { Spinner } from '@/components/Spinner';
 import { Tag } from '@/components/Tag';
 import { Tooltip } from '@/components/Tooltip';
-import { EVMWallet, useEVMWalletStore } from '@/components/Wallet/Wallet';
+import { EVMWallet, useEVMWalletStore } from '@/components/Wallet/EVMWallet';
 import { getBatch } from '@/lib/api/token-transfer';
 import { getAssetData, getChainData } from '@/lib/config';
 import { formatUnits, toNumber } from '@/lib/number';
