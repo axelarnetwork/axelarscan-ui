@@ -12,6 +12,8 @@ import { getInputType } from '@/lib/parser';
 import { isString } from '@/lib/string';
 import { isNumber } from '@/lib/number';
 
+import { LuSearch } from 'react-icons/lu';
+
 export const buildExplorerURL = ({
   value,
   type,
@@ -20,7 +22,7 @@ export const buildExplorerURL = ({
   explorer,
 }) => {
   if (!explorer) {
-    return '#';
+    return '';
   }
 
   const {
@@ -36,7 +38,7 @@ export const buildExplorerURL = ({
 
   // Return a fallback URL if url or value are falsy
   if (!url || !value) {
-    return '#';
+    return '';
   }
 
   let path;
@@ -78,7 +80,7 @@ export const buildExplorerURL = ({
       href = `${url}${path?.replace(`{block}`, value)}`;
       break;
     default:
-      return '#';
+      return '';
   }
 
   return href;
@@ -140,13 +142,27 @@ export function ExplorerLink({
           {title || `View on ${explorer?.name || 'explorer'}`}
         </span>
       )}
-      <Image
-        src={explorer?.icon || '/logos/explorers/unknown.png'}
-        alt=""
-        width={width}
-        height={height}
-        className={clsx('rounded-full opacity-60 hover:opacity-100', className)}
-      />
+      {explorer?.icon ? (
+        <Image
+          src={explorer.icon}
+          alt=""
+          width={width}
+          height={height}
+          className={clsx(
+            'rounded-full opacity-60 hover:opacity-100',
+            className
+          )}
+        />
+      ) : (
+        <LuSearch
+          size={width}
+          height={height}
+          className={clsx(
+            'rounded-full opacity-60 hover:opacity-100',
+            className
+          )}
+        />
+      )}
     </Link>
   );
 }
