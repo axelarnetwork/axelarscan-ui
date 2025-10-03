@@ -12,6 +12,8 @@ import { getInputType } from '@/lib/parser';
 import { isString } from '@/lib/string';
 import { isNumber } from '@/lib/number';
 
+import { LuSearch } from 'react-icons/lu';
+
 export const buildExplorerURL = ({
   value,
   type,
@@ -19,6 +21,10 @@ export const buildExplorerURL = ({
   hasEventLog,
   explorer,
 }) => {
+  if (!explorer) {
+    return '';
+  }
+
   const {
     url,
     address_path,
@@ -28,11 +34,11 @@ export const buildExplorerURL = ({
     block_path,
     no_0x,
     cannot_link_contract_via_address_path,
-  } = { ...explorer };
+  } = explorer;
 
   // Return a fallback URL if url or value are falsy
   if (!url || !value) {
-    return '#';
+    return '';
   }
 
   let path;
@@ -74,7 +80,7 @@ export const buildExplorerURL = ({
       href = `${url}${path?.replace(`{block}`, value)}`;
       break;
     default:
-      return '#';
+      return '';
   }
 
   return href;
@@ -96,7 +102,7 @@ export function ExplorerLink({
   className = 'h-4',
 }) {
   const { chains } = useGlobalStore();
-  const { explorer } = { ...getChainData(chain, chains) };
+  const explorer = getChainData(chain, chains)?.explorer;
 
   if (type === 'tx') {
     // update type from input value
@@ -133,16 +139,29 @@ export function ExplorerLink({
     >
       {!iconOnly && (
         <span className={clsx('font-medium', nonIconClassName)}>
-          {title || `View on ${explorer.name}`}
+          {title || `View on ${explorer?.name || 'explorer'}`}
         </span>
       )}
-      <Image
-        src={explorer.icon}
-        alt=""
-        width={width}
-        height={height}
-        className={clsx('rounded-full opacity-60 hover:opacity-100', className)}
-      />
+      {explorer?.icon ? (
+        <Image
+          src={explorer.icon}
+          alt={explorer.name ? `${explorer.name} icon` : 'Explorer icon'}
+          width={width}
+          height={height}
+          className={clsx(
+            'rounded-full opacity-60 hover:opacity-100',
+            className
+          )}
+        />
+      ) : (
+        <LuSearch
+          size={width}
+          className={clsx(
+            'rounded-full opacity-60 hover:opacity-100',
+            className
+          )}
+        />
+      )}
     </Link>
   );
 }
