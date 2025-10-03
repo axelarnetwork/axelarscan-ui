@@ -41,14 +41,80 @@ interface SuiAccount {
   address?: string;
 }
 
+interface KeplrChain {
+  chainId: string;
+  chainName: string;
+  rpc: string;
+  rest: string;
+  bip44: {
+    coinType: number;
+  };
+  bech32Config: {
+    bech32PrefixAccAddr: string;
+    bech32PrefixAccPub: string;
+    bech32PrefixValAddr: string;
+    bech32PrefixValPub: string;
+    bech32PrefixConsAddr: string;
+    bech32PrefixConsPub: string;
+  };
+  currencies: Array<{
+    coinDenom: string;
+    coinMinimalDenom: string;
+    coinDecimals: number;
+  }>;
+  feeCurrencies: Array<{
+    coinDenom: string;
+    coinMinimalDenom: string;
+    coinDecimals: number;
+  }>;
+  stakeCurrency: {
+    coinDenom: string;
+    coinMinimalDenom: string;
+    coinDecimals: number;
+  };
+  features: string[];
+}
+
+interface KeplrSigner {
+  getAccounts(): Promise<Array<{ address: string }>>;
+  signAmino(
+    signerAddress: string,
+    signDoc: Record<string, unknown>
+  ): Promise<Record<string, unknown>>;
+  signDirect(
+    signerAddress: string,
+    signDoc: Record<string, unknown>
+  ): Promise<Record<string, unknown>>;
+}
+
+interface KeplrWallet {
+  enable(chainId: string): Promise<void>;
+  experimentalSuggestChain(chain: KeplrChain): Promise<void>;
+  getOfflineSignerAuto(chainId: string): Promise<KeplrSigner>;
+}
+
+interface CrossmarkWallet {
+  isConnected: boolean;
+  connect(): Promise<void>;
+  disconnect(): Promise<void>;
+}
+
+interface StellarNetwork {
+  network: string;
+  networkUrl: string;
+  networkPassphrase: string;
+}
+
+interface StellarProvider {
+  getAddress(): Promise<{ address: string } & { error?: unknown }>;
+  getNetworkDetails(): Promise<StellarNetwork>;
+  setAllowed(): Promise<{ isAllowed: boolean } & { error?: unknown }>;
+}
+
 declare global {
   interface Window {
-    keplr?: {
-      enable: (chainId: string) => Promise<void>;
-      experimentalSuggestChain: (chain: unknown) => Promise<void>;
-      getOfflineSignerAuto: (chainId: string) => Promise<unknown>;
-    };
-    crossmark?: unknown;
+    keplr?: KeplrWallet;
+    crossmark?: CrossmarkWallet;
   }
 }
 
@@ -267,12 +333,12 @@ export function EVMWallet({
 interface CosmosWalletState {
   chainId: string | null;
   address: string | null;
-  provider: unknown | null;
-  signer: unknown | null;
+  provider: KeplrWallet | null;
+  signer: KeplrSigner | null;
   setChainId: (chainId: string | null) => void;
   setAddress: (address: string | null) => void;
-  setProvider: (provider: unknown | null) => void;
-  setSigner: (signer: unknown | null) => void;
+  setProvider: (provider: KeplrWallet | null) => void;
+  setSigner: (signer: KeplrSigner | null) => void;
 }
 
 export const useCosmosWalletStore = create<CosmosWalletState>()(set => ({
@@ -358,7 +424,9 @@ export function CosmosWallet({
     }
   };
 
-  const getSigner = async (chainId = connectChainId) => {
+  const getSigner = async (
+    chainId = connectChainId
+  ): Promise<KeplrSigner | undefined> => {
     if (!chainId) return;
 
     await enable(chainId);
@@ -374,17 +442,15 @@ export function CosmosWallet({
     return;
   };
 
-  const getAddress = async (chainId = connectChainId) => {
+  const getAddress = async (
+    chainId = connectChainId
+  ): Promise<string | undefined> => {
     if (!chainId) return;
 
     const signer = await getSigner(chainId);
     if (!signer) return;
 
-    const [account] = await (
-      signer as unknown as {
-        getAccounts(): Promise<Array<{ address: string }>>;
-      }
-    ).getAccounts();
+    const [account] = await signer.getAccounts();
     return account.address;
   };
 
@@ -503,11 +569,11 @@ export function SuiWallet({ children, className }: SuiWalletProps) {
 
 interface StellarWalletState {
   address: string | null;
-  provider: unknown | null;
-  network: unknown | null;
+  provider: StellarProvider | null;
+  network: StellarNetwork | null;
   setAddress: (address: string | null) => void;
-  setProvider: (provider: unknown | null) => void;
-  setNetwork: (network: unknown | null) => void;
+  setProvider: (provider: StellarProvider | null) => void;
+  setNetwork: (network: StellarNetwork | null) => void;
 }
 
 export const useStellarWalletStore = create<StellarWalletState>()(set => ({
@@ -544,12 +610,13 @@ export function StellarWallet({ children, className }: StellarWalletProps) {
     getData();
   }, [address, setAddress, setProvider, setNetwork]);
 
-  const getAddress = async () => {
+  const getAddress = async (): Promise<string | undefined> => {
     const { address } = { ...(await freighter.getAddress()) };
     return address;
   };
 
-  const getNetwork = async () => await freighter.getNetworkDetails();
+  const getNetwork = async (): Promise<StellarNetwork> =>
+    await freighter.getNetworkDetails();
 
   const connect = async () => {
     await freighter.setAllowed();
