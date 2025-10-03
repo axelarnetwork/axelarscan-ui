@@ -19,6 +19,10 @@ export const buildExplorerURL = ({
   hasEventLog,
   explorer,
 }) => {
+  if (!explorer) {
+    return '#';
+  }
+
   const {
     url,
     address_path,
@@ -28,7 +32,7 @@ export const buildExplorerURL = ({
     block_path,
     no_0x,
     cannot_link_contract_via_address_path,
-  } = { ...explorer };
+  } = explorer;
 
   // Return a fallback URL if url or value are falsy
   if (!url || !value) {
@@ -96,7 +100,7 @@ export function ExplorerLink({
   className = 'h-4',
 }) {
   const { chains } = useGlobalStore();
-  const { explorer } = { ...getChainData(chain, chains) };
+  const explorer = getChainData(chain, chains)?.explorer;
 
   if (type === 'tx') {
     // update type from input value
@@ -133,11 +137,11 @@ export function ExplorerLink({
     >
       {!iconOnly && (
         <span className={clsx('font-medium', nonIconClassName)}>
-          {title || `View on ${explorer.name}`}
+          {title || `View on ${explorer?.name || 'explorer'}`}
         </span>
       )}
       <Image
-        src={explorer.icon}
+        src={explorer?.icon || '/logos/explorers/unknown.png'}
         alt=""
         width={width}
         height={height}
