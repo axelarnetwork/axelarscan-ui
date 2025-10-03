@@ -46,10 +46,8 @@ import { Spinner } from '@/components/Spinner';
 import { Tag } from '@/components/Tag';
 import { TimeAgo, TimeSpent, TimeUntil } from '@/components/Time';
 import { Tooltip } from '@/components/Tooltip';
-import {
-  CosmosWallet,
-  useCosmosWalletStore,
-} from '@/components/Wallet/CosmosWallet';
+import { CosmosWallet } from '@/components/Wallet/CosmosWallet';
+import { useCosmosWalletStore } from '@/components/Wallet/CosmosWallet.hooks';
 import { EVMWallet, useEVMWalletStore } from '@/components/Wallet/EVMWallet';
 import {
   StellarWallet,
