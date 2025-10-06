@@ -54,6 +54,7 @@
     "@xrpl-wallet-adapter/metamask": "^0.1.2",
     "@xrpl-wallet-adapter/walletconnect": "^0.2.0",
     "@xrpl-wallet-standard/react": "^0.2.4",
+    "@xrpl-wallet-adapter/xaman": "^0.1.4",
     "antd": "^5.24.9",
     "autoprefixer": "^10.4.21",
     "clsx": "^2.1.1",
