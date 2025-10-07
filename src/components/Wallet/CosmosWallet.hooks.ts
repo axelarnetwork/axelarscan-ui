@@ -1,8 +1,18 @@
-import { ENVIRONMENT } from '@/lib/config';
-import { toArray } from '@/lib/parser';
 import { useEffect } from 'react';
 import { create } from 'zustand';
 import { CosmosWalletState, KeplrSigner } from './CosmotWallet.types';
+import { KeplrSigner, KeplrWallet } from '../../types/cosmos';
+
+export interface CosmosWalletState {
+  chainId: string | null;
+  address: string | null;
+  provider: KeplrWallet | null;
+  signer: KeplrSigner | null;
+  setChainId: (chainId: string | null) => void;
+  setAddress: (address: string | null) => void;
+  setProvider: (provider: KeplrWallet | null) => void;
+  setSigner: (signer: KeplrSigner | null) => void;
+}
 
 export const useCosmosWalletStore = create<CosmosWalletState>()(set => ({
   chainId: null,

@@ -5,7 +5,7 @@ declare global {
   }
 }
 
-interface KeplrChain {
+export interface KeplrChain {
   chainId: string;
   chainName: string;
   rpc: string;
@@ -61,15 +61,4 @@ interface CrossmarkWallet {
   isConnected: boolean;
   connect(): Promise<void>;
   disconnect(): Promise<void>;
-}
-
-export interface CosmosWalletState {
-  chainId: string | null;
-  address: string | null;
-  provider: KeplrWallet | null;
-  signer: KeplrSigner | null;
-  setChainId: (chainId: string | null) => void;
-  setAddress: (address: string | null) => void;
-  setProvider: (provider: KeplrWallet | null) => void;
-  setSigner: (signer: KeplrSigner | null) => void;
 }
