@@ -3,6 +3,9 @@ import { KeplrChain } from '../../types/cosmos';
 export const getKeplrChainData = async (
   chainId: string
 ): Promise<KeplrChain | null> => {
+  // use the official keplr chain registry as the source of truth
+  // https://github.com/chainapsis/keplr-chain-registry/tree/main
+
   const baseUrl =
     'https://raw.githubusercontent.com/chainapsis/keplr-chain-registry/refs/heads/main/cosmos/';
 
