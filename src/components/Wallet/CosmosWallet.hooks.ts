@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { create } from 'zustand';
-import { CosmosWalletState, KeplrSigner } from './CosmotWallet.types';
+import { getKeplrChainData } from '../../lib/api/keplr';
 import { KeplrSigner, KeplrWallet } from '../../types/cosmos';
 
 export interface CosmosWalletState {
@@ -41,15 +41,11 @@ export const useConnect = ({ connectChainId }: UseConnectProps) => {
     } catch (error) {
       if (!error?.toString()?.includes('Request rejected')) {
         try {
-          const response = await fetch(
-            `https://${ENVIRONMENT === 'mainnet' ? '' : 'testnet.'}api.0xsquid.com/v1/chains`
-          ).catch(() => null);
-          if (response) {
-            const { chains } = { ...(await response.json()) };
+          // in case the chain is not available in keplr, we need to suggest it
+          const chainData = await getKeplrChainData(chainId);
 
-            await window.keplr.experimentalSuggestChain(
-              toArray(chains).find(d => d.chainId === chainId)
-            );
+          if (chainData) {
+            await window.keplr.experimentalSuggestChain(chainData);
             await window.keplr.enable(chainId);
           }
         } catch {
