@@ -33,29 +33,38 @@ export const useConnect = ({ connectChainId }: UseConnectProps) => {
   const { setChainId, setAddress, setProvider, setSigner } =
     useCosmosWalletStore();
 
+  /**
+   * Enable a chain in keplr.
+   * If the user does not have the chain enabled, the chain will be suggested and enabled.
+   */
   const enable = async (chainId = connectChainId) => {
     if (!window.keplr || !chainId) {
       console.error('Keplr not found or chainId not provided');
       return;
     }
 
-    try {
-      if (chainId) {
-        await window.keplr.enable(chainId);
+    const suggestEnablingChain = async (chainId: string) => {
+      if (!window.keplr) return;
+
+      try {
+        const chainData = await getKeplrChainData(chainId);
+
+        if (chainData) {
+          await window.keplr.experimentalSuggestChain(chainData);
+          await window.keplr.enable(chainId);
+        }
+      } catch (error) {
+        console.error(error);
       }
+    };
+
+    try {
+      await window.keplr.enable(chainId);
     } catch (error) {
       if (!error?.toString()?.includes('Request rejected')) {
-        try {
-          // in case the chain is not available in keplr, we need to suggest it
-          const chainData = await getKeplrChainData(chainId);
-
-          if (chainData) {
-            await window.keplr.experimentalSuggestChain(chainData);
-            await window.keplr.enable(chainId);
-          }
-        } catch {
-          console.error(error);
-        }
+        await suggestEnablingChain(chainId);
+      } else {
+        console.error(error);
       }
     }
   };
