@@ -26,7 +26,7 @@ export const useCosmosWalletStore = create<CosmosWalletState>()(set => ({
 }));
 
 export interface UseConnectProps {
-  connectChainId: string;
+  connectChainId?: string;
 }
 
 export const useConnect = ({ connectChainId }: UseConnectProps) => {
@@ -34,6 +34,11 @@ export const useConnect = ({ connectChainId }: UseConnectProps) => {
     useCosmosWalletStore();
 
   const enable = async (chainId = connectChainId) => {
+    if (!window.keplr || !chainId) {
+      console.error('Keplr not found or chainId not provided');
+      return;
+    }
+
     try {
       if (chainId) {
         await window.keplr.enable(chainId);
@@ -63,7 +68,7 @@ export const useConnect = ({ connectChainId }: UseConnectProps) => {
     await enable(chainId);
 
     try {
-      return await window.keplr.getOfflineSignerAuto(chainId);
+      return await window.keplr?.getOfflineSignerAuto(chainId);
     } catch (error) {
       console.error(error);
     }
@@ -88,7 +93,7 @@ export const useConnect = ({ connectChainId }: UseConnectProps) => {
     const address = signer && (await getAddress(chainId));
 
     if (chainId && signer && address) {
-      setProvider(window?.keplr);
+      setProvider(window?.keplr ?? null);
       setChainId(chainId);
       setAddress(address);
       setSigner(signer);
@@ -121,7 +126,7 @@ export const useSyncState = () => {
 
   useEffect(() => {
     if (chainId && signer && address) {
-      setProvider(window?.keplr);
+      setProvider(window?.keplr ?? null);
       setChainId(chainId);
       setAddress(address);
       setSigner(signer);
