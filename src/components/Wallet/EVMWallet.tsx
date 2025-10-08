@@ -16,31 +16,48 @@ import { create } from 'zustand';
 
 const walletClientToProvider = (
   walletClient: WalletClient
-): providers.Web3Provider => {
+): providers.Web3Provider | null => {
   const { chain, transport } = { ...walletClient };
 
+  if (!chain) {
+    console.error('Chain not found');
+    return null;
+  }
+
   const network = {
-    chainId: chain?.id,
-    name: chain?.name,
+    chainId: chain.id,
+    name: chain.name,
     ensAddress: chain?.contracts?.ensRegistry?.address,
   };
 
-  return new providers.Web3Provider(transport as unknown, network);
+  return new providers.Web3Provider(
+    transport as providers.ExternalProvider | providers.JsonRpcFetchFunc,
+    network
+  );
 };
 
 const walletClientToSigner = (
   walletClient: WalletClient
-): providers.JsonRpcSigner => {
+): providers.JsonRpcSigner | null => {
   const { account, chain, transport } = { ...walletClient };
 
+  if (!chain) {
+    console.error('Chain not found');
+    return null;
+  }
+
   const network = {
-    chainId: chain?.id,
-    name: chain?.name,
+    chainId: chain.id,
+    name: chain.name,
     ensAddress: chain?.contracts?.ensRegistry?.address,
   };
 
-  const provider = new providers.Web3Provider(transport as unknown, network);
-  const signer = provider.getSigner(account.address);
+  const provider = new providers.Web3Provider(
+    transport as providers.ExternalProvider | providers.JsonRpcFetchFunc,
+    network
+  );
+
+  const signer = provider.getSigner(account?.address);
 
   return signer;
 };
