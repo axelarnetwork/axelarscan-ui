@@ -168,6 +168,25 @@ export const CHAINS = toArray(
           },
           testnet: true,
         },
+        ['testnet'].includes(ENVIRONMENT) && {
+          _id: 'memento-demo',
+          id: 2129,
+          network: 'memento-demo',
+          name: 'Memento',
+          nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
+          rpcUrls: {
+            default: {
+              http: ['https://memento-demo.common-prefix.workers.dev/'],
+            },
+          },
+          blockExplorers: {
+            default: {
+              name: 'Memento Testnet Explorer',
+              url: 'https://private-explorer.memento.zeeve.online',
+            },
+          },
+          testnet: true,
+        },
         ['devnet-amplifier'].includes(ENVIRONMENT) && {
           _id: 'core-ethereum',
           ...sepolia,
