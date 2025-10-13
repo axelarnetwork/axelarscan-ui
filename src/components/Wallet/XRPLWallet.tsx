@@ -56,18 +56,49 @@ export function XRPLWallet({ children, className }: XRPLWalletProps) {
     );
   }
 
-  const availableWallets = wallets.filter(w =>
-    w.name === 'Crossmark' ? window?.crossmark : w
-  );
+  const availableWallets = wallets;
+  const crossmarkEnabled = !!window?.crossmark;
+  const WalletConnectWallet = wallets.find(w => w.name === "WalletConnect");
+
+  // expand "Walletconnect" to wallets that support walletconnect
+  const WalletConnectSupportedWallets = [
+    {"name": WalletConnectWallet?.name, "icon": WalletConnectWallet?.icon}, // add WalletConnect as well
+    {"name": "Onchain", "icon": "/logos/wallets/onchain.webp"}, 
+    {"name": "Bifrost", "icon": "/logos/wallets/bifrost.webp"},
+  ];
 
   return (
     <div className="flex flex-col gap-y-2">
       {availableWallets.map((w, i) => (
+        w.name === "Crossmark" && !crossmarkEnabled ?
+        <button
+          key={i}
+          onClick={() => window.open("https://crossmark.io/", "_blank", "noreferrer")}
+          className={clsx(className)}
+        >
+          <div className="flex h-6 w-fit items-center gap-x-1.5 whitespace-nowrap rounded-xl bg-blue-600 px-2.5 py-1 font-display text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
+            <Image src={w.icon} alt="" width={16} height={16} className="" />
+            Install Crossmark
+          </div>
+        </button>
+        :
+        w.name === "WalletConnect" ? 
+        WalletConnectSupportedWallets.map((wcw, wci) => (
+          <button
+            key={`${i}-${wci}`} 
+            onClick={() => connectXRPL(w)}
+            className={clsx(className)}>
+            <div className="flex h-6 w-fit items-center gap-x-1.5 whitespace-nowrap rounded-xl bg-blue-600 px-2.5 py-1 font-display text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
+              <Image src={wcw.icon} alt="" width={16} height={16} className="" />
+              {wcw.name}
+            </div>
+          </button>
+        ))
+        :
         <button
           key={i}
           onClick={() => connectXRPL(w)}
-          className={clsx(className)}
-        >
+          className={clsx(className)}>
           <div className="flex h-6 w-fit items-center gap-x-1.5 whitespace-nowrap rounded-xl bg-blue-600 px-2.5 py-1 font-display text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
             <Image src={w.icon} alt="" width={16} height={16} className="" />
             {w.name}
