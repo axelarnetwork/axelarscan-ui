@@ -17,15 +17,25 @@ const decodeBase64 = base64.decode;
  * ```
  */
 export const objToQS = (obj: Record<string, unknown>): string => {
-  const qs = Object.entries({ ...obj })
-    .filter(([_, value]) => value !== undefined && value !== null)
-    .map(
-      ([key, value]) =>
-        `${encodeURIComponent(key)}=${encodeURIComponent(value as string | number | boolean)}`
-    )
-    .join('&');
-  if (!qs) return '';
-  return `?${qs}`;
+  const entries = Object.entries({ ...obj });
+
+  const validEntries = entries.filter(([_, value]) => {
+    return value !== undefined && value !== null;
+  });
+
+  const encodedPairs = validEntries.map(([key, value]) => {
+    const encodedKey = encodeURIComponent(key);
+    const encodedValue = encodeURIComponent(value as string | number | boolean);
+    return `${encodedKey}=${encodedValue}`;
+  });
+
+  const queryString = encodedPairs.join('&');
+
+  if (!queryString) {
+    return '';
+  }
+
+  return `?${queryString}`;
 };
 
 /**
@@ -121,11 +131,14 @@ export const getInputType = (
   string: string | number,
   chainsData: ChainData[]
 ): string | undefined => {
-  if (!string) return;
+  if (!string) {
+    return undefined;
+  }
 
   // Convert number to string for pattern matching
   const inputString = typeof string === 'number' ? String(string) : string;
 
+  // Build regex patterns for different input types
   const regexMap = {
     txhash: new RegExp(/^0x([A-Fa-f0-9]{64})$/, 'igm'),
     evmAddress: new RegExp(/^0x[a-fA-F0-9]{40}$/, 'igm'),
@@ -148,25 +161,52 @@ export const getInputType = (
     ),
   };
 
-  return (
-    _.head(
-      Object.entries(regexMap)
-        .filter(([regexKey, regexValue]) =>
-          regexKey === 'cosmosAddress'
-            ? Object.entries(regexValue).findIndex(
-                ([chainId, chainRegex]) =>
-                  inputString.match(chainRegex as RegExp) &&
-                  inputString.startsWith(
-                    chainsData.find(
-                      (chainData: ChainData) => chainData.id === chainId
-                    )?.prefix_address || ''
-                  )
-              ) > -1
-            : inputString.match(regexValue as RegExp)
-        )
-        .map(([matchedType, _regex]) => matchedType)
-    ) || (!isNaN(Number(inputString)) ? 'block' : 'tx')
+  // Filter regexMap entries that match the input
+  const matchingEntries = Object.entries(regexMap).filter(
+    ([regexKey, regexValue]) => {
+      if (regexKey === 'cosmosAddress') {
+        // Special handling for cosmos addresses
+        const cosmosEntries = Object.entries(regexValue);
+
+        for (const [chainId, chainRegex] of cosmosEntries) {
+          const matchesRegex = inputString.match(chainRegex as RegExp);
+
+          if (matchesRegex) {
+            const chain = chainsData.find(
+              (chainData: ChainData) => chainData.id === chainId
+            );
+            const startsWithPrefix = inputString.startsWith(
+              chain?.prefix_address || ''
+            );
+
+            if (startsWithPrefix) {
+              return true;
+            }
+          }
+        }
+
+        return false;
+      }
+
+      // For other types, just check regex match
+      return !!inputString.match(regexValue as RegExp);
+    }
   );
+
+  // Extract the matched type name
+  const matchedTypes = matchingEntries.map(
+    ([matchedType, _regex]) => matchedType
+  );
+  const detectedType = _.head(matchedTypes);
+
+  // If a type was detected, return it
+  if (detectedType) {
+    return detectedType;
+  }
+
+  // Fallback: check if it's a block number or transaction
+  const isNumeric = !isNaN(Number(inputString));
+  return isNumeric ? 'block' : 'tx';
 };
 
 /**
@@ -197,22 +237,37 @@ export const toJson = <T = unknown>(string: unknown): T | null => {
   try {
     let stringToParse = string;
 
-    if (
+    // Handle unquoted JSON-like objects: {key:value} -> {"key":"value"}
+    const isUnquotedObject =
       typeof string === 'string' &&
       string.startsWith('{') &&
       string.endsWith('}') &&
-      !string.includes('"')
-    ) {
+      !string.includes('"');
+
+    if (isUnquotedObject) {
       try {
-        stringToParse = `{${split(string.substring(1, string.length - 1), {
-          delimiter: ',',
-        })
-          .map(s =>
-            split(s, { delimiter: ':' })
-              .map(s => (typeof s === 'string' ? `"${s}"` : s))
-              .join(':')
-          )
-          .join(',')}}`;
+        // Remove outer braces
+        const content = string.substring(1, string.length - 1);
+
+        // Split by commas to get key-value pairs
+        const pairs = split(content, { delimiter: ',' });
+
+        const quotedPairs = pairs.map(pair => {
+          // Split each pair by colon
+          const parts = split(pair, { delimiter: ':' });
+
+          // Add quotes to strings
+          const quotedParts = parts.map(part => {
+            if (typeof part === 'string') {
+              return `"${part}"`;
+            }
+            return part;
+          });
+
+          return quotedParts.join(':');
+        });
+
+        stringToParse = `{${quotedPairs.join(',')}}`;
       } catch (error) {
         // Keep original string if transformation fails
       }
@@ -318,11 +373,24 @@ interface ParserOptions {
  * @returns Normalized options with defaults applied
  */
 const getOptions = (options: ParserOptions | undefined): ParserOptions => {
-  let { delimiter, toCase: _toCase, filterBlank } = { ...options };
-  delimiter = typeof delimiter === 'string' ? delimiter : ',';
-  _toCase = _toCase || 'normal';
-  filterBlank = typeof filterBlank === 'boolean' ? filterBlank : true;
-  return { ...options, delimiter, toCase: _toCase, filterBlank };
+  const { delimiter, toCase: caseFormat, filterBlank } = { ...options };
+
+  // Set default delimiter
+  const normalizedDelimiter = typeof delimiter === 'string' ? delimiter : ',';
+
+  // Set default case format
+  const normalizedCase = caseFormat || 'normal';
+
+  // Set default filterBlank
+  const normalizedFilterBlank =
+    typeof filterBlank === 'boolean' ? filterBlank : true;
+
+  return {
+    ...options,
+    delimiter: normalizedDelimiter,
+    toCase: normalizedCase,
+    filterBlank: normalizedFilterBlank,
+  };
 };
 
 /**
@@ -341,27 +409,31 @@ const getOptions = (options: ParserOptions | undefined): ParserOptions => {
  * ```
  */
 export const split = (string: unknown, options?: ParserOptions): string[] => {
-  const {
-    delimiter,
-    toCase: _toCase,
-    filterBlank,
-  } = { ...getOptions(options) };
+  const normalizedOptions = getOptions(options);
+  const { delimiter, toCase: caseFormat, filterBlank } = normalizedOptions;
 
   let parts: string[];
 
-  // Handle non-string, non-null/undefined values
+  // Handle non-string, non-null/undefined values (convert to string array)
   if (typeof string !== 'string' && string !== undefined && string !== null) {
     parts = [String(string)];
   } else {
     // Handle string or null/undefined
     const stringToSplit = typeof string === 'string' ? string : '';
-    parts = stringToSplit
-      .split(delimiter!)
-      .map(s => toCase(s, _toCase) as string);
+    const splitParts = stringToSplit.split(delimiter!);
+
+    // Apply case conversion to each part
+    parts = splitParts.map(part => {
+      return toCase(part, caseFormat) as string;
+    });
   }
 
   // Filter blank entries if requested
-  return parts.filter(s => !filterBlank || s);
+  if (filterBlank) {
+    return parts.filter(part => !!part);
+  }
+
+  return parts;
 };
 
 /**
@@ -386,14 +458,23 @@ export const toArray = <T = unknown>(
   options?: ParserOptions
 ): (T | string)[] => {
   const normalizedOptions = getOptions(options);
-  const { toCase: _toCase, filterBlank } = { ...normalizedOptions };
+  const { toCase: caseFormat, filterBlank } = normalizedOptions;
 
   if (Array.isArray(x)) {
-    return x
-      .map(_x => toCase(_x, _toCase))
-      .filter(_x => !filterBlank || _x) as (T | string)[];
+    // Apply case conversion to array elements
+    const transformed = x.map(element => {
+      return toCase(element, caseFormat);
+    });
+
+    // Filter blank entries if requested
+    if (filterBlank) {
+      return transformed.filter(element => !!element) as (T | string)[];
+    }
+
+    return transformed as (T | string)[];
   }
 
+  // For non-array values, use split
   return split(x, options);
 };
 
@@ -428,19 +509,32 @@ interface ParsedError {
  */
 export const parseError = (error: unknown): ParsedError => {
   const err = error as ErrorLike;
-  let message =
-    err?.reason ||
-    err?.data?.message ||
-    err?.data?.text ||
-    err?.message ||
-    (typeof error === 'string' ? error : undefined);
-  const code = _.slice(
-    split(message, { delimiter: ' ', toCase: 'lower' }),
-    0,
-    2
-  ).join('_');
 
-  if (message?.includes('ACTION_REJECTED') || code === 'user_rejected') {
+  // Extract error message from various possible sources
+  let message: string | undefined;
+
+  if (err?.reason) {
+    message = err.reason;
+  } else if (err?.data?.message) {
+    message = err.data.message;
+  } else if (err?.data?.text) {
+    message = err.data.text;
+  } else if (err?.message) {
+    message = err.message;
+  } else if (typeof error === 'string') {
+    message = error;
+  }
+
+  // Generate error code from first two words
+  const messageParts = split(message, { delimiter: ' ', toCase: 'lower' });
+  const firstTwoWords = _.slice(messageParts, 0, 2);
+  const code = firstTwoWords.join('_');
+
+  // Handle special cases
+  const isActionRejected = message?.includes('ACTION_REJECTED');
+  const isUserRejected = code === 'user_rejected';
+
+  if (isActionRejected || isUserRejected) {
     message = 'User Rejected';
   }
 
@@ -461,7 +555,18 @@ export const parseError = (error: unknown): ParsedError => {
  */
 export const getValuesOfAxelarAddressKey = (
   data: Record<string, unknown>
-): unknown[] =>
-  Object.entries({ ...data })
-    .filter(([k, v]) => k.startsWith('axelar') && v)
-    .map(([_k, v]) => v);
+): unknown[] => {
+  const entries = Object.entries({ ...data });
+
+  // Filter for keys starting with 'axelar' that have truthy values
+  const axelarEntries = entries.filter(([key, value]) => {
+    const isAxelarKey = key.startsWith('axelar');
+    const hasValue = !!value;
+    return isAxelarKey && hasValue;
+  });
+
+  // Extract just the values
+  const values = axelarEntries.map(([_key, value]) => value);
+
+  return values;
+};
