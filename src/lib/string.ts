@@ -88,11 +88,11 @@ export const capitalize = (string: unknown): string => {
 export const camel = (string: unknown, delimiter = '_'): string => {
   const parts = toArray(string, { delimiter });
 
-  const camelCased = parts.map((s: string, i: number) => {
-    if (i > 0) {
-      return capitalize(s);
+  const camelCased = parts.map((part, index) => {
+    if (index > 0) {
+      return capitalize(part);
     }
-    return s;
+    return String(part);
   });
 
   return camelCased.join('');
@@ -210,6 +210,8 @@ export const headString = (
  * lastString('hello-world-foo') // 'foo'
  * lastString('a-b-c', '-') // 'c'
  * lastString('one_two', '_') // 'two'
+ * lastString('') // ''
+ * lastString(123) // '123'
  * ```
  */
 export const lastString = (
@@ -223,7 +225,7 @@ export const lastString = (
 /**
  * Finds an element in an array that matches the given value (case-insensitive)
  *
- * @param x - The value to search for
+ * @param searchValue - The value to search for
  * @param elements - The array of elements to search in
  * @returns The first matching element, or undefined if not found
  *
@@ -235,17 +237,20 @@ export const lastString = (
  * ```
  */
 export const find = (
-  x: string | unknown,
-  elements: unknown
+  searchValue: string,
+  elements: string[]
 ): string | undefined => {
   const array = toArray(elements);
-  return array.find((e: string) => equalsIgnoreCase(e, x as string));
+
+  return array.find(element => {
+    return equalsIgnoreCase(String(element), searchValue);
+  });
 };
 
 /**
  * Checks if any of the given patterns are included in any of the strings
  *
- * @param string - The string or array of strings to search in
+ * @param searchInput - The string or array of strings to search in
  * @param patterns - The pattern or array of patterns to search for
  * @returns True if any pattern is found in any string
  *
@@ -257,15 +262,18 @@ export const find = (
  * ```
  */
 export const includesSomePatterns = (
-  string: unknown,
-  patterns: unknown
+  searchInput: string | string[],
+  patterns: string | string[]
 ): boolean => {
   const patternArray = toArray(patterns);
-  const stringArray = toArray(string);
+  const stringArray = toArray(searchInput);
 
   for (const pattern of patternArray) {
-    for (const str of stringArray) {
-      if (str.includes(pattern)) {
+    for (const inputString of stringArray) {
+      const patternStr = String(pattern);
+      const inputStr = String(inputString);
+
+      if (inputStr.includes(patternStr)) {
         return true;
       }
     }
@@ -332,11 +340,11 @@ export const toTitle = (
 ): string => {
   const parts = split(string, { delimiter });
 
-  const transformed = parts.map((s: string) => {
+  const transformed = parts.map((word: string) => {
     if (isCapitalize) {
-      return capitalize(s);
+      return capitalize(word);
     }
-    return s;
+    return word;
   });
 
   const separator = noSpace ? '' : ' ';
@@ -346,7 +354,7 @@ export const toTitle = (
 /**
  * Filters search input by checking if a pattern matches any string in an array
  *
- * @param string - The string or array of strings to search in
+ * @param searchInput - The string or array of strings to search in
  * @param pattern - The search pattern to match
  * @returns True if pattern is empty, or if pattern matches (uses includes for length > 2, startsWith otherwise)
  *
@@ -359,7 +367,7 @@ export const toTitle = (
  * ```
  */
 export const filterSearchInput = (
-  string: unknown,
+  searchInput: string | string[],
   pattern: string | unknown
 ): boolean => {
   if (!pattern) {
@@ -370,16 +378,20 @@ export const filterSearchInput = (
     return false;
   }
 
+  // For longer patterns, use substring matching
   if (pattern.length > 2) {
-    return includesSomePatterns(string, pattern);
+    return includesSomePatterns(searchInput, pattern);
   }
 
-  const stringArray = toArray(string);
-  const lowerPattern = toCase(pattern, 'lower');
+  // For short patterns, use startsWith (prefix matching)
+  const stringArray = toArray(searchInput);
+  const lowerPattern = toCase(pattern, 'lower') as string;
 
-  for (const str of stringArray) {
-    const lowerStr = toCase(str, 'lower');
-    if (lowerStr.startsWith(lowerPattern)) {
+  for (const inputString of stringArray) {
+    const inputStr = String(inputString);
+    const lowerInputStr = toCase(inputStr, 'lower') as string;
+
+    if (lowerInputStr.startsWith(lowerPattern)) {
       return true;
     }
   }
