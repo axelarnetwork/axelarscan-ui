@@ -99,7 +99,8 @@ export const camel = (string: unknown, delimiter = '_'): string => {
 };
 
 /**
- * Removes all double quotes from a string
+ * Removes all double quotes from a string by splitting on quotes and rejoining
+ * Note: This also removes spaces that were between quoted parts
  *
  * @param string - The string to process
  * @returns The string without double quotes, or the original value if not a string
@@ -107,7 +108,8 @@ export const camel = (string: unknown, delimiter = '_'): string => {
  * @example
  * ```ts
  * removeDoubleQuote('"hello"') // 'hello'
- * removeDoubleQuote('say "hi"') // 'say hi'
+ * removeDoubleQuote('say "hi"') // 'sayhi' (space inside quotes removed)
+ * removeDoubleQuote('"hello" "world"') // 'helloworld'
  * removeDoubleQuote(123) // 123
  * ```
  */
@@ -181,13 +183,15 @@ export const toBoolean = (
  *
  * @param string - The string to split
  * @param delimiter - The delimiter to split on (default: '-')
- * @returns The first part of the split string, or undefined if empty
+ * @returns The first part of the split string, or undefined if the array is empty
  *
  * @example
  * ```ts
  * headString('hello-world-foo') // 'hello'
  * headString('a-b-c', '-') // 'a'
  * headString('one_two', '_') // 'one'
+ * headString('') // undefined (empty string results in empty array after filtering)
+ * headString(null) // undefined
  * ```
  */
 export const headString = (
@@ -203,15 +207,15 @@ export const headString = (
  *
  * @param string - The string to split
  * @param delimiter - The delimiter to split on (default: '-')
- * @returns The last part of the split string, or undefined if empty
+ * @returns The last part of the split string, or undefined if the array is empty
  *
  * @example
  * ```ts
  * lastString('hello-world-foo') // 'foo'
  * lastString('a-b-c', '-') // 'c'
  * lastString('one_two', '_') // 'two'
- * lastString('') // ''
- * lastString(123) // '123'
+ * lastString('') // undefined (empty string results in empty array after filtering)
+ * lastString(null) // undefined
  * ```
  */
 export const lastString = (
@@ -284,18 +288,21 @@ export const includesSomePatterns = (
 
 /**
  * Truncates a long string with ellipsis in the middle
+ * Truncates if string length is NOT less than (length * 2 + 3)
  *
  * @param string - The string to truncate
  * @param length - The number of characters to keep at each end (default: 10)
- * @param prefix - Optional prefix to preserve at the start (default: '')
+ * @param prefix - Optional prefix to preserve at the start (removes it, truncates, then adds back)
  * @returns The truncated string with '...' in the middle, or the original if short enough
  *
  * @example
  * ```ts
- * ellipse('0x1234567890abcdef', 4) // '0x1234...cdef'
+ * ellipse('0x1234567890abcdef', 4) // '0x12...cdef' (no prefix param)
+ * ellipse('0x1234567890abcdef', 4, '0x') // '0x1234...cdef' (with prefix param)
  * ellipse('verylongaddress123456789', 5) // 'veryl...56789'
  * ellipse('short') // 'short'
- * ellipse('0x123456789', 3, '0x') // '0x123...789'
+ * ellipse('123456789012', 5) // '123456789012' (12 chars < 13 threshold, not truncated)
+ * ellipse('1234567890123', 5) // '12345...90123' (13 chars, not < 13, truncated)
  * ```
  */
 export const ellipse = (string: unknown, length = 10, prefix = ''): string => {

@@ -61,13 +61,16 @@ export const toNumber = (number: unknown): number => {
  * Converts a value to a BigNumber string representation
  *
  * @param number - The value to convert (can be number, string, BigNumber, or FixedNumber)
- * @returns String representation of the BigNumber, or '0' if conversion fails
+ * @returns String representation of the BigNumber. On error, returns the part before '.' or '0' if no fallback available
  *
  * @example
  * ```ts
  * toBigNumber(123) // '123'
  * toBigNumber('1000000000000000000') // '1000000000000000000'
  * toBigNumber(FixedNumber.from('123.456')) // '123'
+ * toBigNumber('123.456') // '123' (extracts part before decimal on error)
+ * toBigNumber('invalid') // 'invalid' (returns as-is when no decimal present)
+ * toBigNumber(null) // '0' (fallback when no value)
  * ```
  */
 export const toBigNumber = (number: unknown): string => {
@@ -149,7 +152,10 @@ export const formatUnits = (
  * parseUnits('1.23', 18) // '1230000000000000000'
  * ```
  */
-export const parseUnits = (number = 0, decimals = 18): string => {
+export const parseUnits = (
+  number: number | string = 0,
+  decimals = 18
+): string => {
   try {
     const numberStr = number.toString();
 
@@ -190,15 +196,19 @@ export const toFixed = (number = 0, decimals = 18): string =>
 
 /**
  * Removes trailing zeros from decimal numbers and formats the result
+ * Note: Only processes values that pass isNumber check. String 'NaN' returns empty string.
  *
  * @param number - The number to process
- * @returns Formatted string with trailing zeros removed
+ * @returns Formatted string with trailing zeros removed, or empty string for non-numbers
  *
  * @example
  * ```ts
  * removeDecimals('123.4500') // '123.45'
  * removeDecimals('100.000') // '100'
  * removeDecimals('0.00000001') // '0.00000001'
+ * removeDecimals(NaN) // '< 0.00000001' (JavaScript NaN value)
+ * removeDecimals('NaN') // '' (string is not a valid number)
+ * removeDecimals(null) // ''
  * ```
  */
 export const removeDecimals = (number: unknown): string => {
