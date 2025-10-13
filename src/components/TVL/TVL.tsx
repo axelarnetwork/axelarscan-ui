@@ -1,23 +1,23 @@
 'use client';
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import _ from 'lodash';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { PiInfo } from 'react-icons/pi';
 
 import { Container } from '@/components/Container';
-import { Image } from '@/components/Image';
-import { Switch } from '@/components/Switch';
-import { Tooltip } from '@/components/Tooltip';
-import { Spinner } from '@/components/Spinner';
-import { Tag } from '@/components/Tag';
-import { Number } from '@/components/Number';
-import { ChainProfile, AssetProfile } from '@/components/Profile';
 import { useGlobalStore } from '@/components/Global';
-import { getChainData, getAssetData, getITSAssetData } from '@/lib/config';
-import { toArray } from '@/lib/parser';
+import { Image } from '@/components/Image';
+import { Number } from '@/components/Number';
+import { AssetProfile, ChainProfile } from '@/components/Profile';
+import { Spinner } from '@/components/Spinner';
+import { Switch } from '@/components/Switch';
+import { Tag } from '@/components/Tag';
+import { Tooltip } from '@/components/Tooltip';
+import { getAssetData, getChainData, getITSAssetData } from '@/lib/config';
 import { isNumber, toNumber } from '@/lib/number';
+import { toArray } from '@/lib/parser';
 
 export function TVL() {
   const [data, setData] = useState(null);
