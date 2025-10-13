@@ -21,9 +21,19 @@ import { headString, isString } from '@/lib/string';
  * isNumber(null) // false
  * ```
  */
-export const isNumber = (number: unknown): number is number | string =>
-  typeof number === 'number' ||
-  (isString(number) && !!number && !isNaN(Number(split(number).join(''))));
+export const isNumber = (number: unknown): number is number | string => {
+  if (typeof number === 'number') {
+    return true;
+  }
+
+  if (!isString(number) || !number) {
+    return false;
+  }
+
+  const cleaned = split(number).join('');
+
+  return !isNaN(Number(cleaned));
+};
 
 /**
  * Converts a value to a number, returning 0 if conversion fails
@@ -39,8 +49,13 @@ export const isNumber = (number: unknown): number is number | string =>
  * toNumber(null) // 0
  * ```
  */
-export const toNumber = (number: unknown): number =>
-  isNumber(number) ? Number(number) : 0;
+export const toNumber = (number: unknown): number => {
+  if (!isNumber(number)) {
+    return 0;
+  }
+
+  return Number(number);
+};
 
 /**
  * Converts a value to a BigNumber string representation
@@ -57,11 +72,15 @@ export const toNumber = (number: unknown): number =>
  */
 export const toBigNumber = (number: unknown): string => {
   try {
-    if (FixedNumber.isFixedNumber(number))
-      return number.round(0).toString().replace('.0', '');
+    if (FixedNumber.isFixedNumber(number)) {
+      const rounded = number.round(0).toString();
+      return rounded.replace('.0', '');
+    }
+
     return BigNumber.from(number).toString();
   } catch (error) {
-    return headString(number?.toString(), '.') || '0';
+    const fallback = headString(number?.toString(), '.');
+    return fallback || '0';
   }
 };
 
@@ -77,10 +96,15 @@ export const toBigNumber = (number: unknown): string => {
  * toFixedNumber('789.012') // FixedNumber
  * ```
  */
-export const toFixedNumber = (number: unknown): FixedNumber =>
-  FixedNumber.fromString(
-    number?.toString().includes('.') ? number.toString() : toBigNumber(number)
-  );
+export const toFixedNumber = (number: unknown): FixedNumber => {
+  const numberStr = number?.toString();
+
+  if (numberStr?.includes('.')) {
+    return FixedNumber.fromString(numberStr);
+  }
+
+  return FixedNumber.fromString(toBigNumber(number));
+};
 
 /**
  * Formats a number by dividing it by 10^decimals (useful for converting wei to ether)
@@ -103,7 +127,12 @@ export const formatUnits = (
   parseNumber = true
 ): number | string => {
   const formattedNumber = _formatUnits(toBigNumber(number), decimals);
-  return parseNumber ? toNumber(formattedNumber) : formattedNumber;
+
+  if (parseNumber) {
+    return toNumber(formattedNumber);
+  }
+
+  return formattedNumber;
 };
 
 /**
@@ -179,34 +208,52 @@ export const removeDecimals = (number: unknown): string => {
     numberStr = number.toString();
   }
 
-  if (!numberStr) return '';
-  if (numberStr.includes('NaN'))
+  if (!numberStr) {
+    return '';
+  }
+
+  if (numberStr.includes('NaN')) {
     return numberStr.replace('NaN', '< 0.00000001');
-  if (!(numberStr.indexOf('.') > -1)) return numberStr;
+  }
 
-  let decimals = numberStr.substring(numberStr.indexOf('.') + 1);
+  const decimalIndex = numberStr.indexOf('.');
+  if (decimalIndex === -1) {
+    return numberStr;
+  }
 
+  let decimals = numberStr.substring(decimalIndex + 1);
+
+  // Remove trailing zeros
   while (decimals.endsWith('0')) {
     decimals = decimals.substring(0, decimals.length - 1);
   }
 
+  // For large numbers, limit decimal places to 2
+  const integerPart = numberStr.substring(0, decimalIndex);
   if (
-    numberStr.substring(0, numberStr.indexOf('.')).length >= 7 &&
+    integerPart.length >= 7 &&
     decimals.length > 2 &&
     isNumber(`0.${decimals}`)
   ) {
     decimals = toFixed(Number(`0.${decimals}`), 2);
 
-    if (decimals.indexOf('.') > -1) {
-      decimals = decimals.substring(decimals.indexOf('.') + 1);
+    const newDecimalIndex = decimals.indexOf('.');
+    if (newDecimalIndex > -1) {
+      decimals = decimals.substring(newDecimalIndex + 1);
 
+      // Remove trailing zeros again
       while (decimals.endsWith('0')) {
         decimals = decimals.substring(0, decimals.length - 1);
       }
     }
   }
 
-  return `${numberStr.substring(0, numberStr.indexOf('.'))}${decimals ? '.' : ''}${decimals}`;
+  // Build the result
+  if (decimals) {
+    return `${integerPart}.${decimals}`;
+  }
+
+  return integerPart;
 };
 
 /**
@@ -226,9 +273,12 @@ const toDecimals = (n: unknown): string | number => {
   const sign = Math.sign(Number(n));
   let result: string | number = n as string | number;
 
-  if (/\d+\.?\d*e[\+\-]*\d+/i.test(String(n))) {
+  const nStr = String(n);
+  const isScientific = /\d+\.?\d*e[\+\-]*\d+/i.test(nStr);
+
+  if (isScientific) {
     const zero = '0';
-    const parts = String(n).toLowerCase().split('e');
+    const parts = nStr.toLowerCase().split('e');
 
     const e = parts.pop();
     let l = Math.abs(Number(e));
@@ -237,22 +287,29 @@ const toDecimals = (n: unknown): string | number => {
     const coeff_array = parts[0].split('.');
 
     if (direction === -1) {
+      // Negative exponent: move decimal left
       coeff_array[0] = String(Math.abs(Number(coeff_array[0])));
-      result = `${zero}.${new Array(l).join(zero)}${coeff_array.join('')}`;
+      const zeros = new Array(l).join(zero);
+      result = `${zero}.${zeros}${coeff_array.join('')}`;
     } else {
+      // Positive exponent: move decimal right
       const dec = coeff_array[1];
 
       if (dec) {
         l = l - dec.length;
       }
 
-      result = `${coeff_array.join('')}${new Array(l + 1).join(zero)}`;
+      const zeros = new Array(l + 1).join(zero);
+      result = `${coeff_array.join('')}${zeros}`;
     }
   }
 
-  return sign < 0 && isString(result) && !result.startsWith('-')
-    ? Number(`-${result}`)
-    : result;
+  // Handle negative sign
+  if (sign < 0 && isString(result) && !result.startsWith('-')) {
+    return Number(`-${result}`);
+  }
+
+  return result;
 };
 
 /**
@@ -276,58 +333,87 @@ export const numberFormat = (
   format: string,
   exact?: boolean
 ): string => {
-  if (number === Infinity) return 'Infinity';
+  if (number === Infinity) {
+    return 'Infinity';
+  }
 
-  let formattedNumber: string | number = numeral(number).format(
-    format.includes('.000') && Math.abs(Number(number)) >= 1.01
-      ? format.substring(0, format.indexOf('.') + (exact ? 7 : 3))
-      : format === '0,0' && toNumber(number) < 1
-        ? '0,0.00'
-        : format
+  // Determine the format to use
+  let actualFormat = format;
+
+  if (format.includes('.000') && Math.abs(Number(number)) >= 1.01) {
+    const decimalsToKeep = exact ? 7 : 3;
+    actualFormat = format.substring(0, format.indexOf('.') + decimalsToKeep);
+  } else if (format === '0,0' && toNumber(number) < 1) {
+    actualFormat = '0,0.00';
+  }
+
+  let formattedNumber: string | number = numeral(number).format(actualFormat);
+
+  // Check if formatted number has special characters that need handling
+  const hasSpecialChars = ['NaN', 'e+', 'e-', 't'].some(s =>
+    String(formattedNumber).includes(s)
   );
 
-  if (
-    ['NaN', 'e+', 'e-', 't'].findIndex(s =>
-      String(formattedNumber).includes(s)
-    ) > -1
-  ) {
+  if (hasSpecialChars) {
     formattedNumber = String(number);
 
     if (formattedNumber.includes('e-')) {
+      // Handle negative exponent (very small numbers)
       formattedNumber = String(toDecimals(number));
     } else if (formattedNumber.includes('e+')) {
+      // Handle positive exponent (very large numbers)
       const [n, e] = formattedNumber.split('e+');
+      const exponent = toNumber(e);
 
-      if (toNumber(e) <= 72) {
+      if (exponent <= 72) {
         const fixedDecimals = 2;
+        const multiplier = Math.pow(10, fixedDecimals);
+        const fixedValue = toNumber(toFixed(Number(n), fixedDecimals));
+        const integerValue = parseInt(String(fixedValue * multiplier));
 
-        let _numberStr = `${parseInt(String(toNumber(toFixed(Number(n), fixedDecimals)) * Math.pow(10, fixedDecimals)))}${_.range(
-          Number(e)
-        )
+        // Create string with trailing zeros
+        const zeros = _.range(Number(e))
           .map(_i => '0')
-          .join('')}`;
+          .join('');
+        const _numberStr = `${integerValue}${zeros}`;
+
         const _number = String(
           formatUnits(String(BigInt(_numberStr)), 16 + fixedDecimals)
         );
 
-        const _format = `0,0${Number(_number) >= 100000 ? '.00a' : Number(_number) >= 100 ? '' : Number(_number) >= 1 ? '.00' : '.000000'}`;
+        // Determine format based on magnitude
+        let _format = '0,0.000000'; // Default for small numbers
+        const numValue = Number(_number);
+
+        if (numValue >= 100000) {
+          _format = '0,0.00a';
+        } else if (numValue >= 100) {
+          _format = '0,0';
+        } else if (numValue >= 1) {
+          _format = '0,0.00';
+        }
+
         return toCase(`${numberFormat(_number, _format)}t`, 'upper');
       } else {
         return numeral(number).format('0,0e+0');
       }
     } else {
-      return toCase(
-        numeral(number).format(`0,0${Number(number) < 1 ? '.00' : '.0'}a`),
-        'upper'
-      );
+      // Handle other special cases
+      const abbreviatedFormat = Number(number) < 1 ? '0,0.00a' : '0,0.0a';
+      return toCase(numeral(number).format(abbreviatedFormat), 'upper');
     }
-  } else if (
-    isNumber(number) &&
-    ['a', '+'].findIndex(c => format.includes(c)) < 0 &&
-    toNumber(split(String(formattedNumber)).join('')).toString() !==
-      removeDecimals(split(String(formattedNumber)).join(''))
-  ) {
-    formattedNumber = String(number);
+  }
+
+  // Check if we need to reformat due to precision issues
+  const hasAbbreviation = ['a', '+'].some(c => format.includes(c));
+  if (!hasAbbreviation && isNumber(number)) {
+    const cleanedFormatted = split(String(formattedNumber)).join('');
+    const formattedAsNumber = toNumber(cleanedFormatted).toString();
+    const withoutDecimals = removeDecimals(cleanedFormatted);
+
+    if (formattedAsNumber !== withoutDecimals) {
+      formattedNumber = String(number);
+    }
   }
 
   let string = removeDecimals(formattedNumber);
