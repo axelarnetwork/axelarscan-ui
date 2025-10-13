@@ -15,8 +15,9 @@ import { split, toArray, toCase } from '@/lib/parser';
  * isString(null) // false
  * ```
  */
-export const isString = (string: unknown): string is string =>
-  typeof string === 'string';
+export const isString = (string: unknown): string is string => {
+  return typeof string === 'string';
+};
 
 /**
  * Compares two strings for equality, ignoring case sensitivity
@@ -36,7 +37,13 @@ export const isString = (string: unknown): string is string =>
 export const equalsIgnoreCase = (
   a: string | null | undefined,
   b: string | null | undefined
-): boolean => (!a && !b) || toCase(a, 'lower') === toCase(b, 'lower');
+): boolean => {
+  if (!a && !b) {
+    return true;
+  }
+
+  return toCase(a, 'lower') === toCase(b, 'lower');
+};
 
 /**
  * Capitalizes the first character of a string
@@ -52,10 +59,17 @@ export const equalsIgnoreCase = (
  * capitalize(123) // ''
  * ```
  */
-export const capitalize = (string: unknown): string =>
-  !isString(string)
-    ? ''
-    : `${string.substr(0, 1).toUpperCase()}${string.substr(1)}`;
+export const capitalize = (string: unknown): string => {
+  if (!isString(string)) {
+    return '';
+  }
+
+  if (string.length === 0) {
+    return '';
+  }
+
+  return `${string[0].toUpperCase()}${string.slice(1)}`;
+};
 
 /**
  * Converts a delimited string to camelCase
@@ -71,10 +85,18 @@ export const capitalize = (string: unknown): string =>
  * camel('hello-world', '-') // 'helloWorld'
  * ```
  */
-export const camel = (string: unknown, delimiter = '_'): string =>
-  toArray(string, { delimiter })
-    .map((s: string, i: number) => (i > 0 ? capitalize(s) : s))
-    .join('');
+export const camel = (string: unknown, delimiter = '_'): string => {
+  const parts = toArray(string, { delimiter });
+
+  const camelCased = parts.map((s: string, i: number) => {
+    if (i > 0) {
+      return capitalize(s);
+    }
+    return s;
+  });
+
+  return camelCased.join('');
+};
 
 /**
  * Removes all double quotes from a string
@@ -89,8 +111,13 @@ export const camel = (string: unknown, delimiter = '_'): string =>
  * removeDoubleQuote(123) // 123
  * ```
  */
-export const removeDoubleQuote = <T>(string: T): T | string =>
-  !isString(string) ? string : split(string, { delimiter: '"' }).join('');
+export const removeDoubleQuote = <T>(string: T): T | string => {
+  if (!isString(string)) {
+    return string;
+  }
+
+  return split(string, { delimiter: '"' }).join('');
+};
 
 /**
  * Removes the '0x' prefix from a hexadecimal string
@@ -105,12 +132,17 @@ export const removeDoubleQuote = <T>(string: T): T | string =>
  * removeHexPrefix(123) // 123
  * ```
  */
-export const removeHexPrefix = <T>(string: T): T | string =>
-  !isString(string)
-    ? string
-    : string.startsWith('0x')
-      ? string.slice(2)
-      : string;
+export const removeHexPrefix = <T>(string: T): T | string => {
+  if (!isString(string)) {
+    return string;
+  }
+
+  if (string.startsWith('0x')) {
+    return string.slice(2);
+  }
+
+  return string;
+};
 
 /**
  * Converts a value to a boolean
@@ -132,12 +164,17 @@ export const removeHexPrefix = <T>(string: T): T | string =>
 export const toBoolean = (
   string: string | boolean | unknown,
   defaultValue = true
-): boolean =>
-  typeof string === 'boolean'
-    ? string
-    : !isString(string)
-      ? defaultValue
-      : equalsIgnoreCase(string, 'true');
+): boolean => {
+  if (typeof string === 'boolean') {
+    return string;
+  }
+
+  if (!isString(string)) {
+    return defaultValue;
+  }
+
+  return equalsIgnoreCase(string, 'true');
+};
 
 /**
  * Gets the first part of a delimited string
@@ -156,7 +193,10 @@ export const toBoolean = (
 export const headString = (
   string: unknown,
   delimiter = '-'
-): string | undefined => _.head(split(string, { delimiter }));
+): string | undefined => {
+  const parts = split(string, { delimiter });
+  return _.head(parts);
+};
 
 /**
  * Gets the last part of a delimited string
@@ -175,7 +215,10 @@ export const headString = (
 export const lastString = (
   string: unknown,
   delimiter = '-'
-): string | undefined => _.last(split(string, { delimiter }));
+): string | undefined => {
+  const parts = split(string, { delimiter });
+  return _.last(parts);
+};
 
 /**
  * Finds an element in an array that matches the given value (case-insensitive)
@@ -194,8 +237,10 @@ export const lastString = (
 export const find = (
   x: string | unknown,
   elements: unknown
-): string | undefined =>
-  toArray(elements).find((e: string) => equalsIgnoreCase(e, x as string));
+): string | undefined => {
+  const array = toArray(elements);
+  return array.find((e: string) => equalsIgnoreCase(e, x as string));
+};
 
 /**
  * Checks if any of the given patterns are included in any of the strings
@@ -214,10 +259,20 @@ export const find = (
 export const includesSomePatterns = (
   string: unknown,
   patterns: unknown
-): boolean =>
-  toArray(patterns).findIndex(
-    (p: string) => toArray(string).findIndex((s: string) => s.includes(p)) > -1
-  ) > -1;
+): boolean => {
+  const patternArray = toArray(patterns);
+  const stringArray = toArray(string);
+
+  for (const pattern of patternArray) {
+    for (const str of stringArray) {
+      if (str.includes(pattern)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+};
 
 /**
  * Truncates a long string with ellipsis in the middle
@@ -235,12 +290,22 @@ export const includesSomePatterns = (
  * ellipse('0x123456789', 3, '0x') // '0x123...789'
  * ```
  */
-export const ellipse = (string: unknown, length = 10, prefix = ''): string =>
-  !isString(string) || !string
-    ? ''
-    : string.length < length * 2 + 3
-      ? string
-      : `${string.startsWith(prefix) ? prefix : ''}${string.replace(prefix, '').slice(0, length)}...${string.replace(prefix, '').slice(-length)}`;
+export const ellipse = (string: unknown, length = 10, prefix = ''): string => {
+  if (!isString(string) || !string) {
+    return '';
+  }
+
+  if (string.length < length * 2 + 3) {
+    return string;
+  }
+
+  const prefixToAdd = string.startsWith(prefix) ? prefix : '';
+  const stringWithoutPrefix = string.replace(prefix, '');
+  const start = stringWithoutPrefix.slice(0, length);
+  const end = stringWithoutPrefix.slice(-length);
+
+  return `${prefixToAdd}${start}...${end}`;
+};
 
 /**
  * Converts a delimited string to a title format
@@ -264,10 +329,19 @@ export const toTitle = (
   delimiter = '_',
   isCapitalize = false,
   noSpace = false
-): string =>
-  split(string, { delimiter })
-    .map((s: string) => (isCapitalize ? capitalize(s) : s))
-    .join(noSpace ? '' : ' ');
+): string => {
+  const parts = split(string, { delimiter });
+
+  const transformed = parts.map((s: string) => {
+    if (isCapitalize) {
+      return capitalize(s);
+    }
+    return s;
+  });
+
+  const separator = noSpace ? '' : ' ';
+  return transformed.join(separator);
+};
 
 /**
  * Filters search input by checking if a pattern matches any string in an array
@@ -287,10 +361,28 @@ export const toTitle = (
 export const filterSearchInput = (
   string: unknown,
   pattern: string | unknown
-): boolean =>
-  !pattern ||
-  (isString(pattern) && pattern.length > 2
-    ? includesSomePatterns(string, pattern)
-    : toArray(string).findIndex((s: string) =>
-        toCase(s, 'lower').startsWith(toCase(pattern, 'lower'))
-      ) > -1);
+): boolean => {
+  if (!pattern) {
+    return true;
+  }
+
+  if (!isString(pattern)) {
+    return false;
+  }
+
+  if (pattern.length > 2) {
+    return includesSomePatterns(string, pattern);
+  }
+
+  const stringArray = toArray(string);
+  const lowerPattern = toCase(pattern, 'lower');
+
+  for (const str of stringArray) {
+    const lowerStr = toCase(str, 'lower');
+    if (lowerStr.startsWith(lowerPattern)) {
+      return true;
+    }
+  }
+
+  return false;
+};
