@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 import {
   base64ToString,
   getIBCDenomBase64,

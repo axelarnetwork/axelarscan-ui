@@ -1,3 +1,6 @@
+/**
+ * @jest-environment node
+ */
 import { FixedNumber } from 'ethers';
 import {
   formatUnits,
