@@ -2,7 +2,11 @@
 
 import clsx from 'clsx';
 
-export function Spinner({ className }) {
+export interface SpinnerProps {
+  className?: string;
+}
+
+export function Spinner({ className }: SpinnerProps) {
   return (
     <div role="status">
       <svg
