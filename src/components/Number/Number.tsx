@@ -4,9 +4,9 @@ import clsx from 'clsx';
 import _ from 'lodash';
 
 import { Tooltip } from '@/components/Tooltip';
+import { isNumber, numberFormat, toFixed, toNumber } from '@/lib/number';
 import { split } from '@/lib/parser';
-import { isString, headString, lastString } from '@/lib/string';
-import { isNumber, toNumber, toFixed, numberFormat } from '@/lib/number';
+import { headString, isString, lastString } from '@/lib/string';
 
 const LARGE_NUMBER_THRESHOLD = 1000;
 
