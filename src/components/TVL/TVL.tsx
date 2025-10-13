@@ -1,5 +1,7 @@
 'use client';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import clsx from 'clsx';
 import _ from 'lodash';
 import Link from 'next/link';
@@ -18,11 +20,25 @@ import { Tooltip } from '@/components/Tooltip';
 import { getAssetData, getChainData, getITSAssetData } from '@/lib/config';
 import { isNumber, toNumber } from '@/lib/number';
 import { toArray } from '@/lib/parser';
+import {
+  AssetData,
+  ChainData,
+  ChainWithTotalValue,
+  ContractData,
+  CustomBalance,
+  DenomData,
+  GlobalStore,
+  ITSAssetData,
+  NativeChain,
+  ProcessedTVLData,
+  RawTVLData,
+  TVLPerChain,
+} from './TVL.types';
 
 export function TVL() {
-  const [data, setData] = useState(null);
-  const [includeITS, setIncludeITS] = useState(true);
-  const { chains, assets, itsAssets, tvl } = useGlobalStore();
+  const [data, setData] = useState<ProcessedTVLData[] | null>(null);
+  const [includeITS, setIncludeITS] = useState<boolean>(true);
+  const { chains, assets, itsAssets, tvl } = useGlobalStore() as GlobalStore;
 
   useEffect(() => {
     if (
@@ -34,7 +50,7 @@ export function TVL() {
     ) {
       setData(
         _.orderBy(
-          tvl.data.map((d, j) => {
+          tvl.data.map((d: RawTVLData, j: number): ProcessedTVLData => {
             const {
               asset,
               assetType,
@@ -46,22 +62,22 @@ export function TVL() {
             } = { ...d };
             let { price } = { ...d };
 
-            const assetData =
+            const assetData: AssetData | undefined =
               assetType === 'its'
-                ? getITSAssetData(asset, itsAssets)
+                ? (getITSAssetData(asset, itsAssets) as AssetData | undefined)
                 : getAssetData(asset, assets) ||
                   (total_on_contracts > 0 || total_on_tokens > 0
-                    ? {
+                    ? ({
                         ...Object.values({ ...d.tvl }).find(
-                          d => d.contract_data?.is_custom
+                          (d: TVLPerChain) => d.contract_data?.is_custom
                         )?.contract_data,
-                      }
+                      } as AssetData)
                     : undefined);
             price = toNumber(
               isNumber(price)
                 ? price
                 : isNumber(assetData?.price)
-                  ? assetData.price
+                  ? assetData?.price
                   : -1
             );
 
@@ -76,16 +92,19 @@ export function TVL() {
               nativeChain: _.head(
                 Object.entries({ ...d.tvl })
                   .filter(
-                    ([k, v]) =>
+                    ([k, v]: [string, TVLPerChain]) =>
                       toArray([v.contract_data, v.denom_data]).findIndex(
-                        d => d.is_native || d.native_chain === k
+                        (d: ContractData | DenomData) =>
+                          d.is_native || d.native_chain === k
                       ) > -1
                   )
-                  .map(([k, v]) => ({
-                    chain: k,
-                    chainData: getChainData(k, chains),
-                    ...v,
-                  }))
+                  .map(
+                    ([k, v]: [string, TVLPerChain]): NativeChain => ({
+                      chain: k,
+                      chainData: getChainData(k, chains) as ChainData,
+                      ...v,
+                    })
+                  )
               ),
             };
           }),
@@ -96,64 +115,70 @@ export function TVL() {
     }
   }, [chains, assets, itsAssets, tvl, setData]);
 
-  const loading = !(
+  const loading: boolean = !(
     data &&
     assets &&
-    data.length >= assets.filter(d => !d.no_tvl).length - 3
+    data.length >= assets.filter((d: AssetData) => !d.no_tvl).length - 3
   );
-  const filteredData = toArray(data).filter(
-    d => includeITS || d.assetType !== 'its'
+  const filteredData: ProcessedTVLData[] = toArray(data).filter(
+    (d: ProcessedTVLData) => includeITS || d.assetType !== 'its'
   );
 
-  const chainsTVL =
+  const chainsTVL: ChainWithTotalValue[] | false =
     !loading &&
     _.orderBy(
       _.uniqBy(
-        chains
+        chains!
           .filter(
-            d =>
+            (d: ChainData) =>
               !d.no_inflation &&
               !d.no_tvl &&
               (d.chain_type !== 'vm' ||
-                filteredData.filter(_d => _d.tvl?.[d.id]).length > 0)
+                filteredData.filter((_d: ProcessedTVLData) => _d.tvl?.[d.id])
+                  .length > 0)
           )
-          .map(d => ({
-            ...d,
-            total_value: _.sumBy(
-              filteredData
-                .map(_d => {
-                  const { supply, total } = { ..._d.tvl?.[d.id] };
-                  const isLockUnlock =
-                    _d.assetType === 'its' &&
-                    Object.values({ ..._d.tvl }).findIndex(d =>
-                      d.contract_data.token_manager_type?.startsWith(
-                        'lockUnlock'
-                      )
-                    ) < 0;
+          .map(
+            (d: ChainData): ChainWithTotalValue => ({
+              ...d,
+              total_value: _.sumBy(
+                filteredData
+                  .map((_d: ProcessedTVLData) => {
+                    const { supply, total } = { ..._d.tvl?.[d.id] };
+                    const isLockUnlock: boolean =
+                      _d.assetType === 'its' &&
+                      Object.values({ ..._d.tvl }).findIndex((d: TVLPerChain) =>
+                        d.contract_data?.token_manager_type?.startsWith(
+                          'lockUnlock'
+                        )
+                      ) < 0;
 
-                  let { price } = { ..._d };
+                    let { price } = { ..._d };
 
-                  if (!isLockUnlock && !price) {
-                    const assetData =
-                      _d.assetType === 'its'
-                        ? getITSAssetData(_d.asset, itsAssets)
-                        : getAssetData(_d.asset, assets);
-                    price = toNumber(
-                      isNumber(assetData?.price) ? assetData.price : 0
-                    );
-                  }
+                    if (!isLockUnlock && !price) {
+                      const assetData: AssetData | ITSAssetData | undefined =
+                        _d.assetType === 'its'
+                          ? getITSAssetData(_d.asset, itsAssets)
+                          : getAssetData(_d.asset, assets);
+                      price = toNumber(
+                        isNumber(assetData?.price) ? assetData?.price : 0
+                      );
+                    }
 
-                  return {
-                    ..._d,
-                    value: isLockUnlock
-                      ? 0
-                      : toNumber((supply || total) * price),
-                  };
-                })
-                .filter(d => d.value > 0),
-              'value'
-            ),
-          })),
+                    return {
+                      ..._d,
+                      value: isLockUnlock
+                        ? 0
+                        : // @ts-expect-error -- figure out if NaN is on purpose
+                          toNumber((supply || total) * price),
+                    };
+                  })
+                  .filter(
+                    (d: ProcessedTVLData & { value: number }) => d.value > 0
+                  ),
+                'value'
+              ),
+            })
+          ),
         'id'
       ),
       ['total_value'],
@@ -165,7 +190,7 @@ export function TVL() {
       className={clsx(!loading ? 'max-w-none sm:mt-0 lg:-mt-4' : 'sm:mt-8')}
     >
       {loading ? (
-        <Spinner />
+        <Spinner {...({} as any)} />
       ) : (
         <div className="-mx-4 overflow-x-auto lg:overflow-x-visible">
           <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
@@ -176,7 +201,7 @@ export function TVL() {
                     <span className="whitespace-nowrap">Asset</span>
                     <Switch
                       value={includeITS}
-                      onChange={v => setIncludeITS(v)}
+                      onChange={(v: boolean) => setIncludeITS(v)}
                       title="Including ITS"
                       groupClassName="!gap-x-1.5"
                       outerClassName="!h-4 !w-8"
@@ -203,13 +228,16 @@ export function TVL() {
                     <span className="whitespace-nowrap">Total Locked</span>
                     <Number
                       value={_.sumBy(
-                        filteredData.filter(d => d.value > 0),
+                        filteredData.filter(
+                          (d: ProcessedTVLData) => d.value > 0
+                        ),
                         'value'
                       )}
                       format="0,0.00a"
                       prefix="$"
                       noTooltip={true}
                       className="text-xs text-green-600 dark:text-green-500"
+                      {...({} as any)}
                     />
                   </div>
                 </th>
@@ -218,13 +246,16 @@ export function TVL() {
                     <span className="whitespace-nowrap">Moved to EVM</span>
                     <Number
                       value={_.sumBy(
-                        filteredData.filter(d => d.value_on_evm > 0),
+                        filteredData.filter(
+                          (d: ProcessedTVLData) => d.value_on_evm > 0
+                        ),
                         'value_on_evm'
                       )}
                       format="0,0.00a"
                       prefix="$"
                       noTooltip={true}
                       className="text-xs text-green-600 dark:text-green-500"
+                      {...({} as any)}
                     />
                   </div>
                 </th>
@@ -233,39 +264,50 @@ export function TVL() {
                     <span className="whitespace-nowrap">Moved to Cosmos</span>
                     <Number
                       value={_.sumBy(
-                        filteredData.filter(d => d.value_on_cosmos > 0),
+                        filteredData.filter(
+                          (d: ProcessedTVLData) => d.value_on_cosmos > 0
+                        ),
                         'value_on_cosmos'
                       )}
                       format="0,0.00a"
                       prefix="$"
                       noTooltip={true}
                       className="text-xs text-green-600 dark:text-green-500"
+                      {...({} as any)}
                     />
                   </div>
                 </th>
-                {chainsTVL.map(d => (
-                  <th key={d.id} scope="col" className="px-3 py-4 text-right">
-                    <div className="flex flex-col items-end gap-y-0.5">
-                      <div className="flex min-w-max items-center gap-x-1.5">
-                        <Image src={d.image} alt="" width={18} height={18} />
-                        <span className="whitespace-nowrap">{d.name}</span>
+                {chainsTVL !== false &&
+                  chainsTVL.map((d: ChainWithTotalValue) => (
+                    <th key={d.id} scope="col" className="px-3 py-4 text-right">
+                      <div className="flex flex-col items-end gap-y-0.5">
+                        <div className="flex min-w-max items-center gap-x-1.5">
+                          <Image
+                            src={d.image}
+                            alt=""
+                            width={18}
+                            height={18}
+                            {...({} as any)}
+                          />
+                          <span className="whitespace-nowrap">{d.name}</span>
+                        </div>
+                        <Number
+                          value={d.total_value}
+                          format="0,0.0a"
+                          prefix="$"
+                          noTooltip={true}
+                          className="text-xs font-medium text-zinc-400 dark:text-zinc-500"
+                          {...({} as any)}
+                        />
                       </div>
-                      <Number
-                        value={d.total_value}
-                        format="0,0.0a"
-                        prefix="$"
-                        noTooltip={true}
-                        className="text-xs font-medium text-zinc-400 dark:text-zinc-500"
-                      />
-                    </div>
-                  </th>
-                ))}
+                    </th>
+                  ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 bg-white dark:divide-zinc-800 dark:bg-zinc-900">
               {filteredData
-                .filter(d => d.assetData)
-                .map(d => (
+                .filter((d: ProcessedTVLData) => d.assetData)
+                .map((d: ProcessedTVLData) => (
                   <tr
                     key={d.asset}
                     className="align-top text-sm text-zinc-400 dark:text-zinc-500"
@@ -277,17 +319,20 @@ export function TVL() {
                           customAssetData={d.assetData}
                           ITSPossible={d.assetType === 'its'}
                           titleClassName="font-bold"
+                          {...({} as any)}
                         />
                         {d.assetType === 'its' && (
                           <Tooltip
                             content={
-                              Object.values({ ...d.tvl }).findIndex(d =>
-                                d.token_manager_type?.startsWith('lockUnlock')
-                              ) > -1 && !d.assetData.type?.includes('custom')
+                              Object.values({ ...d.tvl }).findIndex(
+                                (d: TVLPerChain) =>
+                                  d.token_manager_type?.startsWith('lockUnlock')
+                              ) > -1 && !d.assetData?.type?.includes('custom')
                                 ? 'canonical ITS token'
                                 : 'custom ITS token'
                             }
                             className="whitespace-nowrap"
+                            {...({} as any)}
                           >
                             <Tag className="w-fit bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100">
                               ITS
@@ -297,30 +342,35 @@ export function TVL() {
                       </div>
                     </td>
                     <td className="px-3 py-4 text-left">
-                      <ChainProfile value={d.nativeChain?.chainData?.id} />
+                      <ChainProfile
+                        value={d.nativeChain?.chainData?.id}
+                        {...({} as any)}
+                      />
                     </td>
                     <td className="px-3 py-4 text-right">
-                      {[d].map(d => {
+                      {[d].map((d: ProcessedTVLData) => {
                         const { url } = { ...d.nativeChain };
 
                         const element = (
                           <Number
                             value={d.total}
                             format="0,0.0a"
-                            suffix={` ${d.assetData.symbol}`}
+                            suffix={` ${d.assetData?.symbol}`}
                             className={clsx(
                               'text-sm font-semibold leading-4',
                               !url && 'text-zinc-700 dark:text-zinc-300'
                             )}
+                            {...({} as any)}
                           />
                         );
 
-                        const isLockUnlock =
+                        const isLockUnlock: boolean =
                           d.assetType === 'its' &&
-                          Object.values({ ...d.tvl }).findIndex(d =>
-                            d.contract_data.token_manager_type?.startsWith(
-                              'lockUnlock'
-                            )
+                          Object.values({ ...d.tvl }).findIndex(
+                            (d: TVLPerChain) =>
+                              d.contract_data?.token_manager_type?.startsWith(
+                                'lockUnlock'
+                              )
                           ) < 0;
 
                         return (
@@ -344,6 +394,7 @@ export function TVL() {
                                 <Tooltip
                                   content="The circulating supply retrieved from CoinGecko used for TVL tracking."
                                   className="w-56 text-left text-xs"
+                                  {...({} as any)}
                                 >
                                   <PiInfo className="mb-0.5 text-zinc-400 dark:text-zinc-500" />
                                 </Tooltip>
@@ -355,6 +406,7 @@ export function TVL() {
                                 format="0,0.0a"
                                 prefix="$"
                                 className="text-sm font-medium leading-4 text-zinc-400 dark:text-zinc-500"
+                                {...({} as any)}
                               />
                             )}
                           </div>
@@ -366,8 +418,9 @@ export function TVL() {
                         <Number
                           value={d.total_on_evm}
                           format="0,0.0a"
-                          suffix={` ${d.assetData.symbol}`}
+                          suffix={` ${d.assetData?.symbol}`}
                           className="text-sm font-semibold leading-4 text-zinc-700 dark:text-zinc-300"
+                          {...({} as any)}
                         />
                         {d.value_on_evm > 0 && (
                           <Number
@@ -375,6 +428,7 @@ export function TVL() {
                             format="0,0.0a"
                             prefix="$"
                             className="text-sm font-medium leading-4 text-zinc-400 dark:text-zinc-500"
+                            {...({} as any)}
                           />
                         )}
                       </div>
@@ -384,8 +438,9 @@ export function TVL() {
                         <Number
                           value={d.total_on_cosmos}
                           format="0,0.0a"
-                          suffix={` ${d.assetData.symbol}`}
+                          suffix={` ${d.assetData?.symbol}`}
                           className="text-sm font-semibold leading-4 text-zinc-700 dark:text-zinc-300"
+                          {...({} as any)}
                         />
                         {d.value_on_cosmos > 0 && (
                           <Number
@@ -393,107 +448,118 @@ export function TVL() {
                             format="0,0.0a"
                             prefix="$"
                             className="text-sm font-medium leading-4 text-zinc-400 dark:text-zinc-500"
+                            {...({} as any)}
                           />
                         )}
                       </div>
                     </td>
-                    {chainsTVL.map(c => {
-                      const {
-                        escrow_balance,
-                        supply,
-                        total,
-                        url,
-                        custom_contracts_balance,
-                        custom_tokens_supply,
-                      } = { ...d.tvl?.[c.id] };
-                      const amount =
-                        (isNumber(escrow_balance) && c.id !== 'axelarnet'
-                          ? escrow_balance
-                          : supply) || total;
-                      const value = amount * d.price;
+                    {chainsTVL !== false &&
+                      chainsTVL.map((c: ChainWithTotalValue) => {
+                        const {
+                          escrow_balance,
+                          supply,
+                          total,
+                          url,
+                          custom_contracts_balance,
+                          custom_tokens_supply,
+                        }: TVLPerChain = { ...d.tvl?.[c.id] };
+                        const amount: number | undefined =
+                          (isNumber(escrow_balance) && c.id !== 'axelarnet'
+                            ? escrow_balance
+                            : supply) || total;
+                        // @ts-expect-error -- figure out if NaN is on purpose
+                        const value: number = amount * d.price;
 
-                      const element = (
-                        <Number
-                          value={amount}
-                          format="0,0.0a"
-                          className={clsx(
-                            'text-xs font-semibold',
-                            !url && 'text-zinc-700 dark:text-zinc-300'
-                          )}
-                        />
-                      );
+                        const element = (
+                          <Number
+                            value={amount}
+                            format="0,0.0a"
+                            className={clsx(
+                              'text-xs font-semibold',
+                              !url && 'text-zinc-700 dark:text-zinc-300'
+                            )}
+                            {...({} as any)}
+                          />
+                        );
 
-                      return (
-                        <td key={c.id} className="px-3 py-4 text-right">
-                          <div className="flex flex-col items-end gap-y-1">
-                            <div className="flex flex-col items-end gap-y-0.5">
-                              {url ? (
-                                <Link
-                                  href={url}
-                                  target="_blank"
-                                  className="contents text-blue-600 dark:text-blue-500"
-                                >
-                                  {element}
-                                </Link>
-                              ) : (
-                                element
-                              )}
-                              {value > 0 && (
-                                <Number
-                                  value={value}
-                                  format="0,0.0a"
-                                  prefix="$"
-                                  className="text-xs font-medium text-zinc-400 dark:text-zinc-500"
-                                />
-                              )}
+                        return (
+                          <td key={c.id} className="px-3 py-4 text-right">
+                            <div className="flex flex-col items-end gap-y-1">
+                              <div className="flex flex-col items-end gap-y-0.5">
+                                {url ? (
+                                  <Link
+                                    href={url}
+                                    target="_blank"
+                                    className="contents text-blue-600 dark:text-blue-500"
+                                  >
+                                    {element}
+                                  </Link>
+                                ) : (
+                                  element
+                                )}
+                                {value > 0 && (
+                                  <Number
+                                    value={value}
+                                    format="0,0.0a"
+                                    prefix="$"
+                                    className="text-xs font-medium text-zinc-400 dark:text-zinc-500"
+                                    {...({} as any)}
+                                  />
+                                )}
+                              </div>
+                              {toArray(
+                                _.concat(
+                                  custom_contracts_balance,
+                                  custom_tokens_supply
+                                )
+                              ).map((c: CustomBalance, i: number) => {
+                                const { balance, supply, url }: CustomBalance =
+                                  { ...c };
+                                const amount: number | undefined = isNumber(
+                                  balance
+                                )
+                                  ? balance
+                                  : supply;
+                                const value: number =
+                                  // @ts-expect-error -- figure out if NaN is on purpose
+                                  amount * d.price;
+
+                                const element = (
+                                  <Number
+                                    value={value}
+                                    format="0,0.0a"
+                                    prefix="+$"
+                                    className={clsx(
+                                      '!text-2xs font-semibold',
+                                      !url && 'text-zinc-700 dark:text-zinc-300'
+                                    )}
+                                    {...({} as any)}
+                                  />
+                                );
+
+                                return (
+                                  <div
+                                    key={i}
+                                    className="flex flex-col items-end"
+                                  >
+                                    {url ? (
+                                      <Link
+                                        href={url}
+                                        target="_blank"
+                                        className="contents text-green-600 dark:text-green-500"
+                                      >
+                                        {element}
+                                      </Link>
+                                    ) : (
+                                      element
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
-                            {toArray(
-                              _.concat(
-                                custom_contracts_balance,
-                                custom_tokens_supply
-                              )
-                            ).map((c, i) => {
-                              const { balance, supply, url } = { ...c };
-                              const amount = isNumber(balance)
-                                ? balance
-                                : supply;
-                              const value = amount * d.price;
-
-                              const element = (
-                                <Number
-                                  value={value}
-                                  format="0,0.0a"
-                                  prefix="+$"
-                                  className={clsx(
-                                    '!text-2xs font-semibold',
-                                    !url && 'text-zinc-700 dark:text-zinc-300'
-                                  )}
-                                />
-                              );
-
-                              return (
-                                <div
-                                  key={i}
-                                  className="flex flex-col items-end"
-                                >
-                                  {url ? (
-                                    <Link
-                                      href={url}
-                                      target="_blank"
-                                      className="contents text-green-600 dark:text-green-500"
-                                    >
-                                      {element}
-                                    </Link>
-                                  ) : (
-                                    element
-                                  )}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </td>
-                      );
-                    })}
+                          </td>
+                        );
+                      })}
                   </tr>
                 ))}
             </tbody>
