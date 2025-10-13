@@ -26,6 +26,31 @@ interface XRPLWalletProps {
   className?: string;
 }
 
+interface WalletButtonProps {
+  iconSrc: string;
+  label: string;
+  onClick: () => void;
+  className?: string;
+}
+
+const WalletButton: React.FC<WalletButtonProps> = ({
+  iconSrc,
+  label,
+  onClick,
+  className,
+}) => (
+  <button
+    onClick={onClick}
+    className={clsx("w-fit", className)}
+  >
+    <div className="flex h-6 items-center gap-x-1.5 whitespace-nowrap rounded-xl bg-blue-600 px-2.5 py-1 font-display text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
+      <Image src={iconSrc} alt={label} width={16} height={16} className="" />
+      {label}
+    </div>
+  </button>
+);
+
+
 export function XRPLWallet({ children, className }: XRPLWalletProps) {
   const { address, setAddress } = useXRPLWalletStore();
 
@@ -61,50 +86,58 @@ export function XRPLWallet({ children, className }: XRPLWalletProps) {
   const WalletConnectWallet = wallets.find(w => w.name === "WalletConnect");
 
   // expand "Walletconnect" to wallets that support walletconnect
-  const WalletConnectSupportedWallets = [
-    {"name": WalletConnectWallet?.name, "icon": WalletConnectWallet?.icon}, // add WalletConnect as well
-    {"name": "Onchain", "icon": "/logos/wallets/onchain.webp"}, 
-    {"name": "Bifrost", "icon": "/logos/wallets/bifrost.webp"},
-  ];
+  let WalletConnectSupportedWallets: {name: string, icon: string}[] = [];
+  if(WalletConnectWallet) {
+    WalletConnectSupportedWallets = [
+      //{name: WalletConnectWallet.name, icon: WalletConnectWallet.icon}, // add WalletConnect as well?
+      {name: "Bifrost", icon: "/logos/wallets/bifrost.webp"},
+      {name: "Joey", icon: "/logos/wallets/joey.webp"},
+      {name: "Girin", icon: "/logos/wallets/girin.webp"},
+    ];
+  }
 
   return (
     <div className="flex flex-col gap-y-2">
-      {availableWallets.map((w, i) => (
-        w.name === "Crossmark" && !crossmarkEnabled ?
-        <button
-          key={i}
-          onClick={() => window.open("https://crossmark.io/", "_blank", "noreferrer")}
-          className={clsx(className)}
-        >
-          <div className="flex h-6 w-fit items-center gap-x-1.5 whitespace-nowrap rounded-xl bg-blue-600 px-2.5 py-1 font-display text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
-            <Image src={w.icon} alt="" width={16} height={16} className="" />
-            Install Crossmark
-          </div>
-        </button>
-        :
-        w.name === "WalletConnect" ? 
-        WalletConnectSupportedWallets.map((wcw, wci) => (
-          <button
-            key={`${i}-${wci}`} 
+      {availableWallets.flatMap((w, i) => {
+        // Case 1: Crossmark not enabled -> Show "Install Crossmark"
+        if (w.name === "Crossmark" && !crossmarkEnabled) {
+          return (
+            <WalletButton
+              key={i}
+              iconSrc={w.icon}
+              label="Install Crossmark"
+              className={className}
+              onClick={() =>
+                window.open("https://crossmark.io/", "_blank", "noreferrer")
+              }
+            />
+          );
+        }
+
+        // Case 2: WalletConnect -> Show WalletConnect wallets explicitly
+        if (w.name === "WalletConnect") {
+          return WalletConnectSupportedWallets.map((wcw, wci) => (
+            <WalletButton
+              key={`${i}-${wci}`}
+              iconSrc={wcw.icon}
+              label={wcw.name}
+              className={className}
+              onClick={() => connectXRPL(w)}
+            />
+          ));
+        }
+
+        // Case 3: Normal wallet
+        return (
+          <WalletButton
+            key={i}
+            iconSrc={w.icon}
+            label={w.name}
+            className={className}
             onClick={() => connectXRPL(w)}
-            className={clsx(className)}>
-            <div className="flex h-6 w-fit items-center gap-x-1.5 whitespace-nowrap rounded-xl bg-blue-600 px-2.5 py-1 font-display text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
-              <Image src={wcw.icon} alt="" width={16} height={16} className="" />
-              {wcw.name}
-            </div>
-          </button>
-        ))
-        :
-        <button
-          key={i}
-          onClick={() => connectXRPL(w)}
-          className={clsx(className)}>
-          <div className="flex h-6 w-fit items-center gap-x-1.5 whitespace-nowrap rounded-xl bg-blue-600 px-2.5 py-1 font-display text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
-            <Image src={w.icon} alt="" width={16} height={16} className="" />
-            {w.name}
-          </div>
-        </button>
-      ))}
+          />
+        );
+      })}
     </div>
   );
 }
