@@ -2,6 +2,7 @@
 
 import clsx from 'clsx';
 import _ from 'lodash';
+import type React from 'react';
 
 import { Tooltip } from '@/components/Tooltip';
 import { isNumber, numberFormat, toFixed, toNumber } from '@/lib/number';
@@ -9,6 +10,18 @@ import { split } from '@/lib/parser';
 import { headString, isString, lastString } from '@/lib/string';
 
 const LARGE_NUMBER_THRESHOLD = 1000;
+
+export interface NumberProps {
+  value: number | string;
+  format?: string;
+  delimiter?: string;
+  maxDecimals?: number;
+  prefix?: string;
+  suffix?: string;
+  noTooltip?: boolean;
+  tooltipContent?: string;
+  className?: string;
+}
 
 export function Number({
   value,
@@ -20,11 +33,11 @@ export function Number({
   noTooltip = false,
   tooltipContent,
   className,
-}) {
-  if (!isNumber(value)) return;
+}: NumberProps): React.JSX.Element | undefined {
+  if (!isNumber(value)) return undefined;
 
   // init value string
-  let _value = value.toString();
+  let _value: string | undefined = value.toString();
 
   if (_value && _value.includes(delimiter) && !_value.endsWith(delimiter)) {
     // remove ','
@@ -38,22 +51,24 @@ export function Number({
     }
 
     // handle exceed max decimals
-    if (Math.abs(valueNumber) >= Math.pow(10, -maxDecimals)) {
-      _value =
-        decimals.length > maxDecimals
-          ? toFixed(valueNumber, maxDecimals)
-          : undefined;
-    } else {
-      _value =
-        decimals.length > maxDecimals
-          ? `<${
-              maxDecimals > 0
-                ? `0${delimiter}${_.range(maxDecimals - 1)
-                    .map(i => '0')
-                    .join('')}`
-                : ''
-            }1`
-          : undefined;
+    if (isNumber(maxDecimals) && decimals !== undefined) {
+      if (Math.abs(valueNumber) >= Math.pow(10, -maxDecimals)) {
+        _value =
+          decimals.length > maxDecimals
+            ? toFixed(valueNumber, maxDecimals)
+            : undefined;
+      } else {
+        _value =
+          decimals.length > maxDecimals
+            ? `<${
+                maxDecimals > 0
+                  ? `0${delimiter}${_.range(maxDecimals - 1)
+                      .map(() => '0')
+                      .join('')}`
+                  : ''
+              }1`
+            : undefined;
+      }
     }
 
     // remove .0
@@ -67,7 +82,7 @@ export function Number({
       }
 
       if (
-        [delimiter, `${delimiter}0`].findIndex(s => _value.endsWith(s)) > -1
+        [delimiter, `${delimiter}0`].findIndex(s => _value!.endsWith(s)) > -1
       ) {
         _value = headString(_value, delimiter);
       }
@@ -78,7 +93,10 @@ export function Number({
 
   // remove .0
   if (isString(value) && value.endsWith(`${delimiter}0`)) {
-    value = headString(value, delimiter);
+    const headValue = headString(value, delimiter);
+    if (headValue !== undefined) {
+      value = headValue;
+    }
   }
 
   if (toNumber(_value) >= LARGE_NUMBER_THRESHOLD) {
