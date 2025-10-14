@@ -52,7 +52,6 @@ export function ChainColumnCell({
   // Don't show if amount is 0 or invalid and no url (old behavior)
   const shouldShowAmount = (isNumber(amount) && amount > 0) || url;
 
-  // If nothing to show, return empty cell
   if (!shouldShowAmount && customBalances.length === 0) {
     return <td className={chainColumnCellStyles.cell} />;
   }

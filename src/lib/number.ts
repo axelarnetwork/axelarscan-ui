@@ -264,7 +264,6 @@ export const removeDecimals = (
     }
   }
 
-  // Build the result
   if (decimals) {
     return `${integerPart}.${decimals}`;
   }
@@ -353,7 +352,6 @@ export const numberFormat = (
     return 'Infinity';
   }
 
-  // Determine the format to use
   let actualFormat = format;
 
   if (format.includes('.000') && Math.abs(Number(number)) >= 1.01) {

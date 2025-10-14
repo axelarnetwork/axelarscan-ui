@@ -19,7 +19,6 @@ export function TVL() {
 
   const processedData = useTVLData(globalStore);
 
-  // Calculate loading state
   const hasData = processedData && assets;
   const minAssetCount = assets
     ? assets.filter((asset: AssetData) => !asset.no_tvl).length - 3
@@ -28,7 +27,6 @@ export function TVL() {
     processedData && processedData.length >= minAssetCount;
   const loading = !hasData || !hasEnoughAssets;
 
-  // Filter data based on ITS toggle
   const allData = toArray(processedData);
   const filteredData: ProcessedTVLData[] = allData.filter(
     (item): item is ProcessedTVLData => {
@@ -60,7 +58,6 @@ export function TVL() {
     );
   }
 
-  // Filter to assets with valid asset data
   const assetsWithData = filteredData.filter(
     (asset: ProcessedTVLData) => asset.assetData
   );

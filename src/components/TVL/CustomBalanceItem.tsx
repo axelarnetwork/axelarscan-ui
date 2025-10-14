@@ -22,7 +22,6 @@ export function CustomBalanceItem({
 }: CustomBalanceItemProps) {
   const { balance, supply, url } = { ...customBalance };
 
-  // Use balance if available, otherwise supply
   let amount: number | undefined;
   if (isNumber(balance)) {
     amount = balance;

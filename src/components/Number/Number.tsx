@@ -32,12 +32,10 @@ export function Number({
   tooltipContent,
   className,
 }: NumberProps): React.JSX.Element | undefined {
-  // Early return if value is not a number
   if (!isNumber(value)) {
     return undefined;
   }
 
-  // Process the number value using the utility function
   const { formattedValue, originalValue, isFormatted } = processNumberValue(
     value,
     delimiter,
@@ -45,7 +43,6 @@ export function Number({
     format
   );
 
-  // Build the element
   const computedClassName = clsx(numberStyles.base, className);
   const displayText = `${prefix}${formattedValue}${suffix}`;
   const tooltipText = `${prefix}${originalValue}${suffix}`;

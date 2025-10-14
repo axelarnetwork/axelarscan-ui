@@ -118,7 +118,6 @@ export function Image({
     return null;
   }
 
-  // Determine chain-specific styling
   const chainClasses = getChainSpecificClasses(src);
 
   return (
