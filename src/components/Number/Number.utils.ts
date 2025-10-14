@@ -10,10 +10,12 @@ const LARGE_NUMBER_THRESHOLD = 1000;
  * Result of processing a number value
  */
 export interface ProcessedNumberValue {
-  /** The formatted value to display, or undefined if no formatting was applied */
-  formattedValue?: string;
+  /** The formatted value to display (always present) */
+  formattedValue: string;
   /** The original value, potentially modified (e.g., trailing .0 removed) */
   originalValue: number | string;
+  /** Whether the value was formatted/modified (determines if tooltip should be shown) */
+  isFormatted: boolean;
 }
 
 /**
@@ -25,16 +27,19 @@ export interface ProcessedNumberValue {
  * @example
  * ```ts
  * getAutoMaxDecimals(5000) // returns 0 (large numbers get no decimals)
+ * getAutoMaxDecimals(-5000) // returns 0 (negative large numbers get no decimals)
  * getAutoMaxDecimals(10) // returns 2 (medium numbers get 2 decimals)
  * getAutoMaxDecimals(0.5) // returns 6 (small numbers get 6 decimals)
  * ```
  */
 function getAutoMaxDecimals(valueNumber: number): number {
-  if (valueNumber >= LARGE_NUMBER_THRESHOLD) {
+  const absValue = Math.abs(valueNumber);
+
+  if (absValue >= LARGE_NUMBER_THRESHOLD) {
     return 0;
   }
 
-  if (valueNumber >= 1.01) {
+  if (absValue >= 1.01) {
     return 2;
   }
 
@@ -53,6 +58,7 @@ function getAutoMaxDecimals(valueNumber: number): number {
  * formatSmallValue(6, '.') // returns "< 0.000001"
  * formatSmallValue(2, '.') // returns "< 0.01"
  * formatSmallValue(0, '.') // returns "< 1"
+ * formatSmallValue(3, ',') // returns "< 0,001"
  * ```
  */
 function formatSmallValue(maxDecimals: number, delimiter: string): string {
@@ -60,6 +66,7 @@ function formatSmallValue(maxDecimals: number, delimiter: string): string {
     return '< 1';
   }
 
+  // Generate the zeros string (maxDecimals - 1 zeros)
   const zeros = _.range(maxDecimals - 1)
     .map(() => '0')
     .join('');
@@ -186,11 +193,18 @@ function cleanOriginalValue(
 }
 
 /**
- * Applies number formatting for large values
+ * Applies number formatting for large values (absolute value >= 1000)
  *
  * @param value - The value to format
  * @param format - Numeral.js format string
  * @returns Formatted value or undefined if not applicable
+ *
+ * @example
+ * ```ts
+ * applyLargeNumberFormatting(5000, '0,0.00') // returns "5,000"
+ * applyLargeNumberFormatting(-5000, '0,0.00') // returns "-5,000"
+ * applyLargeNumberFormatting(500, '0,0.00') // returns undefined
+ * ```
  */
 function applyLargeNumberFormatting(
   value: string | number | undefined,
@@ -201,7 +215,9 @@ function applyLargeNumberFormatting(
   }
 
   const numValue = toNumber(value);
-  if (numValue < LARGE_NUMBER_THRESHOLD) {
+
+  // Use absolute value for threshold check to handle negative numbers correctly
+  if (Math.abs(numValue) < LARGE_NUMBER_THRESHOLD) {
     return undefined;
   }
 
@@ -215,18 +231,21 @@ function applyLargeNumberFormatting(
  * @param delimiter - Decimal delimiter character (default: '.')
  * @param maxDecimals - Maximum number of decimal places (optional, auto-calculated if not provided)
  * @param format - Numeral.js format string for large numbers (default: '0,0.00')
- * @returns Processed number value with formatted and original values
+ * @returns Processed number value with formatted value, original value, and isFormatted flag
  *
  * @example
  * ```ts
  * processNumberValue(1234.567, '.', 2)
- * // returns { formattedValue: '1234.57', originalValue: 1234.567 }
+ * // returns { formattedValue: '1,234.57', originalValue: 1234.567, isFormatted: true }
  *
  * processNumberValue(0.0000001, '.', 6)
- * // returns { formattedValue: '< 0.000001', originalValue: 0.0000001 }
+ * // returns { formattedValue: '< 0.000001', originalValue: 0.0000001, isFormatted: true }
  *
  * processNumberValue(5000, '.', undefined, '0,0.00')
- * // returns { formattedValue: '5,000', originalValue: 5000 }
+ * // returns { formattedValue: '5,000', originalValue: 5000, isFormatted: true }
+ *
+ * processNumberValue(50.5, '.', 2)
+ * // returns { formattedValue: '50.5', originalValue: 50.5, isFormatted: false }
  * ```
  */
 export function processNumberValue(
@@ -243,12 +262,12 @@ export function processNumberValue(
   const hasDecimals =
     valueString.includes(delimiter) && !valueString.endsWith(delimiter);
 
-  let formattedValue: string | undefined;
+  let decimalFormattedValue: string | undefined;
 
   // Step 1: Handle decimal precision if the value has decimals
   // This may trim decimals, format small values as "< 0.000001", or leave unchanged
   if (hasDecimals) {
-    formattedValue = handleDecimalPrecision(
+    decimalFormattedValue = handleDecimalPrecision(
       valueString,
       delimiter,
       maxDecimals
@@ -261,34 +280,51 @@ export function processNumberValue(
   // Step 3: Apply large number formatting (e.g., 5000 -> "5,000")
   // First, try to format the already-processed decimal value
   const formattedLargeValue = applyLargeNumberFormatting(
-    formattedValue,
+    decimalFormattedValue,
     format
   );
 
   // If the formatted value is a large number, use that formatting
   if (formattedLargeValue !== undefined) {
-    formattedValue = formattedLargeValue;
-  } else {
-    // Otherwise, check if the original value itself is a large number
-    // that needs formatting (even if decimal precision wasn't applied)
-    const originalFormattedLarge = applyLargeNumberFormatting(
-      cleanedOriginalValue,
-      format
-    );
-
-    // If the original is a large number, we don't have a separate formatted value
-    // Instead, the original value IS the display value (already formatted)
-    if (originalFormattedLarge !== undefined) {
-      return {
-        formattedValue: undefined, // No separate formatted version
-        originalValue: originalFormattedLarge, // Original is now the formatted large number
-      };
-    }
+    return {
+      formattedValue: formattedLargeValue,
+      originalValue: value,
+      isFormatted: true,
+    };
   }
 
-  // Return the result: formattedValue for display, originalValue for tooltip
+  // If we have a decimal formatted value (not yet large-number formatted)
+  if (decimalFormattedValue !== undefined) {
+    return {
+      formattedValue: decimalFormattedValue,
+      originalValue: value,
+      isFormatted: true,
+    };
+  }
+
+  // Otherwise, check if the original value itself is a large number
+  // that needs formatting (even if decimal precision wasn't applied)
+  const originalFormattedLarge = applyLargeNumberFormatting(
+    cleanedOriginalValue,
+    format
+  );
+
+  if (originalFormattedLarge !== undefined) {
+    return {
+      formattedValue: originalFormattedLarge,
+      originalValue: value,
+      isFormatted: true,
+    };
+  }
+
+  // No formatting was needed
+  // Check if cleaning was applied (e.g., "123.0" -> "123")
+  const finalValue = cleanedOriginalValue.toString();
+  const wasCleaned = finalValue !== value.toString();
+
   return {
-    formattedValue, // May be undefined if no formatting was needed
-    originalValue: cleanedOriginalValue,
+    formattedValue: finalValue,
+    originalValue: value, // Always return the true original
+    isFormatted: wasCleaned, // Mark as formatted if cleaning was applied
   };
 }

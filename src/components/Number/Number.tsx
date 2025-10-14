@@ -37,27 +37,23 @@ export function Number({
   }
 
   // Process the number value using the utility function
-  const { formattedValue, originalValue } = processNumberValue(
+  const { formattedValue, originalValue, isFormatted } = processNumberValue(
     value,
     delimiter,
     maxDecimals,
     format
   );
 
-  // Determine display value and whether to show tooltip
-  const displayValue = formattedValue ?? originalValue;
-  const hasFormattedValue = formattedValue !== undefined;
-
   // Build the element
   const computedClassName = clsx('text-sm whitespace-nowrap', className);
-  const displayText = `${prefix}${displayValue}${suffix}`;
+  const displayText = `${prefix}${formattedValue}${suffix}`;
   const tooltipText = `${prefix}${originalValue}${suffix}`;
 
   const element = <span className={computedClassName}>{displayText}</span>;
 
   // Determine if tooltip should be shown
-  const shouldShowTooltipForFormatted = hasFormattedValue && !noTooltip;
-  const shouldShowTooltip = shouldShowTooltipForFormatted || tooltipContent;
+  // Show tooltip if: value was formatted (and noTooltip is false) OR custom tooltipContent provided
+  const shouldShowTooltip = (isFormatted && !noTooltip) || tooltipContent;
 
   if (shouldShowTooltip) {
     return (
