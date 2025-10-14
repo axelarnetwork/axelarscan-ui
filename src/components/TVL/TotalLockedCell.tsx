@@ -45,7 +45,7 @@ export function TotalLockedCell({ data }: TotalLockedCellProps) {
   return (
     <div className="flex flex-col items-end gap-y-1">
       <div className="flex items-center space-x-1">
-        {url ? (
+        {url && (
           <Link
             href={url}
             target="_blank"
@@ -53,9 +53,8 @@ export function TotalLockedCell({ data }: TotalLockedCellProps) {
           >
             {element}
           </Link>
-        ) : (
-          element
         )}
+        {!url && element}
         {isLockUnlock && (
           <Tooltip
             content="The circulating supply retrieved from CoinGecko used for TVL tracking."

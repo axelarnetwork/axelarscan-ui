@@ -212,7 +212,9 @@ export const toFixed = (number = 0, decimals = 18): string =>
  * removeDecimals(null) // ''
  * ```
  */
-export const removeDecimals = (number: string | number): string => {
+export const removeDecimals = (
+  number: string | number | null | undefined
+): string => {
   let numberStr: string | undefined;
 
   if (isNumber(number)) {

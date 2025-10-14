@@ -19,7 +19,14 @@ export function CustomBalanceItem({
 }: CustomBalanceItemProps) {
   const { balance, supply, url } = { ...customBalance };
 
-  const amount: number | undefined = isNumber(balance) ? balance : supply;
+  // Use balance if available, otherwise supply
+  let amount: number | undefined;
+  if (isNumber(balance)) {
+    amount = balance;
+  } else {
+    amount = supply;
+  }
+
   // @ts-expect-error -- figure out if NaN is on purpose
   const value: number = amount * price;
 
@@ -37,7 +44,7 @@ export function CustomBalanceItem({
 
   return (
     <div className="flex flex-col items-end">
-      {url ? (
+      {url && (
         <Link
           href={url}
           target="_blank"
@@ -45,9 +52,8 @@ export function CustomBalanceItem({
         >
           {element}
         </Link>
-      ) : (
-        element
       )}
+      {!url && element}
     </div>
   );
 }

@@ -54,7 +54,7 @@ export function ChainColumnCell({
     return <td className="px-3 py-4 text-right" />;
   }
 
-  const element = shouldShowAmount ? (
+  const element = (
     <Number
       value={amount ?? 0}
       format="0,0.0a"
@@ -63,14 +63,14 @@ export function ChainColumnCell({
         !url && 'text-zinc-700 dark:text-zinc-300'
       )}
     />
-  ) : null;
+  );
 
   return (
     <td className="px-3 py-4 text-right">
       <div className="flex flex-col items-end gap-y-1">
         {shouldShowAmount && (
           <div className="flex flex-col items-end gap-y-0.5">
-            {url ? (
+            {url && (
               <Link
                 href={url}
                 target="_blank"
@@ -78,9 +78,8 @@ export function ChainColumnCell({
               >
                 {element}
               </Link>
-            ) : (
-              element
             )}
+            {!url && element}
             {value > 0 && (
               <Number
                 value={value}
