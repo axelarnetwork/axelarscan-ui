@@ -79,6 +79,7 @@ export function XRPLWallet({ children, className }: XRPLWalletProps) {
 
   const crossmarkEnabled = !!window?.crossmark;
   const WalletConnectWallet = wallets.find(w => w.name === 'WalletConnect');
+  const metaMaskEnabled = !!(window?.ethereum && window.ethereum?.isMetaMask);
 
   // expand "Walletconnect" to wallets that support walletconnect
   let WalletConnectSupportedWallets: { name: string; icon: string }[] = [];
@@ -94,7 +95,7 @@ export function XRPLWallet({ children, className }: XRPLWalletProps) {
   return (
     <div className="flex flex-col gap-y-2">
       {wallets.flatMap((w, i) => {
-        // Case 1: Crossmark not enabled -> Show "Install Crossmark"
+        // Case 1.1: Crossmark not enabled -> Show "Install Crossmark"
         if (w.name === 'Crossmark' && !crossmarkEnabled) {
           return (
             <WalletButton
@@ -104,6 +105,25 @@ export function XRPLWallet({ children, className }: XRPLWalletProps) {
               className={className}
               onClick={() =>
                 window.open('https://crossmark.io/', '_blank', 'noreferrer')
+              }
+            />
+          );
+        }
+
+        // Case 1.2: MetaMask not enabled -> Show "Install Metamask"
+        if (w.name === 'MetaMask' && !metaMaskEnabled) {
+          return (
+            <WalletButton
+              key={i}
+              iconSrc={w.icon}
+              label="Install MetaMask"
+              className={className}
+              onClick={() =>
+                window.open(
+                  'https://metamask.io/en-GB/download',
+                  '_blank',
+                  'noreferrer'
+                )
               }
             />
           );
