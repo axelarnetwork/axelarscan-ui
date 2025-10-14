@@ -1,1 +1,1 @@
-export * from './Number';
+export { Number } from './Number';

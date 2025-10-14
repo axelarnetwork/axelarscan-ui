@@ -1,1 +1,1 @@
-export * from './TVL';
+export { TVL } from './TVL';

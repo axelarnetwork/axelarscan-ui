@@ -1,9 +1,9 @@
 'use client';
 
-import NextImage from 'next/image';
 import clsx from 'clsx';
+import NextImage from 'next/image';
 
-import { isString, includesSomePatterns } from '@/lib/string';
+import { includesSomePatterns, isString } from '@/lib/string';
 
 const OPTIMIZER_URL = '';
 const loader = ({ src, width, quality = 75 }) =>
