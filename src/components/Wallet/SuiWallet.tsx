@@ -10,6 +10,8 @@ import { create } from 'zustand';
 
 import '@mysten/dapp-kit/dist/index.css';
 
+import { walletStyles } from './Wallet.styles';
+
 interface SuiAccount {
   address?: string;
 }
@@ -59,7 +61,7 @@ export function SuiWallet({ children, className }: SuiWalletProps) {
     return (
       <button onClick={() => disconnect()} className={clsx(className)}>
         {children || <SuiConnectButton /> || (
-          <div className="flex h-6 items-center whitespace-nowrap rounded-xl bg-red-600 px-2.5 py-1 font-display text-white hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-600">
+          <div className={clsx(walletStyles.button.base, walletStyles.button.disconnect)}>
             Disconnect
           </div>
         )}
@@ -70,7 +72,7 @@ export function SuiWallet({ children, className }: SuiWalletProps) {
   return (
     <button onClick={() => connect()} className={clsx(className)}>
       {children || <SuiConnectButton /> || (
-        <div className="flex h-6 items-center whitespace-nowrap rounded-xl bg-blue-600 px-2.5 py-1 font-display text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
+        <div className={clsx(walletStyles.button.base, walletStyles.button.connect)}>
           Connect
         </div>
       )}

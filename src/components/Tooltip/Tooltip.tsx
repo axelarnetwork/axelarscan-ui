@@ -3,6 +3,8 @@
 import clsx from 'clsx';
 import type { ReactNode } from 'react';
 
+import { tooltipStyles } from './Tooltip.styles';
+
 export interface TooltipProps {
   content: ReactNode;
   className?: string;
@@ -17,13 +19,9 @@ export function Tooltip({
   parentClassName,
 }: TooltipProps) {
   return (
-    <div
-      className={clsx('group relative flex justify-center', parentClassName)}
-    >
-      <div className="absolute -top-10 z-50 hidden rounded-lg bg-black px-2 py-1 group-hover:block">
-        <div className={clsx('text-sm font-normal text-white', className)}>
-          {content}
-        </div>
+    <div className={clsx(tooltipStyles.parent, parentClassName)}>
+      <div className={tooltipStyles.popup}>
+        <div className={clsx(tooltipStyles.content, className)}>{content}</div>
       </div>
       {children}
     </div>

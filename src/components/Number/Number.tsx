@@ -6,6 +6,7 @@ import type React from 'react';
 import { Tooltip } from '@/components/Tooltip';
 import { isNumber } from '@/lib/number';
 
+import { numberStyles } from './Number.styles';
 import { processNumberValue } from './Number.utils';
 
 export interface NumberProps {
@@ -45,7 +46,7 @@ export function Number({
   );
 
   // Build the element
-  const computedClassName = clsx('text-sm whitespace-nowrap', className);
+  const computedClassName = clsx(numberStyles.base, className);
   const displayText = `${prefix}${formattedValue}${suffix}`;
   const tooltipText = `${prefix}${originalValue}${suffix}`;
 
@@ -59,7 +60,7 @@ export function Number({
     return (
       <Tooltip
         content={tooltipContent || tooltipText}
-        className="whitespace-nowrap"
+        className={numberStyles.tooltip}
       >
         {element}
       </Tooltip>

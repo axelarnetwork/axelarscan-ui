@@ -11,6 +11,8 @@ import clsx from 'clsx';
 import { useEffect } from 'react';
 import { create } from 'zustand';
 
+import { walletStyles } from './Wallet.styles';
+
 interface XRPLWalletState {
   address: string | null;
   setAddress: (address: string | null) => void;
@@ -48,7 +50,7 @@ export function XRPLWallet({ children, className }: XRPLWalletProps) {
     return (
       <button onClick={() => disconnectXRPL()} className={clsx(className)}>
         {children || (
-          <div className="flex h-6 items-center whitespace-nowrap rounded-xl bg-red-600 px-2.5 py-1 font-display text-white hover:bg-red-500 dark:bg-red-500 dark:hover:bg-red-600">
+          <div className={clsx(walletStyles.button.base, walletStyles.button.disconnect)}>
             Disconnect
           </div>
         )}
@@ -61,14 +63,16 @@ export function XRPLWallet({ children, className }: XRPLWalletProps) {
   );
 
   return (
-    <div className="flex flex-col gap-y-2">
+    <div className={walletStyles.layout.walletList}>
       {availableWallets.map((w, i) => (
-        <button
-          key={i}
-          onClick={() => connectXRPL(w)}
-          className={clsx(className)}
-        >
-          <div className="flex h-6 w-fit items-center gap-x-1.5 whitespace-nowrap rounded-xl bg-blue-600 px-2.5 py-1 font-display text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
+        <button key={i} onClick={() => connectXRPL(w)} className={clsx(className)}>
+          <div
+            className={clsx(
+              walletStyles.layout.buttonWithIcon,
+              walletStyles.button.base,
+              walletStyles.button.connect
+            )}
+          >
             <Image src={w.icon} alt="" width={16} height={16} className="" />
             {w.name}
           </div>

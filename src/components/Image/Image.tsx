@@ -5,6 +5,12 @@ import NextImage, { type ImageProps as NextImageProps } from 'next/image';
 import type React from 'react';
 
 import { includesSomePatterns, isString } from '@/lib/string';
+import {
+  darkBackgroundChains,
+  fullWhiteBackgroundChains,
+  imageStyles,
+  whiteBackgroundChains,
+} from './Image.styles';
 
 const OPTIMIZER_URL = '';
 
@@ -83,30 +89,19 @@ function getChainSpecificClasses(src: string): string {
     return '';
   }
 
-  // Immutable logos need full white background
-  if (includesSomePatterns(src, ['/immutable'])) {
-    return 'rounded-full bg-white';
+  // Chains that need full white background (no padding)
+  if (includesSomePatterns(src, fullWhiteBackgroundChains)) {
+    return imageStyles.chains.fullWhiteBackground;
   }
 
-  // These chains need white background with small padding
-  const whiteBackgroundChains = [
-    '/moonbeam',
-    '/moonbase',
-    '/dymension',
-    '/saga',
-    '/xion',
-    '/allora',
-    '/stellar',
-    '/xrpl',
-  ];
-
+  // Chains that need white background with small padding
   if (includesSomePatterns(src, whiteBackgroundChains)) {
-    return 'rounded-full bg-white p-0.5';
+    return imageStyles.chains.whiteBackground;
   }
 
-  // Blast needs dark background with more padding
-  if (includesSomePatterns(src, ['/blast'])) {
-    return 'rounded-full bg-zinc-900 p-1';
+  // Chains that need dark background with more padding
+  if (includesSomePatterns(src, darkBackgroundChains)) {
+    return imageStyles.chains.darkBackground;
   }
 
   // No special styling needed
