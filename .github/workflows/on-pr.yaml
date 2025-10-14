@@ -37,6 +37,12 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Run tests
+        run: |
+          echo "Running tests..."
+          npm test
+          echo "Tests completed"
+
       - name: Run linting check
         run: |
           echo "Running ESLint..."
