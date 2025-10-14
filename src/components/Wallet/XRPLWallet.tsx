@@ -77,7 +77,6 @@ export function XRPLWallet({ children, className }: XRPLWalletProps) {
     );
   }
 
-  const availableWallets = wallets;
   const crossmarkEnabled = !!window?.crossmark;
   const WalletConnectWallet = wallets.find(w => w.name === 'WalletConnect');
 
@@ -94,7 +93,7 @@ export function XRPLWallet({ children, className }: XRPLWalletProps) {
 
   return (
     <div className="flex flex-col gap-y-2">
-      {availableWallets.flatMap((w, i) => {
+      {wallets.flatMap((w, i) => {
         // Case 1: Crossmark not enabled -> Show "Install Crossmark"
         if (w.name === 'Crossmark' && !crossmarkEnabled) {
           return (
