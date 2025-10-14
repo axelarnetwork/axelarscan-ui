@@ -1,15 +1,12 @@
 'use client';
 
 import clsx from 'clsx';
-import _ from 'lodash';
 import type React from 'react';
 
 import { Tooltip } from '@/components/Tooltip';
-import { isNumber, numberFormat, toFixed, toNumber } from '@/lib/number';
-import { split } from '@/lib/parser';
-import { headString, isString, lastString } from '@/lib/string';
+import { isNumber } from '@/lib/number';
 
-const LARGE_NUMBER_THRESHOLD = 1000;
+import { processNumberValue } from './Number.utils';
 
 export interface NumberProps {
   value: number | string;
@@ -34,105 +31,44 @@ export function Number({
   tooltipContent,
   className,
 }: NumberProps): React.JSX.Element | undefined {
-  if (!isNumber(value)) return undefined;
-
-  // init value string
-  let _value: string | undefined = value.toString();
-
-  if (_value && _value.includes(delimiter) && !_value.endsWith(delimiter)) {
-    // remove ','
-    const valueNumber = toNumber(split(_value).join(''));
-    const decimals = lastString(_value, delimiter);
-
-    // auto set max decimals
-    if (!isNumber(maxDecimals)) {
-      maxDecimals =
-        valueNumber >= LARGE_NUMBER_THRESHOLD ? 0 : valueNumber >= 1.01 ? 2 : 6;
-    }
-
-    // handle exceed max decimals
-    if (isNumber(maxDecimals) && decimals !== undefined) {
-      if (Math.abs(valueNumber) >= Math.pow(10, -maxDecimals)) {
-        _value =
-          decimals.length > maxDecimals
-            ? toFixed(valueNumber, maxDecimals)
-            : undefined;
-      } else {
-        _value =
-          decimals.length > maxDecimals
-            ? `<${
-                maxDecimals > 0
-                  ? `0${delimiter}${_.range(maxDecimals - 1)
-                      .map(() => '0')
-                      .join('')}`
-                  : ''
-              }1`
-            : undefined;
-      }
-    }
-
-    // remove .0
-    if (_value) {
-      while (
-        _value.includes(delimiter) &&
-        _value.endsWith('0') &&
-        !_value.endsWith(`${delimiter}00`)
-      ) {
-        _value = _value.substring(0, _value.length - 1);
-      }
-
-      if (
-        [delimiter, `${delimiter}0`].findIndex(s => _value!.endsWith(s)) > -1
-      ) {
-        _value = headString(_value, delimiter);
-      }
-    }
-  } else {
-    _value = undefined;
+  // Early return if value is not a number
+  if (!isNumber(value)) {
+    return undefined;
   }
 
-  // remove .0
-  if (isString(value) && value.endsWith(`${delimiter}0`)) {
-    const headValue = headString(value, delimiter);
-    if (headValue !== undefined) {
-      value = headValue;
-    }
-  }
-
-  if (toNumber(_value) >= LARGE_NUMBER_THRESHOLD) {
-    _value = numberFormat(_value, format, true);
-  } else if (toNumber(value) >= LARGE_NUMBER_THRESHOLD) {
-    value = numberFormat(value, format, true);
-  }
-
-  className = clsx('text-sm whitespace-nowrap', className);
-
-  const element = (
-    <span className={className}>
-      {isString(_value)
-        ? `${prefix}${_value}${suffix}`
-        : isNumber(value) || isString(value)
-          ? `${prefix}${value}${suffix}`
-          : '-'}
-    </span>
+  // Process the number value using the utility function
+  const { formattedValue, originalValue } = processNumberValue(
+    value,
+    delimiter,
+    maxDecimals,
+    format
   );
 
-  return isString(_value) ? (
-    !noTooltip || tooltipContent ? (
+  // Determine display value and whether to show tooltip
+  const displayValue = formattedValue ?? originalValue;
+  const hasFormattedValue = formattedValue !== undefined;
+
+  // Build the element
+  const computedClassName = clsx('text-sm whitespace-nowrap', className);
+  const displayText = `${prefix}${displayValue}${suffix}`;
+  const tooltipText = `${prefix}${originalValue}${suffix}`;
+
+  const element = <span className={computedClassName}>{displayText}</span>;
+
+  // Determine if tooltip should be shown
+  const shouldShowTooltipForFormatted = hasFormattedValue && !noTooltip;
+  const shouldShowTooltip = shouldShowTooltipForFormatted || tooltipContent;
+
+  if (shouldShowTooltip) {
+    return (
       <Tooltip
-        content={tooltipContent || `${prefix}${value}${suffix}`}
+        content={tooltipContent || tooltipText}
         className="whitespace-nowrap"
       >
         {element}
       </Tooltip>
-    ) : (
-      element
-    )
-  ) : tooltipContent ? (
-    <Tooltip content={tooltipContent} className="whitespace-nowrap">
-      {element}
-    </Tooltip>
-  ) : (
-    element
-  );
+    );
+  }
+
+  return element;
 }
