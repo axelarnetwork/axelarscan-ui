@@ -1,8 +1,11 @@
-import clsx from 'clsx';
 import Link from 'next/link';
 
 import { Number } from '@/components/Number';
 import { isNumber } from '@/lib/number';
+import {
+  customBalanceItemStyles,
+  getCustomBalanceNumberClass,
+} from './CustomBalanceItem.styles';
 import { CustomBalance } from './TVL.types';
 
 interface CustomBalanceItemProps {
@@ -35,20 +38,17 @@ export function CustomBalanceItem({
       value={value}
       format="0,0.0a"
       prefix="+$"
-      className={clsx(
-        '!text-2xs font-semibold',
-        !url && 'text-zinc-700 dark:text-zinc-300'
-      )}
+      className={getCustomBalanceNumberClass(!!url)}
     />
   );
 
   return (
-    <div className="flex flex-col items-end">
+    <div className={customBalanceItemStyles.container}>
       {url && (
         <Link
           href={url}
           target="_blank"
-          className="contents text-green-600 dark:text-green-500"
+          className={customBalanceItemStyles.link}
         >
           {element}
         </Link>

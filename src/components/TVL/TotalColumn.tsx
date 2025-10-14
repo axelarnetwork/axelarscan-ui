@@ -1,4 +1,5 @@
 import { Number } from '@/components/Number';
+import { totalColumnStyles } from './TotalColumn.styles';
 
 interface TotalColumnProps {
   total: number;
@@ -16,19 +17,19 @@ export function TotalColumn({ total, value, symbol }: TotalColumnProps) {
   }
 
   return (
-    <div className="flex flex-col items-end gap-y-1">
+    <div className={totalColumnStyles.container}>
       <Number
         value={total}
         format="0,0.0a"
         suffix={symbol ? ` ${symbol}` : ''}
-        className="text-sm font-semibold leading-4 text-zinc-700 dark:text-zinc-300"
+        className={totalColumnStyles.total}
       />
       {value > 0 && (
         <Number
           value={value}
           format="0,0.0a"
           prefix="$"
-          className="text-sm font-medium leading-4 text-zinc-400 dark:text-zinc-500"
+          className={totalColumnStyles.value}
         />
       )}
     </div>

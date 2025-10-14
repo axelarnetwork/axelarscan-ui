@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { AssetProfile, ChainProfile } from '@/components/Profile';
+import { assetRowStyles } from './AssetRow.styles';
 import { ChainColumnCell } from './ChainColumnCell';
 import { ITSBadge } from './ITSBadge';
 import { TotalColumn } from './TotalColumn';
@@ -18,18 +19,15 @@ interface AssetRowProps {
  */
 export function AssetRow({ data, chainsTVL }: AssetRowProps) {
   return (
-    <tr
-      key={data.asset}
-      className="align-top text-sm text-zinc-400 dark:text-zinc-500"
-    >
+    <tr key={data.asset} className={assetRowStyles.row}>
       {/* Asset Name Column */}
-      <td className="sticky left-0 z-10 px-3 py-4 text-left backdrop-blur backdrop-filter">
-        <div className="flex-items-center flex gap-x-2">
+      <td className={assetRowStyles.cell.assetName}>
+        <div className={assetRowStyles.assetNameContent}>
           <AssetProfile
             value={data.asset}
             customAssetData={data.assetData}
             ITSPossible={data.assetType === 'its'}
-            titleClassName="font-bold"
+            titleClassName={assetRowStyles.assetProfile.titleClass}
             {...({} as any)}
           />
           <ITSBadge data={data} />
@@ -37,7 +35,7 @@ export function AssetRow({ data, chainsTVL }: AssetRowProps) {
       </td>
 
       {/* Native Chain Column */}
-      <td className="px-3 py-4 text-left">
+      <td className={assetRowStyles.cell.standard}>
         <ChainProfile
           value={data.nativeChain?.chainData?.id}
           {...({} as any)}
@@ -45,12 +43,12 @@ export function AssetRow({ data, chainsTVL }: AssetRowProps) {
       </td>
 
       {/* Total Locked Column */}
-      <td className="px-3 py-4 text-right">
+      <td className={assetRowStyles.cell.rightAlign}>
         <TotalLockedCell data={data} />
       </td>
 
       {/* Moved to EVM Column */}
-      <td className="px-3 py-4 text-right">
+      <td className={assetRowStyles.cell.rightAlign}>
         <TotalColumn
           total={data.total_on_evm}
           value={data.value_on_evm}
@@ -59,7 +57,7 @@ export function AssetRow({ data, chainsTVL }: AssetRowProps) {
       </td>
 
       {/* Moved to Cosmos Column */}
-      <td className="px-3 py-4 text-right">
+      <td className={assetRowStyles.cell.rightAlign}>
         <TotalColumn
           total={data.total_on_cosmos}
           value={data.value_on_cosmos}

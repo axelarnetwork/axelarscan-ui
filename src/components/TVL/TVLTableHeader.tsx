@@ -1,10 +1,14 @@
-import clsx from 'clsx';
 import _ from 'lodash';
 
 import { Image } from '@/components/Image';
 import { Number } from '@/components/Number';
 import { Switch } from '@/components/Switch';
 import { ChainWithTotalValue, ProcessedTVLData } from './TVL.types';
+import {
+  getSwitchTitleClass,
+  switchStyles,
+  tableHeaderStyles,
+} from './TVLTableHeader.styles';
 
 interface TVLTableHeaderProps {
   includeITS: boolean;
@@ -39,82 +43,87 @@ export function TVLTableHeader({
   );
 
   return (
-    <thead className="sticky top-0 z-20 bg-white dark:bg-zinc-900">
-      <tr className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
-        <th scope="col" className="px-3 py-4 text-left">
-          <div className="flex flex-col gap-y-0.5">
-            <span className="whitespace-nowrap">Asset</span>
+    <thead className={tableHeaderStyles.thead}>
+      <tr className={tableHeaderStyles.headerRow}>
+        <th scope="col" className={tableHeaderStyles.headerCell.left}>
+          <div className={tableHeaderStyles.columnContent.base}>
+            <span className={tableHeaderStyles.columnLabel}>Asset</span>
             <Switch
               value={includeITS}
               onChange={onToggleITS}
               title="Including ITS"
-              groupClassName="!gap-x-1.5"
-              outerClassName="!h-4 !w-8"
-              innerClassName="!h-3 !w-3"
-              labelClassName="h-4 flex items-center"
-              titleClassName={clsx(
-                'text-xs !font-normal',
-                !includeITS && '!text-zinc-400 dark:!text-zinc-500'
-              )}
+              groupClassName={switchStyles.group}
+              outerClassName={switchStyles.outer}
+              innerClassName={switchStyles.inner}
+              labelClassName={switchStyles.label}
+              titleClassName={getSwitchTitleClass(includeITS)}
             />
           </div>
         </th>
-        <th scope="col" className="whitespace-nowrap px-3 py-4 text-left">
-          <div className="flex flex-col gap-y-0.5">
-            <span className="whitespace-nowrap">Native Chain</span>
-            <div className="h-4" />
+        <th scope="col" className={tableHeaderStyles.headerCell.leftNoWrap}>
+          <div className={tableHeaderStyles.columnContent.base}>
+            <span className={tableHeaderStyles.columnLabel}>Native Chain</span>
+            <div className={tableHeaderStyles.spacer} />
           </div>
         </th>
-        <th scope="col" className="px-3 py-4 text-right">
-          <div className="flex flex-col items-end gap-y-0.5">
-            <span className="whitespace-nowrap">Total Locked</span>
+        <th scope="col" className={tableHeaderStyles.headerCell.right}>
+          <div className={tableHeaderStyles.columnContent.alignEnd}>
+            <span className={tableHeaderStyles.columnLabel}>Total Locked</span>
             <Number
               value={totalLockedValue}
               format="0,0.00a"
               prefix="$"
               noTooltip={true}
-              className="text-xs text-green-600 dark:text-green-500"
+              className={tableHeaderStyles.summaryNumber}
             />
           </div>
         </th>
-        <th scope="col" className="px-3 py-4 text-right">
-          <div className="flex flex-col items-end gap-y-0.5">
-            <span className="whitespace-nowrap">Moved to EVM</span>
+        <th scope="col" className={tableHeaderStyles.headerCell.right}>
+          <div className={tableHeaderStyles.columnContent.alignEnd}>
+            <span className={tableHeaderStyles.columnLabel}>Moved to EVM</span>
             <Number
               value={totalEVMValue}
               format="0,0.00a"
               prefix="$"
               noTooltip={true}
-              className="text-xs text-green-600 dark:text-green-500"
+              className={tableHeaderStyles.summaryNumber}
             />
           </div>
         </th>
-        <th scope="col" className="px-3 py-4 text-right">
-          <div className="flex flex-col items-end gap-y-0.5">
-            <span className="whitespace-nowrap">Moved to Cosmos</span>
+        <th scope="col" className={tableHeaderStyles.headerCell.right}>
+          <div className={tableHeaderStyles.columnContent.alignEnd}>
+            <span className={tableHeaderStyles.columnLabel}>
+              Moved to Cosmos
+            </span>
             <Number
               value={totalCosmosValue}
               format="0,0.00a"
               prefix="$"
               noTooltip={true}
-              className="text-xs text-green-600 dark:text-green-500"
+              className={tableHeaderStyles.summaryNumber}
             />
           </div>
         </th>
         {chainsTVL !== false &&
           chainsTVL.map((chain: ChainWithTotalValue) => (
-            <th key={chain.id} scope="col" className="px-3 py-4 text-right">
-              <div className="flex flex-col items-end gap-y-0.5">
-                <div className="flex min-w-max items-center gap-x-1.5">
+            <th
+              key={chain.id}
+              scope="col"
+              className={tableHeaderStyles.headerCell.right}
+            >
+              <div className={tableHeaderStyles.columnContent.alignEnd}>
+                <div className={tableHeaderStyles.chainHeader}>
                   <Image src={chain.image} alt="" width={18} height={18} />
-                  <span className="whitespace-nowrap">{chain.name}</span>
+                  <span className={tableHeaderStyles.columnLabel}>
+                    {chain.name}
+                  </span>
                 </div>
                 <Number
                   value={chain.total_value}
                   format="0,0.0a"
                   prefix="$"
                   noTooltip={true}
-                  className="text-xs font-medium text-zinc-400 dark:text-zinc-500"
+                  className={tableHeaderStyles.chainValue}
                 />
               </div>
             </th>

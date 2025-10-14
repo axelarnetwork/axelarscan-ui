@@ -8,6 +8,7 @@ import { Spinner } from '@/components/Spinner';
 import { toArray } from '@/lib/parser';
 import { AssetRow } from './AssetRow';
 import { useChainsTVL, useTVLData } from './TVL.hooks';
+import { tvlStyles } from './TVL.styles';
 import { AssetData, GlobalStore, ProcessedTVLData } from './TVL.types';
 import { TVLTableHeader } from './TVLTableHeader';
 
@@ -53,7 +54,7 @@ export function TVL() {
 
   if (loading) {
     return (
-      <Container className="sm:mt-8">
+      <Container className={tvlStyles.loadingContainer}>
         <Spinner />
       </Container>
     );
@@ -65,16 +66,16 @@ export function TVL() {
   );
 
   return (
-    <Container className="max-w-none sm:mt-0 lg:-mt-4">
-      <div className="-mx-4 overflow-x-auto lg:overflow-x-visible">
-        <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
+    <Container className={tvlStyles.container}>
+      <div className={tvlStyles.tableWrapper}>
+        <table className={tvlStyles.table}>
           <TVLTableHeader
             includeITS={includeITS}
             onToggleITS={setIncludeITS}
             filteredData={filteredData}
             chainsTVL={chainsTVL}
           />
-          <tbody className="divide-y divide-zinc-100 bg-white dark:divide-zinc-800 dark:bg-zinc-900">
+          <tbody className={tvlStyles.tableBody}>
             {assetsWithData.map((asset: ProcessedTVLData) => (
               <AssetRow key={asset.asset} data={asset} chainsTVL={chainsTVL} />
             ))}

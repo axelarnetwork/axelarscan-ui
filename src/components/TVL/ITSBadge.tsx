@@ -1,5 +1,6 @@
 import { Tag } from '@/components/Tag';
 import { Tooltip } from '@/components/Tooltip';
+import { itsBadgeStyles } from './ITSBadge.styles';
 import { ProcessedTVLData, TVLPerChain } from './TVL.types';
 
 interface ITSBadgeProps {
@@ -27,10 +28,8 @@ export function ITSBadge({ data }: ITSBadgeProps) {
     : 'custom ITS token';
 
   return (
-    <Tooltip content={tooltipContent} className="whitespace-nowrap">
-      <Tag className="w-fit bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100">
-        ITS
-      </Tag>
+    <Tooltip content={tooltipContent} className={itsBadgeStyles.tooltip}>
+      <Tag className={itsBadgeStyles.tag}>ITS</Tag>
     </Tooltip>
   );
 }

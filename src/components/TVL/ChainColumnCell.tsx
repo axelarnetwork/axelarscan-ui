@@ -1,10 +1,13 @@
-import clsx from 'clsx';
 import _ from 'lodash';
 import Link from 'next/link';
 
 import { Number } from '@/components/Number';
 import { isNumber } from '@/lib/number';
 import { toArray } from '@/lib/parser';
+import {
+  chainColumnCellStyles,
+  getAmountNumberClass,
+} from './ChainColumnCell.styles';
 import { CustomBalanceItem } from './CustomBalanceItem';
 import { CustomBalance, TVLPerChain } from './TVL.types';
 
@@ -51,30 +54,27 @@ export function ChainColumnCell({
 
   // If nothing to show, return empty cell
   if (!shouldShowAmount && customBalances.length === 0) {
-    return <td className="px-3 py-4 text-right" />;
+    return <td className={chainColumnCellStyles.cell} />;
   }
 
   const element = (
     <Number
       value={amount ?? 0}
       format="0,0.0a"
-      className={clsx(
-        'text-xs font-semibold',
-        !url && 'text-zinc-700 dark:text-zinc-300'
-      )}
+      className={getAmountNumberClass(!!url)}
     />
   );
 
   return (
-    <td className="px-3 py-4 text-right">
-      <div className="flex flex-col items-end gap-y-1">
+    <td className={chainColumnCellStyles.cell}>
+      <div className={chainColumnCellStyles.container}>
         {shouldShowAmount && (
-          <div className="flex flex-col items-end gap-y-0.5">
+          <div className={chainColumnCellStyles.amountContainer}>
             {url && (
               <Link
                 href={url}
                 target="_blank"
-                className="contents text-blue-600 dark:text-blue-500"
+                className={chainColumnCellStyles.link}
               >
                 {element}
               </Link>
@@ -85,7 +85,7 @@ export function ChainColumnCell({
                 value={value}
                 format="0,0.0a"
                 prefix="$"
-                className="text-xs font-medium text-zinc-400 dark:text-zinc-500"
+                className={chainColumnCellStyles.value}
               />
             )}
           </div>

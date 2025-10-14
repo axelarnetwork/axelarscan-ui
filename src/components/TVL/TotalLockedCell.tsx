@@ -1,9 +1,12 @@
-import clsx from 'clsx';
 import Link from 'next/link';
 import { PiInfo } from 'react-icons/pi';
 
 import { Number } from '@/components/Number';
 import { Tooltip } from '@/components/Tooltip';
+import {
+  getTotalNumberClass,
+  totalLockedCellStyles,
+} from './TotalLockedCell.styles';
 import { ProcessedTVLData, TVLPerChain } from './TVL.types';
 
 interface TotalLockedCellProps {
@@ -35,21 +38,18 @@ export function TotalLockedCell({ data }: TotalLockedCellProps) {
       value={data.total}
       format="0,0.0a"
       suffix={` ${data.assetData?.symbol}`}
-      className={clsx(
-        'text-sm font-semibold leading-4',
-        !url && 'text-zinc-700 dark:text-zinc-300'
-      )}
+      className={getTotalNumberClass(!!url)}
     />
   );
 
   return (
-    <div className="flex flex-col items-end gap-y-1">
-      <div className="flex items-center space-x-1">
+    <div className={totalLockedCellStyles.container}>
+      <div className={totalLockedCellStyles.row}>
         {url && (
           <Link
             href={url}
             target="_blank"
-            className="contents text-blue-600 dark:text-blue-500"
+            className={totalLockedCellStyles.link}
           >
             {element}
           </Link>
@@ -58,9 +58,9 @@ export function TotalLockedCell({ data }: TotalLockedCellProps) {
         {isLockUnlock && (
           <Tooltip
             content="The circulating supply retrieved from CoinGecko used for TVL tracking."
-            className="w-56 text-left text-xs"
+            className={totalLockedCellStyles.tooltip}
           >
-            <PiInfo className="mb-0.5 text-zinc-400 dark:text-zinc-500" />
+            <PiInfo className={totalLockedCellStyles.infoIcon} />
           </Tooltip>
         )}
       </div>
@@ -69,7 +69,7 @@ export function TotalLockedCell({ data }: TotalLockedCellProps) {
           value={data.value}
           format="0,0.0a"
           prefix="$"
-          className="text-sm font-medium leading-4 text-zinc-400 dark:text-zinc-500"
+          className={totalLockedCellStyles.value}
         />
       )}
     </div>
