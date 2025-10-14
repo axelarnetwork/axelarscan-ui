@@ -91,7 +91,12 @@ export function StellarWallet({ children, className }: StellarWalletProps) {
     return (
       <button onClick={() => disconnect()} className={clsx(className)}>
         {children || (
-          <div className={clsx(walletStyles.button.base, walletStyles.button.disconnect)}>
+          <div
+            className={clsx(
+              walletStyles.button.base,
+              walletStyles.button.disconnect
+            )}
+          >
             Disconnect
           </div>
         )}
@@ -102,7 +107,12 @@ export function StellarWallet({ children, className }: StellarWalletProps) {
   return (
     <button onClick={() => connect()} className={clsx(className)}>
       {children || (
-        <div className={clsx(walletStyles.button.base, walletStyles.button.connect)}>
+        <div
+          className={clsx(
+            walletStyles.button.base,
+            walletStyles.button.connect
+          )}
+        >
           Connect
         </div>
       )}

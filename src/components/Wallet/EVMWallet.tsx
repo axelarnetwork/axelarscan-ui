@@ -133,7 +133,12 @@ export function EVMWallet({
     return (
       <button onClick={() => open()} className={clsx(className)}>
         {children || (
-          <div className={clsx(walletStyles.button.base, walletStyles.button.connect)}>
+          <div
+            className={clsx(
+              walletStyles.button.base,
+              walletStyles.button.connect
+            )}
+          >
             Connect
           </div>
         )}
@@ -148,7 +153,12 @@ export function EVMWallet({
         className={clsx(className)}
       >
         {children || (
-          <div className={clsx(walletStyles.button.base, walletStyles.button.switch)}>
+          <div
+            className={clsx(
+              walletStyles.button.base,
+              walletStyles.button.switch
+            )}
+          >
             Switch Network
           </div>
         )}
@@ -159,7 +169,12 @@ export function EVMWallet({
   return (
     <button onClick={() => disconnect()} className={clsx(className)}>
       {children || (
-        <div className={clsx(walletStyles.button.base, walletStyles.button.disconnect)}>
+        <div
+          className={clsx(
+            walletStyles.button.base,
+            walletStyles.button.disconnect
+          )}
+        >
           Disconnect
         </div>
       )}

@@ -27,9 +27,17 @@ export function CosmosWallet({
 
   if (!provider) {
     return (
-      <button onClick={() => connect(connectChainId)} className={clsx(className)}>
+      <button
+        onClick={() => connect(connectChainId)}
+        className={clsx(className)}
+      >
         {children || (
-          <div className={clsx(walletStyles.button.base, walletStyles.button.connect)}>
+          <div
+            className={clsx(
+              walletStyles.button.base,
+              walletStyles.button.connect
+            )}
+          >
             Connect
           </div>
         )}
@@ -39,9 +47,17 @@ export function CosmosWallet({
 
   if (connectChainId && connectChainId !== chainId) {
     return (
-      <button onClick={() => connect(connectChainId)} className={clsx(className)}>
+      <button
+        onClick={() => connect(connectChainId)}
+        className={clsx(className)}
+      >
         {children || (
-          <div className={clsx(walletStyles.button.base, walletStyles.button.switch)}>
+          <div
+            className={clsx(
+              walletStyles.button.base,
+              walletStyles.button.switch
+            )}
+          >
             Switch Network
           </div>
         )}
@@ -52,7 +68,12 @@ export function CosmosWallet({
   return (
     <button onClick={() => disconnect()} className={clsx(className)}>
       {children || (
-        <div className={clsx(walletStyles.button.base, walletStyles.button.disconnect)}>
+        <div
+          className={clsx(
+            walletStyles.button.base,
+            walletStyles.button.disconnect
+          )}
+        >
           Disconnect
         </div>
       )}

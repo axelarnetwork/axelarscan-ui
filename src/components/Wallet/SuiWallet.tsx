@@ -61,7 +61,12 @@ export function SuiWallet({ children, className }: SuiWalletProps) {
     return (
       <button onClick={() => disconnect()} className={clsx(className)}>
         {children || <SuiConnectButton /> || (
-          <div className={clsx(walletStyles.button.base, walletStyles.button.disconnect)}>
+          <div
+            className={clsx(
+              walletStyles.button.base,
+              walletStyles.button.disconnect
+            )}
+          >
             Disconnect
           </div>
         )}
@@ -72,7 +77,12 @@ export function SuiWallet({ children, className }: SuiWalletProps) {
   return (
     <button onClick={() => connect()} className={clsx(className)}>
       {children || <SuiConnectButton /> || (
-        <div className={clsx(walletStyles.button.base, walletStyles.button.connect)}>
+        <div
+          className={clsx(
+            walletStyles.button.base,
+            walletStyles.button.connect
+          )}
+        >
           Connect
         </div>
       )}

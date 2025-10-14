@@ -50,7 +50,12 @@ export function XRPLWallet({ children, className }: XRPLWalletProps) {
     return (
       <button onClick={() => disconnectXRPL()} className={clsx(className)}>
         {children || (
-          <div className={clsx(walletStyles.button.base, walletStyles.button.disconnect)}>
+          <div
+            className={clsx(
+              walletStyles.button.base,
+              walletStyles.button.disconnect
+            )}
+          >
             Disconnect
           </div>
         )}
@@ -65,7 +70,11 @@ export function XRPLWallet({ children, className }: XRPLWalletProps) {
   return (
     <div className={walletStyles.layout.walletList}>
       {availableWallets.map((w, i) => (
-        <button key={i} onClick={() => connectXRPL(w)} className={clsx(className)}>
+        <button
+          key={i}
+          onClick={() => connectXRPL(w)}
+          className={clsx(className)}
+        >
           <div
             className={clsx(
               walletStyles.layout.buttonWithIcon,
