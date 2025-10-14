@@ -39,17 +39,13 @@ const WalletButton: React.FC<WalletButtonProps> = ({
   onClick,
   className,
 }) => (
-  <button
-    onClick={onClick}
-    className={clsx("w-fit", className)}
-  >
+  <button onClick={onClick} className={clsx('w-fit', className)}>
     <div className="flex h-6 items-center gap-x-1.5 whitespace-nowrap rounded-xl bg-blue-600 px-2.5 py-1 font-display text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
       <Image src={iconSrc} alt={label} width={16} height={16} className="" />
       {label}
     </div>
   </button>
 );
-
 
 export function XRPLWallet({ children, className }: XRPLWalletProps) {
   const { address, setAddress } = useXRPLWalletStore();
@@ -83,16 +79,16 @@ export function XRPLWallet({ children, className }: XRPLWalletProps) {
 
   const availableWallets = wallets;
   const crossmarkEnabled = !!window?.crossmark;
-  const WalletConnectWallet = wallets.find(w => w.name === "WalletConnect");
+  const WalletConnectWallet = wallets.find(w => w.name === 'WalletConnect');
 
   // expand "Walletconnect" to wallets that support walletconnect
-  let WalletConnectSupportedWallets: {name: string, icon: string}[] = [];
-  if(WalletConnectWallet) {
+  let WalletConnectSupportedWallets: { name: string; icon: string }[] = [];
+  if (WalletConnectWallet) {
     WalletConnectSupportedWallets = [
       //{name: WalletConnectWallet.name, icon: WalletConnectWallet.icon}, // add WalletConnect as well?
-      {name: "Bifrost", icon: "/logos/wallets/bifrost.webp"},
-      {name: "Joey", icon: "/logos/wallets/joey.webp"},
-      {name: "Girin", icon: "/logos/wallets/girin.webp"},
+      { name: 'Bifrost', icon: '/logos/wallets/bifrost.webp' },
+      { name: 'Joey', icon: '/logos/wallets/joey.webp' },
+      { name: 'Girin', icon: '/logos/wallets/girin.webp' },
     ];
   }
 
@@ -100,7 +96,7 @@ export function XRPLWallet({ children, className }: XRPLWalletProps) {
     <div className="flex flex-col gap-y-2">
       {availableWallets.flatMap((w, i) => {
         // Case 1: Crossmark not enabled -> Show "Install Crossmark"
-        if (w.name === "Crossmark" && !crossmarkEnabled) {
+        if (w.name === 'Crossmark' && !crossmarkEnabled) {
           return (
             <WalletButton
               key={i}
@@ -108,14 +104,14 @@ export function XRPLWallet({ children, className }: XRPLWalletProps) {
               label="Install Crossmark"
               className={className}
               onClick={() =>
-                window.open("https://crossmark.io/", "_blank", "noreferrer")
+                window.open('https://crossmark.io/', '_blank', 'noreferrer')
               }
             />
           );
         }
 
         // Case 2: WalletConnect -> Show WalletConnect wallets explicitly
-        if (w.name === "WalletConnect") {
+        if (w.name === 'WalletConnect') {
           return WalletConnectSupportedWallets.map((wcw, wci) => (
             <WalletButton
               key={`${i}-${wci}`}
