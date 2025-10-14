@@ -214,40 +214,44 @@ export function TVL() {
                     <TotalLockedCell data={d} />
                   </td>
                   <td className="px-3 py-4 text-right">
-                    <div className="flex flex-col items-end gap-y-1">
-                      <Number
-                        value={d.total_on_evm}
-                        format="0,0.0a"
-                        suffix={` ${d.assetData?.symbol}`}
-                        className="text-sm font-semibold leading-4 text-zinc-700 dark:text-zinc-300"
-                      />
-                      {d.value_on_evm > 0 && (
+                    {d.total_on_evm > 0 && (
+                      <div className="flex flex-col items-end gap-y-1">
                         <Number
-                          value={d.value_on_evm}
+                          value={d.total_on_evm}
                           format="0,0.0a"
-                          prefix="$"
-                          className="text-sm font-medium leading-4 text-zinc-400 dark:text-zinc-500"
+                          suffix={` ${d.assetData?.symbol}`}
+                          className="text-sm font-semibold leading-4 text-zinc-700 dark:text-zinc-300"
                         />
-                      )}
-                    </div>
+                        {d.value_on_evm > 0 && (
+                          <Number
+                            value={d.value_on_evm}
+                            format="0,0.0a"
+                            prefix="$"
+                            className="text-sm font-medium leading-4 text-zinc-400 dark:text-zinc-500"
+                          />
+                        )}
+                      </div>
+                    )}
                   </td>
                   <td className="px-3 py-4 text-right">
-                    <div className="flex flex-col items-end gap-y-1">
-                      <Number
-                        value={d.total_on_cosmos}
-                        format="0,0.0a"
-                        suffix={` ${d.assetData?.symbol}`}
-                        className="text-sm font-semibold leading-4 text-zinc-700 dark:text-zinc-300"
-                      />
-                      {d.value_on_cosmos > 0 && (
+                    {d.total_on_cosmos > 0 && (
+                      <div className="flex flex-col items-end gap-y-1">
                         <Number
-                          value={d.value_on_cosmos}
+                          value={d.total_on_cosmos}
                           format="0,0.0a"
-                          prefix="$"
-                          className="text-sm font-medium leading-4 text-zinc-400 dark:text-zinc-500"
+                          suffix={` ${d.assetData?.symbol}`}
+                          className="text-sm font-semibold leading-4 text-zinc-700 dark:text-zinc-300"
                         />
-                      )}
-                    </div>
+                        {d.value_on_cosmos > 0 && (
+                          <Number
+                            value={d.value_on_cosmos}
+                            format="0,0.0a"
+                            prefix="$"
+                            className="text-sm font-medium leading-4 text-zinc-400 dark:text-zinc-500"
+                          />
+                        )}
+                      </div>
+                    )}
                   </td>
                   {chainsTVL !== false &&
                     chainsTVL.map((c: ChainWithTotalValue) => (

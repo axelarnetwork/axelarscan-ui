@@ -17,6 +17,19 @@ interface TotalLockedCellProps {
 export function TotalLockedCell({ data }: TotalLockedCellProps) {
   const { url } = { ...data.nativeChain };
 
+  const isLockUnlock: boolean =
+    data.assetType === 'its' &&
+    Object.values({ ...data.tvl }).findIndex((d: TVLPerChain) =>
+      d.contract_data?.token_manager_type?.startsWith('lockUnlock')
+    ) < 0;
+
+  // Don't show if total is 0 and no url (old behavior)
+  const shouldShowAmount = data.total > 0 || url;
+
+  if (!shouldShowAmount) {
+    return null;
+  }
+
   const element = (
     <Number
       value={data.total}
@@ -28,12 +41,6 @@ export function TotalLockedCell({ data }: TotalLockedCellProps) {
       )}
     />
   );
-
-  const isLockUnlock: boolean =
-    data.assetType === 'its' &&
-    Object.values({ ...data.tvl }).findIndex((d: TVLPerChain) =>
-      d.contract_data?.token_manager_type?.startsWith('lockUnlock')
-    ) < 0;
 
   return (
     <div className="flex flex-col items-end gap-y-1">
