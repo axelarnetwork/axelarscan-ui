@@ -136,6 +136,13 @@ function handleDecimalPrecision(
     return undefined;
   }
 
+  // Validate that we got a valid number (not 0 from failed conversion)
+  // This prevents undefined/null/invalid values from being converted to "0.00"
+  const joinedValue = split(valueString).join('');
+  if (!isNumber(joinedValue)) {
+    return undefined;
+  }
+
   // Determine max decimals if not provided
   const effectiveMaxDecimals =
     maxDecimals !== undefined && isNumber(maxDecimals)
@@ -158,9 +165,6 @@ function handleDecimalPrecision(
 
   // Format to max decimals
   const fixedValue = toFixed(valueNumber, effectiveMaxDecimals);
-  if (fixedValue === undefined) {
-    return undefined;
-  }
 
   return removeTrailingZeros(fixedValue, delimiter);
 }

@@ -207,7 +207,8 @@ export const toFixed = (number = 0, decimals = 18): string =>
  * removeDecimals('100.000') // '100'
  * removeDecimals('0.00000001') // '0.00000001'
  * removeDecimals(NaN) // '< 0.00000001' (JavaScript NaN value)
- * removeDecimals('NaN') // '' (string is not a valid number)
+ * removeDecimals('NaN') // 'NaN' (string is preserved if not a valid number)
+ * removeDecimals('1K') // '1K' (numeral.js abbreviations preserved)
  * removeDecimals(null) // ''
  * ```
  */

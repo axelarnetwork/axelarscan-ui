@@ -169,15 +169,15 @@ describe('number utilities', () => {
 
     it('should handle excess decimals by truncating', () => {
       // If decimals exceed the specified decimals, truncate
+      // JavaScript precision limits affect very long decimal numbers
       const result = parseUnits(1.123456789012345678901234, 18);
-      expect(result).toBeTruthy();
       expect(typeof result).toBe('string');
+      expect(result).toBe('1123456789012345700'); // Precision-limited result
     });
 
     it('should handle numbers with more decimals than specified', () => {
       // Test the specific path where decimals.length > specified decimals (lines 165-171)
       const result = parseUnits('1.123456789012345678901234567890', 18);
-      expect(result).toBeTruthy();
       expect(typeof result).toBe('string');
       // Should truncate to 18 decimals: '1' + '123456789012345678' = '1123456789012345678'
       expect(result).toBe('1123456789012345678');
@@ -192,7 +192,7 @@ describe('number utilities', () => {
     it('should handle decimal-only numbers that create leading zeros', () => {
       // Test the while loop that removes leading zeros
       const result = parseUnits('0.000123456789012345678901234', 18);
-      expect(result).toBeTruthy();
+      expect(typeof result).toBe('string');
       // Integer part is '0', decimals are '000123456789012345', combined: '0000123456789012345'
       // After removing leading zeros: '123456789012345'
       expect(result).toBe('123456789012345');
@@ -212,8 +212,8 @@ describe('number utilities', () => {
 
     it('should handle default parameters', () => {
       const result = toFixed(1.5);
-      expect(result).toContain('1.5');
-      expect(result.split('.')[1].length).toBe(18); // Default 18 decimals
+      expect(result).toBe('1.500000000000000000'); // Default 18 decimals
+      expect(result.split('.')[1].length).toBe(18);
     });
 
     it('should handle integers', () => {
@@ -245,14 +245,22 @@ describe('number utilities', () => {
 
     it('should handle NaN value (JavaScript NaN)', () => {
       expect(removeDecimals(NaN)).toBe('< 0.00000001');
-      // String 'NaN' is not a number, so returns empty string
-      expect(removeDecimals('NaN')).toBe('');
+      // String 'NaN' is not a valid number, so returns the string as-is
+      expect(removeDecimals('NaN')).toBe('NaN');
     });
 
     it('should return empty string for empty input', () => {
       expect(removeDecimals('')).toBe('');
       expect(removeDecimals(null)).toBe('');
       expect(removeDecimals(undefined)).toBe('');
+    });
+
+    it('should preserve numeral.js abbreviation strings', () => {
+      // These come from numberFormat and should be preserved
+      expect(removeDecimals('1K')).toBe('1K');
+      expect(removeDecimals('2.5M')).toBe('2.5M');
+      expect(removeDecimals('1.2B')).toBe('1.2B');
+      expect(removeDecimals('500K')).toBe('500K');
     });
 
     it('should handle numbers that result in NaN string representation', () => {
@@ -317,11 +325,8 @@ describe('number utilities', () => {
 
     it('should handle abbreviations', () => {
       const result = numberFormat(1500000, '0.0a');
-      // With complex logic, result may vary but should be valid
-      expect(result).toBeTruthy();
       expect(typeof result).toBe('string');
-      // Just verify it's a formatted number string
-      expect(result.length).toBeGreaterThan(0);
+      expect(result).toBe('1.5M');
     });
 
     it('should handle Infinity', () => {
@@ -336,10 +341,9 @@ describe('number utilities', () => {
 
     it('should handle very large numbers in scientific notation', () => {
       const result = numberFormat(1e20, '0,0');
-      expect(result).toBeTruthy();
       expect(typeof result).toBe('string');
-      // Very large number should be formatted
-      expect(result.length).toBeGreaterThan(5);
+      // Very large number expands and formats with commas
+      expect(result).toBe('100,000,000,000,000,000,000');
     });
 
     it('should handle zero values', () => {
@@ -363,28 +367,27 @@ describe('number utilities', () => {
     });
 
     it('should handle exact parameter for decimal precision', () => {
-      // These both go through complex logic, just verify they return valid strings
+      // exact=true uses more decimals (7), exact=false uses fewer (3)
       const result1 = numberFormat(1.23456, '0.000', true);
       const result2 = numberFormat(1.23456, '0.000', false);
       expect(typeof result1).toBe('string');
-      expect(result1.length).toBeGreaterThan(0);
+      expect(result1).toBe('1.235'); // Rounded based on format
       expect(typeof result2).toBe('string');
-      expect(result2.length).toBeGreaterThan(0);
+      expect(result2).toBe('1.23'); // Truncated to 3 decimals
     });
 
     it('should handle scientific notation with e+', () => {
       // Test positive exponent handling
       const result = numberFormat(1.5e10, '0,0');
       expect(typeof result).toBe('string');
-      // 15,000,000,000
-      expect(result).toMatch(/^[\d,]+$/);
+      expect(result).toBe('15,000,000,000');
     });
 
     it('should handle scientific notation with e-', () => {
       // Test negative exponent handling
       const result = numberFormat(1.5e-10, '0.00');
       expect(typeof result).toBe('string');
-      expect(result.length).toBeGreaterThan(0);
+      expect(result).toBe('1.5E-1'); // Formatted in scientific notation
     });
 
     it('should handle very large exponents > 72', () => {
@@ -397,16 +400,15 @@ describe('number utilities', () => {
       // Test the specific path for exponents <= 72
       const result = numberFormat(1.5e15, '0,0');
       expect(typeof result).toBe('string');
-      // Should handle large numbers properly
-      expect(result).toMatch(/^[\d,]+T?$/i); // May end with T for trillion
-      expect(result.length).toBeGreaterThan(5);
+      // Large number expands fully with commas
+      expect(result).toBe('1,500,000,000,000,000');
     });
 
     it('should handle numbers that format to "t" suffix', () => {
       // Test handling of 't' (trillion) suffix
       const result = numberFormat(1e12, '0.0a');
       expect(typeof result).toBe('string');
-      expect(result.length).toBeGreaterThan(0);
+      expect(result).toBe('1.0T');
     });
 
     it('should handle precision edge cases', () => {
@@ -418,8 +420,8 @@ describe('number utilities', () => {
     it('should handle format with .000 and large numbers', () => {
       // Test the format adjustment logic with exact=true (7 decimals)
       const result1 = numberFormat(123.456, '0.000', true);
-      expect(result1).toBeTruthy();
       expect(typeof result1).toBe('string');
+      expect(result1).toBe('123.456');
 
       // Test with exact=false (3 decimals) - gets truncated, then trailing zeros removed
       const result2 = numberFormat(123.456, '0.000', false);
@@ -434,16 +436,15 @@ describe('number utilities', () => {
     it('should handle negative exponents in various ranges', () => {
       const result1 = numberFormat(1e-5, '0.00');
       expect(typeof result1).toBe('string');
-      expect(result1.length).toBeGreaterThan(0);
       expect(result1).toBe('0');
 
       const result2 = numberFormat(1e-15, '0.00');
       expect(typeof result2).toBe('string');
-      expect(result2.length).toBeGreaterThan(0);
+      expect(result2).toBe('1E-15');
 
       const result3 = numberFormat(-1e-10, '0.00');
-      expect(result3).toContain('-'); // Should include negative sign
       expect(typeof result3).toBe('string');
+      expect(result3).toBe('-1E-10'); // Negative scientific notation
     });
 
     it('should handle the special "t" suffix case', () => {
@@ -451,7 +452,7 @@ describe('number utilities', () => {
       const veryLarge = 1e13;
       const result = numberFormat(veryLarge, '0,0.0a');
       expect(typeof result).toBe('string');
-      expect(result.length).toBeGreaterThan(0);
+      expect(result).toBe('10.0T');
     });
 
     it('should handle e+ with small exponent resulting in >= 100000', () => {
@@ -494,8 +495,8 @@ describe('number utilities', () => {
     it('should handle negative scientific notation numbers', () => {
       // Test toDecimals with negative sign handling (line 318-319)
       const result = numberFormat(-1e-8, '0.00');
-      expect(result).toMatch(/-/); // Should have negative sign
       expect(typeof result).toBe('string');
+      expect(result).toBe('-1E-8'); // Negative with scientific notation
     });
 
     it('should handle e+ exponent with decimal coefficient', () => {

@@ -94,8 +94,11 @@ describe('Number.utils', () => {
     describe('decimal precision handling', () => {
       it('should trim decimals when maxDecimals is specified and exceeded', () => {
         const result = processNumberValue(1.234567, '.', 2);
-        expect(result.formattedValue).toBe('1.23');
-        expect(result.originalValue).toBe(1.234567);
+        expect(result).toEqual({
+          formattedValue: '1.23',
+          originalValue: 1.234567,
+          isFormatted: true,
+        });
       });
 
       it('should not trim when decimals do not exceed maxDecimals', () => {
@@ -109,26 +112,38 @@ describe('Number.utils', () => {
 
       it('should auto-set maxDecimals=0 for large numbers (>= 1000)', () => {
         const result = processNumberValue(1500.123456, '.', undefined);
-        expect(result.formattedValue).toBe('1,500');
-        expect(result.originalValue).toBe(1500.123456);
+        expect(result).toEqual({
+          formattedValue: '1,500',
+          originalValue: 1500.123456,
+          isFormatted: true,
+        });
       });
 
       it('should auto-set maxDecimals=2 for medium numbers (>= 1.01)', () => {
         const result = processNumberValue(10.123456, '.', undefined);
-        expect(result.formattedValue).toBe('10.12');
-        expect(result.originalValue).toBe(10.123456);
+        expect(result).toEqual({
+          formattedValue: '10.12',
+          originalValue: 10.123456,
+          isFormatted: true,
+        });
       });
 
       it('should auto-set maxDecimals=6 for small numbers (< 1.01)', () => {
         const result = processNumberValue(0.123456789, '.', undefined);
-        expect(result.formattedValue).toBe('0.123457');
-        expect(result.originalValue).toBe(0.123456789);
+        expect(result).toEqual({
+          formattedValue: '0.123457',
+          originalValue: 0.123456789,
+          isFormatted: true,
+        });
       });
 
       it('should handle maxDecimals=0', () => {
         const result = processNumberValue(1.9, '.', 0);
-        expect(result.formattedValue).toBe('2');
-        expect(result.originalValue).toBe(1.9);
+        expect(result).toEqual({
+          formattedValue: '2',
+          originalValue: 1.9,
+          isFormatted: true,
+        });
       });
     });
 
@@ -143,10 +158,14 @@ describe('Number.utils', () => {
         });
       });
 
-      it('should remove .00 entirely', () => {
+      it('should keep .00 when rounding to it', () => {
         // 1.005 rounds to 1.00 with maxDecimals=2, keeps .00
         const result = processNumberValue(1.005, '.', 2);
-        expect(result.formattedValue).toBe('1.00');
+        expect(result).toEqual({
+          formattedValue: '1.00',
+          originalValue: 1.005,
+          isFormatted: true,
+        });
       });
 
       it('should clean trailing .0 from string input', () => {
@@ -182,25 +201,39 @@ describe('Number.utils', () => {
       it('should format very small numbers as "< 0.000001"', () => {
         // Use string to avoid scientific notation
         const result = processNumberValue('0.0000001', '.', 6);
-        expect(result.formattedValue).toBe('< 0.000001');
-        expect(result.originalValue).toBe('0.0000001');
+        expect(result).toEqual({
+          formattedValue: '< 0.000001',
+          originalValue: '0.0000001',
+          isFormatted: true,
+        });
       });
 
       it('should format small negative numbers as "< 0.000001"', () => {
         // Use string to avoid scientific notation
         const result = processNumberValue('-0.0000001', '.', 6);
-        expect(result.formattedValue).toBe('< 0.000001');
-        expect(result.originalValue).toBe('-0.0000001');
+        expect(result).toEqual({
+          formattedValue: '< 0.000001',
+          originalValue: '-0.0000001',
+          isFormatted: true,
+        });
       });
 
       it('should format very small with maxDecimals=2', () => {
         const result = processNumberValue(0.001, '.', 2);
-        expect(result.formattedValue).toBe('< 0.01');
+        expect(result).toEqual({
+          formattedValue: '< 0.01',
+          originalValue: 0.001,
+          isFormatted: true,
+        });
       });
 
       it('should format very small with maxDecimals=0', () => {
         const result = processNumberValue(0.5, '.', 0);
-        expect(result.formattedValue).toBe('< 1');
+        expect(result).toEqual({
+          formattedValue: '< 1',
+          originalValue: 0.5,
+          isFormatted: true,
+        });
       });
 
       it('should not use small format if value is at threshold', () => {
@@ -214,24 +247,34 @@ describe('Number.utils', () => {
         });
       });
 
-      it('should handle small numbers with many decimal places', () => {
+      it('should format small numbers with many decimal places', () => {
         const result = processNumberValue(0.0000000123456, '.', 6);
-        expect(result.formattedValue).toBe('< 0.000001');
+        expect(result).toEqual({
+          formattedValue: '< 0.000001',
+          originalValue: 0.0000000123456,
+          isFormatted: true,
+        });
       });
     });
 
     describe('large numbers with decimals', () => {
       it('should format large number and trim decimals', () => {
         const result = processNumberValue(5000.123456, '.', undefined);
-        expect(result.formattedValue).toBe('5,000');
-        expect(result.originalValue).toBe(5000.123456);
+        expect(result).toEqual({
+          formattedValue: '5,000',
+          originalValue: 5000.123456,
+          isFormatted: true,
+        });
       });
 
       it('should format large number with specified maxDecimals', () => {
         const result = processNumberValue(1234.56789, '.', 2);
         // Trims to 2 decimals: 1234.57, then formats as large number with comma
-        expect(result.formattedValue).toBe('1,234.57');
-        expect(result.originalValue).toBe(1234.56789);
+        expect(result).toEqual({
+          formattedValue: '1,234.57',
+          originalValue: 1234.56789,
+          isFormatted: true,
+        });
       });
 
       it('should format large numbers even without exceeding decimals', () => {
@@ -251,7 +294,11 @@ describe('Number.utils', () => {
         const result = processNumberValue('1,234567', ',', 2);
         // Trims to 2 decimals: 1,23, but large number formatting adds commas with '.'
         // The value >= 1000 check treats 1,234567 as 1234567 (large number)
-        expect(result.formattedValue).toBe('1,234,567');
+        expect(result).toEqual({
+          formattedValue: '1,234,567',
+          originalValue: '1,234567',
+          isFormatted: true,
+        });
       });
 
       it('should handle custom delimiter for small values', () => {
@@ -288,7 +335,38 @@ describe('Number.utils', () => {
       it('should apply custom format with decimals', () => {
         const result = processNumberValue(5000.5, '.', undefined, '0,0.0');
         // Large number with auto maxDecimals=0 should trim to integer
-        expect(result.formattedValue).toBe('5,001');
+        expect(result).toEqual({
+          formattedValue: '5,001',
+          originalValue: 5000.5,
+          isFormatted: true,
+        });
+      });
+
+      it('should handle abbreviation format (0,0.0a) for medium numbers', () => {
+        const result = processNumberValue(1234.56, '.', undefined, '0,0.0a');
+        expect(result).toEqual({
+          formattedValue: '1.2K',
+          originalValue: 1234.56,
+          isFormatted: true,
+        });
+      });
+
+      it('should handle abbreviation format (0,0.0a) for larger numbers', () => {
+        const result = processNumberValue(5432.1, '.', undefined, '0,0.0a');
+        expect(result).toEqual({
+          formattedValue: '5.4K',
+          originalValue: 5432.1,
+          isFormatted: true,
+        });
+      });
+
+      it('should handle abbreviation format for very large numbers', () => {
+        const result = processNumberValue(1500000, '.', undefined, '0,0.0a');
+        expect(result).toEqual({
+          formattedValue: '1.5M',
+          originalValue: 1500000,
+          isFormatted: true,
+        });
       });
     });
 
@@ -311,7 +389,17 @@ describe('Number.utils', () => {
         });
       });
 
-      it('should handle string "0"', () => {
+      it('should handle actual zero (number)', () => {
+        // Bug regression: ensure actual zero displays as "0" not mistaken for bug
+        const result = processNumberValue(0);
+        expect(result).toEqual({
+          formattedValue: '0',
+          originalValue: 0,
+          isFormatted: false,
+        });
+      });
+
+      it('should handle zero as string', () => {
         const result = processNumberValue('0');
         expect(result).toEqual({
           formattedValue: '0',
@@ -329,20 +417,42 @@ describe('Number.utils', () => {
         });
       });
 
+      it('should handle "0.00" with maxDecimals', () => {
+        const result = processNumberValue('0.00', '.', 2);
+        // Has 2 decimals, doesn't exceed maxDecimals=2, so no formatting
+        expect(result).toEqual({
+          formattedValue: '0.00',
+          originalValue: '0.00',
+          isFormatted: false,
+        });
+      });
+
       it('should handle 1.01 boundary (auto decimals)', () => {
         const result = processNumberValue(1.01123456, '.', undefined);
-        expect(result.formattedValue).toBe('1.01');
+        expect(result).toEqual({
+          formattedValue: '1.01',
+          originalValue: 1.01123456,
+          isFormatted: true,
+        });
       });
 
       it('should handle 1.00 (below 1.01 boundary)', () => {
         const result = processNumberValue(1.00123456, '.', undefined);
         // Auto maxDecimals = 6 for values < 1.01, rounds to 6 decimals
-        expect(result.formattedValue).toBe('1.001235');
+        expect(result).toEqual({
+          formattedValue: '1.001235',
+          originalValue: 1.00123456,
+          isFormatted: true,
+        });
       });
 
       it('should handle exactly 999 (just below large threshold)', () => {
         const result = processNumberValue(999.123456, '.', undefined);
-        expect(result.formattedValue).toBe('999.12');
+        expect(result).toEqual({
+          formattedValue: '999.12',
+          originalValue: 999.123456,
+          isFormatted: true,
+        });
       });
 
       it('should handle scientific notation input', () => {
@@ -380,19 +490,31 @@ describe('Number.utils', () => {
       it('should handle large number formatting after decimal precision', () => {
         const result = processNumberValue(1234.567890123, '.', 2);
         // Trims to 2 decimals: 1234.57, then formats as large number
-        expect(result.formattedValue).toBe('1,234.57');
+        expect(result).toEqual({
+          formattedValue: '1,234.57',
+          originalValue: 1234.567890123,
+          isFormatted: true,
+        });
       });
 
       it('should handle negative small numbers', () => {
         // Use string to preserve decimal representation
         const result = processNumberValue('-0.0000005', '.', 6);
-        expect(result.formattedValue).toBe('< 0.000001');
+        expect(result).toEqual({
+          formattedValue: '< 0.000001',
+          originalValue: '-0.0000005',
+          isFormatted: true,
+        });
       });
 
       it('should handle negative large numbers with decimals', () => {
         const result = processNumberValue(-5000.123, '.', 2);
         // Fixed: Trims to 2 decimals: -5000.12, then adds comma formatting
-        expect(result.formattedValue).toBe('-5,000.12');
+        expect(result).toEqual({
+          formattedValue: '-5,000.12',
+          originalValue: -5000.123,
+          isFormatted: true,
+        });
       });
 
       it('should not format when no formatting needed', () => {
@@ -407,24 +529,40 @@ describe('Number.utils', () => {
       it('should handle string with commas in value', () => {
         const result = processNumberValue('1,234.56', '.', 1);
         // Trims to 1 decimal: 1234.6, then formats as large number
-        expect(result.formattedValue).toBe('1,234.6');
+        expect(result).toEqual({
+          formattedValue: '1,234.6',
+          originalValue: '1,234.56',
+          isFormatted: true,
+        });
       });
 
       it('should handle very precise decimals', () => {
         const result = processNumberValue(0.123456789012345, '.', 10);
         // JavaScript precision limits, rounds to available precision
-        expect(result.formattedValue).toBe('0.123456789');
+        expect(result).toEqual({
+          formattedValue: '0.123456789',
+          originalValue: 0.123456789012345,
+          isFormatted: true,
+        });
       });
 
       it('should round correctly at boundaries', () => {
         const result = processNumberValue(1.999, '.', 2);
         // Rounds to 2.00, keeps the .00
-        expect(result.formattedValue).toBe('2.00');
+        expect(result).toEqual({
+          formattedValue: '2.00',
+          originalValue: 1.999,
+          isFormatted: true,
+        });
       });
 
       it('should handle mixed: string input, large number, decimal trimming', () => {
         const result = processNumberValue('5000.999999', '.', undefined);
-        expect(result.formattedValue).toBe('5,001');
+        expect(result).toEqual({
+          formattedValue: '5,001',
+          originalValue: '5000.999999',
+          isFormatted: true,
+        });
       });
     });
 
@@ -458,19 +596,31 @@ describe('Number.utils', () => {
     it('should auto-trim decimals on negative large numbers', () => {
       const result = processNumberValue(-5000.123456, '.', undefined);
       // Auto maxDecimals = 0 for abs value >= 1000
-      expect(result.formattedValue).toBe('-5,000');
+      expect(result).toEqual({
+        formattedValue: '-5,000',
+        originalValue: -5000.123456,
+        isFormatted: true,
+      });
     });
 
     it('should handle negative medium numbers with auto decimals', () => {
       const result = processNumberValue(-10.123456, '.', undefined);
       // Auto maxDecimals = 2 for abs value >= 1.01
-      expect(result.formattedValue).toBe('-10.12');
+      expect(result).toEqual({
+        formattedValue: '-10.12',
+        originalValue: -10.123456,
+        isFormatted: true,
+      });
     });
 
     it('should handle negative small numbers with auto decimals', () => {
       const result = processNumberValue(-0.123456789, '.', undefined);
       // Auto maxDecimals = 6 for abs value < 1.01
-      expect(result.formattedValue).toBe('-0.123457');
+      expect(result).toEqual({
+        formattedValue: '-0.123457',
+        originalValue: -0.123456789,
+        isFormatted: true,
+      });
     });
 
     it('should format very large negative numbers', () => {

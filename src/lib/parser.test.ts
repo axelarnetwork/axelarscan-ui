@@ -229,8 +229,7 @@ describe('parser utilities', () => {
     it('should handle unquoted objects with numeric values', () => {
       // Test the non-string part case (line 264)
       const result = toJson('{count:42}');
-      expect(result).toBeTruthy();
-      // Note: May parse as string '42' since unquoted
+      expect(result).toEqual({ count: '42' });
     });
 
     it('should handle complex unquoted objects', () => {
@@ -453,10 +452,7 @@ describe('parser utilities', () => {
         axelar4: 'addr4',
       };
       const result = getValuesOfAxelarAddressKey(data);
-      expect(result).toContain('addr1');
-      expect(result).toContain('addr4');
-      expect(result).not.toContain(null);
-      expect(result).not.toContain('');
+      expect(result).toEqual(['addr1', 'addr4']);
     });
 
     it('should return empty array if no axelar keys', () => {
