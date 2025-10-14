@@ -1,8 +1,21 @@
 'use client';
 
 import clsx from 'clsx';
+import type { ReactNode } from 'react';
 
-export function Tooltip({ content, className, children, parentClassName }) {
+export interface TooltipProps {
+  content: ReactNode;
+  className?: string;
+  children: ReactNode;
+  parentClassName?: string;
+}
+
+export function Tooltip({
+  content,
+  className,
+  children,
+  parentClassName,
+}: TooltipProps) {
   return (
     <div
       className={clsx('group relative flex justify-center', parentClassName)}
