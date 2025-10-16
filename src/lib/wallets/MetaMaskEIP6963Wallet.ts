@@ -28,6 +28,8 @@
  *   remains included in the distributed artifact (or otherwise shipped with it).
  */
 
+/* eslint-disable -- trying to keep it as close to the original code as possible */
+
 import type { BaseProvider } from '@metamask/providers'
 import { type XRPLBaseWallet, XRPLWalletAccount } from '@xrpl-wallet-adapter/base'
 import {
