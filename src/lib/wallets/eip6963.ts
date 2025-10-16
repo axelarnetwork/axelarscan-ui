@@ -1,35 +1,37 @@
+import { useEffect, useState } from 'react';
 import type { EIP1193Provider, EIP6963ProviderDetail } from '@/types/EthereumProviderTypes';
 
 /**
- * Discover the MetaMask provider via EIP-6963 events.
+ * React hook: discover the MetaMask provider via EIP-6963 events.
  * Returns the EIP-1193 provider for MetaMask if present, otherwise undefined.
  */
-export function discoverMetaMaskProvider(): EIP1193Provider | undefined {
-  const providers: EIP6963ProviderDetail[] = [];
+export function useMetaMaskProvider(): EIP1193Provider | undefined {
+  const [provider, setProvider] = useState<EIP1193Provider | undefined>(undefined);
 
-  function onAnnouncement(event: CustomEvent<EIP6963ProviderDetail>) {
-    const { info, provider } = event.detail;
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
 
-    // Prevent duplicates based on uuid
-    if (providers.some((p) => p.info.uuid === info.uuid)) return;
+    const discovered: EIP6963ProviderDetail[] = [];
 
-    providers.push({ info, provider });
-  }
+    function onAnnouncement(event: Event) {
+      const { info, provider } = (event as CustomEvent<EIP6963ProviderDetail>).detail;
 
-  // Listen for provider announcements
-  window.addEventListener('eip6963:announceProvider', onAnnouncement as EventListener);
+      if (discovered.some((p) => p.info.uuid === info.uuid)) return;
 
-  // Request providers to announce themselves (wallets respond synchronously)
-  window.dispatchEvent(new Event('eip6963:requestProvider'));
+      discovered.push({ info, provider });
 
-  window.removeEventListener('eip6963:announceProvider', onAnnouncement as EventListener);
+      if (info.rdns === 'io.metamask' || info.rdns === 'io.metamask.flask') {
+        setProvider(provider as EIP1193Provider);
+      }
+    }
 
-  // Find MetaMask specifically by rdns (Reverse DNS identifier)
-  const metamask = providers.find(
-    (p) =>
-      p.info.rdns === 'io.metamask' ||
-      p.info.rdns === 'io.metamask.flask'
-  );
+    window.addEventListener('eip6963:announceProvider', onAnnouncement as EventListener);
+    window.dispatchEvent(new Event('eip6963:requestProvider'));
 
-  return metamask?.provider;
+    return () => {
+      window.removeEventListener('eip6963:announceProvider', onAnnouncement as EventListener);
+    };
+  }, []);
+
+  return provider;
 }

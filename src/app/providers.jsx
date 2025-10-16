@@ -18,7 +18,7 @@ import { CrossmarkWallet } from '@xrpl-wallet-adapter/crossmark';
 import { WalletConnectWallet as XRPLWalletConnectWallet } from '@xrpl-wallet-adapter/walletconnect';
 import { XamanWallet } from '@xrpl-wallet-adapter/xaman';
 import { MetaMaskWallet } from '@/lib/wallets/MetaMaskEIP6963Wallet';
-import { discoverMetaMaskProvider } from '@/lib/wallets/eip6963';
+import { useMetaMaskProvider } from '@/lib/wallets/eip6963';
 
 import { Global } from '@/components/Global';
 import WagmiConfigProvider from '@/lib/provider/WagmiConfigProvider';
@@ -92,6 +92,7 @@ export function Providers({ children }) {
   });
 
   // xrpl - with EIP-6963 support for MetaMask
+  const metamaskProvider = useMetaMaskProvider();
   useEffect(() => {
     if (!rendered) return;
 
@@ -102,7 +103,6 @@ export function Providers({ children }) {
     ];
 
     // Discover MetaMask via EIP-6963 to avoid conflicts with other wallets (e.g., OKX)
-    const metamaskProvider = discoverMetaMaskProvider();
     if (metamaskProvider) {
       wallets.push(new MetaMaskWallet(metamaskProvider));
     }
