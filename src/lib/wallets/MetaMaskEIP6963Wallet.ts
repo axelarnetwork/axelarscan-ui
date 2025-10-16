@@ -1,3 +1,6 @@
+/** @noprettier -- trying to keep it as close to the original code as possible */
+/* eslint-disable -- trying to keep it as close to the original code as possible */
+
 /**
  * Portions Copyright (c) 2023 tequdev
  * Based on: https://github.com/tequdev/xrpl-wallet-standard/blob/1f404d9507c30810d8e663a7bc7160d51b0421f1/packages/adapter/metamask/src/index.ts
@@ -27,8 +30,6 @@
  * - If you build/distribute a bundled/minified artifact, ensure the ISC notice
  *   remains included in the distributed artifact (or otherwise shipped with it).
  */
-
-/* eslint-disable -- trying to keep it as close to the original code as possible */
 
 import type { BaseProvider } from '@metamask/providers'
 import { type XRPLBaseWallet, XRPLWalletAccount } from '@xrpl-wallet-adapter/base'

@@ -1,6 +1,6 @@
 /**
  * EIP-6963: Multi Injected Provider Discovery
- * 
+ *
  * Type definitions based on:
  * - https://eips.ethereum.org/EIPS/eip-6963
  * - https://metamask.io/news/how-to-implement-eip-6963-support-in-your-web3-dapp
@@ -31,7 +31,10 @@ export interface EIP1193Provider {
     request: { method: string; params?: Array<unknown> },
     callback: (error: Error | null, response: unknown) => void
   ) => void;
-  request: (request: { method: string; params?: Array<unknown> }) => Promise<unknown>;
+  request: (request: {
+    method: string;
+    params?: Array<unknown>;
+  }) => Promise<unknown>;
 }
 
 /**
@@ -55,4 +58,3 @@ declare global {
     'eip6963:announceProvider': EIP6963AnnounceProviderEvent;
   }
 }
-
