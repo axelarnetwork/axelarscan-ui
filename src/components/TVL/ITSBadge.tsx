@@ -16,7 +16,7 @@ export function ITSBadge({ data }: ITSBadgeProps) {
   }
 
   // Check if this is a lock/unlock (canonical) or custom ITS token
-  const tvlValues = Object.values({ ...data.tvl });
+  const tvlValues = Object.values(data.tvl);
   const hasLockUnlock = tvlValues.some((tvl: TVLPerChain) =>
     tvl.token_manager_type?.startsWith('lockUnlock')
   );

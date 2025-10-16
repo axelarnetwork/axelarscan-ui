@@ -31,9 +31,9 @@ export function Number({
   noTooltip = false,
   tooltipContent,
   className,
-}: NumberProps): React.JSX.Element | undefined {
+}: NumberProps): React.JSX.Element | null {
   if (!isNumber(value)) {
-    return undefined;
+    return null;
   }
 
   const { formattedValue, originalValue, isFormatted } = processNumberValue(

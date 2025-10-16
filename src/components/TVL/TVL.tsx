@@ -14,7 +14,7 @@ import { TVLTableHeader } from './TVLTableHeader';
 
 export function TVL() {
   const [includeITS, setIncludeITS] = useState<boolean>(true);
-  const globalStore = useGlobalStore() as GlobalStore;
+  const globalStore: GlobalStore = useGlobalStore();
   const { chains, assets, itsAssets } = globalStore;
 
   const processedData = useTVLData(globalStore);

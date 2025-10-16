@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { AssetProfile, ChainProfile } from '@/components/Profile';
 import { assetRowStyles } from './AssetRow.styles';
 import { ChainColumnCell } from './ChainColumnCell';
@@ -10,7 +8,7 @@ import { ChainWithTotalValue, ProcessedTVLData } from './TVL.types';
 
 interface AssetRowProps {
   data: ProcessedTVLData;
-  chainsTVL: ChainWithTotalValue[] | false;
+  chainsTVL: ChainWithTotalValue[] | null;
 }
 
 /**
@@ -28,6 +26,7 @@ export function AssetRow({ data, chainsTVL }: AssetRowProps) {
             customAssetData={data.assetData}
             ITSPossible={data.assetType === 'its'}
             titleClassName={assetRowStyles.assetProfile.titleClass}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             {...({} as any)}
           />
           <ITSBadge data={data} />
@@ -38,6 +37,7 @@ export function AssetRow({ data, chainsTVL }: AssetRowProps) {
       <td className={assetRowStyles.cell.standard}>
         <ChainProfile
           value={data.nativeChain?.chainData?.id}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           {...({} as any)}
         />
       </td>
@@ -66,15 +66,14 @@ export function AssetRow({ data, chainsTVL }: AssetRowProps) {
       </td>
 
       {/* Per-Chain Columns */}
-      {chainsTVL !== false &&
-        chainsTVL.map((chain: ChainWithTotalValue) => (
-          <ChainColumnCell
-            key={chain.id}
-            chainId={chain.id}
-            tvlData={{ ...data.tvl?.[chain.id] }}
-            price={data.price}
-          />
-        ))}
+      {chainsTVL?.map((chain: ChainWithTotalValue) => (
+        <ChainColumnCell
+          key={chain.id}
+          chainId={chain.id}
+          tvlData={{ ...data.tvl?.[chain.id] }}
+          price={data.price}
+        />
+      ))}
     </tr>
   );
 }

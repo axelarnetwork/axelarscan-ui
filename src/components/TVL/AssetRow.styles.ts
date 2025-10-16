@@ -14,7 +14,7 @@ export const assetRowStyles = {
   },
 
   // Asset name column content
-  assetNameContent: 'flex-items-center flex gap-x-2',
+  assetNameContent: 'flex items-center flex gap-x-2',
 
   // Profile component props
   assetProfile: {

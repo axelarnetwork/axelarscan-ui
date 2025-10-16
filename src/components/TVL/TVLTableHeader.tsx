@@ -14,7 +14,7 @@ interface TVLTableHeaderProps {
   includeITS: boolean;
   onToggleITS: (value: boolean) => void;
   filteredData: ProcessedTVLData[];
-  chainsTVL: ChainWithTotalValue[] | false;
+  chainsTVL: ChainWithTotalValue[] | null;
 }
 
 /**
@@ -104,30 +104,29 @@ export function TVLTableHeader({
             />
           </div>
         </th>
-        {chainsTVL !== false &&
-          chainsTVL.map((chain: ChainWithTotalValue) => (
-            <th
-              key={chain.id}
-              scope="col"
-              className={tableHeaderStyles.headerCell.right}
-            >
-              <div className={tableHeaderStyles.columnContent.alignEnd}>
-                <div className={tableHeaderStyles.chainHeader}>
-                  <Image src={chain.image} alt="" width={18} height={18} />
-                  <span className={tableHeaderStyles.columnLabel}>
-                    {chain.name}
-                  </span>
-                </div>
-                <Number
-                  value={chain.total_value}
-                  format="0,0.0a"
-                  prefix="$"
-                  noTooltip={true}
-                  className={tableHeaderStyles.chainValue}
-                />
+        {chainsTVL?.map((chain: ChainWithTotalValue) => (
+          <th
+            key={chain.id}
+            scope="col"
+            className={tableHeaderStyles.headerCell.right}
+          >
+            <div className={tableHeaderStyles.columnContent.alignEnd}>
+              <div className={tableHeaderStyles.chainHeader}>
+                <Image src={chain.image} alt="" width={18} height={18} />
+                <span className={tableHeaderStyles.columnLabel}>
+                  {chain.name}
+                </span>
               </div>
-            </th>
-          ))}
+              <Number
+                value={chain.total_value}
+                format="0,0.0a"
+                prefix="$"
+                noTooltip={true}
+                className={tableHeaderStyles.chainValue}
+              />
+            </div>
+          </th>
+        ))}
       </tr>
     </thead>
   );

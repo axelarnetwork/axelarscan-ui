@@ -18,13 +18,14 @@ interface TotalLockedCellProps {
  * Shows the total amount with optional link and ITS info tooltip
  */
 export function TotalLockedCell({ data }: TotalLockedCellProps) {
-  const { url } = { ...data.nativeChain };
+  const url = data.nativeChain?.url;
+  const tvlData = data.tvl ?? {};
 
-  const isLockUnlock: boolean =
+  const isNotLockUnlock: boolean =
     data.assetType === 'its' &&
-    Object.values({ ...data.tvl }).findIndex((d: TVLPerChain) =>
+    !Object.values(tvlData).some((d: TVLPerChain) =>
       d.contract_data?.token_manager_type?.startsWith('lockUnlock')
-    ) < 0;
+    );
 
   // Don't show if total is 0 and no url (old behavior)
   const shouldShowAmount = data.total > 0 || url;
@@ -55,7 +56,7 @@ export function TotalLockedCell({ data }: TotalLockedCellProps) {
           </Link>
         )}
         {!url && element}
-        {isLockUnlock && (
+        {isNotLockUnlock && (
           <Tooltip
             content="The circulating supply retrieved from CoinGecko used for TVL tracking."
             className={totalLockedCellStyles.tooltip}

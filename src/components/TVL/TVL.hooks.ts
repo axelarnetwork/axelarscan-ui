@@ -193,7 +193,7 @@ export function useTVLData(globalStore: GlobalStore) {
 /**
  * Checks if an ITS asset uses lock/unlock mechanism (not mint/burn)
  */
-function isLockUnlockITS(asset: ProcessedTVLData): boolean {
+function isNotLockUnlockITS(asset: ProcessedTVLData): boolean {
   if (asset.assetType !== 'its') {
     return false;
   }
@@ -224,9 +224,13 @@ function calculateAssetValueOnChain(
   const { supply, total } = chainTVL;
   const amount = supply || total;
 
-  // Lock/unlock ITS tokens have 0 value (counted elsewhere)
-  const isLockUnlock = isLockUnlockITS(asset);
-  if (isLockUnlock) {
+  if (!amount) {
+    return 0;
+  }
+
+  // Non-lock/unlock ITS tokens have 0 value (counted elsewhere)
+  const isNotLockUnlock = isNotLockUnlockITS(asset);
+  if (isNotLockUnlock) {
     return 0;
   }
 
@@ -243,7 +247,6 @@ function calculateAssetValueOnChain(
     assetPrice = toNumber(isNumber(assetData?.price) ? assetData.price : 0);
   }
 
-  // @ts-expect-error -- figure out if NaN is on purpose
   return toNumber(amount * assetPrice);
 }
 
@@ -279,10 +282,10 @@ export function useChainsTVL(
   chains: ChainData[] | undefined,
   assets: AssetData[] | undefined,
   itsAssets: ITSAssetData[] | undefined
-): ChainWithTotalValue[] | false {
+): ChainWithTotalValue[] | null {
   return useMemo(() => {
     if (loading || !chains) {
-      return false;
+      return null;
     }
 
     // Filter chains to include

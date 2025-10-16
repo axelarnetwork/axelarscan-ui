@@ -40,8 +40,7 @@ export function ChainColumnCell({
       ? escrow_balance
       : supply) || total;
 
-  // @ts-expect-error -- figure out if NaN is on purpose
-  const value: number = amount * price;
+  const value: number = (amount ?? 0) * (price ?? 0);
 
   const customBalances: CustomBalance[] = toArray(
     _.concat(custom_contracts_balance, custom_tokens_supply)

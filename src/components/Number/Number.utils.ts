@@ -1,7 +1,4 @@
-import _ from 'lodash';
-
 import { isNumber, numberFormat, toFixed, toNumber } from '@/lib/number';
-import { split } from '@/lib/parser';
 import { headString, isString, lastString } from '@/lib/string';
 
 const LARGE_NUMBER_THRESHOLD = 1000;
@@ -67,9 +64,7 @@ function formatSmallValue(maxDecimals: number, delimiter: string): string {
   }
 
   // Generate the zeros string (maxDecimals - 1 zeros)
-  const zeros = _.range(maxDecimals - 1)
-    .map(() => '0')
-    .join('');
+  const zeros = '0'.repeat(maxDecimals - 1);
 
   return `< 0${delimiter}${zeros}1`;
 }
@@ -128,8 +123,11 @@ function handleDecimalPrecision(
   delimiter: string,
   maxDecimals?: number
 ): string | undefined {
+  // Precompute a cleaned numeric string (remove thousand separators) and reuse
+  const cleanedNumericString = valueString.replace(/,/g, '');
+
   // Parse the value
-  const valueNumber = toNumber(split(valueString).join(''));
+  const valueNumber = toNumber(cleanedNumericString);
   const decimals = lastString(valueString, delimiter);
 
   if (decimals === undefined) {
@@ -138,8 +136,7 @@ function handleDecimalPrecision(
 
   // Validate that we got a valid number (not 0 from failed conversion)
   // This prevents undefined/null/invalid values from being converted to "0.00"
-  const joinedValue = split(valueString).join('');
-  if (!isNumber(joinedValue)) {
+  if (!isNumber(cleanedNumericString)) {
     return undefined;
   }
 

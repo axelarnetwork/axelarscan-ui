@@ -29,8 +29,7 @@ export function CustomBalanceItem({
     amount = supply;
   }
 
-  // @ts-expect-error -- figure out if NaN is on purpose
-  const value: number = amount * price;
+  const value: number = (amount ?? 0) * (price ?? 0);
 
   const element = (
     <Number
