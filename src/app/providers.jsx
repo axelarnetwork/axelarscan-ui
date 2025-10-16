@@ -17,7 +17,8 @@ import { WalletProvider as XRPLWalletProvider } from '@xrpl-wallet-standard/reac
 import { CrossmarkWallet } from '@xrpl-wallet-adapter/crossmark';
 import { WalletConnectWallet as XRPLWalletConnectWallet } from '@xrpl-wallet-adapter/walletconnect';
 import { XamanWallet } from '@xrpl-wallet-adapter/xaman';
-import { MetaMaskWallet } from '@xrpl-wallet-adapter/metamask';
+import { MetaMaskWallet } from '@/lib/wallets/MetaMaskEIP6963Wallet';
+import { discoverMetaMaskProvider } from '@/lib/wallets/eip6963';
 
 import { Global } from '@/components/Global';
 import WagmiConfigProvider from '@/lib/provider/WagmiConfigProvider';
@@ -90,16 +91,23 @@ export function Providers({ children }) {
     },
   });
 
-  // xrpl
+  // xrpl - with EIP-6963 support for MetaMask
   useEffect(() => {
-    if (rendered) {
-      setXRPLlRegisterWallets([
-        new CrossmarkWallet(),
-        new XRPLWalletConnectWallet(xrplConfig),
-        new MetaMaskWallet(),
-        new XamanWallet(process.env.NEXT_PUBLIC_XAMAN_API_KEY),
-      ]);
+    if (!rendered) return;
+
+    const wallets = [
+      new CrossmarkWallet(),
+      new XRPLWalletConnectWallet(xrplConfig),
+      new XamanWallet(process.env.NEXT_PUBLIC_XAMAN_API_KEY),
+    ];
+
+    // Discover MetaMask via EIP-6963 to avoid conflicts with other wallets (e.g., OKX)
+    const metamaskProvider = discoverMetaMaskProvider();
+    if (metamaskProvider) {
+      wallets.push(new MetaMaskWallet(metamaskProvider));
     }
+
+    setXRPLlRegisterWallets(wallets);
   }, [rendered, setXRPLlRegisterWallets]);
 
   return (
@@ -112,7 +120,10 @@ export function Providers({ children }) {
         <Global />
         <QueryClientProvider client={client}>
           <WagmiConfigProvider>
-            <XRPLWalletProvider registerWallets={xrplRegisterWallets}>
+            <XRPLWalletProvider
+              registerWallets={xrplRegisterWallets}
+              autoConnect={false}
+            >
               <SuiClientProvider
                 networks={networkConfig}
                 defaultNetwork={
