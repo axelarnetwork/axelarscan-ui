@@ -10,6 +10,7 @@ import {
 import clsx from 'clsx';
 import { useEffect } from 'react';
 import { create } from 'zustand';
+import { useMetaMaskProvider } from '@/lib/wallets/eip6963';
 
 interface XRPLWalletState {
   address: string | null;
@@ -54,6 +55,7 @@ export function XRPLWallet({ children, className }: XRPLWalletProps) {
   const account = useXRPLAccount();
   const { connect: connectXRPL } = useXRPLConnect();
   const disconnectXRPL = useXRPLDisconnect();
+  const metaMaskProvider = useMetaMaskProvider();
 
   useEffect(() => {
     const address = account?.address;
@@ -79,8 +81,7 @@ export function XRPLWallet({ children, className }: XRPLWalletProps) {
 
   const crossmarkEnabled = !!window?.crossmark;
   const WalletConnectWallet = wallets.find(w => w.name === 'WalletConnect');
-  // FIXME
-  const metaMaskEnabled = !!(window?.ethereum && window.ethereum?.isMetaMask);
+  const metaMaskEnabled = !!metaMaskProvider;
 
   // expand "Walletconnect" to wallets that support walletconnect
   let WalletConnectSupportedWallets: { name: string; icon: string }[] = [];

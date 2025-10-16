@@ -100,12 +100,8 @@ export function Providers({ children }) {
       new CrossmarkWallet(),
       new XRPLWalletConnectWallet(xrplConfig),
       new XamanWallet(process.env.NEXT_PUBLIC_XAMAN_API_KEY),
+      new MetaMaskWallet(metamaskProvider),
     ];
-
-    // Discover MetaMask via EIP-6963 to avoid conflicts with other wallets (e.g., OKX)
-    if (metamaskProvider) {
-      wallets.push(new MetaMaskWallet(metamaskProvider));
-    }
 
     setXRPLlRegisterWallets(wallets);
   }, [rendered, setXRPLlRegisterWallets, metamaskProvider]);
