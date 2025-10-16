@@ -79,6 +79,7 @@ export function XRPLWallet({ children, className }: XRPLWalletProps) {
 
   const crossmarkEnabled = !!window?.crossmark;
   const WalletConnectWallet = wallets.find(w => w.name === 'WalletConnect');
+  // FIXME
   const metaMaskEnabled = !!(window?.ethereum && window.ethereum?.isMetaMask);
 
   // expand "Walletconnect" to wallets that support walletconnect

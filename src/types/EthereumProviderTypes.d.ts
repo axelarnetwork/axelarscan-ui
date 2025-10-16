@@ -45,19 +45,14 @@ export interface EIP6963ProviderDetail {
 /**
  * Type representing the event structure for announcing a provider based on EIP-6963.
  */
-export type EIP6963AnnounceProviderEvent = {
-  detail: {
-    info: EIP6963ProviderInfo;
-    provider: EIP1193Provider;
-  };
-};
+export type EIP6963AnnounceProviderEvent = CustomEvent<EIP6963ProviderDetail>;
 
 /**
  * Extend the global WindowEventMap to include EIP-6963 events
  */
 declare global {
   interface WindowEventMap {
-    'eip6963:announceProvider': CustomEvent<EIP6963AnnounceProviderEvent>;
+    'eip6963:announceProvider': EIP6963AnnounceProviderEvent;
   }
 }
 
