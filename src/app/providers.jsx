@@ -15,7 +15,6 @@ import {
 import { getFullnodeUrl } from '@mysten/sui/client';
 import { WalletProvider as XRPLWalletProvider } from '@xrpl-wallet-standard/react';
 import { CrossmarkWallet } from '@xrpl-wallet-adapter/crossmark';
-import { LedgerWallet } from '@xrpl-wallet-adapter/ledger';
 import { WalletConnectWallet as XRPLWalletConnectWallet } from '@xrpl-wallet-adapter/walletconnect';
 import { XamanWallet } from '@xrpl-wallet-adapter/xaman';
 import { MetaMaskWallet } from '@xrpl-wallet-adapter/metamask';
@@ -96,7 +95,6 @@ export function Providers({ children }) {
     if (rendered) {
       setXRPLlRegisterWallets([
         new CrossmarkWallet(),
-        new LedgerWallet(),
         new XRPLWalletConnectWallet(xrplConfig),
         new MetaMaskWallet(),
         new XamanWallet(process.env.NEXT_PUBLIC_XAMAN_API_KEY),
