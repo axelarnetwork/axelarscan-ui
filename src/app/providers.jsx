@@ -108,7 +108,7 @@ export function Providers({ children }) {
     }
 
     setXRPLlRegisterWallets(wallets);
-  }, [rendered, setXRPLlRegisterWallets]);
+  }, [rendered, setXRPLlRegisterWallets, metamaskProvider]);
 
   return (
     <ThemeProvider attribute="class" disableTransitionOnChange>
