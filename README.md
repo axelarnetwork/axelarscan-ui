@@ -110,18 +110,15 @@ Each environment uses environment-specific variables loaded from corresponding `
 ### 🔄 Release Process
 
 1. **👨‍💻 Development**:
-
    - Create feature branches from `main` using the naming convention `feat/*` or `chore/*`
    - Example: `feat/add-new-chart` or `chore/update-dependencies`
 
 2. **🔍 Preview Deployments**:
-
    - Vercel automatically creates preview deployments for branches with the `feat/*` or `chore/*` prefix
    - Preview URLs are available directly in the GitHub UI for each commit
    - Branches with other naming patterns (e.g., `bugfix/*`, `hotfix/*`) will not trigger preview builds
 
 3. **🧪 Testing**:
-
    - Test your changes on the Vercel preview URL
    - Make any necessary adjustments in your feature branch
 
