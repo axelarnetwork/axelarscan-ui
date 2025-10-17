@@ -9,6 +9,7 @@ module.exports = {
   useTabs: false,
   bracketSpacing: true,
   arrowParens: 'avoid',
+  checkIgnorePragma: true,
   overrides: [
     {
       files: ['*.yml', '*.yaml'],

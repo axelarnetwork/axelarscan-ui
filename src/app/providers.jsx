@@ -17,7 +17,8 @@ import { WalletProvider as XRPLWalletProvider } from '@xrpl-wallet-standard/reac
 import { CrossmarkWallet } from '@xrpl-wallet-adapter/crossmark';
 import { WalletConnectWallet as XRPLWalletConnectWallet } from '@xrpl-wallet-adapter/walletconnect';
 import { XamanWallet } from '@xrpl-wallet-adapter/xaman';
-import { MetaMaskWallet } from '@xrpl-wallet-adapter/metamask';
+import { MetaMaskWallet } from '@/lib/wallets/MetaMaskEIP6963Wallet';
+import { useMetaMaskProvider } from '@/lib/wallets/eip6963';
 
 import { Global } from '@/components/Global';
 import WagmiConfigProvider from '@/lib/provider/WagmiConfigProvider';
@@ -90,17 +91,20 @@ export function Providers({ children }) {
     },
   });
 
-  // xrpl
+  // xrpl - with EIP-6963 support for MetaMask
+  const metamaskProvider = useMetaMaskProvider();
   useEffect(() => {
-    if (rendered) {
-      setXRPLlRegisterWallets([
-        new CrossmarkWallet(),
-        new XRPLWalletConnectWallet(xrplConfig),
-        new MetaMaskWallet(),
-        new XamanWallet(process.env.NEXT_PUBLIC_XAMAN_API_KEY),
-      ]);
-    }
-  }, [rendered, setXRPLlRegisterWallets]);
+    if (!rendered) return;
+
+    const wallets = [
+      new CrossmarkWallet(),
+      new XRPLWalletConnectWallet(xrplConfig),
+      new XamanWallet(process.env.NEXT_PUBLIC_XAMAN_API_KEY),
+      new MetaMaskWallet(metamaskProvider),
+    ];
+
+    setXRPLlRegisterWallets(wallets);
+  }, [rendered, setXRPLlRegisterWallets, metamaskProvider]);
 
   return (
     <ThemeProvider attribute="class" disableTransitionOnChange>
@@ -112,7 +116,10 @@ export function Providers({ children }) {
         <Global />
         <QueryClientProvider client={client}>
           <WagmiConfigProvider>
-            <XRPLWalletProvider registerWallets={xrplRegisterWallets}>
+            <XRPLWalletProvider
+              registerWallets={xrplRegisterWallets}
+              autoConnect={false}
+            >
               <SuiClientProvider
                 networks={networkConfig}
                 defaultNetwork={
