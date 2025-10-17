@@ -176,7 +176,7 @@ export const CHAINS = toArray(
           nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
           rpcUrls: {
             default: {
-              http: ['https://memento-demo.common-prefix.workers.dev/'],
+              http: [],
             },
           },
           blockExplorers: {
