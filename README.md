@@ -64,6 +64,21 @@ npm run tsc
 npm run build
 ```
 
+### Testing
+
+Run the test suite to verify functionality:
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:coverage
+```
+
 ## 🚀 Deployment and Release Process
 
 ### 📋 Overview
