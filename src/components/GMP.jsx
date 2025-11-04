@@ -3636,18 +3636,9 @@ export function GMP({ tx, lite }) {
                 stellarWalletStore.network.networkPassphrase
               )
             );
-            
-            // For STANDALONE networks, use mainnet or testnet passphrase for signing
-            let signingNetworkPassphrase = stellarWalletStore.network.networkPassphrase;
-            if (stellarWalletStore.network.network === 'STANDALONE') {
-              signingNetworkPassphrase = ENVIRONMENT === 'mainnet'
-                ? STELLAR_NETWORK_PASSPHRASES.MAINNET
-                : STELLAR_NETWORK_PASSPHRASES.TESTNET;
-            }
-            
+
             response = await stellarWalletStore.provider.signTransaction(
-              preparedTransaction.toXDR(),
-              { networkPassphrase: signingNetworkPassphrase }
+              preparedTransaction.toXDR()
             );
 
             if (response?.signedTxXdr) {

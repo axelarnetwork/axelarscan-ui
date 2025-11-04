@@ -1,12 +1,18 @@
 'use client';
 
-import freighter from '@stellar/freighter-api';
+import {
+  StellarWalletsKit,
+  WalletNetwork,
+  FreighterModule,
+  ISupportedWallet,
+} from '@creit.tech/stellar-wallets-kit';
 import clsx from 'clsx';
+import { useMemo } from 'react';
 import { create } from 'zustand';
 
+import { ENVIRONMENT } from '@/lib/config';
 import { walletStyles } from './Wallet.styles';
 
-// Stellar network passphrases
 export const STELLAR_NETWORK_PASSPHRASES = {
   MAINNET: 'Public Global Stellar Network ; September 2015',
   TESTNET: 'Test SDF Network ; September 2015',
@@ -15,7 +21,6 @@ export const STELLAR_NETWORK_PASSPHRASES = {
   STANDALONE: 'Standalone Network ; February 2017',
 } as const;
 
-// Derive Soroban RPC URL from network passphrase
 const getSorobanRpcUrl = (networkPassphrase: string): string | null => {
   const rpcUrls: Record<string, string> = {
     [STELLAR_NETWORK_PASSPHRASES.MAINNET]:
@@ -24,8 +29,7 @@ const getSorobanRpcUrl = (networkPassphrase: string): string | null => {
       'https://soroban-rpc.testnet.stellar.org',
     [STELLAR_NETWORK_PASSPHRASES.FUTURENET]:
       'https://rpc-futurenet.stellar.org',
-    [STELLAR_NETWORK_PASSPHRASES.SANDBOX]:
-      'http://localhost:8000/soroban/rpc',
+    [STELLAR_NETWORK_PASSPHRASES.SANDBOX]: 'http://localhost:8000/soroban/rpc',
     [STELLAR_NETWORK_PASSPHRASES.STANDALONE]:
       'http://localhost:8000/soroban/rpc',
   };
@@ -35,36 +39,16 @@ const getSorobanRpcUrl = (networkPassphrase: string): string | null => {
 
 interface StellarNetwork {
   network: string;
-  networkUrl: string;
   networkPassphrase: string;
-}
-
-interface StellarProvider {
-  getAddress(): Promise<{ address: string } & { error?: unknown }>;
-  getNetworkDetails(): Promise<StellarNetwork>;
-  setAllowed(): Promise<{ isAllowed: boolean } & { error?: unknown }>;
-  signTransaction(
-    xdr: string,
-    opts?: {
-      networkPassphrase?: string;
-      address?: string;
-      path?: string;
-      submit?: boolean;
-      submitUrl?: string;
-    }
-  ): Promise<{
-    signedTxXdr: string;
-    signerAddress?: string;
-  }>;
 }
 
 interface StellarWalletState {
   address: string | null;
-  provider: StellarProvider | null;
+  provider: StellarWalletsKit | null;
   network: StellarNetwork | null;
   sorobanRpcUrl: string | null;
   setAddress: (address: string | null) => void;
-  setProvider: (provider: StellarProvider | null) => void;
+  setProvider: (provider: StellarWalletsKit | null) => void;
   setNetwork: (network: StellarNetwork | null) => void;
   setSorobanRpcUrl: (url: string | null) => void;
 }
@@ -89,25 +73,38 @@ export function StellarWallet({ children, className }: StellarWalletProps) {
   const { address, setAddress, setProvider, setNetwork, setSorobanRpcUrl } =
     useStellarWalletStore();
 
-  const connect = async () => {
-    await freighter.setAllowed();
-    const { address } = { ...(await freighter.getAddress()) };
+  const kit = useMemo(() => {
+    const network =
+      ENVIRONMENT === 'mainnet' ? WalletNetwork.PUBLIC : WalletNetwork.TESTNET;
+    return new StellarWalletsKit({
+      network: network,
+      modules: [new FreighterModule()],
+    });
+  }, []);
 
-    if (address) {
-      setAddress(address);
-      setProvider(freighter);
-      
-      const networkDetails = await freighter.getNetworkDetails();
-      setNetwork(networkDetails);
-      
-      // Derive sorobanRpcUrl from networkPassphrase (wallet-agnostic)
-      if (networkDetails?.networkPassphrase) {
-        setSorobanRpcUrl(getSorobanRpcUrl(networkDetails.networkPassphrase));
-      }
-    }
+  const connect = async () => {
+    await kit.openModal({
+      onWalletSelected: async (option: ISupportedWallet) => {
+        kit.setWallet(option.id);
+
+        const { address } = await kit.getAddress();
+        setAddress(address);
+
+        setProvider(kit);
+
+        const { network, networkPassphrase } = await kit.getNetwork();
+        setNetwork({
+          network: network,
+          networkPassphrase: networkPassphrase,
+        });
+
+        setSorobanRpcUrl(getSorobanRpcUrl(networkPassphrase));
+      },
+    });
   };
 
-  const disconnect = () => {
+  const disconnect = async () => {
+    await kit.disconnect();
     setAddress(null);
     setProvider(null);
     setNetwork(null);

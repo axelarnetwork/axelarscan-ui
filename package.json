@@ -40,6 +40,7 @@
   "browserslist": "defaults, not ie <= 11",
   "dependencies": {
     "@axelar-network/axelarjs-sdk": "0.17.9",
+    "@creit.tech/stellar-wallets-kit": "^1.9.5",
     "@headlessui/react": "^2.2.2",
     "@headlessui/tailwindcss": "^0.2.2",
     "@mysten/dapp-kit": "^0.16.1",
