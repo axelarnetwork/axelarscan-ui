@@ -1,14 +1,18 @@
 'use client';
 
 import { Combobox, Listbox, Transition } from '@headlessui/react';
-import clsx from 'clsx';
 import { Fragment } from 'react';
 import { LuChevronsUpDown } from 'react-icons/lu';
 import { MdCheck } from 'react-icons/md';
 
 import { split, toArray } from '@/lib/parser';
 import { equalsIgnoreCase, filterSearchInput } from '@/lib/string';
-import { FilterAttribute, FilterOption, FilterParams } from './Interchain.types';
+import { filterSelectInputStyles } from './FilterSelectInput.styles';
+import {
+  FilterAttribute,
+  FilterOption,
+  FilterParams,
+} from './Interchain.types';
 
 interface FilterSelectInputProps {
   attribute: FilterAttribute;
@@ -71,29 +75,34 @@ export function FilterSelectInput({
     return (
       <Combobox
         value={
-          attribute.multiple ? split(params[attribute.name]) : params[attribute.name]
+          attribute.multiple
+            ? split(params[attribute.name])
+            : params[attribute.name]
         }
         onChange={handleChange}
         multiple={attribute.multiple}
       >
         {({ open }) => (
           <div className="relative">
-            <Combobox.Button className="relative w-full cursor-pointer rounded-md border border-zinc-200 py-1.5 pl-3 pr-10 text-left text-zinc-900 shadow-sm sm:text-sm sm:leading-6">
+            <Combobox.Button className={filterSelectInputStyles.button.base}>
               {attribute.multiple ? (
                 <div
-                  className={clsx(
-                    'flex flex-wrap',
-                    selectedArray.length !== 0 && 'my-1'
+                  className={filterSelectInputStyles.button.selectedContainer(
+                    selectedArray.length
                   )}
                 >
                   {selectedArray.length === 0 ? (
-                    <span className="block truncate">Any</span>
+                    <span
+                      className={filterSelectInputStyles.button.placeholder}
+                    >
+                      Any
+                    </span>
                   ) : (
                     selectedArray.map((v: FilterOption, j: number) => (
                       <div
                         key={j}
                         onClick={() => handleRemoveItem(v)}
-                        className="my-1 mr-2 flex h-6 min-w-fit items-center rounded-xl bg-zinc-100 px-2.5 py-1 text-zinc-900"
+                        className={filterSelectInputStyles.button.selectedItem}
                       >
                         {v?.title}
                       </div>
@@ -101,12 +110,15 @@ export function FilterSelectInput({
                   )}
                 </div>
               ) : (
-                <span className="block truncate">
+                <span className={filterSelectInputStyles.button.placeholder}>
                   {selectedSingle?.title || 'Any'}
                 </span>
               )}
-              <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                <LuChevronsUpDown size={20} className="text-zinc-400" />
+              <span className={filterSelectInputStyles.button.icon}>
+                <LuChevronsUpDown
+                  size={20}
+                  className={filterSelectInputStyles.button.iconSvg}
+                />
               </span>
             </Combobox.Button>
             <Transition
@@ -116,7 +128,7 @@ export function FilterSelectInput({
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
             >
-              <div className="mt-2 gap-y-2">
+              <div className={filterSelectInputStyles.input.container}>
                 <Combobox.Input
                   placeholder={`Search ${attribute.label}`}
                   value={searchInput[attribute.name] || ''}
@@ -126,9 +138,11 @@ export function FilterSelectInput({
                       [attribute.name]: e.target.value,
                     })
                   }
-                  className="w-full rounded-md border border-zinc-200 py-1.5 text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:border-blue-600 focus:ring-0 sm:text-sm sm:leading-6"
+                  className={filterSelectInputStyles.input.field}
                 />
-                <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg sm:text-sm">
+                <Combobox.Options
+                  className={filterSelectInputStyles.options.container}
+                >
                   {(toArray(attribute.options) as FilterOption[])
                     .filter(o =>
                       filterSearchInput(
@@ -141,27 +155,22 @@ export function FilterSelectInput({
                         key={j}
                         value={o?.value || ''}
                         className={({ active }) =>
-                          clsx(
-                            'relative cursor-default select-none py-2 pl-3 pr-9',
-                            active ? 'bg-blue-600 text-white' : 'text-zinc-900'
-                          )
+                          filterSelectInputStyles.options.option(active)
                         }
                       >
                         {({ selected, active }) => (
                           <>
                             <span
-                              className={clsx(
-                                'block truncate',
-                                selected ? 'font-semibold' : 'font-normal'
+                              className={filterSelectInputStyles.options.optionText(
+                                selected
                               )}
                             >
                               {o?.title || ''}
                             </span>
                             {selected && (
                               <span
-                                className={clsx(
-                                  'absolute inset-y-0 right-0 flex items-center pr-4',
-                                  active ? 'text-white' : 'text-blue-600'
+                                className={filterSelectInputStyles.options.checkIcon(
+                                  active
                                 )}
                               >
                                 <MdCheck size={20} />
@@ -183,29 +192,32 @@ export function FilterSelectInput({
   return (
     <Listbox
       value={
-        attribute.multiple ? split(params[attribute.name]) : params[attribute.name]
+        attribute.multiple
+          ? split(params[attribute.name])
+          : params[attribute.name]
       }
       onChange={handleChange}
       multiple={attribute.multiple}
     >
       {({ open }) => (
         <div className="relative">
-          <Listbox.Button className="relative w-full cursor-pointer rounded-md border border-zinc-200 py-1.5 pl-3 pr-10 text-left text-zinc-900 shadow-sm sm:text-sm sm:leading-6">
+          <Listbox.Button className={filterSelectInputStyles.button.base}>
             {attribute.multiple ? (
               <div
-                className={clsx(
-                  'flex flex-wrap',
-                  selectedArray.length !== 0 && 'my-1'
+                className={filterSelectInputStyles.button.selectedContainer(
+                  selectedArray.length
                 )}
               >
                 {selectedArray.length === 0 ? (
-                  <span className="block truncate">Any</span>
+                  <span className={filterSelectInputStyles.button.placeholder}>
+                    Any
+                  </span>
                 ) : (
                   selectedArray.map((v: FilterOption, j: number) => (
                     <div
                       key={j}
                       onClick={() => handleRemoveItem(v)}
-                      className="my-1 mr-2 flex h-6 min-w-fit items-center rounded-xl bg-zinc-100 px-2.5 py-1 text-zinc-900"
+                      className={filterSelectInputStyles.button.selectedItem}
                     >
                       {v?.title}
                     </div>
@@ -213,48 +225,48 @@ export function FilterSelectInput({
                 )}
               </div>
             ) : (
-              <span className="block truncate">
+              <span className={filterSelectInputStyles.button.placeholder}>
                 {selectedSingle?.title || 'Any'}
               </span>
             )}
-            <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-              <LuChevronsUpDown size={20} className="text-zinc-400" />
+            <span className={filterSelectInputStyles.button.icon}>
+              <LuChevronsUpDown
+                size={20}
+                className={filterSelectInputStyles.button.iconSvg}
+              />
             </span>
           </Listbox.Button>
           <Transition
             show={open}
             as={Fragment}
-            leave="transition ease-in duration-100"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
+            leave={filterSelectInputStyles.transition.leave}
+            leaveFrom={filterSelectInputStyles.transition.leaveFrom}
+            leaveTo={filterSelectInputStyles.transition.leaveTo}
           >
-            <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg sm:text-sm">
+            <Listbox.Options
+              className={filterSelectInputStyles.options.container}
+            >
               {(toArray(attribute.options) as FilterOption[]).map((o, j) => (
                 <Listbox.Option
                   key={j}
                   value={o?.value || ''}
                   className={({ active }) =>
-                    clsx(
-                      'relative cursor-default select-none py-2 pl-3 pr-9',
-                      active ? 'bg-blue-600 text-white' : 'text-zinc-900'
-                    )
+                    filterSelectInputStyles.options.option(active)
                   }
                 >
                   {({ selected, active }) => (
                     <>
                       <span
-                        className={clsx(
-                          'block truncate',
-                          selected ? 'font-semibold' : 'font-normal'
+                        className={filterSelectInputStyles.options.optionText(
+                          selected
                         )}
                       >
                         {o?.title || ''}
                       </span>
                       {selected && (
                         <span
-                          className={clsx(
-                            'absolute inset-y-0 right-0 flex items-center pr-4',
-                            active ? 'text-white' : 'text-blue-600'
+                          className={filterSelectInputStyles.options.checkIcon(
+                            active
                           )}
                         >
                           <MdCheck size={20} />
@@ -271,4 +283,3 @@ export function FilterSelectInput({
     </Listbox>
   );
 }
-

@@ -1,7 +1,6 @@
 'use client';
 
 import { ResponsiveSankey } from '@nivo/sankey';
-import clsx from 'clsx';
 import _ from 'lodash';
 import { useTheme } from 'next-themes';
 import { useCallback } from 'react';
@@ -14,6 +13,7 @@ import { isNumber } from '@/lib/number';
 import { toArray } from '@/lib/parser';
 import { GroupDataItem } from './Interchain.types';
 import { useSankeyChartHover } from './SankeyChart.hooks';
+import { sankeyChartColors, sankeyChartStyles } from './SankeyChart.styles';
 import { SankeyChartProps } from './SankeyChart.types';
 import {
   getSankeyChartValue,
@@ -66,25 +66,25 @@ export function SankeyChart({
 
       // Return tooltip matching nodeTooltip style with colored squares
       return (
-        <div className="flex flex-col space-y-0.5 rounded-sm bg-zinc-100 px-2 py-1.5 text-xs shadow-sm dark:bg-black">
-          <div className="flex items-center space-x-2">
+        <div className={sankeyChartStyles.linkTooltip.container}>
+          <div className={sankeyChartStyles.linkTooltip.header}>
             {sourceColor && (
               <div
-                className="h-3 w-3"
+                className={sankeyChartStyles.linkTooltip.colorSquare}
                 style={{ backgroundColor: sourceColor }}
               />
             )}
-            <span className="font-bold">{d.link.source.id}</span>
+            <span className={sankeyChartStyles.linkTooltip.label}>{d.link.source.id}</span>
             <span>→</span>
             {targetColor && (
               <div
-                className="h-3 w-3"
+                className={sankeyChartStyles.linkTooltip.colorSquare}
                 style={{ backgroundColor: targetColor }}
               />
             )}
-            <span className="font-bold">{d.link.target.id}</span>
+            <span className={sankeyChartStyles.linkTooltip.label}>{d.link.target.id}</span>
           </div>
-          <span className="text-center">{d.link.formattedValue}</span>
+          <span className={sankeyChartStyles.linkTooltip.value}>{d.link.formattedValue}</span>
         </div>
       );
     },
@@ -92,49 +92,39 @@ export function SankeyChart({
   );
 
   return (
-    <div
-      className={clsx(
-        'flex flex-col gap-y-2 border-zinc-200 dark:border-zinc-700',
-        i % 2 !== 0 ? 'sm:border-l-0' : '',
-        !noBorder
-          ? 'border-l border-r border-t px-4 py-8 sm:px-6 xl:px-8'
-          : 'w-full'
-      )}
-    >
-      <div className="flex items-start justify-between gap-x-4">
-        <div className="flex flex-col gap-y-0.5">
-          <span className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-            {title}
-          </span>
+    <div className={sankeyChartStyles.container(i, noBorder)}>
+      <div className={sankeyChartStyles.header.container}>
+        <div className={sankeyChartStyles.header.titleContainer}>
+          <span className={sankeyChartStyles.header.title}>{title}</span>
           {description && (
-            <span className="hidden text-sm font-normal text-zinc-400 dark:text-zinc-500 lg:block">
+            <span className={sankeyChartStyles.header.description}>
               {description}
             </span>
           )}
         </div>
         {isNumber(value) && (
-          <div className="flex flex-col items-end gap-y-0.5">
+          <div className={sankeyChartStyles.header.valueContainer}>
             <Number
               value={value}
               format={valueFormat}
               prefix={valuePrefix}
               noTooltip={true}
-              className="!text-base font-semibold text-zinc-900 dark:text-zinc-100"
+              className={sankeyChartStyles.header.valueNumber}
             />
-            <span className="whitespace-nowrap text-right text-sm text-zinc-400 dark:text-zinc-500">
+            <span className={sankeyChartStyles.header.valueKey}>
               {keyString}
             </span>
           </div>
         )}
       </div>
-      <div className="-mb-2.5 h-full w-full">
+      <div className={sankeyChartStyles.chart.container}>
         {!data ? (
-          <div className="flex h-full w-full items-center justify-center">
+          <div className={sankeyChartStyles.chart.loading}>
             <Spinner />
           </div>
         ) : (
           <div
-            className={clsx('h-112 w-full font-semibold', className)}
+            className={sankeyChartStyles.chart.wrapper(className)}
             onMouseLeave={handleMouseLeave}
           >
             {chartData.length > 0 && (
@@ -154,8 +144,13 @@ export function SankeyChart({
                   tooltip: {
                     container: {
                       background:
-                        resolvedTheme === 'dark' ? '#18181b' : '#f4f4f5',
-                      color: resolvedTheme === 'dark' ? '#f4f4f5' : '#18181b',
+                        resolvedTheme === 'dark'
+                          ? sankeyChartColors.tooltip.background.dark
+                          : sankeyChartColors.tooltip.background.light,
+                      color:
+                        resolvedTheme === 'dark'
+                          ? sankeyChartColors.tooltip.text.dark
+                          : sankeyChartColors.tooltip.text.light,
                       fontSize: 12,
                       fontWeight: 400,
                     },
@@ -173,7 +168,9 @@ export function SankeyChart({
                 linkBlendMode={resolvedTheme === 'dark' ? 'lighten' : 'darken'}
                 enableLinkGradient={true}
                 labelTextColor={
-                  resolvedTheme === 'dark' ? '#f4f4f5' : '#18181b'
+                  resolvedTheme === 'dark'
+                    ? sankeyChartColors.label.dark
+                    : sankeyChartColors.label.light
                 }
                 nodeTooltip={d => {
                   const { id, formattedValue, nodeColor } = { ...d.node };

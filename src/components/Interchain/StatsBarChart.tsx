@@ -1,6 +1,5 @@
 'use client';
 
-import clsx from 'clsx';
 import _ from 'lodash';
 import { useState } from 'react';
 import {
@@ -17,6 +16,7 @@ import { Spinner } from '@/components/Spinner';
 import { isNumber, numberFormat } from '@/lib/number';
 import { toArray } from '@/lib/parser';
 import { ChartDataPoint } from './Interchain.types';
+import { statsBarChartColors, statsBarChartStyles } from './StatsBarChart.styles';
 import { useChartData } from './StatsBarChart.hooks';
 import { StatsBarChartProps } from './StatsBarChart.types';
 import {
@@ -32,11 +32,7 @@ export function StatsBarChart({
   totalValue,
   field = 'num_txs',
   stacks = ['gmp', 'transfers'],
-  colors = {
-    gmp: '#ff7d20',
-    transfers: '#009ef7',
-    transfers_airdrop: '#de3163',
-  },
+  colors = statsBarChartColors,
   scale = '',
   useStack = true,
   title = '',
@@ -65,41 +61,34 @@ export function StatsBarChart({
   const timeString = getChartTimeString(selectedData, chartData);
 
   return (
-    <div
-      className={clsx(
-        'flex flex-col gap-y-2 border-l border-r border-t border-zinc-200 px-4 py-8 dark:border-zinc-700 sm:px-6 xl:px-8',
-        i % 2 !== 0 ? 'sm:border-l-0' : ''
-      )}
-    >
-      <div className="flex items-start justify-between gap-x-4">
-        <div className="flex flex-col gap-y-0.5">
-          <span className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
-            {title}
-          </span>
+    <div className={statsBarChartStyles.container(i)}>
+      <div className={statsBarChartStyles.header.container}>
+        <div className={statsBarChartStyles.header.titleContainer}>
+          <span className={statsBarChartStyles.header.title}>{title}</span>
           {description && (
-            <span className="hidden text-sm font-normal text-zinc-400 dark:text-zinc-500 lg:block">
+            <span className={statsBarChartStyles.header.description}>
               {description}
             </span>
           )}
         </div>
         {isNumber(value) && (
-          <div className="flex flex-col items-end gap-y-0.5">
+          <div className={statsBarChartStyles.header.valueContainer}>
             <Number
               value={value}
               format={valueFormat}
               prefix={valuePrefix}
               noTooltip={true}
-              className="!text-base font-semibold text-zinc-900 dark:text-zinc-100"
+              className={statsBarChartStyles.header.valueNumber}
             />
-            <span className="whitespace-nowrap text-right text-sm text-zinc-400 dark:text-zinc-500">
+            <span className={statsBarChartStyles.header.timeString}>
               {timeString}
             </span>
           </div>
         )}
       </div>
-      <div className="-mb-2.5 h-64 w-full">
+      <div className={statsBarChartStyles.chart.container}>
         {!chartData ? (
-          <div className="flex h-full w-full items-center justify-center">
+          <div className={statsBarChartStyles.chart.loading}>
             <Spinner />
           </div>
         ) : (

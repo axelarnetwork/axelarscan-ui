@@ -10,6 +10,7 @@ import { Spinner } from '@/components/Spinner';
 import { generateKeyByParams, getParams } from '@/lib/operator';
 
 import { Charts } from './Charts';
+import { interchainStyles } from './Interchain.styles';
 import { GMPTimeSpents } from './GMPTimeSpents';
 import {
   useInterchainAutoRefresh,
@@ -72,15 +73,15 @@ export function Interchain() {
 
   if (!data) {
     return (
-      <Container className="sm:mt-8">
+      <Container className={interchainStyles.container}>
         <Spinner />
       </Container>
     );
   }
 
   return (
-    <Container className="sm:mt-8">
-      <div className="flex flex-col gap-y-6">
+    <Container className={interchainStyles.container}>
+      <div className={interchainStyles.content}>
         <InterchainHeader
           pathname={pathname}
           params={params}

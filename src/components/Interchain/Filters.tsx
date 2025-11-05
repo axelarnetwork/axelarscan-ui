@@ -1,7 +1,6 @@
 'use client';
 
 import { Dialog, Transition } from '@headlessui/react';
-import clsx from 'clsx';
 import { Fragment } from 'react';
 import { MdClose, MdOutlineFilterList } from 'react-icons/md';
 
@@ -11,6 +10,7 @@ import { isFiltered } from '@/lib/operator';
 import { FilterInput } from './FilterInput';
 import { FilterSelectInput } from './FilterSelectInput';
 import { useFilters } from './Filters.hooks';
+import { filtersStyles } from './Filters.styles';
 import { getFilterAttributes } from './Filters.utils';
 
 export function Filters() {
@@ -35,69 +35,75 @@ export function Filters() {
         color="default"
         circle="true"
         onClick={() => setOpen(true)}
-        className={clsx(filtered && 'bg-blue-50 dark:bg-blue-950')}
+        className={filtersStyles.button.base(filtered)}
       >
         <MdOutlineFilterList
           size={20}
-          className={clsx(filtered && 'text-blue-600 dark:text-blue-500')}
+          className={filtersStyles.button.icon(filtered)}
         />
       </Button>
       <Transition.Root show={open} as={Fragment}>
         <Dialog as="div" onClose={onClose} className="relative z-50">
           <Transition.Child
             as={Fragment}
-            enter="transform transition ease-in-out duration-500 sm:duration-700"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="transform transition ease-in-out duration-500 sm:duration-700"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
+            enter={filtersStyles.transition.overlay.enter}
+            enterFrom={filtersStyles.transition.overlay.enterFrom}
+            enterTo={filtersStyles.transition.overlay.enterTo}
+            leave={filtersStyles.transition.overlay.leave}
+            leaveFrom={filtersStyles.transition.overlay.leaveFrom}
+            leaveTo={filtersStyles.transition.overlay.leaveTo}
           >
-            <div className="fixed inset-0 bg-zinc-50 bg-opacity-50 transition-opacity dark:bg-zinc-900 dark:bg-opacity-50" />
+            <div className={filtersStyles.dialog.overlay} />
           </Transition.Child>
           <div className="fixed inset-0 overflow-hidden">
             <div className="absolute inset-0 overflow-hidden">
               <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
                 <Transition.Child
                   as={Fragment}
-                  enter="transform transition ease-in-out duration-500 sm:duration-700"
-                  enterFrom="translate-x-full"
-                  enterTo="translate-x-0"
-                  leave="transform transition ease-in-out duration-500 sm:duration-700"
-                  leaveFrom="translate-x-0"
-                  leaveTo="translate-x-full"
+                  enter={filtersStyles.transition.panel.enter}
+                  enterFrom={filtersStyles.transition.panel.enterFrom}
+                  enterTo={filtersStyles.transition.panel.enterTo}
+                  leave={filtersStyles.transition.panel.leave}
+                  leaveFrom={filtersStyles.transition.panel.leaveFrom}
+                  leaveTo={filtersStyles.transition.panel.leaveTo}
                 >
-                  <Dialog.Panel className="pointer-events-auto w-screen max-w-md">
+                  <Dialog.Panel className={filtersStyles.dialog.panel}>
                     <form
                       onSubmit={e => {
                         e.preventDefault();
                         submitFilters();
                       }}
-                      className="flex h-full flex-col divide-y divide-zinc-200 bg-white shadow-xl"
+                      className={filtersStyles.dialog.form}
                     >
-                      <div className="h-0 flex-1 overflow-y-auto">
-                        <div className="flex items-center justify-between bg-blue-600 p-4 sm:px-6">
-                          <Dialog.Title className="text-base font-semibold leading-6 text-white">
+                      <div className={filtersStyles.dialog.header.container}>
+                        <div className={filtersStyles.dialog.header.titleBar}>
+                          <Dialog.Title
+                            className={filtersStyles.dialog.header.title}
+                          >
                             Filter
                           </Dialog.Title>
                           <button
                             type="button"
                             onClick={() => onClose()}
-                            className="relative ml-3 text-blue-200 hover:text-white"
+                            className={filtersStyles.dialog.header.closeButton}
                           >
                             <MdClose size={20} />
                           </button>
                         </div>
-                        <div className="flex flex-1 flex-col justify-between gap-y-6 px-4 py-6 sm:px-6">
+                        <div className={filtersStyles.dialog.body.container}>
                           {attributes.map((d, i) => (
                             <div key={i}>
                               <label
                                 htmlFor={d.name}
-                                className="text-sm font-medium leading-6 text-zinc-900"
+                                className={filtersStyles.dialog.body.label}
                               >
                                 {d.label}
                               </label>
-                              <div className="mt-2">
+                              <div
+                                className={
+                                  filtersStyles.dialog.body.inputContainer
+                                }
+                              >
                                 {d.type === 'select' ? (
                                   <FilterSelectInput
                                     attribute={d}
@@ -118,22 +124,19 @@ export function Filters() {
                           ))}
                         </div>
                       </div>
-                      <div className="flex flex-shrink-0 justify-end p-4">
+                      <div className={filtersStyles.dialog.footer.container}>
                         <button
                           type="button"
                           onClick={() => submitFilters({})}
-                          className="rounded-md bg-white px-3 py-2 text-sm font-semibold text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-200 hover:bg-zinc-50"
+                          className={filtersStyles.dialog.footer.resetButton}
                         >
                           Reset
                         </button>
                         <button
                           type="submit"
                           disabled={!filtered}
-                          className={clsx(
-                            'ml-4 inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600',
+                          className={filtersStyles.dialog.footer.submitButton(
                             filtered
-                              ? 'bg-blue-600 hover:bg-blue-500'
-                              : 'cursor-not-allowed bg-blue-500'
                           )}
                         >
                           Submit

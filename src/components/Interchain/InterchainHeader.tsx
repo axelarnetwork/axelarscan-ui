@@ -12,6 +12,7 @@ import { equalsIgnoreCase } from '@/lib/string';
 import { Filters } from './Filters';
 import { FilterParams } from './Interchain.types';
 import { TIME_RANGE_SHORTCUTS } from './Interchain.utils';
+import { interchainHeaderStyles } from './InterchainHeader.styles';
 import { buildShortcutUrl, isShortcutSelected } from './InterchainHeader.utils';
 
 interface InterchainHeaderProps {
@@ -36,12 +37,10 @@ export function InterchainHeader({
   onRefresh,
 }: InterchainHeaderProps) {
   return (
-    <div className="flex items-center gap-x-6">
-      <div className="sm:flex-auto">
-        <div className="flex items-center gap-x-4">
-          <h1 className="text-base font-semibold leading-6 text-zinc-900 dark:text-zinc-100">
-            Statistics
-          </h1>
+    <div className={interchainHeaderStyles.container}>
+      <div className={interchainHeaderStyles.title.container}>
+        <div className={interchainHeaderStyles.title.header}>
+          <h1 className={interchainHeaderStyles.title.heading}>Statistics</h1>
           {_.slice(toArray(contractAddress), 0, 1).map((address, index) => (
             <Profile
               key={index}
@@ -73,16 +72,13 @@ export function InterchainHeader({
               />
             )}
         </div>
-        <div className="mt-2 flex max-w-xl flex-wrap items-center">
+        <div className={interchainHeaderStyles.shortcuts.container}>
           {TIME_RANGE_SHORTCUTS.map((shortcut, index) => (
             <Link
               key={index}
               href={buildShortcutUrl(pathname, params, shortcut.value)}
-              className={clsx(
-                'mb-1 mr-4 flex min-w-max items-center whitespace-nowrap text-xs sm:mb-0 sm:text-sm',
+              className={interchainHeaderStyles.shortcuts.link(
                 isShortcutSelected(shortcut.value, fromTime, toTime)
-                  ? 'font-semibold text-blue-600 dark:text-blue-500'
-                  : 'text-zinc-400 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-300'
               )}
             >
               <span>{shortcut.label}</span>
@@ -90,7 +86,7 @@ export function InterchainHeader({
           ))}
         </div>
       </div>
-      <div className="flex items-center gap-x-2">
+      <div className={interchainHeaderStyles.actions.container}>
         <Filters />
         {isRefreshing ? (
           <Spinner />

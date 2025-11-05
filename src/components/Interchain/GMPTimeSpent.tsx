@@ -2,9 +2,10 @@ import { Number } from '@/components/Number';
 import { ChainProfile } from '@/components/Profile';
 import { TimeSpent } from '@/components/Time';
 import { TooltipComponent } from '@/components/Tooltip';
+import { gmpTimeSpentStyles } from './GMPTimeSpent.styles';
 import { GMPTimeSpentProps } from './GMPTimeSpent.types';
-import { GMPTimeSpentPoint } from './GMPTimeSpentPoint';
 import { calculatePoints } from './GMPTimeSpent.utils';
+import { GMPTimeSpentPoint } from './GMPTimeSpentPoint';
 import { TimeSpentData } from './Interchain.types';
 
 export function GMPTimeSpent({
@@ -20,8 +21,8 @@ export function GMPTimeSpent({
   const points = calculatePoints(dataRecord);
 
   return (
-    <div className="flex flex-col gap-y-2 rounded-lg bg-zinc-50 px-3 py-4 dark:bg-zinc-800/25 sm:flex-row sm:justify-between sm:gap-x-2 sm:gap-y-0">
-      <div className="flex w-40 flex-col gap-y-0.5">
+    <div className={gmpTimeSpentStyles.container}>
+      <div className={gmpTimeSpentStyles.info.container}>
         <ChainProfile
           value={key}
           width={20}
@@ -33,21 +34,21 @@ export function GMPTimeSpent({
           value={num_txs || 0}
           format="0,0.00a"
           suffix=" records"
-          className="whitespace-nowrap text-xs font-medium text-zinc-700 dark:text-zinc-300"
+          className={gmpTimeSpentStyles.info.numRecords}
         />
       </div>
       {total && typeof total === 'number' && total > 0 && (
-        <div className="flex w-full flex-col gap-y-0.5">
-          <div className="flex w-full items-center justify-between">
+        <div className={gmpTimeSpentStyles.timeline.container}>
+          <div className={gmpTimeSpentStyles.timeline.points.container}>
             <GMPTimeSpentPoint title="S" name="Start" />
             {points.map((d, i) => (
               <div
                 key={i}
-                className="flex justify-between"
+                className={gmpTimeSpentStyles.timeline.points.point}
                 style={{ width: `${d.width}%` }}
               >
                 <div
-                  className="h-0.5 w-full bg-blue-600 dark:bg-blue-500"
+                  className={gmpTimeSpentStyles.timeline.points.line}
                   style={{ marginTop: '3px' }}
                 />
                 <TooltipComponent
@@ -74,11 +75,11 @@ export function GMPTimeSpent({
               </div>
             ))}
           </div>
-          <div className="ml-2 flex w-full items-center justify-between">
+          <div className={gmpTimeSpentStyles.timeline.labels.container}>
             {points.map((d, i) => (
               <div
                 key={i}
-                className="flex justify-end"
+                className={gmpTimeSpentStyles.timeline.labels.label}
                 style={{ width: `${d.width}%` }}
               >
                 {['express_execute', 'execute'].includes(d.id) ? (
@@ -91,7 +92,7 @@ export function GMPTimeSpent({
                       toTimestamp={d.time_spent * 1000}
                       noTooltip={true}
                       title=""
-                      className="whitespace-nowrap text-2xs font-medium text-zinc-900 dark:text-zinc-100"
+                      className={gmpTimeSpentStyles.timeline.labels.timeText}
                     />
                   </TooltipComponent>
                 ) : (

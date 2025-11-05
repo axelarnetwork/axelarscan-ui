@@ -1,4 +1,5 @@
 import { TooltipComponent } from '@/components/Tooltip';
+import { gmpTimeSpentPointStyles } from './GMPTimeSpentPoint.styles';
 
 interface GMPTimeSpentPointProps {
   title: string;
@@ -12,11 +13,9 @@ export function GMPTimeSpentPoint({
   noTooltip = false,
 }: GMPTimeSpentPointProps) {
   const point = (
-    <div className="flex flex-col gap-y-0.5">
-      <div className="h-2 w-2 rounded-full bg-blue-600 p-1 dark:bg-blue-500" />
-      <span className="text-2xs font-medium uppercase text-blue-600 dark:text-blue-500">
-        {title}
-      </span>
+    <div className={gmpTimeSpentPointStyles.container}>
+      <div className={gmpTimeSpentPointStyles.dot} />
+      <span className={gmpTimeSpentPointStyles.label}>{title}</span>
     </div>
   );
 

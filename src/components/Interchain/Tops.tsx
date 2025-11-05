@@ -1,11 +1,10 @@
-import clsx from 'clsx';
-
 import { useGlobalStore } from '@/components/Global';
 import { getAssetData, getITSAssetData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { equalsIgnoreCase } from '@/lib/string';
 import { ChainWithContracts, TopDataItem } from './Interchain.types';
 import { Top } from './Top';
+import { topsStyles } from './Tops.styles';
 import { TopsProps } from './Tops.types';
 import {
   getTopData,
@@ -135,19 +134,9 @@ export function Tops({ data, types, params }: TopsProps) {
   );
 
   return (
-    <div className="border-b border-b-zinc-200 dark:border-b-zinc-700">
-      <div
-        className={clsx(
-          'grid lg:px-2 xl:px-0',
-          hasTransfers && hasGMP ? '' : 'lg:grid-cols-2'
-        )}
-      >
-        <div
-          className={clsx(
-            'grid grid-cols-2 sm:grid-cols-3',
-            hasTransfers && hasGMP ? 'lg:grid-cols-6' : ''
-          )}
-        >
+    <div className={topsStyles.container}>
+      <div className={topsStyles.grid.main(hasTransfers, hasGMP)}>
+        <div className={topsStyles.grid.topRow(hasTransfers, hasGMP)}>
           <Top
             index={0}
             data={getTopData(chainPairs, 'num_txs', 100)}
@@ -215,12 +204,7 @@ export function Tops({ data, types, params }: TopsProps) {
             className="h-48"
           />
         </div>
-        <div
-          className={clsx(
-            'grid sm:grid-cols-2',
-            hasTransfers && hasGMP ? 'lg:grid-cols-4' : ''
-          )}
-        >
+        <div className={topsStyles.grid.middleRow(hasTransfers, hasGMP)}>
           {hasTransfers && (
             <>
               <Top
@@ -283,12 +267,7 @@ export function Tops({ data, types, params }: TopsProps) {
             typeof params?.contractMethod === 'string' &&
             equalsIgnoreCase(params.contractMethod, 'SquidCoral')
           ) && (
-            <div
-              className={clsx(
-                'grid sm:grid-cols-2 lg:grid-cols-4',
-                !hasTransfers && 'lg:col-span-2'
-              )}
-            >
+            <div className={topsStyles.grid.bottomRow(hasTransfers)}>
               <Top
                 index={0}
                 data={getTopData(ITSUsers, 'num_txs', 100)}

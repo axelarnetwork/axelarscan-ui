@@ -1,11 +1,10 @@
-import clsx from 'clsx';
-
 import { Image } from '@/components/Image';
 import { Number } from '@/components/Number';
 import { AssetProfile, Profile } from '@/components/Profile';
 import { getChainData } from '@/lib/config';
 import { split, toArray } from '@/lib/parser';
 import { MdKeyboardArrowRight } from 'react-icons/md';
+import { topItemStyles } from './TopItem.styles';
 
 interface TopItemProps {
   data: Record<string, unknown>;
@@ -33,13 +32,8 @@ export function TopItem({
   }
 
   return (
-    <div className="flex items-center justify-between gap-x-2">
-      <div
-        className={clsx(
-          'flex items-center gap-x-1',
-          ['asset', 'contract', 'address'].includes(type) ? 'h-8' : 'h-6'
-        )}
-      >
+    <div className={topItemStyles.container}>
+      <div className={topItemStyles.keys.container(type)}>
         {keys.map((keyPart, keyIndex) => {
           if (type === 'asset') {
             return (
@@ -86,15 +80,15 @@ export function TopItem({
           };
 
           const element = (
-            <div key={keyIndex} className="flex items-center gap-x-1.5">
+            <div key={keyIndex} className={topItemStyles.keys.chain.container}>
               <Image src={image} alt="" width={20} height={20} />
               {keys.length === 1 && (
-                <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                <span className={topItemStyles.keys.chain.name.single}>
                   {name}
                 </span>
               )}
               {keys.length > 1 && (
-                <span className="hidden text-xs font-medium text-zinc-700 dark:text-zinc-300 2xl:hidden">
+                <span className={topItemStyles.keys.chain.name.multiple}>
                   {name}
                 </span>
               )}
@@ -102,11 +96,14 @@ export function TopItem({
           );
 
           return keys.length > 1 ? (
-            <div key={keyIndex} className="flex items-center gap-x-1">
+            <div
+              key={keyIndex}
+              className={topItemStyles.keys.chainMultiple.container}
+            >
               {keyIndex > 0 && (
                 <MdKeyboardArrowRight
                   size={16}
-                  className="text-zinc-700 dark:text-zinc-300"
+                  className={topItemStyles.keys.chainMultiple.arrow}
                 />
               )}
               {element}
@@ -121,7 +118,7 @@ export function TopItem({
         format={_format}
         prefix={prefix}
         noTooltip={true}
-        className="text-xs font-semibold text-zinc-900 dark:text-zinc-100"
+        className={topItemStyles.value}
       />
     </div>
   );

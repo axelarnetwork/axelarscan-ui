@@ -2,6 +2,7 @@ import _ from 'lodash';
 
 import { useGlobalStore } from '@/components/Global';
 import { toNumber } from '@/lib/number';
+import { chartsColors, chartsStyles } from './Charts.styles';
 import { ChartsProps } from './Charts.types';
 import {
   getChainPairs,
@@ -29,8 +30,8 @@ export function Charts({ data, granularity }: ChartsProps) {
   const chainPairs = getChainPairs(data, chains);
 
   return (
-    <div className="border-b border-b-zinc-200 dark:border-b-zinc-700">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:px-2 xl:px-0">
+    <div className={chartsStyles.container}>
+      <div className={chartsStyles.grid}>
         <StatsBarChart
           i={0}
           data={chartData}
@@ -51,13 +52,7 @@ export function Charts({ data, granularity }: ChartsProps) {
           field="volume"
           stacks={['transfers_airdrop', 'gmp', 'transfers']}
           colors={
-            scale === 'log' && useStack
-              ? {
-                  gmp: '#33b700',
-                  transfers: '#33b700',
-                  transfers_airdrop: '#33b700',
-                }
-              : undefined
+            scale === 'log' && useStack ? chartsColors.logScale : undefined
           }
           scale={scale}
           useStack={useStack}
@@ -68,7 +63,7 @@ export function Charts({ data, granularity }: ChartsProps) {
           valuePrefix="$"
         />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:px-2 xl:px-0">
+      <div className={chartsStyles.grid}>
         <SankeyChart
           i={0}
           data={chainPairs}

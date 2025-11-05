@@ -4,6 +4,7 @@ import { Number } from '@/components/Number';
 import { toArray } from '@/lib/parser';
 import { toTitle } from '@/lib/string';
 import { ChartDataPoint, CustomTooltipProps } from './Interchain.types';
+import { statsBarChartTooltipStyles } from './StatsBarChartTooltip.styles';
 
 interface StatsBarChartTooltipProps extends CustomTooltipProps {
   stacks: string[];
@@ -45,10 +46,10 @@ export function StatsBarChartTooltip({
     }));
 
   return (
-    <div className="flex flex-col gap-y-1.5 rounded-lg bg-zinc-50 p-2 dark:bg-zinc-800">
+    <div className={statsBarChartTooltipStyles.container}>
       {values.map((d, i) => (
-        <div key={i} className="flex items-center justify-between gap-x-4">
-          <span className="text-xs font-semibold capitalize">
+        <div key={i} className={statsBarChartTooltipStyles.item.container}>
+          <span className={statsBarChartTooltipStyles.item.label}>
             {toTitle(d.key === 'gmp' ? 'GMPs' : d.key)}
           </span>
           <Number
@@ -56,7 +57,7 @@ export function StatsBarChartTooltip({
             format={valueFormat}
             prefix={valuePrefix}
             noTooltip={true}
-            className="text-xs font-medium"
+            className={statsBarChartTooltipStyles.item.value}
           />
         </div>
       ))}

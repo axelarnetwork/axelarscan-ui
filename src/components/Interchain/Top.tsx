@@ -1,10 +1,9 @@
-import clsx from 'clsx';
-
 import { useGlobalStore } from '@/components/Global';
 import { Spinner } from '@/components/Spinner';
 import { getChainData } from '@/lib/config';
 import { split, toArray } from '@/lib/parser';
 import { GroupDataItem, InterchainData } from './Interchain.types';
+import { topStyles } from './Top.styles';
 import { TopProps } from './Top.types';
 import { TopItem } from './TopItem';
 
@@ -31,40 +30,20 @@ export function Top({
   )[];
 
   return (
-    <div
-      className={clsx(
-        'flex flex-col gap-y-3 border-l border-r border-t border-zinc-200 px-4 dark:border-zinc-700 sm:px-6',
-        type === 'chain'
-          ? index % 3 !== 0
-            ? 'sm:border-l-0'
-            : index % (hasTransfers ? 6 : 3) !== 0
-              ? 'lg:border-l-0'
-              : ''
-          : !hasTransfers || !hasGMP || index % 4 !== 0
-            ? 'sm:border-l-0'
-            : '',
-        type === 'chain' ? 'py-4 xl:px-4' : 'py-8 xl:px-8'
-      )}
-    >
-      <div className="flex flex-col gap-y-0.5">
-        <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-          {title}
-        </span>
+    <div className={topStyles.container(type, index, hasTransfers, hasGMP)}>
+      <div className={topStyles.header.container}>
+        <span className={topStyles.header.title}>{title}</span>
         {description && (
-          <span className="text-xs font-normal text-zinc-400 dark:text-zinc-500">
-            {description}
-          </span>
+          <span className={topStyles.header.description}>{description}</span>
         )}
       </div>
-      <div className="w-full">
+      <div className={topStyles.content.container}>
         {!data ? (
-          <div className="flex h-full w-full items-center justify-center">
+          <div className={topStyles.content.loading}>
             <Spinner />
           </div>
         ) : (
-          <div
-            className={clsx('flex flex-col gap-y-1 overflow-y-auto', className)}
-          >
+          <div className={topStyles.content.list(className)}>
             {dataArray
               .filter(
                 dataItem =>
