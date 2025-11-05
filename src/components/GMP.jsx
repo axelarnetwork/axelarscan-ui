@@ -3622,6 +3622,7 @@ export function GMP({ tx, lite }) {
           if (
             response &&
             stellarWalletStore.provider &&
+            stellarWalletStore.network &&
             stellarWalletStore.sorobanRpcUrl
           ) {
             const server = new StellarSDK.rpc.Server(
