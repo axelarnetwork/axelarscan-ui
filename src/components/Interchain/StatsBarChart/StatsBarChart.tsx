@@ -16,7 +16,10 @@ import { Spinner } from '@/components/Spinner';
 import { isNumber, numberFormat } from '@/lib/number';
 import { toArray } from '@/lib/parser';
 import { ChartDataPoint } from '../Interchain.types';
-import { statsBarChartColors, statsBarChartStyles } from './StatsBarChart.styles';
+import {
+  statsBarChartColors,
+  statsBarChartStyles,
+} from './StatsBarChart.styles';
 import { useChartData } from './StatsBarChart.hooks';
 import { StatsBarChartProps } from './StatsBarChart.types';
 import {

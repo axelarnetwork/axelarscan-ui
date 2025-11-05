@@ -7,12 +7,12 @@ import { MdCheck } from 'react-icons/md';
 
 import { split, toArray } from '@/lib/parser';
 import { equalsIgnoreCase, filterSearchInput } from '@/lib/string';
-import { filterSelectInputStyles } from './FilterSelectInput.styles';
 import {
   FilterAttribute,
   FilterOption,
   FilterParams,
-} from './Interchain.types';
+} from '../Interchain.types';
+import { filterSelectInputStyles } from './FilterSelectInput.styles';
 
 interface FilterSelectInputProps {
   attribute: FilterAttribute;

@@ -12,7 +12,8 @@ export const filtersStyles = {
       clsx(filtered && 'text-blue-600 dark:text-blue-500'),
   },
   dialog: {
-    overlay: 'fixed inset-0 bg-zinc-50 bg-opacity-50 transition-opacity dark:bg-zinc-900 dark:bg-opacity-50',
+    overlay:
+      'fixed inset-0 bg-zinc-50 bg-opacity-50 transition-opacity dark:bg-zinc-900 dark:bg-opacity-50',
     panel: 'pointer-events-auto w-screen max-w-md',
     form: 'flex h-full flex-col divide-y divide-zinc-200 bg-white shadow-xl',
     header: {
@@ -22,13 +23,15 @@ export const filtersStyles = {
       closeButton: 'relative ml-3 text-blue-200 hover:text-white',
     },
     body: {
-      container: 'flex flex-1 flex-col justify-between gap-y-6 px-4 py-6 sm:px-6',
+      container:
+        'flex flex-1 flex-col justify-between gap-y-6 px-4 py-6 sm:px-6',
       label: 'text-sm font-medium leading-6 text-zinc-900',
       inputContainer: 'mt-2',
     },
     footer: {
       container: 'flex flex-shrink-0 justify-end p-4',
-      resetButton: 'rounded-md bg-white px-3 py-2 text-sm font-semibold text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-200 hover:bg-zinc-50',
+      resetButton:
+        'rounded-md bg-white px-3 py-2 text-sm font-semibold text-zinc-900 shadow-sm ring-1 ring-inset ring-zinc-200 hover:bg-zinc-50',
       submitButton: (filtered: boolean) =>
         clsx(
           'ml-4 inline-flex justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600',
@@ -57,4 +60,3 @@ export const filtersStyles = {
     },
   },
 } as const;
-

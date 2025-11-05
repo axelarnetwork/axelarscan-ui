@@ -22,9 +22,7 @@ export function SankeyChartNodeTooltip({
         )}
         <span className={sankeyChartNodeTooltipStyles.label}>{id}</span>
       </div>
-      <span>
-        Total: {formattedValue}
-      </span>
+      <span>Total: {formattedValue}</span>
     </div>
   );
 }

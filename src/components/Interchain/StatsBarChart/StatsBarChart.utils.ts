@@ -9,9 +9,7 @@ import { ChartDataPoint } from './Interchain.types';
  * Extracts chart data points from unknown data structure
  * Handles both array format and object with data property
  */
-export function extractChartDataPoints(
-  data: unknown
-): ChartDataPoint[] {
+export function extractChartDataPoints(data: unknown): ChartDataPoint[] {
   if (Array.isArray(data)) {
     return data;
   }
@@ -62,14 +60,12 @@ export function getDomain(
   return [
     _.min(
       stacks.map(
-        s =>
-          _.minBy(chartData, `${s}_${field}`)?.[`${s}_${field}`] as number
+        s => _.minBy(chartData, `${s}_${field}`)?.[`${s}_${field}`] as number
       )
     ) ?? 0,
     _.max(
       stacks.map(
-        s =>
-          _.maxBy(chartData, `${s}_${field}`)?.[`${s}_${field}`] as number
+        s => _.maxBy(chartData, `${s}_${field}`)?.[`${s}_${field}`] as number
       )
     ) ?? 1,
   ];

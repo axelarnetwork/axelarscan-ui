@@ -13,12 +13,7 @@ export interface PointData {
 }
 
 export function calculatePoints(data: TimeSpentData): PointData[] {
-  const {
-    express_execute,
-    confirm,
-    approve,
-    total,
-  } = { ...data };
+  const { express_execute, confirm, approve, total } = { ...data };
 
   let points: PointData[] = toArray([
     express_execute && {
@@ -63,4 +58,3 @@ export function calculatePoints(data: TimeSpentData): PointData[] {
 
   return points;
 }
-

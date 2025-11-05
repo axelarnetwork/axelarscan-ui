@@ -9,7 +9,8 @@ export const interchainHeaderStyles = {
   title: {
     container: 'sm:flex-auto',
     header: 'flex items-center gap-x-4',
-    heading: 'text-base font-semibold leading-6 text-zinc-900 dark:text-zinc-100',
+    heading:
+      'text-base font-semibold leading-6 text-zinc-900 dark:text-zinc-100',
   },
   shortcuts: {
     container: 'mt-2 flex max-w-xl flex-wrap items-center',
@@ -25,4 +26,3 @@ export const interchainHeaderStyles = {
     container: 'flex items-center gap-x-2',
   },
 } as const;
-

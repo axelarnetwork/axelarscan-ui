@@ -36,9 +36,7 @@ export function StatsBarChartTooltip({
     }))
     .filter(
       d =>
-        field !== 'volume' ||
-        !d.key.includes('airdrop') ||
-        (d.value || 0) > 100
+        field !== 'volume' || !d.key.includes('airdrop') || (d.value || 0) > 100
     )
     .map(d => ({
       ...d,

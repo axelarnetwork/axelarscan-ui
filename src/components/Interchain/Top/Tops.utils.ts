@@ -77,9 +77,7 @@ export function getTopData(
 /**
  * Helper to extract GMP destination chains data
  */
-function extractGMPDestinationChains(
-  sourceChains: SourceChainData[]
-): Array<{
+function extractGMPDestinationChains(sourceChains: SourceChainData[]): Array<{
   sourceKey: string;
   destKey: string;
   num_txs?: number;

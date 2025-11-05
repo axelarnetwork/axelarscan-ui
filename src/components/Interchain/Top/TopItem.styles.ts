@@ -16,7 +16,8 @@ export const topItemStyles = {
       container: 'flex items-center gap-x-1.5',
       name: {
         single: 'text-xs font-medium text-zinc-700 dark:text-zinc-300',
-        multiple: 'hidden text-xs font-medium text-zinc-700 dark:text-zinc-300 2xl:hidden',
+        multiple:
+          'hidden text-xs font-medium text-zinc-700 dark:text-zinc-300 2xl:hidden',
       },
     },
     chainMultiple: {
@@ -26,4 +27,3 @@ export const topItemStyles = {
   },
   value: 'text-xs font-semibold text-zinc-900 dark:text-zinc-100',
 } as const;
-

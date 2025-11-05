@@ -13,10 +13,7 @@ export interface ProfileRenderProps {
 /**
  * Checks if a chain key should be filtered out
  */
-export function shouldFilterChain(
-  key: string,
-  chains: ChainData[]
-): boolean {
+export function shouldFilterChain(key: string, chains: ChainData[]): boolean {
   return (
     split(key, { delimiter: '_' }).filter(k => !getChainData(k, chains))
       .length < 1
@@ -48,4 +45,3 @@ export function getBorderClassName(
 
   return '';
 }
-

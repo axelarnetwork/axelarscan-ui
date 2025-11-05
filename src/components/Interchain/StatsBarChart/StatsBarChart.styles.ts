@@ -20,14 +20,15 @@ export const statsBarChartStyles = {
     container: 'flex items-start justify-between gap-x-4',
     titleContainer: 'flex flex-col gap-y-0.5',
     title: 'text-base font-semibold text-zinc-900 dark:text-zinc-100',
-    description: 'hidden text-sm font-normal text-zinc-400 dark:text-zinc-500 lg:block',
+    description:
+      'hidden text-sm font-normal text-zinc-400 dark:text-zinc-500 lg:block',
     valueContainer: 'flex flex-col items-end gap-y-0.5',
     valueNumber: '!text-base font-semibold text-zinc-900 dark:text-zinc-100',
-    timeString: 'whitespace-nowrap text-right text-sm text-zinc-400 dark:text-zinc-500',
+    timeString:
+      'whitespace-nowrap text-right text-sm text-zinc-400 dark:text-zinc-500',
   },
   chart: {
     container: '-mb-2.5 h-64 w-full',
     loading: 'flex h-full w-full items-center justify-center',
   },
 } as const;
-

@@ -58,7 +58,7 @@ export function Tops({ data, types, params }: TopsProps) {
     chains
   );
 
-  const destionationChains = processDestinationChains(
+  const destinationChains = processDestinationChains(
     { GMPStatsByChains, transfersStats },
     chains
   );
@@ -159,7 +159,7 @@ export function Tops({ data, types, params }: TopsProps) {
           />
           <Top
             index={2}
-            data={getTopData(destionationChains, 'num_txs', 100)}
+            data={getTopData(destinationChains, 'num_txs', 100)}
             hasTransfers={hasTransfers}
             hasGMP={hasGMP}
             transfersType=""
@@ -193,7 +193,7 @@ export function Tops({ data, types, params }: TopsProps) {
           />
           <Top
             index={5}
-            data={getTopData(destionationChains, 'volume', 100)}
+            data={getTopData(destinationChains, 'volume', 100)}
             hasTransfers={hasTransfers}
             hasGMP={hasGMP}
             transfersType=""

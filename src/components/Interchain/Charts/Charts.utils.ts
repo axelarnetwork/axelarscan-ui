@@ -101,26 +101,28 @@ export function groupData(
   chains: string[],
   by = 'key'
 ): GroupDataItem[] {
-  return Object.entries(_.groupBy(toArray(data) as GroupDataItem[], by)).map(([k, v]) => ({
-    key: (v[0] as GroupDataItem)?.key || k,
-    num_txs: _.sumBy(v, 'num_txs'),
-    volume: _.sumBy(v, 'volume'),
-    chain: _.orderBy(
-      toArray(
-        _.uniq(
-          toArray(
-            by === 'customKey'
-              ? (v[0] as GroupDataItem)?.chain
-              : (v as GroupDataItem[]).map((d: GroupDataItem) => d.chain)
+  return Object.entries(_.groupBy(toArray(data) as GroupDataItem[], by)).map(
+    ([k, v]) => ({
+      key: (v[0] as GroupDataItem)?.key || k,
+      num_txs: _.sumBy(v, 'num_txs'),
+      volume: _.sumBy(v, 'volume'),
+      chain: _.orderBy(
+        toArray(
+          _.uniq(
+            toArray(
+              by === 'customKey'
+                ? (v[0] as GroupDataItem)?.chain
+                : (v as GroupDataItem[]).map((d: GroupDataItem) => d.chain)
+            )
+          ).map((d: string | string[] | undefined) =>
+            getChainData(d as string, chains)
           )
-        ).map((d: string | string[] | undefined) =>
-          getChainData(d as string, chains)
-        )
-      ),
-      ['i'],
-      ['asc']
-    ).map(d => d.id),
-  }));
+        ),
+        ['i'],
+        ['asc']
+      ).map(d => d.id),
+    })
+  );
 }
 
 export function getChainPairs(

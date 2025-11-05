@@ -219,4 +219,3 @@ export interface ITSAssetData {
   symbol: string;
   [key: string]: unknown;
 }
-

@@ -147,7 +147,9 @@ export function Summary({ data, params }: SummaryProps) {
           </div>
         ) : (
           <div className={summaryStyles.stat.container(false)}>
-            <dt className={summaryStyles.stat.label}>Average Volume / Transaction</dt>
+            <dt className={summaryStyles.stat.label}>
+              Average Volume / Transaction
+            </dt>
             <dd className={summaryStyles.stat.value.container}>
               <Number
                 value={

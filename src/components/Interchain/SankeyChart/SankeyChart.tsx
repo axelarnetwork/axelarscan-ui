@@ -74,7 +74,9 @@ export function SankeyChart({
                 style={{ backgroundColor: sourceColor }}
               />
             )}
-            <span className={sankeyChartStyles.linkTooltip.label}>{d.link.source.id}</span>
+            <span className={sankeyChartStyles.linkTooltip.label}>
+              {d.link.source.id}
+            </span>
             <span>→</span>
             {targetColor && (
               <div
@@ -82,9 +84,13 @@ export function SankeyChart({
                 style={{ backgroundColor: targetColor }}
               />
             )}
-            <span className={sankeyChartStyles.linkTooltip.label}>{d.link.target.id}</span>
+            <span className={sankeyChartStyles.linkTooltip.label}>
+              {d.link.target.id}
+            </span>
           </div>
-          <span className={sankeyChartStyles.linkTooltip.value}>{d.link.formattedValue}</span>
+          <span className={sankeyChartStyles.linkTooltip.value}>
+            {d.link.formattedValue}
+          </span>
         </div>
       );
     },
