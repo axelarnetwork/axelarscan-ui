@@ -11,11 +11,7 @@ export const calculateGranularity = (
 ): 'day' | 'week' | 'month' => {
   if (!fromTimestamp) return 'month';
 
-  const diffInDays = timeDiff(
-    moment(fromTimestamp * 1000),
-    'days',
-    moment(toTimestamp * 1000)
-  );
+  const diffInDays = timeDiff(fromTimestamp * 1000, 'days', toTimestamp * 1000);
 
   if (diffInDays >= 180) {
     return 'month';
