@@ -9,8 +9,8 @@ import {
   getChartScaleAndStack,
   processChartData,
 } from './Charts.utils';
-import { SankeyChart } from './SankeyChart';
-import { StatsBarChart } from './StatsBarChart';
+import { SankeyChart } from '../SankeyChart/SankeyChart';
+import { StatsBarChart } from '../StatsBarChart/StatsBarChart';
 
 export function Charts({ data, granularity }: ChartsProps) {
   const { chains } = useGlobalStore();

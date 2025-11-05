@@ -11,7 +11,7 @@ import { Spinner } from '@/components/Spinner';
 import { getChainData } from '@/lib/config';
 import { isNumber } from '@/lib/number';
 import { toArray } from '@/lib/parser';
-import { GroupDataItem } from './Interchain.types';
+import { GroupDataItem } from '../Interchain.types';
 import { useSankeyChartHover } from './SankeyChart.hooks';
 import { sankeyChartColors, sankeyChartStyles } from './SankeyChart.styles';
 import { SankeyChartProps } from './SankeyChart.types';

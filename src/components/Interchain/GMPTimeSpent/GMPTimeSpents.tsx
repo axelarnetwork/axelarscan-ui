@@ -1,7 +1,7 @@
 import { GMPTimeSpent } from './GMPTimeSpent';
 import { gmpTimeSpentsStyles } from './GMPTimeSpents.styles';
 import { GMPTimeSpentsProps } from './GMPTimeSpents.types';
-import { TimeSpentData } from './Interchain.types';
+import { TimeSpentData } from '../Interchain.types';
 
 export function GMPTimeSpents({ data }: GMPTimeSpentsProps) {
   if (!data?.GMPStatsAVGTimes?.time_spents) {

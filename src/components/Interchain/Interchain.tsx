@@ -9,24 +9,24 @@ import { Overlay } from '@/components/Overlay';
 import { Spinner } from '@/components/Spinner';
 import { generateKeyByParams, getParams } from '@/lib/operator';
 
-import { Charts } from './Charts';
-import { interchainStyles } from './Interchain.styles';
-import { GMPTimeSpents } from './GMPTimeSpents';
+import { Charts } from './Charts/Charts';
+import { GMPTimeSpents } from './GMPTimeSpent/GMPTimeSpents';
 import {
   useInterchainAutoRefresh,
   useInterchainData,
   useInterchainFilters,
   useInterchainTimeSpent,
 } from './Interchain.hooks';
+import { interchainStyles } from './Interchain.styles';
 import {
   DynamicInterchainData,
   FilterParams,
   InterchainData,
 } from './Interchain.types';
 import { calculateGranularity } from './Interchain.utils';
-import { InterchainHeader } from './InterchainHeader';
-import { Summary } from './Summary';
-import { Tops } from './Tops';
+import { InterchainHeader } from './InterchainHeader/InterchainHeader';
+import { Summary } from './Summary/Summary';
+import { Tops } from './Top/Tops';
 
 export function Interchain() {
   const pathname = usePathname();

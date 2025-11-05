@@ -9,9 +9,9 @@ import { Spinner } from '@/components/Spinner';
 import accounts from '@/data/accounts';
 import { toArray } from '@/lib/parser';
 import { equalsIgnoreCase } from '@/lib/string';
-import { Filters } from './Filters';
-import { FilterParams } from './Interchain.types';
-import { TIME_RANGE_SHORTCUTS } from './Interchain.utils';
+import { Filters } from '../Filters/Filters';
+import { FilterParams } from '../Interchain.types';
+import { TIME_RANGE_SHORTCUTS } from '../Interchain.utils';
 import { interchainHeaderStyles } from './InterchainHeader.styles';
 import { buildShortcutUrl, isShortcutSelected } from './InterchainHeader.utils';
 

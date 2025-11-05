@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { Number } from '@/components/Number';
 import { toArray } from '@/lib/parser';
 import { toTitle } from '@/lib/string';
-import { ChartDataPoint, CustomTooltipProps } from './Interchain.types';
+import { ChartDataPoint, CustomTooltipProps } from '../Interchain.types';
 import { statsBarChartTooltipStyles } from './StatsBarChartTooltip.styles';
 
 interface StatsBarChartTooltipProps extends CustomTooltipProps {

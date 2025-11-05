@@ -2,7 +2,7 @@ import { useGlobalStore } from '@/components/Global';
 import { getAssetData, getITSAssetData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { equalsIgnoreCase } from '@/lib/string';
-import { ChainWithContracts, TopDataItem } from './Interchain.types';
+import { ChainWithContracts, TopDataItem } from '../Interchain.types';
 import { Top } from './Top';
 import { topsStyles } from './Tops.styles';
 import { TopsProps } from './Tops.types';

@@ -1,6 +1,6 @@
 import { DateRangePicker } from '@/components/DateRangePicker';
 import { filterInputStyles } from './FilterInput.styles';
-import { FilterAttribute, FilterParams } from './Interchain.types';
+import { FilterAttribute, FilterParams } from '../Interchain.types';
 
 interface FilterInputProps {
   attribute: FilterAttribute;

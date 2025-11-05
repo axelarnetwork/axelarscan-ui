@@ -6,7 +6,7 @@ import { gmpTimeSpentStyles } from './GMPTimeSpent.styles';
 import { GMPTimeSpentProps } from './GMPTimeSpent.types';
 import { calculatePoints } from './GMPTimeSpent.utils';
 import { GMPTimeSpentPoint } from './GMPTimeSpentPoint';
-import { TimeSpentData } from './Interchain.types';
+import { TimeSpentData } from '../Interchain.types';
 
 export function GMPTimeSpent({
   data,

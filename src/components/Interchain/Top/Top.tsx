@@ -2,7 +2,7 @@ import { useGlobalStore } from '@/components/Global';
 import { Spinner } from '@/components/Spinner';
 import { getChainData } from '@/lib/config';
 import { split, toArray } from '@/lib/parser';
-import { GroupDataItem, InterchainData } from './Interchain.types';
+import { GroupDataItem, InterchainData } from '../Interchain.types';
 import { topStyles } from './Top.styles';
 import { TopProps } from './Top.types';
 import { TopItem } from './TopItem';
