@@ -92,33 +92,35 @@ export function StellarWallet({ children, className }: StellarWalletProps) {
 
     await kit.openModal({
       onWalletSelected: async (option: ISupportedWallet) => {
-        kit.setWallet(option.id);
+        try {
+          kit.setWallet(option.id);
+          const { address } = await kit.getAddress();
+          const { network, networkPassphrase } = await kit.getNetwork();
 
-        const { address } = await kit.getAddress();
-        setAddress(address);
-
-        setProvider(kit);
-
-        const { network, networkPassphrase } = await kit.getNetwork();
-        setNetwork({
-          network: network,
-          networkPassphrase: networkPassphrase,
-        });
-
-        setSorobanRpcUrl(getSorobanRpcUrl(networkPassphrase));
+          setAddress(address);
+          setProvider(kit);
+          setNetwork({ network, networkPassphrase });
+          setSorobanRpcUrl(getSorobanRpcUrl(networkPassphrase));
+        } catch (error) {
+          console.error('Failed to connect to Stellar wallet:', error);
+          resetWalletState();
+        }
       },
     });
+  };
+
+  const resetWalletState = () => {
+    setAddress(null);
+    setProvider(null);
+    setNetwork(null);
+    setSorobanRpcUrl(null);
   };
 
   const disconnect = async () => {
     if (provider) {
       await provider.disconnect();
     }
-
-    setAddress(null);
-    setProvider(null);
-    setNetwork(null);
-    setSorobanRpcUrl(null);
+    resetWalletState();
   };
 
   if (address) {
