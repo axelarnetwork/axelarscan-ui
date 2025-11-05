@@ -88,6 +88,7 @@ export function StellarWallet({ children, className }: StellarWalletProps) {
             : WalletNetwork.TESTNET,
         modules: [new FreighterModule()],
       });
+      setProvider(kit);
     }
 
     await kit.openModal({
@@ -98,7 +99,6 @@ export function StellarWallet({ children, className }: StellarWalletProps) {
           const { network, networkPassphrase } = await kit.getNetwork();
 
           setAddress(address);
-          setProvider(kit);
           setNetwork({ network, networkPassphrase });
           setSorobanRpcUrl(getSorobanRpcUrl(networkPassphrase));
         } catch (error) {
