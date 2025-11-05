@@ -1,0 +1,65 @@
+import moment from 'moment';
+import { useEffect, useState } from 'react';
+
+import { ChartDataPoint } from './Interchain.types';
+import {
+  extractChartDataPoints,
+  getFocusTimeString,
+} from './StatsBarChart.utils';
+
+interface UseChartDataParams {
+  data: unknown;
+  field: string;
+  scale: string;
+  dateFormat: string;
+  granularity: string;
+}
+
+/**
+ * Hook to process and manage chart data
+ */
+export function useChartData({
+  data,
+  field,
+  scale,
+  dateFormat,
+  granularity,
+}: UseChartDataParams) {
+  const [chartData, setChartData] = useState<ChartDataPoint[] | null>(null);
+
+  useEffect(() => {
+    if (!data) {
+      setChartData(null);
+      return;
+    }
+
+    const chartDataPoints = extractChartDataPoints(data);
+
+    setChartData(
+      chartDataPoints
+        .map((d: Record<string, unknown>) => {
+          const time = moment(d.timestamp as number).utc();
+          const timeString = time.format(dateFormat);
+          const focusTimeString = getFocusTimeString(
+            time,
+            granularity,
+            dateFormat
+          );
+
+          return {
+            ...d,
+            timeString,
+            focusTimeString,
+          };
+        })
+        .filter(
+          (d: ChartDataPoint) =>
+            scale !== 'log' ||
+            field !== 'volume' ||
+            (d[field as keyof ChartDataPoint] as number) > 100
+        )
+    );
+  }, [data, field, scale, dateFormat, granularity]);
+
+  return chartData;
+}

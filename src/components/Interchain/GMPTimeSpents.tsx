@@ -3,7 +3,11 @@ import { GMPTimeSpentsProps } from './GMPTimeSpents.types';
 import { TimeSpentData } from './Interchain.types';
 
 export function GMPTimeSpents({ data }: GMPTimeSpentsProps) {
-  if (!data?.GMPStatsAVGTimes?.time_spents) return null;
+  if (!data?.GMPStatsAVGTimes?.time_spents) {
+    return null;
+  }
+
+  const timeSpents = data.GMPStatsAVGTimes.time_spents as TimeSpentData[];
 
   return (
     <div className="flex flex-col gap-y-4 border border-zinc-200 px-4 py-8 dark:border-zinc-700 sm:px-6 xl:px-8">
@@ -18,11 +22,9 @@ export function GMPTimeSpents({ data }: GMPTimeSpentsProps) {
         </div>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {data.GMPStatsAVGTimes.time_spents.map(
-          (d: TimeSpentData, i: number) => (
-            <GMPTimeSpent key={i} data={d} />
-          )
-        )}
+        {timeSpents.map((d: TimeSpentData, i: number) => (
+          <GMPTimeSpent key={i} data={d} />
+        ))}
       </div>
     </div>
   );

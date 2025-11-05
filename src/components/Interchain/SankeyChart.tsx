@@ -4,7 +4,7 @@ import { ResponsiveSankey } from '@nivo/sankey';
 import clsx from 'clsx';
 import _ from 'lodash';
 import { useTheme } from 'next-themes';
-import { useState } from 'react';
+import { useCallback } from 'react';
 
 import { useGlobalStore } from '@/components/Global';
 import { Number } from '@/components/Number';
@@ -12,9 +12,15 @@ import { Spinner } from '@/components/Spinner';
 import { getChainData } from '@/lib/config';
 import { isNumber } from '@/lib/number';
 import { toArray } from '@/lib/parser';
-import { headString, lastString } from '@/lib/string';
 import { GroupDataItem } from './Interchain.types';
+import { useSankeyChartHover } from './SankeyChart.hooks';
 import { SankeyChartProps } from './SankeyChart.types';
+import {
+  getSankeyChartValue,
+  ProcessedChartDataItem,
+  processSankeyChartData,
+} from './SankeyChart.utils';
+import { SankeyChartNodeTooltip } from './SankeyChartNodeTooltip';
 
 export function SankeyChart({
   i,
@@ -29,39 +35,61 @@ export function SankeyChart({
   noBorder = false,
   className = '',
 }: SankeyChartProps) {
-  const [_x, _setX] = useState<string | null>(null);
   const { resolvedTheme } = useTheme();
   const { chains } = useGlobalStore();
+  const { hoveredKey, handleLinkHover, handleMouseLeave } =
+    useSankeyChartHover();
 
   const dataArray = toArray(data) as GroupDataItem[];
-  const d = dataArray.find(d => d.key === _x);
+  const hoveredItem = hoveredKey
+    ? dataArray.find(d => d.key === hoveredKey)
+    : null;
+  const value = getSankeyChartValue(data, hoveredKey, field, totalValue);
+  const keyString = hoveredItem ? hoveredItem.key : undefined;
+  const chartData = processSankeyChartData(data, field, topN, chains);
 
-  const value = d
-    ? d[field as keyof GroupDataItem]
-    : data
-      ? totalValue || _.sumBy(dataArray, field)
-      : undefined;
-  const keyString = d ? d.key : undefined;
+  const linkTooltipRenderer = useCallback(
+    (d: {
+      link: {
+        source: { id: string; nodeColor?: string };
+        target: { id: string; nodeColor?: string };
+        formattedValue: string;
+      };
+    }) => {
+      // Track hover state
+      const linkData = d.link as unknown as ProcessedChartDataItem;
+      handleLinkHover(linkData);
 
-  const chartData = _.slice(
-    _.orderBy(
-      dataArray
-        .filter(d => ((d[field as keyof GroupDataItem] as number) || 0) > 0)
-        .map(d => ({
-          source: headString(d.key, '_'),
-          target: lastString(d.key, '_'),
-          value: parseInt(String(d[field as keyof GroupDataItem])),
-        })),
-      ['value'],
-      ['desc']
-    ),
-    0,
-    topN
-  ).map(d => ({
-    ...d,
-    source: getChainData(d.source, chains)?.name || d.source,
-    target: `${getChainData(d.target, chains)?.name || d.target} `,
-  }));
+      // Get chain colors from the node data (already set when creating nodes)
+      const sourceColor = d.link.source.nodeColor;
+      const targetColor = d.link.target.nodeColor;
+
+      // Return tooltip matching nodeTooltip style with colored squares
+      return (
+        <div className="flex flex-col space-y-0.5 rounded-sm bg-zinc-100 px-2 py-1.5 text-xs shadow-sm dark:bg-black">
+          <div className="flex items-center space-x-2">
+            {sourceColor && (
+              <div
+                className="h-3 w-3"
+                style={{ backgroundColor: sourceColor }}
+              />
+            )}
+            <span className="font-bold">{d.link.source.id}</span>
+            <span>→</span>
+            {targetColor && (
+              <div
+                className="h-3 w-3"
+                style={{ backgroundColor: targetColor }}
+              />
+            )}
+            <span className="font-bold">{d.link.target.id}</span>
+          </div>
+          <span className="text-center">{d.link.formattedValue}</span>
+        </div>
+      );
+    },
+    [handleLinkHover]
+  );
 
   return (
     <div
@@ -105,7 +133,10 @@ export function SankeyChart({
             <Spinner />
           </div>
         ) : (
-          <div className={clsx('h-112 w-full font-semibold', className)}>
+          <div
+            className={clsx('h-112 w-full font-semibold', className)}
+            onMouseLeave={handleMouseLeave}
+          >
             {chartData.length > 0 && (
               <ResponsiveSankey
                 data={{
@@ -146,20 +177,15 @@ export function SankeyChart({
                 }
                 nodeTooltip={d => {
                   const { id, formattedValue, nodeColor } = { ...d.node };
-
                   return (
-                    <div className="flex flex-col space-y-0.5 rounded-sm bg-zinc-100 px-2 py-1.5 text-xs shadow-sm dark:bg-black">
-                      <div className="flex items-center space-x-2">
-                        <div
-                          className="h-3 w-3"
-                          style={{ backgroundColor: nodeColor }}
-                        />
-                        <span className="font-bold">{id}</span>
-                      </div>
-                      <span>Total: {formattedValue}</span>
-                    </div>
+                    <SankeyChartNodeTooltip
+                      id={id}
+                      formattedValue={formattedValue}
+                      nodeColor={nodeColor}
+                    />
                   );
                 }}
+                linkTooltip={linkTooltipRenderer}
               />
             )}
           </div>

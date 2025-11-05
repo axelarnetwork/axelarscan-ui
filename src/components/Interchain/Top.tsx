@@ -1,18 +1,15 @@
 import clsx from 'clsx';
 
 import { useGlobalStore } from '@/components/Global';
-import { Image } from '@/components/Image';
-import { Number } from '@/components/Number';
-import { AssetProfile, Profile } from '@/components/Profile';
 import { Spinner } from '@/components/Spinner';
 import { getChainData } from '@/lib/config';
 import { split, toArray } from '@/lib/parser';
-import { MdKeyboardArrowRight } from 'react-icons/md';
 import { GroupDataItem, InterchainData } from './Interchain.types';
 import { TopProps } from './Top.types';
+import { TopItem } from './TopItem';
 
 export function Top({
-  i,
+  index,
   data,
   type = 'chain',
   hasTransfers = true,
@@ -38,12 +35,12 @@ export function Top({
       className={clsx(
         'flex flex-col gap-y-3 border-l border-r border-t border-zinc-200 px-4 dark:border-zinc-700 sm:px-6',
         type === 'chain'
-          ? i % 3 !== 0
+          ? index % 3 !== 0
             ? 'sm:border-l-0'
-            : i % (hasTransfers ? 6 : 3) !== 0
+            : index % (hasTransfers ? 6 : 3) !== 0
               ? 'lg:border-l-0'
               : ''
-          : !hasTransfers || !hasGMP || i % 4 !== 0
+          : !hasTransfers || !hasGMP || index % 4 !== 0
             ? 'sm:border-l-0'
             : '',
         type === 'chain' ? 'py-4 xl:px-4' : 'py-8 xl:px-8'
@@ -70,129 +67,26 @@ export function Top({
           >
             {dataArray
               .filter(
-                d =>
+                dataItem =>
                   (type !== 'chain' ||
-                    split((d as Record<string, unknown>).key as string, {
+                    split((dataItem as Record<string, unknown>).key as string, {
                       delimiter: '_',
-                    }).filter(k => !getChainData(k, chains)).length < 1) &&
-                  ((d as Record<string, unknown>)[field] as number) > 0
+                    }).filter(keyPart => !getChainData(keyPart, chains))
+                      .length < 1) &&
+                  ((dataItem as Record<string, unknown>)[field] as number) > 0
               )
-              .map((d, i) => {
-                const dRecord = d as Record<string, unknown>;
-                const keys = split(dRecord.key as string, { delimiter: '_' });
-
-                return keys.length > 0 ? (
-                  <div
-                    key={i}
-                    className="flex items-center justify-between gap-x-2"
-                  >
-                    <div
-                      className={clsx(
-                        'flex items-center gap-x-1',
-                        ['asset', 'contract', 'address'].includes(type)
-                          ? 'h-8'
-                          : 'h-6'
-                      )}
-                    >
-                      {keys.map((k, j) => {
-                        switch (type) {
-                          case 'asset':
-                            return (
-                              <AssetProfile
-                                key={j}
-                                value={k}
-                                chain={undefined}
-                                amount={undefined}
-                                addressOrDenom={k}
-                                customAssetData={undefined}
-                                ITSPossible={true}
-                                onlyITS={true}
-                                isLink={true}
-                                width={20}
-                                height={20}
-                                className="h-5 text-xs font-medium"
-                                titleClassName={undefined}
-                              />
-                            );
-                          case 'contract':
-                          case 'address':
-                            return (
-                              <Profile
-                                key={j}
-                                i={j}
-                                address={k}
-                                chain={toArray(dRecord.chain)[0] as string}
-                                width={20}
-                                height={20}
-                                noCopy={true}
-                                customURL={
-                                  type === 'address'
-                                    ? `/address/${k}${transfersType ? `?transfersType=${transfersType}` : ''}`
-                                    : ''
-                                }
-                                useContractLink={type === 'contract'}
-                                className="text-xs font-medium"
-                              />
-                            );
-                          case 'chain':
-                          default:
-                            const { name, image } = {
-                              ...getChainData(k, chains),
-                            };
-
-                            const element = (
-                              <div
-                                key={j}
-                                className="flex items-center gap-x-1.5"
-                              >
-                                <Image
-                                  src={image}
-                                  alt=""
-                                  width={20}
-                                  height={20}
-                                />
-                                {keys.length === 1 && (
-                                  <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                                    {name}
-                                  </span>
-                                )}
-                                {keys.length > 1 && (
-                                  <span className="hidden text-xs font-medium text-zinc-700 dark:text-zinc-300 2xl:hidden">
-                                    {name}
-                                  </span>
-                                )}
-                              </div>
-                            );
-
-                            return keys.length > 1 ? (
-                              <div
-                                key={j}
-                                className="flex items-center gap-x-1"
-                              >
-                                {j > 0 && (
-                                  <MdKeyboardArrowRight
-                                    size={16}
-                                    className="text-zinc-700 dark:text-zinc-300"
-                                  />
-                                )}
-                                {element}
-                              </div>
-                            ) : (
-                              element
-                            );
-                        }
-                      })}
-                    </div>
-                    <Number
-                      value={dRecord[field] as number}
-                      format={_format}
-                      prefix={prefix}
-                      noTooltip={true}
-                      className="text-xs font-semibold text-zinc-900 dark:text-zinc-100"
-                    />
-                  </div>
-                ) : null;
-              })}
+              .map((dataItem, itemIndex) => (
+                <TopItem
+                  key={itemIndex}
+                  data={dataItem as Record<string, unknown>}
+                  type={type}
+                  field={field}
+                  format={_format}
+                  prefix={prefix}
+                  transfersType={transfersType}
+                  chains={chains}
+                />
+              ))}
           </div>
         )}
       </div>

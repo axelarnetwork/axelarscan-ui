@@ -1,7 +1,7 @@
 import { GroupDataItem, InterchainData } from './Interchain.types';
 
 export interface TopProps {
-  i: number;
+  index: number;
   data: InterchainData | GroupDataItem[];
   type?: string;
   hasTransfers?: boolean;

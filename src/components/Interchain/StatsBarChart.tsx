@@ -2,8 +2,7 @@
 
 import clsx from 'clsx';
 import _ from 'lodash';
-import moment from 'moment';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -17,9 +16,15 @@ import { Number } from '@/components/Number';
 import { Spinner } from '@/components/Spinner';
 import { isNumber, numberFormat } from '@/lib/number';
 import { toArray } from '@/lib/parser';
-import { headString, lastString, toTitle } from '@/lib/string';
-import { ChartDataPoint, CustomTooltipProps } from './Interchain.types';
+import { ChartDataPoint } from './Interchain.types';
+import { useChartData } from './StatsBarChart.hooks';
 import { StatsBarChartProps } from './StatsBarChart.types';
+import {
+  getChartTimeString,
+  getChartValue,
+  getDomain,
+} from './StatsBarChart.utils';
+import { StatsBarChartTooltip } from './StatsBarChartTooltip';
 
 export function StatsBarChart({
   i,
@@ -41,125 +46,23 @@ export function StatsBarChart({
   valueFormat = '0,0',
   valuePrefix = '',
 }: StatsBarChartProps) {
-  const [chartData, setChartData] = useState<ChartDataPoint[] | null>(null);
   const [x, setX] = useState<number | null>(null);
+  const chartData = useChartData({
+    data,
+    field,
+    scale,
+    dateFormat,
+    granularity,
+  });
 
-  useEffect(() => {
-    if (data) {
-      const chartDataPoints =
-        'data' in data && Array.isArray(data.data)
-          ? data.data
-          : Array.isArray(data)
-            ? data
-            : [];
-      setChartData(
-        chartDataPoints
-          .map((d: Record<string, unknown>) => {
-            const time = moment(d.timestamp as number).utc();
-            const timeString = time.format(dateFormat);
+  const selectedData = chartData
+    ? (toArray(chartData).find(
+        item => (item as ChartDataPoint)?.timestamp === x
+      ) as ChartDataPoint | undefined)
+    : undefined;
 
-            let focusTimeString;
-
-            switch (granularity) {
-              case 'month':
-                focusTimeString = time.format('MMM YYYY');
-                break;
-              case 'week':
-                focusTimeString = [
-                  time.format(dateFormat),
-                  moment(time).add(7, 'days').format(dateFormat),
-                ].join(' - ');
-                break;
-              default:
-                focusTimeString = timeString;
-                break;
-            }
-
-            return {
-              ...d,
-              timeString,
-              focusTimeString,
-            };
-          })
-          .filter(
-            (d: ChartDataPoint) =>
-              scale !== 'log' ||
-              field !== 'volume' ||
-              (d[field as keyof ChartDataPoint] as number) > 100
-          )
-      );
-    }
-  }, [data, field, scale, dateFormat, granularity]);
-
-  const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
-    if (!active) return null;
-
-    const data = payload?.[0]?.payload;
-
-    const values = toArray(_.concat(stacks, 'total'))
-      .map(d => ({
-        key: d as string,
-        value: (data as ChartDataPoint)?.[
-          `${d !== 'total' ? `${d}_` : ''}${field}`
-        ] as number | undefined,
-      }))
-      .filter(
-        d =>
-          field !== 'volume' ||
-          !d.key.includes('airdrop') ||
-          (d.value || 0) > 100
-      )
-      .map(d => ({
-        ...d,
-        key: d.key === 'transfers_airdrop' ? 'airdrop_participations' : d.key,
-      }));
-
-    return (
-      <div className="flex flex-col gap-y-1.5 rounded-lg bg-zinc-50 p-2 dark:bg-zinc-800">
-        {values.map((d, i) => (
-          <div key={i} className="flex items-center justify-between gap-x-4">
-            <span className="text-xs font-semibold capitalize">
-              {toTitle(d.key === 'gmp' ? 'GMPs' : d.key)}
-            </span>
-            <Number
-              value={d.value || 0}
-              format={valueFormat}
-              prefix={valuePrefix}
-              noTooltip={true}
-              className="text-xs font-medium"
-            />
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const d = toArray(chartData).find(
-    item => (item as ChartDataPoint)?.timestamp === x
-  ) as ChartDataPoint | undefined;
-
-  const value =
-    d && field
-      ? (d[field] as number | undefined)
-      : chartData && chartData.length > 0 && field
-        ? totalValue || _.sumBy(chartData, field)
-        : undefined;
-  const timeString = d
-    ? (d as ChartDataPoint).focusTimeString
-    : chartData && chartData.length > 0
-      ? toArray([
-          headString(
-            (_.head(chartData.filter(d => d?.timestamp)) as ChartDataPoint)
-              ?.focusTimeString,
-            ' - '
-          ),
-          lastString(
-            (_.last(chartData.filter(d => d?.timestamp)) as ChartDataPoint)
-              ?.focusTimeString,
-            ' - '
-          ),
-        ]).join(' - ')
-      : undefined;
+  const value = getChartValue(selectedData, chartData, field, totalValue);
+  const timeString = getChartTimeString(selectedData, chartData);
 
   return (
     <div
@@ -220,28 +123,7 @@ export function StatsBarChart({
                 <YAxis
                   dataKey={field}
                   scale={scale as 'auto' | 'linear' | 'pow' | 'sqrt' | 'log'}
-                  domain={
-                    useStack
-                      ? ['dataMin', 'dataMax']
-                      : [
-                          _.min(
-                            stacks.map(
-                              s =>
-                                _.minBy(chartData, `${s}_${field}`)?.[
-                                  `${s}_${field}`
-                                ] as number
-                            )
-                          ) ?? 0,
-                          _.max(
-                            stacks.map(
-                              s =>
-                                _.maxBy(chartData, `${s}_${field}`)?.[
-                                  `${s}_${field}`
-                                ] as number
-                            )
-                          ) ?? 1,
-                        ]
-                  }
+                  domain={getDomain(useStack, stacks, chartData, field)}
                   allowDecimals={false}
                   axisLine={false}
                   tickLine={false}
@@ -249,7 +131,14 @@ export function StatsBarChart({
                 />
               )}
               <Tooltip
-                content={<CustomTooltip />}
+                content={
+                  <StatsBarChartTooltip
+                    stacks={stacks}
+                    field={field}
+                    valueFormat={valueFormat}
+                    valuePrefix={valuePrefix}
+                  />
+                }
                 cursor={{ fill: 'transparent' }}
               />
               {_.reverse(_.cloneDeep(stacks)).map((s, i) => (

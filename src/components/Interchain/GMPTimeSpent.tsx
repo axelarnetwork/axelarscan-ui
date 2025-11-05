@@ -2,9 +2,9 @@ import { Number } from '@/components/Number';
 import { ChainProfile } from '@/components/Profile';
 import { TimeSpent } from '@/components/Time';
 import { TooltipComponent } from '@/components/Tooltip';
-import { toFixed } from '@/lib/number';
-import { toArray } from '@/lib/parser';
 import { GMPTimeSpentProps } from './GMPTimeSpent.types';
+import { GMPTimeSpentPoint } from './GMPTimeSpentPoint';
+import { calculatePoints } from './GMPTimeSpent.utils';
 import { TimeSpentData } from './Interchain.types';
 
 export function GMPTimeSpent({
@@ -15,89 +15,9 @@ export function GMPTimeSpent({
   if (!data) return null;
 
   const dataRecord = data as TimeSpentData;
-  const { key, num_txs, express_execute, confirm, approve, total } = {
-    ...dataRecord,
-  };
+  const { key, num_txs, total } = { ...dataRecord };
 
-  const Point = ({
-    title,
-    name,
-    noTooltip = false,
-  }: {
-    title: string;
-    name: string;
-    noTooltip?: boolean;
-  }) => {
-    const point = (
-      <div className="flex flex-col gap-y-0.5">
-        <div className="h-2 w-2 rounded-full bg-blue-600 p-1 dark:bg-blue-500" />
-        <span className="text-2xs font-medium uppercase text-blue-600 dark:text-blue-500">
-          {title}
-        </span>
-      </div>
-    );
-
-    if (noTooltip) {
-      return point;
-    }
-
-    return (
-      <TooltipComponent content={name} className="whitespace-nowrap">
-        {point}
-      </TooltipComponent>
-    );
-  };
-
-  type PointData = {
-    id: string;
-    title: string;
-    name: string;
-    time_spent: number;
-    label?: string;
-    value?: number;
-    width?: string | number;
-  };
-
-  let points: PointData[] = toArray([
-    express_execute && {
-      id: 'express_execute',
-      title: 'X',
-      name: 'Express Execute',
-      time_spent: express_execute,
-    },
-    confirm && {
-      id: 'confirm',
-      title: 'C',
-      name: 'Confirm',
-      time_spent: confirm,
-    },
-    approve && {
-      id: 'approve',
-      title: 'A',
-      name: 'Approve',
-      time_spent: approve,
-    },
-    total && {
-      id: 'execute',
-      title: 'E',
-      name: 'Execute',
-      label: 'Total',
-      time_spent: total,
-    },
-  ]) as PointData[];
-
-  if (total && typeof total === 'number') {
-    points = points.map((d, i) => {
-      const value =
-        (d.time_spent || 0) - (i > 0 ? points[i - 1].time_spent || 0 : 0);
-
-      return {
-        ...d,
-        value,
-        width: toFixed((value * 100) / total, 2),
-      };
-    });
-  }
+  const points = calculatePoints(dataRecord);
 
   return (
     <div className="flex flex-col gap-y-2 rounded-lg bg-zinc-50 px-3 py-4 dark:bg-zinc-800/25 sm:flex-row sm:justify-between sm:gap-x-2 sm:gap-y-0">
@@ -119,7 +39,7 @@ export function GMPTimeSpent({
       {total && typeof total === 'number' && total > 0 && (
         <div className="flex w-full flex-col gap-y-0.5">
           <div className="flex w-full items-center justify-between">
-            <Point title="S" name="Start" />
+            <GMPTimeSpentPoint title="S" name="Start" />
             {points.map((d, i) => (
               <div
                 key={i}
@@ -145,7 +65,11 @@ export function GMPTimeSpent({
                   }
                   className="whitespace-nowrap"
                 >
-                  <Point title={d.title} name={d.name} noTooltip={true} />
+                  <GMPTimeSpentPoint
+                    title={d.title}
+                    name={d.name}
+                    noTooltip={true}
+                  />
                 </TooltipComponent>
               </div>
             ))}
