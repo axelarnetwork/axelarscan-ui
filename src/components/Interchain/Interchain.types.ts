@@ -200,3 +200,23 @@ export interface CustomTooltipProps {
   payload?: Array<{ payload: ChartDataPoint }>;
 }
 
+// Data type definitions for config functions
+export interface ChainData {
+  id: string;
+  name: string;
+  deprecated?: boolean;
+  i?: number;
+  [key: string]: unknown;
+}
+
+export interface AssetData {
+  id: string;
+  symbol: string;
+  [key: string]: unknown;
+}
+
+export interface ITSAssetData {
+  symbol: string;
+  [key: string]: unknown;
+}
+

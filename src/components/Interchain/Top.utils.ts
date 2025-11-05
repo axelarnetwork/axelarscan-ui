@@ -1,13 +1,13 @@
 import { getChainData } from '@/lib/config';
 import { split, toArray } from '@/lib/parser';
-import { GroupDataItem } from './Interchain.types';
+import { ChainData, GroupDataItem } from './Interchain.types';
 
 export interface ProfileRenderProps {
   type: string;
   key: string;
   chain?: string | string[];
   transfersType?: string;
-  chains: any[];
+  chains: ChainData[];
 }
 
 /**
@@ -15,7 +15,7 @@ export interface ProfileRenderProps {
  */
 export function shouldFilterChain(
   key: string,
-  chains: any[]
+  chains: ChainData[]
 ): boolean {
   return (
     split(key, { delimiter: '_' }).filter(k => !getChainData(k, chains))

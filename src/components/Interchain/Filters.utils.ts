@@ -1,25 +1,13 @@
 import _ from 'lodash';
 
 import { toArray } from '@/lib/parser';
-import { FilterAttribute, FilterParams } from './Interchain.types';
-
-interface ChainData {
-  id: string;
-  name: string;
-  deprecated?: boolean;
-  [key: string]: unknown;
-}
-
-interface AssetData {
-  id: string;
-  symbol: string;
-  [key: string]: unknown;
-}
-
-interface ITSAssetData {
-  symbol: string;
-  [key: string]: unknown;
-}
+import {
+  AssetData,
+  ChainData,
+  FilterAttribute,
+  FilterParams,
+  ITSAssetData,
+} from './Interchain.types';
 
 export function getFilterAttributes(
   params: FilterParams,

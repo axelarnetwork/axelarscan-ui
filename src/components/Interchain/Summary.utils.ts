@@ -6,8 +6,10 @@ import { isNumber, toNumber } from '@/lib/number';
 import { toArray, toCase } from '@/lib/parser';
 import { equalsIgnoreCase } from '@/lib/string';
 import {
+  AssetData,
   ChainWithContracts,
   ContractData,
+  ITSAssetData,
   InterchainData,
   TVLData,
   TVLItem,
@@ -20,9 +22,7 @@ export interface ProcessedContract {
   volume: number;
 }
 
-export function processContracts(
-  data: InterchainData
-): ProcessedContract[] {
+export function processContracts(data: InterchainData): ProcessedContract[] {
   const { GMPStatsByContracts } = { ...data };
 
   return _.orderBy(
@@ -33,7 +33,7 @@ export function processContracts(
             GMPStatsByContracts?.chains as ChainWithContracts[]
           ) as ChainWithContracts[]
         ).flatMap((d: ChainWithContracts) =>
-          toArray(d.contracts as ContractData[])
+          (toArray(d.contracts as ContractData[]) as ContractData[])
             .filter(c => (c as ContractData).key?.includes('_') === false)
             .map(c => {
               const contract = c as ContractData;
@@ -64,10 +64,10 @@ export function processContracts(
 
 export function processTVLData(
   tvlData: TVLData[],
-  assets: any[],
-  itsAssets: any[]
+  assets: AssetData[],
+  itsAssets: ITSAssetData[]
 ): TVLData[] {
-  return toArray(tvlData).map((d: TVLData) => {
+  return (toArray(tvlData) as TVLData[]).map((d: TVLData) => {
     const assetData =
       d.assetType === 'its'
         ? getITSAssetData(d.asset, itsAssets)
@@ -90,4 +90,3 @@ export function processTVLData(
     return { ...d, value: toNumber(d.total) * d.price };
   });
 }
-

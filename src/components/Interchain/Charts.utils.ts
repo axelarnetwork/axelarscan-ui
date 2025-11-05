@@ -101,7 +101,7 @@ export function groupData(
   chains: string[],
   by = 'key'
 ): GroupDataItem[] {
-  return Object.entries(_.groupBy(toArray(data), by)).map(([k, v]) => ({
+  return Object.entries(_.groupBy(toArray(data) as GroupDataItem[], by)).map(([k, v]) => ({
     key: (v[0] as GroupDataItem)?.key || k,
     num_txs: _.sumBy(v, 'num_txs'),
     volume: _.sumBy(v, 'volume'),
