@@ -7,7 +7,6 @@ import {
   ISupportedWallet,
 } from '@creit.tech/stellar-wallets-kit';
 import clsx from 'clsx';
-import { useMemo } from 'react';
 import { create } from 'zustand';
 
 import { ENVIRONMENT } from '@/lib/config';
@@ -70,19 +69,27 @@ interface StellarWalletProps {
 }
 
 export function StellarWallet({ children, className }: StellarWalletProps) {
-  const { address, setAddress, setProvider, setNetwork, setSorobanRpcUrl } =
-    useStellarWalletStore();
-
-  const kit = useMemo(() => {
-    const network =
-      ENVIRONMENT === 'mainnet' ? WalletNetwork.PUBLIC : WalletNetwork.TESTNET;
-    return new StellarWalletsKit({
-      network: network,
-      modules: [new FreighterModule()],
-    });
-  }, []);
+  const {
+    address,
+    provider,
+    setAddress,
+    setProvider,
+    setNetwork,
+    setSorobanRpcUrl,
+  } = useStellarWalletStore();
 
   const connect = async () => {
+    let kit = provider;
+    if (!kit) {
+      kit = new StellarWalletsKit({
+        network:
+          ENVIRONMENT === 'mainnet'
+            ? WalletNetwork.PUBLIC
+            : WalletNetwork.TESTNET,
+        modules: [new FreighterModule()],
+      });
+    }
+
     await kit.openModal({
       onWalletSelected: async (option: ISupportedWallet) => {
         kit.setWallet(option.id);
@@ -104,7 +111,10 @@ export function StellarWallet({ children, className }: StellarWalletProps) {
   };
 
   const disconnect = async () => {
-    await kit.disconnect();
+    if (provider) {
+      await provider.disconnect();
+    }
+
     setAddress(null);
     setProvider(null);
     setNetwork(null);
