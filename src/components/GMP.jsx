@@ -2856,7 +2856,9 @@ export function GMP({ tx, lite }) {
       if (d) {
         if (
           d.call?.parentMessageID &&
-          (!d.executed?.childMessageIDs || isAxelar(d.call.chain))
+          ((!d.executed?.childMessageIDs &&
+            !isAxelar(d.call.returnValues?.destinationChain)) ||
+            isAxelar(d.call.chain))
         ) {
           router.push(`/gmp/${d.call.parentMessageID}`);
         } else {
