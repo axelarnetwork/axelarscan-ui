@@ -2,15 +2,11 @@ import _ from 'lodash';
 
 import { useGlobalStore } from '@/components/Global';
 import { toNumber } from '@/lib/number';
-import { chartsStyles } from './Charts.styles';
-import { ChartsProps } from './Charts.types';
-import {
-  getChainPairs,
-  getChartStack,
-  processChartData,
-} from './Charts.utils';
 import { SankeyChart } from '../SankeyChart/SankeyChart';
 import { StatsBarChart } from '../StatsBarChart/StatsBarChart';
+import { chartsStyles } from './Charts.styles';
+import { ChartsProps } from './Charts.types';
+import { getChainPairs, getChartStack, processChartData } from './Charts.utils';
 
 export function Charts({ data, granularity }: ChartsProps) {
   const { chains } = useGlobalStore();

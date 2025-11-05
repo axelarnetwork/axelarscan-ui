@@ -26,4 +26,3 @@ export const timeDiffString = (
 };
 
 export const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A z';
-
