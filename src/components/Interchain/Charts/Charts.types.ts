@@ -1,4 +1,4 @@
-import { FilterParams, InterchainData } from './Interchain.types';
+import { FilterParams, InterchainData } from '../Interchain.types';
 
 export interface ChartsProps {
   data: InterchainData;

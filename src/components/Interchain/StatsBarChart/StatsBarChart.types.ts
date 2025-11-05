@@ -1,4 +1,4 @@
-import { ChartDataPoint } from './Interchain.types';
+import { ChartDataPoint } from '../Interchain.types';
 
 export interface StatsBarChartProps {
   i: number;

@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { headString, lastString } from '@/lib/string';
-import { GroupDataItem } from './Interchain.types';
+import { GroupDataItem } from '../Interchain.types';
 
 export interface ProcessedChartDataItem {
   source: string;

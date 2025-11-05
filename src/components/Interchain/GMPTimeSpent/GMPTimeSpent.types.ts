@@ -1,4 +1,4 @@
-import { InterchainData, TimeSpentData } from './Interchain.types';
+import { InterchainData, TimeSpentData } from '../Interchain.types';
 
 export interface GMPTimeSpentProps {
   data: InterchainData | TimeSpentData;

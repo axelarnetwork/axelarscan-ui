@@ -3,7 +3,7 @@ import { getQueryString } from '@/lib/operator';
 import _ from 'lodash';
 import { type Moment } from 'moment';
 
-import { FilterParams } from './Interchain.types';
+import { FilterParams } from '../Interchain.types';
 
 export function isShortcutSelected(
   shortcutValue: readonly [Moment, Moment] | readonly [],

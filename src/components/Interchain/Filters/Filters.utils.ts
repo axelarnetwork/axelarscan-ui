@@ -7,7 +7,7 @@ import {
   FilterAttribute,
   FilterParams,
   ITSAssetData,
-} from './Interchain.types';
+} from '../Interchain.types';
 
 export function getFilterAttributes(
   params: FilterParams,

@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { useEffect, useState } from 'react';
 
-import { ChartDataPoint } from './Interchain.types';
+import { ChartDataPoint } from '../Interchain.types';
 import {
   extractChartDataPoints,
   getFocusTimeString,

@@ -1,4 +1,4 @@
-import { GroupDataItem, InterchainData } from './Interchain.types';
+import { GroupDataItem, InterchainData } from '../Interchain.types';
 
 export interface TopProps {
   index: number;

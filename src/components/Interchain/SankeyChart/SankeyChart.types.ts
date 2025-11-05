@@ -1,4 +1,4 @@
-import { GroupDataItem } from './Interchain.types';
+import { GroupDataItem } from '../Interchain.types';
 
 export interface SankeyChartProps {
   i: number;

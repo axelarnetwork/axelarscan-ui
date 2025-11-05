@@ -13,7 +13,7 @@ import {
   InterchainData,
   TVLData,
   TVLItem,
-} from './Interchain.types';
+} from '../Interchain.types';
 
 export interface ProcessedContract {
   key: string;

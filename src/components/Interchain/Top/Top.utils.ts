@@ -1,6 +1,6 @@
 import { getChainData } from '@/lib/config';
-import { split, toArray } from '@/lib/parser';
-import { ChainData, GroupDataItem } from './Interchain.types';
+import { split } from '@/lib/parser';
+import { ChainData } from '../Interchain.types';
 
 export interface ProfileRenderProps {
   type: string;

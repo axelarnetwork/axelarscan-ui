@@ -1,6 +1,6 @@
 import { toArray } from '@/lib/parser';
 import { toFixed } from '@/lib/number';
-import { TimeSpentData } from './Interchain.types';
+import { TimeSpentData } from '../Interchain.types';
 
 export interface PointData {
   id: string;

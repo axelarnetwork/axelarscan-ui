@@ -3,7 +3,7 @@ import moment from 'moment';
 
 import { headString, lastString } from '@/lib/string';
 import { toArray } from '@/lib/parser';
-import { ChartDataPoint } from './Interchain.types';
+import { ChartDataPoint } from '../Interchain.types';
 
 /**
  * Extracts chart data points from unknown data structure

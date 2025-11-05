@@ -3,7 +3,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { getParams, getQueryString } from '@/lib/operator';
-import { FilterParams } from './Interchain.types';
+import { FilterParams } from '../Interchain.types';
 
 export function useFilters() {
   const router = useRouter();

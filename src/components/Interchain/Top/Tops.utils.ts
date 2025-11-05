@@ -13,7 +13,7 @@ import {
   SourceChainData,
   TopDataItem,
   TransferStatsItem,
-} from './Interchain.types';
+} from '../Interchain.types';
 
 // Constants
 const GROUP_BY_KEY = 'key';
