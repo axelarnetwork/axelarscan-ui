@@ -2,31 +2,20 @@
 
 import _ from 'lodash';
 import { useState } from 'react';
-import {
-  Bar,
-  BarChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 
 import { Number } from '@/components/Number';
 import { Spinner } from '@/components/Spinner';
-import { isNumber, numberFormat } from '@/lib/number';
+import { isNumber } from '@/lib/number';
 import { toArray } from '@/lib/parser';
 import { ChartDataPoint } from '../Interchain.types';
+import { useChartData } from './StatsBarChart.hooks';
 import {
   statsBarChartColors,
   statsBarChartStyles,
 } from './StatsBarChart.styles';
-import { useChartData } from './StatsBarChart.hooks';
 import { StatsBarChartProps } from './StatsBarChart.types';
-import {
-  getChartTimeString,
-  getChartValue,
-  getDomain,
-} from './StatsBarChart.utils';
+import { getChartTimeString, getChartValue } from './StatsBarChart.utils';
 import { StatsBarChartTooltip } from './StatsBarChartTooltip';
 
 export function StatsBarChart({
@@ -36,7 +25,6 @@ export function StatsBarChart({
   field = 'num_txs',
   stacks = ['gmp', 'transfers'],
   colors = statsBarChartColors,
-  scale = '',
   useStack = true,
   title = '',
   description = '',
@@ -49,7 +37,6 @@ export function StatsBarChart({
   const chartData = useChartData({
     data,
     field,
-    scale,
     dateFormat,
     granularity,
   });
@@ -103,7 +90,7 @@ export function StatsBarChart({
               }
               onMouseMove={e => setX(e?.activePayload?.[0]?.payload?.timestamp)}
               onMouseLeave={() => setX(null)}
-              margin={{ top: 12, right: 0, bottom: 0, left: scale ? -24 : 0 }}
+              margin={{ top: 12, right: 0, bottom: 0, left: 0 }}
             >
               <XAxis
                 dataKey="timeString"
@@ -111,17 +98,6 @@ export function StatsBarChart({
                 tickLine={false}
                 className="text-xs"
               />
-              {scale && (
-                <YAxis
-                  dataKey={field}
-                  scale={scale as 'auto' | 'linear' | 'pow' | 'sqrt' | 'log'}
-                  domain={getDomain(useStack, stacks, chartData, field)}
-                  allowDecimals={false}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={v => numberFormat(v, '0,0a')}
-                />
-              )}
               <Tooltip
                 content={
                   <StatsBarChartTooltip
@@ -139,7 +115,7 @@ export function StatsBarChart({
                   stackId={useStack ? field : undefined}
                   dataKey={`${s}_${field}${s.includes('airdrop') ? '_value' : ''}`}
                   fill={colors[s]}
-                  minPointSize={scale && i === 0 ? 10 : 0}
+                  minPointSize={0}
                 />
               ))}
             </BarChart>

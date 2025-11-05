@@ -9,7 +9,7 @@ import {
   InterchainData,
   SourceChainData,
   TransferStatsItem,
-} from './Interchain.types';
+} from '../Interchain.types';
 
 export function processChartData(data: InterchainData): ChartDataPoint[] {
   const { GMPChart, transfersChart, transfersAirdropChart } = { ...data };
@@ -165,8 +165,7 @@ export function getChainPairs(
   );
 }
 
-export function getChartScaleAndStack(chartData: ChartDataPoint[]): {
-  scale: 'log' | undefined;
+export function getChartStack(chartData: ChartDataPoint[]): {
   useStack: boolean;
 } {
   const maxVolumePerMean =
@@ -176,10 +175,8 @@ export function getChartScaleAndStack(chartData: ChartDataPoint[]): {
     d => (d.transfers_airdrop_volume || 0) > 0
   );
 
-  const scale =
-    false && maxVolumePerMean > 5 && !hasAirdropActivities ? 'log' : undefined;
   const useStack =
     maxVolumePerMean <= 5 || maxVolumePerMean > 10 || hasAirdropActivities;
 
-  return { scale, useStack };
+  return { useStack };
 }

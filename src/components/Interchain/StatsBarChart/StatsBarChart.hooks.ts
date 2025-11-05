@@ -10,7 +10,6 @@ import {
 interface UseChartDataParams {
   data: unknown;
   field: string;
-  scale: string;
   dateFormat: string;
   granularity: string;
 }
@@ -21,7 +20,6 @@ interface UseChartDataParams {
 export function useChartData({
   data,
   field,
-  scale,
   dateFormat,
   granularity,
 }: UseChartDataParams) {
@@ -36,30 +34,23 @@ export function useChartData({
     const chartDataPoints = extractChartDataPoints(data);
 
     setChartData(
-      chartDataPoints
-        .map((d: Record<string, unknown>) => {
-          const time = moment(d.timestamp as number).utc();
-          const timeString = time.format(dateFormat);
-          const focusTimeString = getFocusTimeString(
-            time,
-            granularity,
-            dateFormat
-          );
+      chartDataPoints.map((d: Record<string, unknown>) => {
+        const time = moment(d.timestamp as number).utc();
+        const timeString = time.format(dateFormat);
+        const focusTimeString = getFocusTimeString(
+          time,
+          granularity,
+          dateFormat
+        );
 
-          return {
-            ...d,
-            timeString,
-            focusTimeString,
-          };
-        })
-        .filter(
-          (d: ChartDataPoint) =>
-            scale !== 'log' ||
-            field !== 'volume' ||
-            (d[field as keyof ChartDataPoint] as number) > 100
-        )
+        return {
+          ...d,
+          timeString,
+          focusTimeString,
+        };
+      })
     );
-  }, [data, field, scale, dateFormat, granularity]);
+  }, [data, field, dateFormat, granularity]);
 
   return chartData;
 }

@@ -2,11 +2,11 @@ import _ from 'lodash';
 
 import { useGlobalStore } from '@/components/Global';
 import { toNumber } from '@/lib/number';
-import { chartsColors, chartsStyles } from './Charts.styles';
+import { chartsStyles } from './Charts.styles';
 import { ChartsProps } from './Charts.types';
 import {
   getChainPairs,
-  getChartScaleAndStack,
+  getChartStack,
   processChartData,
 } from './Charts.utils';
 import { SankeyChart } from '../SankeyChart/SankeyChart';
@@ -26,7 +26,7 @@ export function Charts({ data, granularity }: ChartsProps) {
 
   const TIME_FORMAT = granularity === 'month' ? 'MMM' : 'D MMM';
   const chartData = processChartData(data);
-  const { scale, useStack } = getChartScaleAndStack(chartData);
+  const { useStack } = getChartStack(chartData);
   const chainPairs = getChainPairs(data, chains);
 
   return (
@@ -51,10 +51,6 @@ export function Charts({ data, granularity }: ChartsProps) {
           totalValue={toNumber(GMPTotalVolume) + toNumber(transfersTotalVolume)}
           field="volume"
           stacks={['transfers_airdrop', 'gmp', 'transfers']}
-          colors={
-            scale === 'log' && useStack ? chartsColors.logScale : undefined
-          }
-          scale={scale}
           useStack={useStack}
           title="Volume"
           description={`Transfer volume by ${granularity}`}

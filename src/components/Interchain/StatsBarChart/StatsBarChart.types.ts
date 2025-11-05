@@ -7,7 +7,6 @@ export interface StatsBarChartProps {
   field?: string;
   stacks?: string[];
   colors?: Record<string, string>;
-  scale?: string;
   useStack?: boolean;
   title?: string;
   description?: string;
