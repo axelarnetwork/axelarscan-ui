@@ -52,6 +52,7 @@ import { EVMWallet, useEVMWalletStore } from '@/components/Wallet/EVMWallet';
 import {
   StellarWallet,
   useStellarWalletStore,
+  STELLAR_NETWORK_PASSPHRASES,
 } from '@/components/Wallet/StellarWallet';
 import { SuiWallet, useSuiWalletStore } from '@/components/Wallet/SuiWallet';
 import { XRPLWallet, useXRPLWalletStore } from '@/components/Wallet/XRPLWallet';
@@ -3621,11 +3622,12 @@ export function GMP({ tx, lite }) {
           if (
             response &&
             stellarWalletStore.provider &&
-            stellarWalletStore.network?.sorobanRpcUrl
+            stellarWalletStore.network &&
+            stellarWalletStore.sorobanRpcUrl
           ) {
             const server = new StellarSDK.rpc.Server(
               sourceChainData?.endpoints?.rpc?.[0] ||
-                stellarWalletStore.network.sorobanRpcUrl,
+                stellarWalletStore.sorobanRpcUrl,
               { allowHttp: true }
             );
 
@@ -3635,13 +3637,9 @@ export function GMP({ tx, lite }) {
                 stellarWalletStore.network.networkPassphrase
               )
             );
+
             response = await stellarWalletStore.provider.signTransaction(
-              preparedTransaction.toXDR(),
-              stellarWalletStore.network.network === 'STANDALONE'
-                ? ENVIRONMENT === 'mainnet'
-                  ? 'PUBLIC'
-                  : 'TESTNET'
-                : stellarWalletStore.network.network
+              preparedTransaction.toXDR()
             );
 
             if (response?.signedTxXdr) {
