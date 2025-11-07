@@ -1,0 +1,25 @@
+export const detailsStyles = {
+  container: '-mx-4 mt-8 overflow-x-auto sm:-mx-0 lg:overflow-x-visible',
+  multiHopHeader: 'flex items-center gap-x-2',
+  table: 'min-w-full divide-y divide-zinc-200 dark:divide-zinc-700',
+  tableHead: 'sticky top-0 z-10 bg-white dark:bg-zinc-900',
+  tableHeadRow: 'text-sm font-semibold text-zinc-800 dark:text-zinc-200',
+  cellStep: 'py-3.5 pl-4 pr-3 text-left sm:pl-0',
+  cellTx: 'whitespace-nowrap px-3 py-3.5 text-left',
+  cellDefault: 'px-3 py-3.5 text-left',
+  cellTime: 'py-3.5 pl-3 pr-4 text-right sm:pr-0',
+  tableBody:
+    'divide-y divide-zinc-100 bg-white dark:divide-zinc-800 dark:bg-zinc-900',
+  row: 'align-top text-sm text-zinc-400 dark:text-zinc-500',
+  cellLabel: 'w-8',
+  columnStack: 'flex flex-col gap-y-2',
+  tag: 'w-fit capitalize',
+  pendingTrack: 'absolute inset-0 flex items-center',
+  pendingLine: 'h-0.5 w-full bg-zinc-200 dark:bg-zinc-700',
+  pendingCircle:
+    'relative flex h-8 w-8 items-center justify-center rounded-full border-2 bg-zinc-50 dark:bg-zinc-800',
+  timeline: 'overflow-x-auto',
+  statusBlock: 'flex flex-col gap-y-1.5',
+  statusList: 'flex items-center',
+  statusStep: 'relative',
+};
