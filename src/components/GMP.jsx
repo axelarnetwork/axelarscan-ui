@@ -2854,10 +2854,18 @@ export function GMP({ tx, lite }) {
       };
       const d = await customData(data?.[0]);
 
+      const isSecondHopOfInterchainTransfer = data => {
+        const destChain = data.interchain_transfer?.destinationChain;
+        const callChain = data.call?.chain;
+        return destChain && callChain && destChain === callChain;
+      };
+
       if (d) {
         if (
           d.call?.parentMessageID &&
-          (!d.executed?.childMessageIDs || isAxelar(d.call.chain))
+          ((!d.executed?.childMessageIDs &&
+            isSecondHopOfInterchainTransfer(d)) ||
+            isAxelar(d.call.chain))
         ) {
           router.push(`/gmp/${d.call.parentMessageID}`);
         } else {
