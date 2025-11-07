@@ -1,13 +1,16 @@
 import moment from 'moment';
 
 export const timeDiff = (
-  fromTime = moment().subtract(5, 'minutes'),
-  unit = 'seconds',
-  toTime = moment(),
-  exact = false
-) => moment(toTime).diff(moment(fromTime), unit, exact);
+  fromTime: moment.MomentInput = moment().subtract(5, 'minutes'),
+  unit: moment.unitOfTime.Diff = 'seconds',
+  toTime: moment.MomentInput = moment(),
+  exact: boolean = false
+): number => moment(toTime).diff(moment(fromTime), unit, exact);
 
-export const timeDiffString = (fromTime, toTime) => {
+export const timeDiffString = (
+  fromTime?: moment.MomentInput,
+  toTime?: moment.MomentInput
+): string => {
   const diff = timeDiff(fromTime, 'seconds', toTime);
 
   if (diff < 60) return `${diff}s`;
