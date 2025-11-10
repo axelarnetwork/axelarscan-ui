@@ -14,6 +14,7 @@ import { timeDiff } from '@/lib/time';
 import { getStep } from '../GMP.utils';
 import { statusTimelineStyles } from './StatusTimeline.styles';
 import { StatusTimelineProps } from './StatusTimeline.types';
+import { GMPEventLog, GMPMessage } from '../GMP.types';
 
 export function StatusTimeline({
   timeline,
@@ -23,7 +24,10 @@ export function StatusTimeline({
   rootCall,
   expressExecuted,
 }: StatusTimelineProps) {
-  const entries = toArray(timeline);
+  const entries = toArray(timeline).filter(
+    (entry): entry is GMPMessage =>
+      typeof entry === 'object' && entry !== null
+  );
 
   if (entries.length === 0) {
     return null;
@@ -86,6 +90,16 @@ export function StatusTimeline({
                 {steps.map((step, stepIndex) => {
                   const { id, title, status, data, chainData } = step;
 
+                  const rawStepData =
+                    id === 'pay_gas' && isString(data)
+                      ? entry.originData?.gas_paid
+                      : data;
+
+                  const stepEventLog =
+                    typeof rawStepData === 'object' && rawStepData !== null
+                      ? (rawStepData as GMPEventLog)
+                      : undefined;
+
                   const {
                     transactionHash,
                     logIndex,
@@ -99,11 +113,7 @@ export function StatusTimeline({
                     returnValues,
                     contract_address,
                     block_timestamp,
-                  } = {
-                    ...(id === 'pay_gas' && isString(data)
-                      ? entry?.originData?.gas_paid
-                      : data),
-                  };
+                  } = stepEventLog ?? {};
 
                   const { url, block_path, transaction_path } = {
                     ...chainData?.explorer,
@@ -135,8 +145,8 @@ export function StatusTimeline({
                       if (transactionHash && url) {
                         if (id === 'send' && chain_type === 'cosmos') {
                           stepURL = `${url}${transaction_path?.replace('{tx}', transactionHash)}`;
-                        } else if (block_path && blockNumber) {
-                          stepURL = `${url}${block_path.replace('{block}', blockNumber)}`;
+                        } else if (block_path && typeof blockNumber !== 'undefined') {
+                          stepURL = `${url}${block_path.replace('{block}', String(blockNumber))}`;
                         } else {
                           stepURL = `${url}${transaction_path?.replace('{tx}', transactionHash)}`;
                         }
@@ -191,8 +201,16 @@ export function StatusTimeline({
                         </div>
                       )}
                       {!isAxelar(destinationChain) &&
-                        toArray(childMessageIDs).map(childId => (
-                          <div key={childId} className={statusTimelineStyles.hopLinkWrapper}>
+                        toArray(childMessageIDs)
+                          .map(idValue => {
+                            if (typeof idValue === 'string') return idValue;
+                            if (typeof idValue === 'number')
+                              return idValue.toString();
+                            return undefined;
+                          })
+                          .filter((idValue): idValue is string => Boolean(idValue))
+                          .map(childId => (
+                            <div key={childId} className={statusTimelineStyles.hopLinkWrapper}>
                             <Link
                               href={`/gmp/${childId}`}
                               target="_blank"
@@ -200,8 +218,8 @@ export function StatusTimeline({
                             >
                               next Hop →
                             </Link>
-                          </div>
-                        ))}
+                            </div>
+                          ))}
                     </>
                   );
 

@@ -2,7 +2,8 @@ export const infoStyles = {
   container:
     'overflow-hidden bg-zinc-50/75 shadow dark:bg-zinc-800/25 sm:rounded-lg',
   header: 'px-4 py-6 sm:px-6',
-  headerTitle: 'text-base font-semibold leading-7 text-zinc-900 dark:text-zinc-100',
+  headerTitle:
+    'text-base font-semibold leading-7 text-zinc-900 dark:text-zinc-100',
   headerSubtitle:
     'mt-1 max-w-2xl text-sm leading-6 text-zinc-400 dark:text-zinc-500',
   body: 'border-t border-zinc-200 dark:border-zinc-700',
@@ -40,26 +41,22 @@ export const infoStyles = {
   detailColumn: 'flex flex-col gap-y-2',
   timeRow: 'flex items-center gap-x-4',
   timeValueRow: 'flex items-center gap-x-1 text-zinc-400 dark:text-zinc-500',
-  timeExpressRow: 'flex items-center gap-x-1 text-green-600 dark:text-green-500',
-  warningRowTall: 'flex h-6 items-center gap-x-1.5 text-red-600 dark:text-red-500',
+  timeExpressRow:
+    'flex items-center gap-x-1 text-green-600 dark:text-green-500',
+  warningRowTall:
+    'flex h-6 items-center gap-x-1.5 text-red-600 dark:text-red-500',
   labelInline: 'flex items-center gap-x-1',
   inlineInfoTooltip: 'w-40 text-xs',
-  infoRow: 'flex items-center gap-x-2',
   tooltip: 'whitespace-nowrap',
   profileColumn: 'flex flex-col gap-y-2',
   iconButton: 'font-semibold text-blue-600 dark:text-blue-500',
-  flexRow: 'flex items-center gap-x-2',
+  flexRow: 'flex items-center gap-x-1',
   inlineNumber: 'font-medium',
   inlineNumberMuted: 'font-normal text-zinc-400 dark:text-zinc-500',
   inlineLabel: 'whitespace-nowrap text-xs text-zinc-700 dark:text-zinc-300',
-  inlineValueRow: 'ml-3 flex items-center gap-x-1',
-  outlineChip:
-    'flex h-6 items-center gap-x-1 rounded-xl border border-zinc-200 px-2 py-1 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:text-zinc-300',
   borderedCard: 'flex items-center gap-x-4 overflow-x-auto',
   infoIcon: 'text-zinc-400 dark:text-zinc-500',
   plusIcon: 'text-zinc-400 dark:text-zinc-500',
   detailsGrid: 'grid gap-4 py-4',
   detailsGridTwoCols: 'md:grid-cols-2',
 } as const;
-
-

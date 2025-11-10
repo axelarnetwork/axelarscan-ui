@@ -4,14 +4,15 @@ import { RiTimerFlashLine } from 'react-icons/ri';
 
 import { Copy } from '@/components/Copy';
 import { useGlobalStore } from '@/components/Global';
+import { getEvent } from '@/components/GMPs';
 import { ChainProfile } from '@/components/Profile';
 import { Tag } from '@/components/Tag';
 import { TimeSpent } from '@/components/Time';
-import { getEvent } from '@/components/GMPs';
 import { isAxelar } from '@/lib/chain';
 import { getAssetData, getChainData } from '@/lib/config';
 import { toCase } from '@/lib/parser';
 
+import { AssetAddressEntry, AssetDataEntry } from '../GMP.types';
 import { contractCallDataStyles } from './ContractCallData.styles';
 import { ContractCallDataProps } from './ContractCallData.types';
 
@@ -44,7 +45,23 @@ export function ContractCallData({
     data.interchain_token_deployment_started?.tokenSymbol ||
     data.link_token_started?.symbol ||
     data.token_metadata_registered?.symbol;
-  const { addresses } = { ...getAssetData(symbol, assets) };
+  const assetEntry = getAssetData(symbol, assets) as AssetDataEntry | undefined;
+  const assetAddresses = assetEntry?.addresses;
+  const destinationKeyCandidate = toCase(destinationChain ?? '', 'lower');
+  let destinationAssetConfig: AssetAddressEntry | undefined;
+  if (assetAddresses) {
+    let lookupKey: string | undefined;
+
+    if (typeof destinationKeyCandidate === 'string') {
+      lookupKey = destinationKeyCandidate;
+    } else if (typeof destinationKeyCandidate === 'number') {
+      lookupKey = destinationKeyCandidate.toString();
+    }
+
+    if (lookupKey) {
+      destinationAssetConfig = assetAddresses[lookupKey];
+    }
+  }
 
   const messageId = data.message_id;
   const commandId = approved?.returnValues?.commandId || data.command_id;
@@ -57,7 +74,7 @@ export function ContractCallData({
   const sourceSymbol = call?.returnValues?.symbol;
   const destinationSymbol =
     approved?.returnValues?.symbol ||
-    addresses?.[toCase(destinationChain, 'lower')]?.symbol ||
+    destinationAssetConfig?.symbol ||
     sourceSymbol;
   const amountInUnits =
     approved?.returnValues?.amount || call?.returnValues?.amount;
@@ -118,12 +135,18 @@ export function ContractCallData({
                 <dd className={contractCallDataStyles.value}>
                   <div className="flex flex-col gap-y-2">
                     {time_spent?.call_express_executed &&
-                      ['express_executed', 'executed'].includes(status ?? '') && (
-                        <div className={contractCallDataStyles.timeSpentExpress}>
+                      ['express_executed', 'executed'].includes(
+                        status ?? ''
+                      ) && (
+                        <div
+                          className={contractCallDataStyles.timeSpentExpress}
+                        >
                           <RiTimerFlashLine size={20} />
                           <TimeSpent
                             fromTimestamp={0}
-                            toTimestamp={(time_spent.call_express_executed ?? 0) * 1000}
+                            toTimestamp={
+                              (time_spent.call_express_executed ?? 0) * 1000
+                            }
                           />
                         </div>
                       )}
@@ -152,7 +175,9 @@ export function ContractCallData({
                 childrenClassName={contractCallDataStyles.copyWrapper}
                 className={contractCallDataStyles.copyButton}
               >
-                <span className={contractCallDataStyles.copyText}>{messageId}</span>
+                <span className={contractCallDataStyles.copyText}>
+                  {messageId}
+                </span>
               </Copy>
             </dd>
           </div>
@@ -167,7 +192,9 @@ export function ContractCallData({
                 childrenClassName={contractCallDataStyles.copyWrapper}
                 className={contractCallDataStyles.copyButton}
               >
-                <span className={contractCallDataStyles.copyText}>{commandId}</span>
+                <span className={contractCallDataStyles.copyText}>
+                  {commandId}
+                </span>
               </Copy>
             </dd>
           </div>
@@ -212,14 +239,18 @@ export function ContractCallData({
                 childrenClassName={contractCallDataStyles.copyWrapper}
                 className={contractCallDataStyles.copyButton}
               >
-                <span className={contractCallDataStyles.copyText}>{sourceAddress}</span>
+                <span className={contractCallDataStyles.copyText}>
+                  {sourceAddress}
+                </span>
               </Copy>
             </dd>
           </div>
         )}
         {destinationContractAddress && (
           <div className={contractCallDataStyles.section}>
-            <dt className={contractCallDataStyles.label}>destinationContractAddress</dt>
+            <dt className={contractCallDataStyles.label}>
+              destinationContractAddress
+            </dt>
             <dd className={contractCallDataStyles.value}>
               <Copy
                 size={16}
@@ -244,7 +275,9 @@ export function ContractCallData({
                 childrenClassName={contractCallDataStyles.copyWrapper}
                 className={contractCallDataStyles.copyButton}
               >
-                <span className={contractCallDataStyles.copyText}>{payloadHash}</span>
+                <span className={contractCallDataStyles.copyText}>
+                  {payloadHash}
+                </span>
               </Copy>
             </dd>
           </div>
@@ -259,7 +292,9 @@ export function ContractCallData({
                 childrenClassName={contractCallDataStyles.copyWrapper}
                 className={contractCallDataStyles.copyButton}
               >
-                <span className={contractCallDataStyles.copyText}>{payload}</span>
+                <span className={contractCallDataStyles.copyText}>
+                  {payload}
+                </span>
               </Copy>
             </dd>
           </div>
@@ -319,7 +354,9 @@ export function ContractCallData({
                 childrenClassName={contractCallDataStyles.copyWrapper}
                 className={contractCallDataStyles.copyButton}
               >
-                <span className={contractCallDataStyles.copyText}>{executeData}</span>
+                <span className={contractCallDataStyles.copyText}>
+                  {executeData}
+                </span>
               </Copy>
             </dd>
           </div>
@@ -328,5 +365,3 @@ export function ContractCallData({
     </div>
   );
 }
-
-

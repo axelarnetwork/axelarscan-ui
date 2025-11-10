@@ -246,34 +246,44 @@ function buildStep(
 }
 
 export function getDefaultGasLimit(chain?: string): number {
-  return (
-    {
-      ethereum: 400000,
-      binance: 150000,
-      polygon: 400000,
-      'polygon-sepolia': 400000,
-      avalanche: 500000,
-      fantom: 400000,
-      arbitrum: 1000000,
-      'arbitrum-sepolia': 1000000,
-      optimism: 400000,
-      'optimism-sepolia': 400000,
-      base: 400000,
-      'base-sepolia': 400000,
-      mantle: 3000000000,
-      'mantle-sepolia': 3000000000,
-      celo: 400000,
-      kava: 400000,
-      filecoin: 200000000,
-      'filecoin-2': 200000000,
-      linea: 400000,
-      'linea-sepolia': 400000,
-      centrifuge: 1000000,
-      'centrifuge-2': 1000000,
-      scroll: 500000,
-      fraxtal: 400000,
-      'xrpl-evm': 500000,
-      'xrpl-evm-2': 7000000,
-    }[toCase(chain, 'lower')] || 700000
-  );
+  const defaults: Record<string, number> = {
+    ethereum: 400000,
+    binance: 150000,
+    polygon: 400000,
+    'polygon-sepolia': 400000,
+    avalanche: 500000,
+    fantom: 400000,
+    arbitrum: 1000000,
+    'arbitrum-sepolia': 1000000,
+    optimism: 400000,
+    'optimism-sepolia': 400000,
+    base: 400000,
+    'base-sepolia': 400000,
+    mantle: 3000000000,
+    'mantle-sepolia': 3000000000,
+    celo: 400000,
+    kava: 400000,
+    filecoin: 200000000,
+    'filecoin-2': 200000000,
+    linea: 400000,
+    'linea-sepolia': 400000,
+    centrifuge: 1000000,
+    'centrifuge-2': 1000000,
+    scroll: 500000,
+    fraxtal: 400000,
+    'xrpl-evm': 500000,
+    'xrpl-evm-2': 7000000,
+  };
+
+  if (!chain) {
+    return 700000;
+  }
+
+  const chainKeyCandidate = toCase(chain, 'lower');
+  const chainKey =
+    typeof chainKeyCandidate === 'string'
+      ? chainKeyCandidate
+      : String(chainKeyCandidate ?? '');
+
+  return defaults[chainKey] ?? 700000;
 }

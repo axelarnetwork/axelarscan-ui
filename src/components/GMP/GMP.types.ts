@@ -17,6 +17,17 @@ export interface ChainMetadata {
   [key: string]: unknown;
 }
 
+export interface AssetAddressEntry {
+  symbol?: string;
+  gas_price?: number;
+  [key: string]: unknown;
+}
+
+export interface AssetDataEntry {
+  addresses?: Record<string, AssetAddressEntry | undefined>;
+  [key: string]: unknown;
+}
+
 export interface TimestampInfo {
   ms?: number;
   [key: string]: number | undefined;
@@ -49,6 +60,11 @@ export interface GMPLogReceipt {
   [key: string]: string | boolean | undefined;
 }
 
+export interface GMPTransactionDetails {
+  from?: string;
+  [key: string]: unknown;
+}
+
 export interface GMPEventLog {
   id?: string;
   chain?: string;
@@ -68,12 +84,14 @@ export interface GMPEventLog {
   created_at?: TimestampInfo;
   returnValues?: GMPReturnValues;
   receipt?: GMPLogReceipt;
+  transaction?: GMPTransactionDetails;
   [key: string]: unknown;
 }
 
 export interface GMPTransactionInfo extends GMPEventLog {
   proposal_id?: string;
   expirationTime?: number;
+  transaction?: GMPTransactionDetails;
 }
 
 export interface GMPSettlementEvent {
@@ -162,6 +180,38 @@ export interface GMPInterchainTransfer {
 export interface GMPSettlementData {
   orderHash?: string;
   settlementHash?: string;
+  message_id?: string;
+  call?: GMPEventLog;
+  executed?: GMPEventLog;
+  [key: string]: unknown;
+}
+
+export interface GMPContractDeploymentEvent {
+  symbol?: string;
+  [key: string]: unknown;
+}
+
+export interface GMPInterchainTokenDeploymentEvent {
+  tokenSymbol?: string;
+  destinationChain?: string;
+  [key: string]: unknown;
+}
+
+export interface GMPLinkTokenEvent {
+  symbol?: string;
+  destinationChain?: string;
+  [key: string]: unknown;
+}
+
+export interface GMPTokenMetadataEvent {
+  symbol?: string;
+  [key: string]: unknown;
+}
+
+export interface GMPCustomValues {
+  recipientAddress?: string;
+  destinationChain?: string;
+  projectName?: string;
   [key: string]: unknown;
 }
 
@@ -192,6 +242,10 @@ export interface GMPMessage {
   error?: GMPEventLog;
   fees?: GMPFees;
   interchain_transfer?: GMPInterchainTransfer;
+  token_manager_deployment_started?: GMPContractDeploymentEvent;
+  interchain_token_deployment_started?: GMPInterchainTokenDeploymentEvent;
+  link_token_started?: GMPLinkTokenEvent;
+  token_metadata_registered?: GMPTokenMetadataEvent;
   settlement_forwarded_events?: GMPSettlementEvent[];
   settlement_filled_events?: GMPSettlementEvent[];
   settlementForwardedData?: GMPSettlementData[];
@@ -199,12 +253,15 @@ export interface GMPMessage {
   callback?: GMPEventLog;
   callbackData?: GMPMessage;
   originData?: GMPMessage;
+  customValues?: GMPCustomValues;
   status?: string;
   simplified_status?: string;
   is_insufficient_fee?: boolean;
   is_invalid_call?: boolean;
   is_invalid_destination_chain?: boolean;
   is_invalid_gas_paid?: boolean;
+  is_invalid_source_address?: boolean;
+  is_invalid_contract_address?: boolean;
   not_to_refund?: boolean;
   not_enough_gas_to_execute?: boolean;
   time_spent?: GMPTimeSpent;

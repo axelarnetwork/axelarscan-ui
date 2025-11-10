@@ -1,96 +1,156 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
-
+import {
+  AxelarGMPRecoveryAPI,
+  Environment,
+} from '@axelar-network/axelarjs-sdk';
+import { Contract, providers } from 'ethers';
 import { useEffect, useState } from 'react';
-import { AxelarGMPRecoveryAPI } from '@axelar-network/axelarjs-sdk';
-import { Contract } from 'ethers';
 
 import IAxelarExecutable from '@/data/interfaces/gmp/IAxelarExecutable.json';
-import { estimateTimeSpent as fetchEstimatedTimeSpent, searchGMP } from '@/lib/api/gmp';
+import {
+  estimateTimeSpent as fetchEstimatedTimeSpent,
+  searchGMP,
+} from '@/lib/api/gmp';
 import { getProvider } from '@/lib/chain/evm';
 import { ENVIRONMENT, getAssetData, getChainData } from '@/lib/config';
 import { toBigNumber, toNumber } from '@/lib/number';
 import { toArray, toCase } from '@/lib/parser';
 
-import { ChainTimeEstimate, GMPMessage } from './GMP.types';
+import {
+  AssetDataEntry,
+  ChainMetadata,
+  ChainTimeEstimate,
+  GMPMessage,
+} from './GMP.types';
 import { getDefaultGasLimit } from './GMP.utils';
 
+type ChainCollection = ChainMetadata[] | null | undefined;
+
+type AssetCollection = AssetDataEntry[] | null | undefined;
+
+interface SearchGMPResult {
+  data?: GMPMessage[];
+}
+
 export function useEstimatedTimeSpent(
-  data: GMPMessage | null
+  message: GMPMessage | null
 ): ChainTimeEstimate | null {
   const [estimatedTimeSpent, setEstimatedTimeSpent] =
     useState<ChainTimeEstimate | null>(null);
 
   useEffect(() => {
-    const getEstimateTimeSpent = async () => {
-      const chain = data?.call?.chain;
+    const fetchEstimateTimeSpent = async () => {
+      const sourceChain = message?.call?.chain;
 
-      if (!estimatedTimeSpent && chain) {
-        const response = await fetchEstimatedTimeSpent({ sourceChain: chain });
-        const match = toArray(response).find(item => item?.key === chain);
-        const adjusted = match ? { ...match } : null;
+      if (!estimatedTimeSpent && sourceChain) {
+        const response = await fetchEstimatedTimeSpent({
+          sourceChain,
+        });
+        const estimates = toArray(response) as ChainTimeEstimate[];
+        const matchedEstimate =
+          estimates.find(chainEstimate => chainEstimate?.key === sourceChain) ??
+          null;
+        const adjustedEstimate = matchedEstimate
+          ? { ...matchedEstimate }
+          : null;
 
         if (
-          adjusted &&
-          data?.call?.chain_type === 'cosmos' &&
-          typeof adjusted.confirm === 'number' &&
-          adjusted.confirm > 30
+          adjustedEstimate &&
+          message?.call?.chain_type === 'cosmos' &&
+          typeof adjustedEstimate.confirm === 'number' &&
+          adjustedEstimate.confirm > 30
         ) {
-          adjusted.confirm = 30;
+          adjustedEstimate.confirm = 30;
         }
 
-        setEstimatedTimeSpent(adjusted);
+        setEstimatedTimeSpent(adjustedEstimate);
       }
     };
 
-    getEstimateTimeSpent();
-  }, [data, estimatedTimeSpent]);
+    fetchEstimateTimeSpent();
+  }, [message, estimatedTimeSpent]);
 
   return estimatedTimeSpent;
 }
 
 export function useExecuteData(
-  data: GMPMessage | null,
-  chains,
-  assets
+  message: GMPMessage | null,
+  chains: ChainCollection,
+  assets: AssetCollection
 ): string | null {
   const [executeData, setExecuteData] = useState<string | null>(null);
 
   useEffect(() => {
-    const getExecuteData = async () => {
-      if (!executeData && data?.call && data.approved && chains && assets) {
+    const deriveExecuteData = async () => {
+      if (
+        !executeData &&
+        message?.call &&
+        message.approved &&
+        chains &&
+        assets
+      ) {
         try {
-          const { call, approved, command_id } = { ...data };
-          const { addresses } = {
-            ...getAssetData(call.returnValues?.symbol, assets),
-          };
+          const { call, approved, command_id: commandIdFallback } = message;
+          const assetEntry = getAssetData(call.returnValues?.symbol, assets) as
+            | AssetDataEntry
+            | undefined;
+          const assetAddresses = assetEntry?.addresses;
+          const destinationKeyCandidate = toCase(
+            call.returnValues?.destinationChain ?? '',
+            'lower'
+          );
+          const destinationKey =
+            typeof destinationKeyCandidate === 'string'
+              ? destinationKeyCandidate
+              : String(destinationKeyCandidate ?? '');
+          const destinationAssetConfig =
+            destinationKey && assetAddresses
+              ? assetAddresses[destinationKey]
+              : undefined;
 
           const symbol =
-            approved.returnValues?.symbol ||
-            addresses?.[toCase(call.returnValues?.destinationChain, 'lower')]
-              ?.symbol ||
+            approved.returnValues?.symbol ??
+            destinationAssetConfig?.symbol ??
             call.returnValues?.symbol;
-          const commandId = approved.returnValues?.commandId || command_id;
+          const commandId =
+            approved.returnValues?.commandId ?? commandIdFallback;
           const sourceChain =
-            approved.returnValues?.sourceChain ||
-            getChainData(call.chain, chains)?.chain_name;
+            approved.returnValues?.sourceChain ??
+            getChainData(call.chain, chains)?.chain_name ??
+            call.chain;
           const sourceAddress =
-            approved.returnValues?.sourceAddress || call.returnValues?.sender;
+            approved.returnValues?.sourceAddress ?? call.returnValues?.sender;
           const contractAddress =
-            approved.returnValues?.contractAddress ||
+            approved.returnValues?.contractAddress ??
             call.returnValues?.destinationContractAddress;
           const payload = call.returnValues?.payload;
           const amount = toBigNumber(
-            approved.returnValues?.amount || call.returnValues?.amount
+            approved.returnValues?.amount ?? call.returnValues?.amount
           );
+          const destinationChainKey = call.returnValues?.destinationChain;
+          if (typeof destinationChainKey !== 'string') {
+            return;
+          }
+
+          const provider = getProvider(destinationChainKey, chains) as
+            | providers.Provider
+            | undefined;
+
+          if (
+            typeof contractAddress !== 'string' ||
+            !commandId ||
+            !sourceChain ||
+            !provider
+          ) {
+            return;
+          }
 
           const contract = new Contract(
             contractAddress,
             IAxelarExecutable.abi,
-            getProvider(call.returnValues?.destinationChain, chains)
+            provider
           );
           const transaction = symbol
-            ? await contract /*.executeWithToken*/.populateTransaction.executeWithToken(
+            ? await contract.populateTransaction.executeWithToken(
                 commandId,
                 sourceChain,
                 sourceAddress,
@@ -98,60 +158,66 @@ export function useExecuteData(
                 symbol,
                 amount
               )
-            : await contract /*.execute*/.populateTransaction.execute(
+            : await contract.populateTransaction.execute(
                 commandId,
                 sourceChain,
                 sourceAddress,
                 payload
               );
 
-          setExecuteData(transaction?.data);
-        } catch (error) {}
+          setExecuteData(transaction?.data ?? null);
+        } catch (error) {
+          console.error('[useExecuteData]', error);
+        }
       }
     };
 
-    getExecuteData();
-  }, [data, executeData, chains, assets]);
+    deriveExecuteData();
+  }, [message, executeData, chains, assets]);
 
   return executeData;
 }
 
-export function useEstimatedGasUsed(data: GMPMessage | null): number | null {
+export function useEstimatedGasUsed(message: GMPMessage | null): number | null {
   const [estimatedGasUsed, setEstimatedGasUsed] = useState<number | null>(null);
 
   useEffect(() => {
-    const getEstimatedGasUsed = async () => {
+    const determineEstimatedGasUsed = async () => {
       if (
         !estimatedGasUsed &&
-        (data?.is_insufficient_fee || (data?.call && !data.gas_paid)) &&
-        !data?.confirm &&
-        !data?.approved &&
-        data?.call?.returnValues?.destinationChain &&
-        data?.call?.returnValues?.destinationContractAddress
+        (message?.is_insufficient_fee ||
+          (message?.call && !message.gas_paid)) &&
+        !message?.confirm &&
+        !message?.approved &&
+        message?.call?.returnValues?.destinationChain &&
+        message?.call?.returnValues?.destinationContractAddress
       ) {
         const { destinationChain, destinationContractAddress } = {
-          ...data.call.returnValues,
+          ...message.call.returnValues,
         };
 
-        const { express_executed, executed } = {
-          ...(await searchGMP({
-            destinationChain,
-            destinationContractAddress,
-            status: 'executed',
-            size: 1,
-          }))?.data?.[0],
-        };
+        const searchResult = (await searchGMP({
+          destinationChain,
+          destinationContractAddress,
+          status: 'executed',
+          size: 1,
+        })) as SearchGMPResult | undefined;
+        const [matchedMessage] = toArray(searchResult?.data) as GMPMessage[];
+        const executionLog =
+          matchedMessage?.express_executed ?? matchedMessage?.executed;
 
-        const { gasUsed } = { ...(express_executed || executed)?.receipt };
+        const gasUsedValue = executionLog?.receipt?.gasUsed;
 
         setEstimatedGasUsed(
-          gasUsed ? toNumber(gasUsed) : getDefaultGasLimit(destinationChain)
+          gasUsedValue
+            ? toNumber(gasUsedValue)
+            : getDefaultGasLimit(destinationChain)
         );
       }
     };
 
-    getEstimatedGasUsed();
-  }, [data, estimatedGasUsed]);
+    determineEstimatedGasUsed();
+  }, [message, estimatedGasUsed]);
 
   return estimatedGasUsed;
 }
@@ -163,7 +229,7 @@ export function useGMPRecoveryAPI(): AxelarGMPRecoveryAPI | undefined {
     try {
       setSDK(
         new AxelarGMPRecoveryAPI({
-          environment: ENVIRONMENT,
+          environment: ENVIRONMENT as Environment,
           axelarRpcUrl: process.env.NEXT_PUBLIC_RPC_URL,
           axelarLcdUrl: process.env.NEXT_PUBLIC_LCD_URL,
         })
@@ -175,4 +241,3 @@ export function useGMPRecoveryAPI(): AxelarGMPRecoveryAPI | undefined {
 
   return sdk;
 }
-

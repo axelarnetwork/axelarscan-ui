@@ -1,4 +1,10 @@
-import { ChainTimeEstimate, GMPButtonMap, GMPMessage, GMPTransactionInfo } from '../GMP.types';
+import {
+  ChainMetadata,
+  ChainTimeEstimate,
+  GMPButtonMap,
+  GMPMessage,
+  GMPTransactionInfo,
+} from '../GMP.types';
 
 export interface InfoProps {
   data: GMPMessage;

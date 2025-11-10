@@ -40,7 +40,14 @@ import {
   useExecuteData,
   useGMPRecoveryAPI,
 } from './GMP.hooks';
-import { GMPButtonMap, GMPMessage, GMPProps, GMPToastState } from './GMP.types';
+import { gmpStyles } from './GMP.styles';
+import {
+  GMPButtonMap,
+  GMPMessage,
+  GMPProps,
+  GMPSettlementData,
+  GMPToastState,
+} from './GMP.types';
 import { getDefaultGasLimit, isGMPMessage } from './GMP.utils';
 import { GMPContainer } from './GMPContainer';
 import { Info } from './Info/Info';
@@ -102,7 +109,7 @@ export function GMP({ tx, lite }: GMPProps) {
       const response = await searchGMP(
         tx.includes('-') ? { messageId: tx } : { txHash: tx }
       );
-      const d = await parseCustomData(response?.data?.[0]);
+      const parsedMessage = await parseCustomData(response?.data?.[0]);
 
       const isSecondHopOfInterchainTransfer = (
         message: GMPMessage
@@ -112,206 +119,258 @@ export function GMP({ tx, lite }: GMPProps) {
         return Boolean(destChain && callChain && destChain === callChain);
       };
 
-      if (d) {
+      if (parsedMessage) {
         if (
-          d.call?.parentMessageID &&
-          ((!d.executed?.childMessageIDs &&
-            isSecondHopOfInterchainTransfer(d)) ||
-            isAxelar(d.call.chain))
+          parsedMessage.call?.parentMessageID &&
+          ((!parsedMessage.executed?.childMessageIDs &&
+            isSecondHopOfInterchainTransfer(parsedMessage)) ||
+            isAxelar(parsedMessage.call.chain))
         ) {
-          router.push(`/gmp/${d.call.parentMessageID}`);
+          router.push(`/gmp/${parsedMessage.call.parentMessageID}`);
         } else {
           if (
-            ['received', 'failed'].includes(d.simplified_status) &&
-            (d.executed || d.error) &&
-            (d.refunded || d.not_to_refund)
+            ['received', 'failed'].includes(parsedMessage.simplified_status) &&
+            (parsedMessage.executed || parsedMessage.error) &&
+            (parsedMessage.refunded || parsedMessage.not_to_refund)
           ) {
             setEnded(true);
           }
 
           // callback
-          if (d.callback?.transactionHash) {
+          if (parsedMessage.callback?.transactionHash) {
             const { data } = {
               ...(await searchGMP({
-                txHash: d.callback.transactionHash,
-                txIndex: d.callback.transactionIndex,
-                txLogIndex: d.callback.logIndex,
+                txHash: parsedMessage.callback.transactionHash,
+                txIndex: parsedMessage.callback.transactionIndex,
+                txLogIndex: parsedMessage.callback.logIndex,
               })),
             };
 
-            d.callbackData = toArray(data).find(_d =>
+            parsedMessage.callbackData = toArray(data).find(callbackEntry =>
               equalsIgnoreCase(
-                _d.call?.transactionHash,
-                d.callback.transactionHash
+                callbackEntry.call?.transactionHash,
+                parsedMessage.callback.transactionHash
               )
             );
-            d.callbackData = await parseCustomData(d.callbackData);
-          } else if (d.executed?.transactionHash) {
+            parsedMessage.callbackData = await parseCustomData(
+              parsedMessage.callbackData
+            );
+          } else if (parsedMessage.executed?.transactionHash) {
             const { data } = {
-              ...(await searchGMP({ txHash: d.executed.transactionHash })),
+              ...(await searchGMP({
+                txHash: parsedMessage.executed.transactionHash,
+              })),
             };
 
-            d.callbackData = toArray(data).find(_d =>
+            parsedMessage.callbackData = toArray(data).find(callbackEntry =>
               equalsIgnoreCase(
-                _d.call?.transactionHash,
-                d.executed.transactionHash
+                callbackEntry.call?.transactionHash,
+                parsedMessage.executed.transactionHash
               )
             );
-            d.callbackData = await parseCustomData(d.callbackData);
-          } else if (d.callback?.messageIdHash) {
-            const messageId = `${d.callback.messageIdHash}-${d.callback.messageIdIndex}`;
+            parsedMessage.callbackData = await parseCustomData(
+              parsedMessage.callbackData
+            );
+          } else if (parsedMessage.callback?.messageIdHash) {
+            const messageId = `${parsedMessage.callback.messageIdHash}-${parsedMessage.callback.messageIdIndex}`;
             const { data } = { ...(await searchGMP({ messageId })) };
 
-            d.callbackData = toArray(data).find(_d =>
-              equalsIgnoreCase(_d.call?.returnValues?.messageId, messageId)
+            parsedMessage.callbackData = toArray(data).find(callbackEntry =>
+              equalsIgnoreCase(
+                callbackEntry.call?.returnValues?.messageId,
+                messageId
+              )
             );
-            d.callbackData = await parseCustomData(d.callbackData);
-          } else if (toArray(d.executed?.childMessageIDs) > 0) {
+            parsedMessage.callbackData = await parseCustomData(
+              parsedMessage.callbackData
+            );
+          } else if (toArray(parsedMessage.executed?.childMessageIDs) > 0) {
             const { data } = {
               ...(await searchGMP({
-                messageId: d.executed.childMessageIDs?.[0],
+                messageId: parsedMessage.executed.childMessageIDs?.[0],
               })),
             };
 
-            d.callbackData = toArray(data).find(_d =>
+            parsedMessage.callbackData = toArray(data).find(callbackEntry =>
               equalsIgnoreCase(
-                _d.call?.returnValues?.messageId,
-                d.executed.childMessageIDs?.[0]
+                callbackEntry.call?.returnValues?.messageId,
+                parsedMessage.executed.childMessageIDs?.[0]
               )
             );
-            d.callbackData = await parseCustomData(d.callbackData);
+            parsedMessage.callbackData = await parseCustomData(
+              parsedMessage.callbackData
+            );
           }
 
-          if (isAxelar(d.callbackData?.call?.returnValues?.destinationChain)) {
-            d.callbackData = undefined;
+          if (
+            isAxelar(
+              parsedMessage.callbackData?.call?.returnValues?.destinationChain
+            )
+          ) {
+            parsedMessage.callbackData = undefined;
           }
 
           // origin
           if (
-            d.call &&
-            (d.gas_paid_to_callback ||
-              (d.is_call_from_relayer &&
-                !isAxelar(d.call.returnValues?.destinationChain)))
+            parsedMessage.call &&
+            (parsedMessage.gas_paid_to_callback ||
+              (parsedMessage.is_call_from_relayer &&
+                !isAxelar(parsedMessage.call.returnValues?.destinationChain)))
           ) {
             const { data } = {
               ...(await searchGMP(
-                d.call.transactionHash
-                  ? { txHash: d.call.transactionHash }
-                  : { messageId: d.call.parentMessageID }
+                parsedMessage.call.transactionHash
+                  ? { txHash: parsedMessage.call.transactionHash }
+                  : { messageId: parsedMessage.call.parentMessageID }
               )),
             };
 
-            d.originData = toArray(data).find(_d =>
-              d.call.transactionHash
+            parsedMessage.originData = toArray(data).find(originEntry =>
+              parsedMessage.call.transactionHash
                 ? toArray([
-                    _d.express_executed?.transactionHash,
-                    _d.executed?.transactionHash,
-                  ]).findIndex(tx =>
-                    equalsIgnoreCase(tx, d.call.transactionHash)
+                    originEntry.express_executed?.transactionHash,
+                    originEntry.executed?.transactionHash,
+                  ]).findIndex(transactionHash =>
+                    equalsIgnoreCase(
+                      transactionHash,
+                      parsedMessage.call?.transactionHash
+                    )
                   ) > -1
                 : toArray([
-                    _d.express_executed?.messageId,
-                    _d.executed?.messageId,
-                    _d.executed?.returnValues?.messageId,
-                  ]).findIndex(id =>
-                    equalsIgnoreCase(id, d.call.parentMessageID)
+                    originEntry.express_executed?.messageId,
+                    originEntry.executed?.messageId,
+                    originEntry.executed?.returnValues?.messageId,
+                  ]).findIndex(messageIdValue =>
+                    equalsIgnoreCase(
+                      messageIdValue,
+                      parsedMessage.call?.parentMessageID
+                    )
                   ) > -1
             );
-            d.originData = await parseCustomData(d.originData);
+            parsedMessage.originData = await parseCustomData(
+              parsedMessage.originData
+            );
           }
 
-          if (isAxelar(d.originData?.call?.chain)) {
-            d.originData = undefined;
+          if (isAxelar(parsedMessage.originData?.call?.chain)) {
+            parsedMessage.originData = undefined;
           }
 
           // settlement filled
-          if (d.settlement_forwarded_events) {
+          if (parsedMessage.settlement_forwarded_events) {
             const size = 10;
-            let i = 0;
-            let from = 0;
-            let total;
-            let data = [];
+            let retryCount = 0;
+            let offset = 0;
+            let totalEvents;
+            let filledEventsAccumulator: GMPSettlementData[] = [];
 
             while (
-              (!isNumber(total) || total > data.length || from < total) &&
-              i < 10
+              (!isNumber(totalEvents) ||
+                totalEvents > filledEventsAccumulator.length ||
+                offset < totalEvents) &&
+              retryCount < 10
             ) {
-              const response = {
+              const settlementResponse = {
                 ...(await searchGMP({
                   event: 'SquidCoralSettlementFilled',
-                  squidCoralOrderHash: d.settlement_forwarded_events.map(
-                    e => e.orderHash
-                  ),
-                  from,
+                  squidCoralOrderHash:
+                    parsedMessage.settlement_forwarded_events.map(
+                      settlementEvent => settlementEvent.orderHash
+                    ),
+                  from: offset,
                   size,
                 })),
               };
 
-              if (isNumber(response.total)) {
-                total = response.total;
+              if (isNumber(settlementResponse.total)) {
+                totalEvents = settlementResponse.total;
               }
 
-              if (response.data) {
-                data = _.uniqBy(_.concat(data, response.data), 'id');
-                from = data.length;
+              if (settlementResponse.data) {
+                const normalizedResponse = toArray(
+                  settlementResponse.data
+                ).filter(
+                  (entry): entry is GMPSettlementData =>
+                    typeof entry === 'object' && entry !== null
+                );
+
+                filledEventsAccumulator = _.uniqBy(
+                  _.concat(filledEventsAccumulator, normalizedResponse),
+                  'id'
+                );
+                offset = filledEventsAccumulator.length;
               } else {
                 break;
               }
 
-              i++;
+              retryCount++;
             }
 
-            if (data.length > 0) {
-              d.settlementFilledData = data;
+            if (filledEventsAccumulator.length > 0) {
+              parsedMessage.settlementFilledData = filledEventsAccumulator;
             }
           }
 
           // settlement forwarded
-          if (d.settlement_filled_events) {
+          if (parsedMessage.settlement_filled_events) {
             const size = 10;
-            let i = 0;
-            let from = 0;
-            let total;
-            let data = [];
+            let retryCount = 0;
+            let offset = 0;
+            let totalEvents;
+            let forwardedEventsAccumulator: GMPSettlementData[] = [];
 
             while (
-              (!isNumber(total) || total > data.length || from < total) &&
-              i < 10
+              (!isNumber(totalEvents) ||
+                totalEvents > forwardedEventsAccumulator.length ||
+                offset < totalEvents) &&
+              retryCount < 10
             ) {
-              const response = {
+              const settlementResponse = {
                 ...(await searchGMP({
                   event: 'SquidCoralSettlementForwarded',
-                  squidCoralOrderHash: d.settlement_filled_events.map(
-                    e => e.orderHash
-                  ),
-                  from,
+                  squidCoralOrderHash:
+                    parsedMessage.settlement_filled_events.map(
+                      settlementEvent => settlementEvent.orderHash
+                    ),
+                  from: offset,
                   size,
                 })),
               };
 
-              if (isNumber(response.total)) {
-                total = response.total;
+              if (isNumber(settlementResponse.total)) {
+                totalEvents = settlementResponse.total;
               }
 
-              if (response.data) {
-                data = _.uniqBy(_.concat(data, response.data), 'id');
-                from = data.length;
+              if (settlementResponse.data) {
+                const normalizedResponse = toArray(
+                  settlementResponse.data
+                ).filter(
+                  (entry): entry is GMPSettlementData =>
+                    typeof entry === 'object' && entry !== null
+                );
+
+                forwardedEventsAccumulator = _.uniqBy(
+                  _.concat(forwardedEventsAccumulator, normalizedResponse),
+                  'id'
+                );
+                offset = forwardedEventsAccumulator.length;
               } else {
                 break;
               }
 
-              i++;
+              retryCount++;
             }
 
-            if (data.length > 0) {
-              d.settlementForwardedData = data;
+            if (forwardedEventsAccumulator.length > 0) {
+              parsedMessage.settlementForwardedData =
+                forwardedEventsAccumulator;
             }
           }
 
-          console.log('[data]', d);
-          setData(d);
+          console.log('[data]', parsedMessage);
+          setData(parsedMessage);
 
-          return d;
+          return parsedMessage;
         }
       } else {
         setData({
@@ -404,64 +463,94 @@ export function GMP({ tx, lite }: GMPProps) {
     }
   }, [response, chains]);
 
-  const isChainSupportedAddGas = (chain, chainType) => {
-    // evm / cosmos
-    if (chainType !== 'vm') return true;
+  const isAddGasSupported = (targetChain, targetChainType) => {
+    if (targetChainType !== 'vm') return true;
 
-    // amplifier chain that actually evm chain
-    if (isNumber(getChainData(chain, chains)?.chain_id)) return true;
+    if (isNumber(getChainData(targetChain, chains)?.chain_id)) return true;
 
-    // amplifier chains that already custom addGas function
-    return ['sui', 'stellar', 'xrpl'].includes(headString(chain));
+    return ['sui', 'stellar', 'xrpl'].includes(headString(targetChain));
   };
 
-  const isWalletConnected = (chain, chainType) => {
-    // cosmos
-    if (chainType === 'cosmos') return !!cosmosWalletStore?.signer;
+  const isWalletConnectedForChain = (
+    targetChain,
+    targetChainType,
+    chainMetadataList = chains,
+    walletContext = {
+      cosmosWalletStore,
+      signer,
+      suiWalletStore,
+      stellarWalletStore,
+      xrplWalletStore,
+    }
+  ) => {
+    if (targetChainType === 'cosmos') {
+      return Boolean(walletContext.cosmosWalletStore?.signer);
+    }
 
-    // evm / evm amplifier
-    if (isNumber(getChainData(chain, chains)?.chain_id)) return !!signer;
+    if (isNumber(getChainData(targetChain, chainMetadataList)?.chain_id)) {
+      return Boolean(walletContext.signer);
+    }
 
-    chain = headString(chain);
-    if (chain === 'sui') return !!suiWalletStore?.address;
-    if (chain === 'stellar') return !!stellarWalletStore?.address;
-    if (chain === 'xrpl') return !!xrplWalletStore?.address;
+    const normalizedChain = headString(targetChain);
+    if (normalizedChain === 'sui') {
+      return Boolean(walletContext.suiWalletStore?.address);
+    }
+    if (normalizedChain === 'stellar') {
+      return Boolean(walletContext.stellarWalletStore?.address);
+    }
+    if (normalizedChain === 'xrpl') {
+      return Boolean(walletContext.xrplWalletStore?.address);
+    }
 
-    return;
+    return false;
   };
 
-  const getWalletComponent = (chain, chainType) => {
-    const { chain_id } = { ...getChainData(chain, chains) };
+  const renderWalletComponent = (targetChain, targetChainType) => {
+    const { chain_id: chainIdentifier } = {
+      ...getChainData(targetChain, chains),
+    };
 
-    // cosmos
-    if (chainType === 'cosmos')
-      return <CosmosWallet connectChainId={chain_id} />;
+    if (targetChainType === 'cosmos') {
+      return <CosmosWallet connectChainId={chainIdentifier} />;
+    }
 
-    // evm / evm amplifier
-    if (isNumber(chain_id)) return <EVMWallet connectChainId={chain_id} />;
+    if (isNumber(chainIdentifier)) {
+      return <EVMWallet connectChainId={chainIdentifier} />;
+    }
 
-    chain = headString(chain);
-    if (chain === 'sui') return <SuiWallet />;
-    if (chain === 'stellar') return <StellarWallet />;
-    if (chain === 'xrpl') return <XRPLWallet />;
+    const normalizedChain = headString(targetChain);
+    if (normalizedChain === 'sui') return <SuiWallet />;
+    if (normalizedChain === 'stellar') return <StellarWallet />;
+    if (normalizedChain === 'xrpl') return <XRPLWallet />;
 
-    return;
+    return null;
   };
 
-  const needSwitchChain = (id, chainType) =>
-    id !==
-    (chainType === 'cosmos'
-      ? cosmosWalletStore?.chainId
-      : isNumber(id)
-        ? chainId
-        : id);
+  const shouldSwitchChain = (
+    targetChainId,
+    targetChainType,
+    cosmosStore = cosmosWalletStore,
+    evmChainId = chainId
+  ) =>
+    targetChainId !==
+    (targetChainType === 'cosmos'
+      ? cosmosStore?.chainId
+      : isNumber(targetChainId)
+        ? evmChainId
+        : targetChainId);
 
   // addNativeGas for evm, addGasToCosmosChain for cosmos, amplifier (addGasToSuiChain, addGasToStellarChain, addGasToXrplChain)
   const addGas = async data => {
     if (
       data?.call &&
       sdk &&
-      isWalletConnected(data.call.chain, data.call.chain_type)
+      isWalletConnectedForChain(data.call.chain, data.call.chain_type, chains, {
+        cosmosWalletStore,
+        signer,
+        suiWalletStore,
+        stellarWalletStore,
+        xrplWalletStore,
+      })
     ) {
       setProcessing(true);
       setResponse({ status: 'pending', message: 'Adding gas...' });
@@ -958,7 +1047,7 @@ export function GMP({ tx, lite }: GMPProps) {
     if (sourceChainData && !isAxelar(call.chain)) {
       if (
         // supported chain
-        (isChainSupportedAddGas(call.chain, call.chain_type) &&
+        (isAddGasSupported(call.chain, call.chain_type) &&
           // no gas added response
           response?.message !== 'Pay gas successful' && // not executed / approved / confirmed / not cosmos call or called more than 1 min
           // when need more gas by itself
@@ -987,27 +1076,30 @@ export function GMP({ tx, lite }: GMPProps) {
           checkNeedMoreGasFromError(error))
       ) {
         addGasButton = (
-          <div key="addGas" className="flex items-center gap-x-1">
-            {isWalletConnected(call.chain, call.chain_type) &&
-              !needSwitchChain(
+          <div key="addGas" className={gmpStyles.actionRow}>
+            {isWalletConnectedForChain(call.chain, call.chain_type, chains, {
+              cosmosWalletStore,
+              signer,
+              suiWalletStore,
+              stellarWalletStore,
+              xrplWalletStore,
+            }) &&
+              !shouldSwitchChain(
                 sourceChainData.chain_id || sourceChainData.id,
-                call.chain_type
+                call.chain_type,
+                cosmosWalletStore,
+                chainId
               ) && (
                 <button
                   disabled={processing}
                   onClick={() => addGas(data)}
-                  className={clsx(
-                    'flex h-6 items-center whitespace-nowrap rounded-xl px-2.5 py-1 font-display text-white',
-                    processing
-                      ? 'pointer-events-none bg-blue-400 dark:bg-blue-400'
-                      : 'bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600'
-                  )}
+                  className={clsx(gmpStyles.actionButton(processing))}
                 >
                   {gas_paid ? 'Add' : 'Pay'}
                   {processing ? 'ing' : ''} gas{processing ? '...' : ''}
                 </button>
               )}
-            {getWalletComponent(call.chain, call.chain_type)}
+            {renderWalletComponent(call.chain, call.chain_type)}
           </div>
         );
       }
@@ -1047,16 +1139,11 @@ export function GMP({ tx, lite }: GMPProps) {
         call.proposal_id)
     ) {
       approveButton = (
-        <div key="approve" className="flex items-center gap-x-1">
+        <div key="approve" className={gmpStyles.actionRow}>
           <button
             disabled={processing}
             onClick={() => approve(data)}
-            className={clsx(
-              'flex h-6 items-center whitespace-nowrap rounded-xl px-2.5 py-1 font-display text-white',
-              processing
-                ? 'pointer-events-none bg-blue-400 dark:bg-blue-400'
-                : 'bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600'
-            )}
+            className={clsx(gmpStyles.actionButton(processing))}
           >
             {(!confirm || data.confirm_failed) &&
             !isAxelar(call.chain) &&
@@ -1101,12 +1188,14 @@ export function GMP({ tx, lite }: GMPProps) {
           ) >= (call.destination_chain_type === 'cosmos' ? 300 : 120))
       ) {
         executeButton = (
-          <div key="execute" className="flex items-center gap-x-1">
+          <div key="execute" className={gmpStyles.actionRow}>
             {(call.destination_chain_type === 'cosmos' ||
               (signer &&
-                !needSwitchChain(
+                !shouldSwitchChain(
                   destinationChainData?.chain_id,
-                  call.destination_chain_type
+                  call.destination_chain_type,
+                  cosmosWalletStore,
+                  chainId
                 ))) && (
               <button
                 disabled={processing}
@@ -1115,12 +1204,7 @@ export function GMP({ tx, lite }: GMPProps) {
                     ? approve(data)
                     : execute(data)
                 }
-                className={clsx(
-                  'flex h-6 items-center whitespace-nowrap rounded-xl px-2.5 py-1 font-display text-white',
-                  processing
-                    ? 'pointer-events-none bg-blue-400 dark:bg-blue-400'
-                    : 'bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600'
-                )}
+                className={clsx(gmpStyles.actionButton(processing))}
               >
                 Execut{processing ? 'ing...' : 'e'}
               </button>

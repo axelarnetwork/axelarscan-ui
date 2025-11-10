@@ -7,6 +7,7 @@ import { ellipse } from '@/lib/string';
 import { toArray } from '@/lib/parser';
 
 import { InfoSection } from './InfoSection';
+import { GMPSettlementData } from '../GMP.types';
 
 export function InfoSettlement({
   data,
@@ -17,9 +18,21 @@ export function InfoSettlement({
   destinationChain,
   executed,
 }: InfoSettlementProps) {
+  const settlementForwardedData = toArray(
+    data.settlementForwardedData
+  ).filter(
+    (entry): entry is GMPSettlementData =>
+      typeof entry === 'object' && entry !== null
+  );
+
+  const settlementFilledData = toArray(data.settlementFilledData).filter(
+    (entry): entry is GMPSettlementData =>
+      typeof entry === 'object' && entry !== null
+  );
+
   if (
     (!settlementForwardedEvents || !executed) &&
-    (!settlementFilledEvents || !data.settlementForwardedData)
+    (!settlementFilledEvents || settlementForwardedData.length === 0)
   ) {
     return null;
   }
@@ -39,7 +52,7 @@ export function InfoSettlement({
                   iconOnly={false}
                 />
               ) : (
-                toArray(data.settlementForwardedData).map((entry, index) => (
+                settlementForwardedData.map((entry, index) => (
                   <ExplorerLink
                     key={index}
                     value={entry?.call?.transactionHash}
@@ -67,7 +80,7 @@ export function InfoSettlement({
                   iconOnly={false}
                 />
               ) : (
-                toArray(data.settlementForwardedData)
+                settlementForwardedData
                   .filter(entry => entry?.executed)
                   .map((entry, index) => (
                     <ExplorerLink
@@ -96,7 +109,7 @@ export function InfoSettlement({
                   iconOnly={false}
                 />
               ) : (
-                toArray(data.settlementFilledData).map((entry, index) => (
+                settlementFilledData.map((entry, index) => (
                   <ExplorerLink
                     key={index}
                     value={entry?.call?.transactionHash}
@@ -124,7 +137,7 @@ export function InfoSettlement({
                   iconOnly={false}
                 />
               ) : (
-                toArray(data.settlementFilledData).map((entry, index) => (
+                settlementFilledData.map((entry, index) => (
                   <ExplorerLink
                     key={index}
                     value={entry?.executed?.transactionHash}
