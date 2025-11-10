@@ -1,9 +1,17 @@
 import { isAxelar } from '@/lib/chain';
 import { getChainData } from '@/lib/config';
-import { timeDiff } from '@/lib/time';
+import { isNumber } from '@/lib/number';
 import { toCase } from '@/lib/parser';
+import { headString } from '@/lib/string';
+import { timeDiff } from '@/lib/time';
 
-import { ChainMetadata, GMPEventLog, GMPMessage, GMPStep } from './GMP.types';
+import {
+  ChainMetadata,
+  GMPEventLog,
+  GMPMessage,
+  GMPStep,
+  WalletContext,
+} from './GMP.types';
 
 export function isGMPMessage(value: unknown): value is GMPMessage {
   return typeof value === 'object' && value !== null;
@@ -286,4 +294,79 @@ export function getDefaultGasLimit(chain?: string): number {
       : String(chainKeyCandidate ?? '');
 
   return defaults[chainKey] ?? 700000;
+}
+
+/**
+ * Check if adding gas is supported for the given chain
+ */
+export function isAddGasSupported(
+  targetChain: string | undefined,
+  targetChainType: string | undefined,
+  chains: ChainMetadata[] | null
+): boolean {
+  if (targetChainType !== 'vm') return true;
+
+  const chainData = getChainData(targetChain, chains);
+  if (isNumber(chainData?.chain_id)) return true;
+
+  if (targetChain && typeof targetChain === 'string') {
+    const normalizedChain = headString(targetChain);
+    if (normalizedChain) {
+      return ['sui', 'stellar', 'xrpl'].includes(normalizedChain);
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Check if a wallet is connected for the given chain
+ */
+export function isWalletConnectedForChain(
+  targetChain: string | undefined,
+  targetChainType: string | undefined,
+  chainMetadataList: ChainMetadata[] | null,
+  walletContext: WalletContext
+): boolean {
+  if (targetChainType === 'cosmos') {
+    return Boolean(walletContext.cosmosWalletStore?.signer);
+  }
+
+  if (isNumber(getChainData(targetChain, chainMetadataList)?.chain_id)) {
+    return Boolean(walletContext.signer);
+  }
+
+  if (!targetChain) return false;
+
+  const normalizedChain = headString(targetChain);
+  if (normalizedChain === 'sui') {
+    return Boolean(walletContext.suiWalletStore?.address);
+  }
+  if (normalizedChain === 'stellar') {
+    return Boolean(walletContext.stellarWalletStore?.address);
+  }
+  if (normalizedChain === 'xrpl') {
+    return Boolean(walletContext.xrplWalletStore?.address);
+  }
+
+  return false;
+}
+
+/**
+ * Check if the chain needs to be switched
+ */
+export function shouldSwitchChain(
+  targetChainId: string | number | undefined,
+  targetChainType: string | undefined,
+  walletContext: WalletContext,
+  evmChainId: number | null
+): boolean {
+  return (
+    targetChainId !==
+    (targetChainType === 'cosmos'
+      ? walletContext.cosmosWalletStore?.chainId
+      : isNumber(targetChainId)
+        ? evmChainId
+        : targetChainId)
+  );
 }
