@@ -41,28 +41,37 @@ export function InfoGasMetrics({
 }: InfoGasMetricsProps) {
   const executedEntry = data.originData?.executed || data.executed;
   const combinedFees = data.originData?.fees || fees;
-  const refundedTotal =
-    _.sumBy(toArray(refundedMoreData), d => toNumber(d.amount)) || 0;
+  const refundedTotal = _.sumBy(toArray(refundedMoreData), entry =>
+    toNumber(entry.amount)
+  );
 
-  const gasPaidAmount = gasData?.gas_paid_amount ?? 0;
-  const refundedAmount = isNumber(refundedData?.amount)
-    ? Number(refundedData.amount)
-    : gasData?.gas_remain_amount ?? 0;
+  const gasPaidAmount = toNumber(gasData?.gas_paid_amount);
+  const gasRemainAmount = toNumber(gasData?.gas_remain_amount);
+  const refundedAmount = refundedData?.receipt?.status
+    ? isNumber(refundedData?.amount)
+      ? toNumber(refundedData?.amount)
+      : gasRemainAmount
+    : 0;
 
-  const gasChargedAmount =
-    gasPaidAmount - (refundedData?.receipt?.status ? refundedAmount : 0) - refundedTotal;
+  const gasChargedAmount = gasPaidAmount - refundedAmount - refundedTotal;
+
+  const executionBlockTimestamp = executedEntry?.block_timestamp;
+  const hasElapsedSinceExecution =
+    refundedData?.receipt?.status ||
+    (isNumber(executionBlockTimestamp) &&
+      timeDiff(Number(executionBlockTimestamp) * 1000) >= 300);
 
   const shouldShowGasCharged =
     (!data.originData || data.originData.executed) &&
-    data.executed &&
+    Boolean(data.executed) &&
     isNumber(gasData?.gas_paid_amount) &&
     isNumber(gasData?.gas_remain_amount) &&
-    (refundedData?.receipt?.status ||
-      (executedEntry?.block_timestamp
-        ? timeDiff(executedEntry.block_timestamp * 1000) >= 300
-        : false));
+    hasElapsedSinceExecution;
 
   const sourceToken = combinedFees?.source_token;
+
+  const formatTokenSuffix = (symbol?: string) =>
+    symbol ? ` ${symbol}` : '';
 
   const renderFiPlus = (index: number) =>
     index > 0 ? <FiPlus size={18} className={infoStyles.plusIcon} /> : null;
@@ -98,7 +107,7 @@ export function InfoGasMetrics({
             <Number
               value={gasChargedAmount}
               format="0,0.000000"
-              suffix={` ${sourceToken?.symbol ?? ''}`.trim()}
+              suffix={formatTokenSuffix(sourceToken?.symbol)}
               noTooltip
               className={infoStyles.inlineNumber}
             />
@@ -124,7 +133,7 @@ export function InfoGasMetrics({
                           (combinedFees?.source_token?.gas_price ?? 0)
                   }
                   format="0,0.000000"
-                  suffix={` ${sourceToken?.symbol ?? ''}`.trim()}
+                  suffix={formatTokenSuffix(sourceToken?.symbol)}
                   noTooltip
                   className={infoStyles.inlineNumber}
                 />
@@ -161,7 +170,7 @@ export function InfoGasMetrics({
                   <Number
                     value={gasData.gas_used_amount}
                     format="0,0.000000"
-                    suffix={` ${sourceToken?.symbol ?? ''}`.trim()}
+                    suffix={formatTokenSuffix(sourceToken?.symbol)}
                     noTooltip
                     className={infoStyles.inlineNumber}
                   />
@@ -189,7 +198,7 @@ export function InfoGasMetrics({
                             <Number
                               value={entry.fees.base_fee}
                               format="0,0.000000"
-                              suffix={` ${entry.fees.source_token?.symbol ?? ''}`.trim()}
+                            suffix={formatTokenSuffix(entry.fees.source_token?.symbol)}
                               noTooltip
                               className={infoStyles.inlineNumber}
                             />
@@ -204,7 +213,7 @@ export function InfoGasMetrics({
                                 <Number
                                   value={entry.fees.source_confirm_fee}
                                   format="0,0.000000"
-                                  suffix={` ${entry.fees.source_token?.symbol ?? ''}`.trim()}
+                                suffix={formatTokenSuffix(entry.fees.source_token?.symbol)}
                                   noTooltip
                                   className={gasStyles.nestedNumber}
                                 />
@@ -225,7 +234,7 @@ export function InfoGasMetrics({
                                       : 0
                                   }
                                   format="0,0.000000"
-                                  suffix={` ${entry.fees.source_token?.symbol ?? ''}`.trim()}
+                                suffix={formatTokenSuffix(entry.fees.source_token?.symbol)}
                                   noTooltip
                                   className={gasStyles.nestedNumber}
                                 />
@@ -262,7 +271,7 @@ export function InfoGasMetrics({
                             <Number
                               value={entry.fees.express_fee}
                               format="0,0.000000"
-                              suffix={` ${entry.fees.source_token?.symbol ?? ''}`.trim()}
+                            suffix={formatTokenSuffix(entry.fees.source_token?.symbol)}
                               noTooltip
                               className={infoStyles.inlineNumber}
                             />
@@ -278,7 +287,7 @@ export function InfoGasMetrics({
                                   <Number
                                     value={entry.fees.source_express_fee.relayer_fee}
                                     format="0,0.000000"
-                                    suffix={` ${entry.fees.source_token?.symbol ?? ''}`.trim()}
+                                suffix={formatTokenSuffix(entry.fees.source_token?.symbol)}
                                     noTooltip
                                     className={gasStyles.nestedNumber}
                                   />
@@ -298,7 +307,7 @@ export function InfoGasMetrics({
                                   <Number
                                     value={entry.fees.source_express_fee.express_gas_overhead_fee}
                                     format="0,0.000000"
-                                    suffix={` ${entry.fees.source_token?.symbol ?? ''}`.trim()}
+                                suffix={formatTokenSuffix(entry.fees.source_token?.symbol)}
                                     noTooltip
                                     className={gasStyles.nestedNumber}
                                   />
@@ -326,7 +335,7 @@ export function InfoGasMetrics({
                       <Number
                         value={combinedFees.base_fee}
                         format="0,0.000000"
-                        suffix={` ${sourceToken?.symbol ?? ''}`.trim()}
+                        suffix={formatTokenSuffix(sourceToken?.symbol)}
                         noTooltip
                         className={infoStyles.inlineNumber}
                       />
@@ -339,7 +348,7 @@ export function InfoGasMetrics({
                           <Number
                             value={combinedFees.source_confirm_fee}
                             format="0,0.000000"
-                            suffix={` ${sourceToken?.symbol ?? ''}`.trim()}
+                        suffix={formatTokenSuffix(sourceToken?.symbol)}
                             noTooltip
                             className={gasStyles.nestedNumber}
                           />
@@ -358,7 +367,7 @@ export function InfoGasMetrics({
                                 : 0
                             }
                             format="0,0.000000"
-                            suffix={` ${sourceToken?.symbol ?? ''}`.trim()}
+                        suffix={formatTokenSuffix(sourceToken?.symbol)}
                             noTooltip
                             className={gasStyles.nestedNumber}
                           />
@@ -382,7 +391,7 @@ export function InfoGasMetrics({
                       <Number
                         value={combinedFees.express_fee}
                         format="0,0.000000"
-                        suffix={` ${sourceToken?.symbol ?? ''}`.trim()}
+                        suffix={formatTokenSuffix(sourceToken?.symbol)}
                         noTooltip
                         className={infoStyles.inlineNumber}
                       />
@@ -396,7 +405,7 @@ export function InfoGasMetrics({
                             <Number
                               value={combinedFees.source_express_fee.relayer_fee}
                               format="0,0.000000"
-                              suffix={` ${sourceToken?.symbol ?? ''}`.trim()}
+                              suffix={formatTokenSuffix(sourceToken?.symbol)}
                               noTooltip
                               className={gasStyles.nestedNumber}
                             />
@@ -414,7 +423,7 @@ export function InfoGasMetrics({
                             <Number
                               value={combinedFees.source_express_fee.express_gas_overhead_fee}
                               format="0,0.000000"
-                              suffix={` ${sourceToken?.symbol ?? ''}`.trim()}
+                              suffix={formatTokenSuffix(sourceToken?.symbol)}
                               noTooltip
                               className={gasStyles.nestedNumber}
                             />

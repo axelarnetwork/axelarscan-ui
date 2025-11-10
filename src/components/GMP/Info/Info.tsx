@@ -215,18 +215,6 @@ export function Info({
               </div>
             </InfoSection>
           )}
-          <InfoGasMetrics
-            data={data}
-            gasData={gasData}
-            refundedData={refundedData}
-            refundedMoreData={refundedMoreData}
-            showDetails={showDetails}
-            fees={fees}
-            gas={gas}
-            gasPaid={gas_paid}
-            gasPaidToCallback={gas_paid_to_callback}
-            isMultihop={isMultihop}
-          />
           <InfoSection label="Created">
             {moment(
               (data.originData?.call || call)?.block_timestamp * 1000
@@ -254,6 +242,18 @@ export function Info({
             showAdditionalDetails={showDetails}
             call={call}
           />
+        <InfoGasMetrics
+          data={data}
+          gasData={gasData}
+          refundedData={refundedData}
+          refundedMoreData={refundedMoreData}
+          showDetails={showDetails}
+          fees={fees}
+          gas={gas}
+          gasPaid={gas_paid}
+          gasPaidToCallback={gas_paid_to_callback}
+          isMultihop={isMultihop}
+        />
           {showDetails && (
             <div
               className={clsx(

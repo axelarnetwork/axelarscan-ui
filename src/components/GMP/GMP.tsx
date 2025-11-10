@@ -2,12 +2,10 @@
 // @ts-nocheck
 'use client';
 
-import { AxelarGMPRecoveryAPI } from '@axelar-network/axelarjs-sdk';
 import { useSignAndExecuteTransaction as useSuiSignAndExecuteTransaction } from '@mysten/dapp-kit';
 import * as StellarSDK from '@stellar/stellar-sdk';
 import { useSignAndSubmitTransaction as useXRPLSignAndSubmitTransaction } from '@xrpl-wallet-standard/react';
 import clsx from 'clsx';
-import { Contract } from 'ethers';
 import _ from 'lodash';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
@@ -26,32 +24,24 @@ import {
 } from '@/components/Wallet/StellarWallet';
 import { SuiWallet, useSuiWalletStore } from '@/components/Wallet/SuiWallet';
 import { XRPLWallet, useXRPLWalletStore } from '@/components/Wallet/XRPLWallet';
-import IAxelarExecutable from '@/data/interfaces/gmp/IAxelarExecutable.json';
-import { estimateITSFee, estimateTimeSpent, searchGMP } from '@/lib/api/gmp';
+import { estimateITSFee, searchGMP } from '@/lib/api/gmp';
 import { isAxelar } from '@/lib/chain';
-import { getProvider } from '@/lib/chain/evm';
-import { ENVIRONMENT, getAssetData, getChainData } from '@/lib/config';
-import {
-  formatUnits,
-  isNumber,
-  parseUnits,
-  toBigNumber,
-  toNumber,
-} from '@/lib/number';
+import { ENVIRONMENT, getChainData } from '@/lib/config';
+import { formatUnits, isNumber, parseUnits, toBigNumber } from '@/lib/number';
 import { getParams, sleep } from '@/lib/operator';
-import { parseError, toArray, toCase } from '@/lib/parser';
+import { parseError, toArray } from '@/lib/parser';
 import { equalsIgnoreCase, find, headString } from '@/lib/string';
 import { timeDiff } from '@/lib/time';
 
 import { Details } from './Details/Details';
 import {
-  ChainTimeEstimate,
-  GMPButtonMap,
-  GMPMessage,
-  GMPProps,
-  GMPToastState,
-} from './GMP.types';
-import { isGMPMessage } from './GMP.utils';
+  useEstimatedGasUsed,
+  useEstimatedTimeSpent,
+  useExecuteData,
+  useGMPRecoveryAPI,
+} from './GMP.hooks';
+import { GMPButtonMap, GMPMessage, GMPProps, GMPToastState } from './GMP.types';
+import { getDefaultGasLimit, isGMPMessage } from './GMP.utils';
 import { GMPContainer } from './GMPContainer';
 import { Info } from './Info/Info';
 
@@ -67,11 +57,6 @@ export function GMP({ tx, lite }: GMPProps) {
   const searchParams = useSearchParams();
   const [data, setData] = useState<GMPMessage | null>(null);
   const [ended, setEnded] = useState<boolean>(false);
-  const [estimatedTimeSpent, setEstimatedTimeSpent] =
-    useState<ChainTimeEstimate | null>(null);
-  const [executeData, setExecuteData] = useState<string | null>(null);
-  const [estimatedGasUsed, setEstimatedGasUsed] = useState<number | null>(null);
-  const [sdk, setSDK] = useState<AxelarGMPRecoveryAPI | undefined>(undefined);
   const [processing, setProcessing] = useState<boolean>(false);
   const [response, setResponse] = useState<GMPToastState | null>(null);
   const { chains, assets } = useGlobalStore();
@@ -83,6 +68,11 @@ export function GMP({ tx, lite }: GMPProps) {
   const { mutateAsync: suiSignAndExecuteTransaction } =
     useSuiSignAndExecuteTransaction();
   const xrplSignAndSubmitTransaction = useXRPLSignAndSubmitTransaction();
+
+  const estimatedTimeSpent = useEstimatedTimeSpent(data);
+  const executeData = useExecuteData(data, chains, assets);
+  const estimatedGasUsed = useEstimatedGasUsed(data);
+  const sdk = useGMPRecoveryAPI();
 
   const getData = useCallback(async (): Promise<GMPMessage | undefined> => {
     const { commandId } = { ...getParams(searchParams) };
@@ -337,124 +327,6 @@ export function GMP({ tx, lite }: GMPProps) {
     return undefined;
   }, [tx, router, searchParams, ended, setData]);
 
-  // set EstimatedTimeSpent
-  useEffect(() => {
-    const getEstimateTimeSpent = async () => {
-      if (!estimatedTimeSpent && data?.call?.chain) {
-        const response = await estimateTimeSpent({
-          sourceChain: data.call.chain,
-        });
-        const chainEstimatedTimeSpent = toArray(response).find(
-          d => d.key === data.call.chain
-        );
-
-        // fix finality time for cosmos chain
-        if (
-          data.call.chain_type === 'cosmos' &&
-          chainEstimatedTimeSpent?.confirm > 30
-        ) {
-          chainEstimatedTimeSpent.confirm = 30;
-        }
-
-        setEstimatedTimeSpent(chainEstimatedTimeSpent);
-      }
-    };
-
-    getEstimateTimeSpent();
-  }, [data, estimatedTimeSpent, setEstimatedTimeSpent]);
-
-  // set ExecuteData
-  useEffect(() => {
-    const getExecuteData = async () => {
-      if (!executeData && data?.call && data.approved && chains && assets) {
-        try {
-          const { call, approved, command_id } = { ...data };
-          const { addresses } = {
-            ...getAssetData(call.returnValues?.symbol, assets),
-          };
-
-          const symbol =
-            approved.returnValues?.symbol ||
-            addresses?.[toCase(call.returnValues?.destinationChain, 'lower')]
-              ?.symbol ||
-            call.returnValues?.symbol;
-          const commandId = approved.returnValues?.commandId || command_id;
-          const sourceChain =
-            approved.returnValues?.sourceChain ||
-            getChainData(call.chain, chains)?.chain_name;
-          const sourceAddress =
-            approved.returnValues?.sourceAddress || call.returnValues?.sender;
-          const contractAddress =
-            approved.returnValues?.contractAddress ||
-            call.returnValues?.destinationContractAddress;
-          const payload = call.returnValues?.payload;
-          const amount = toBigNumber(
-            approved.returnValues?.amount || call.returnValues?.amount
-          );
-
-          const contract = new Contract(
-            contractAddress,
-            IAxelarExecutable.abi,
-            getProvider(call.returnValues?.destinationChain, chains)
-          );
-          const transaction = symbol
-            ? await contract /*.executeWithToken*/.populateTransaction
-                .executeWithToken(
-                  commandId,
-                  sourceChain,
-                  sourceAddress,
-                  payload,
-                  symbol,
-                  amount
-                )
-            : await contract /*.execute*/.populateTransaction
-                .execute(commandId, sourceChain, sourceAddress, payload);
-
-          setExecuteData(transaction?.data);
-        } catch (error) {}
-      }
-    };
-
-    getExecuteData();
-  }, [data, executeData, setExecuteData, chains, assets]);
-
-  // set EstimatedGasUsed
-  useEffect(() => {
-    const getEstimatedGasUsed = async () => {
-      if (
-        !estimatedGasUsed &&
-        (data?.is_insufficient_fee || (data?.call && !data.gas_paid)) &&
-        !data.confirm &&
-        !data.approved &&
-        data.call?.returnValues?.destinationChain &&
-        data.call.returnValues.destinationContractAddress
-      ) {
-        const { destinationChain, destinationContractAddress } = {
-          ...data.call.returnValues,
-        };
-
-        const { express_executed, executed } = {
-          ...(
-            await searchGMP({
-              destinationChain,
-              destinationContractAddress,
-              status: 'executed',
-              size: 1,
-            })
-          )?.data?.[0],
-        };
-
-        const { gasUsed } = { ...(express_executed || executed)?.receipt };
-
-        setEstimatedGasUsed(
-          gasUsed ? toNumber(gasUsed) : getDefaultGasLimit(destinationChain)
-        );
-      }
-    };
-
-    getEstimatedGasUsed();
-  }, [data, estimatedGasUsed, setEstimatedGasUsed]);
-
   // interval update
   useEffect(() => {
     getData();
@@ -462,21 +334,6 @@ export function GMP({ tx, lite }: GMPProps) {
     const interval = !ended && setInterval(() => getData(), 0.5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [tx, searchParams, ended, setData, setEnded, getData]);
-
-  // sdk
-  useEffect(() => {
-    try {
-      setSDK(
-        new AxelarGMPRecoveryAPI({
-          environment: ENVIRONMENT,
-          axelarRpcUrl: process.env.NEXT_PUBLIC_RPC_URL,
-          axelarLcdUrl: process.env.NEXT_PUBLIC_LCD_URL,
-        })
-      );
-    } catch (error) {
-      setSDK(undefined);
-    }
-  }, []);
 
   // toast
   useEffect(() => {
@@ -598,36 +455,6 @@ export function GMP({ tx, lite }: GMPProps) {
       : isNumber(id)
         ? chainId
         : id);
-
-  const getDefaultGasLimit = chain =>
-    ({
-      ethereum: 400000,
-      binance: 150000,
-      polygon: 400000,
-      'polygon-sepolia': 400000,
-      avalanche: 500000,
-      fantom: 400000,
-      arbitrum: 1000000,
-      'arbitrum-sepolia': 1000000,
-      optimism: 400000,
-      'optimism-sepolia': 400000,
-      base: 400000,
-      'base-sepolia': 400000,
-      mantle: 3000000000,
-      'mantle-sepolia': 3000000000,
-      celo: 400000,
-      kava: 400000,
-      filecoin: 200000000,
-      'filecoin-2': 200000000,
-      linea: 400000,
-      'linea-sepolia': 400000,
-      centrifuge: 1000000,
-      'centrifuge-2': 1000000,
-      scroll: 500000,
-      fraxtal: 400000,
-      'xrpl-evm': 500000,
-      'xrpl-evm-2': 7000000,
-    })[toCase(chain, 'lower')] || 700000;
 
   // addNativeGas for evm, addGasToCosmosChain for cosmos, amplifier (addGasToSuiChain, addGasToStellarChain, addGasToXrplChain)
   const addGas = async data => {

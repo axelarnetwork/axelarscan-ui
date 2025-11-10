@@ -48,6 +48,14 @@ export function StatusTimeline({
         const childMessageIDs = entry?.executed?.childMessageIDs;
         const createdAtMs = call?.created_at?.ms;
 
+        const hasHopNavigation =
+          (isAxelar(sourceChain) && toArray(childMessageIDs).length > 0) ||
+          (isAxelar(destinationChain) && Boolean(parentMessageID));
+
+        const navHeightClass = hasHopNavigation
+          ? statusTimelineStyles.navTallHeight
+          : statusTimelineStyles.navDefaultHeight;
+
         return (
           <div key={index} className={statusTimelineStyles.item}>
             {isMultihop && (
@@ -70,7 +78,10 @@ export function StatusTimeline({
               </div>
             )}
 
-            <nav aria-label="Progress">
+            <nav
+              aria-label="Progress"
+              className={clsx(statusTimelineStyles.nav, navHeightClass)}
+            >
               <ol className={statusTimelineStyles.navList}>
                 {steps.map((step, stepIndex) => {
                   const { id, title, status, data, chainData } = step;
