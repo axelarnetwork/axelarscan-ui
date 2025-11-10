@@ -1,12 +1,10 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
 import _ from 'lodash';
 import { FiPlus } from 'react-icons/fi';
 import { PiInfo } from 'react-icons/pi';
 
 import { Number } from '@/components/Number';
 import { Tooltip } from '@/components/Tooltip';
-import { GMPMessage } from '../GMP.types';
+import { GMPMessage, GMPEventLog } from '../GMP.types';
 import { gasStyles } from './InfoGasMetrics.styles';
 import { InfoSection } from './InfoSection';
 import { infoStyles } from './Info.styles';
@@ -18,12 +16,12 @@ interface InfoGasMetricsProps {
   data: GMPMessage;
   gasData: GMPMessage['gas'];
   refundedData: GMPMessage['refunded'];
-  refundedMoreData: GMPMessage['refunded_more_transactions'];
+  refundedMoreData: GMPEventLog[];
   showDetails: boolean;
   fees: GMPMessage['fees'];
   gas: GMPMessage['gas'];
-  gasPaid: GMPMessage['gas_paid'];
-  gasPaidToCallback: GMPMessage['gas_paid_to_callback'];
+  gasPaid: GMPEventLog | undefined;
+  gasPaidToCallback: number | undefined;
   isMultihop: boolean;
 }
 
@@ -41,9 +39,7 @@ export function InfoGasMetrics({
 }: InfoGasMetricsProps) {
   const executedEntry = data.originData?.executed || data.executed;
   const combinedFees = data.originData?.fees || fees;
-  const refundedTotal = _.sumBy(toArray(refundedMoreData), entry =>
-    toNumber(entry.amount)
-  );
+  const refundedTotal = _.sumBy(refundedMoreData, entry => toNumber(entry.amount));
 
   const gasPaidAmount = toNumber(gasData?.gas_paid_amount);
   const gasRemainAmount = toNumber(gasData?.gas_remain_amount);
@@ -59,7 +55,7 @@ export function InfoGasMetrics({
   const hasElapsedSinceExecution =
     refundedData?.receipt?.status ||
     (isNumber(executionBlockTimestamp) &&
-      timeDiff(Number(executionBlockTimestamp) * 1000) >= 300);
+      timeDiff((executionBlockTimestamp ?? 0) * 1000) >= 300);
 
   const shouldShowGasCharged =
     (!data.originData || data.originData.executed) &&
@@ -120,16 +116,16 @@ export function InfoGasMetrics({
 
       {showDetails && (
         <>
-          {((gasPaid && gas?.gas_paid_amount > 0) || gasPaidToCallback) && (
+          {((gasPaid && (gas?.gas_paid_amount ?? 0) > 0) || gasPaidToCallback) && (
             <InfoSection label="Gas Paid">
               <div className={gasStyles.valueRow}>
                 <Number
                   value={
                     data.originData
-                      ? data.originData.gas?.gas_paid_amount
+                      ? data.originData.gas?.gas_paid_amount ?? 0
                       : gasPaid
-                        ? gas?.gas_paid_amount
-                        : (gasPaidToCallback || 0) *
+                        ? gas?.gas_paid_amount ?? 0
+                        : (gasPaidToCallback ?? 0) *
                           (combinedFees?.source_token?.gas_price ?? 0)
                   }
                   format="0,0.000000"
@@ -139,11 +135,11 @@ export function InfoGasMetrics({
                 />
                 {renderUsdValue(
                   ((data.originData
-                    ? data.originData.gas?.gas_paid_amount
+                    ? data.originData.gas?.gas_paid_amount ?? 0
                     : gasPaid
-                        ? gas?.gas_paid_amount
-                        : (gasPaidToCallback || 0) *
-                          (combinedFees?.source_token?.gas_price ?? 0)) ?? 0) *
+                        ? gas?.gas_paid_amount ?? 0
+                        : (gasPaidToCallback ?? 0) *
+                          (combinedFees?.source_token?.gas_price ?? 0))) *
                     (sourceToken?.token_price?.usd ?? 0)
                 )}
               </div>
@@ -184,42 +180,44 @@ export function InfoGasMetrics({
 
           {isMultihop ? (
             <>
-              {toArray([data.originData, data, data.callbackData]).findIndex(
-                entry => entry?.fees?.base_fee > 0
-              ) > -1 && (
+              {toArray([data.originData, data, data.callbackData])
+                .filter((entry): entry is GMPMessage => typeof entry === 'object' && entry !== null)
+                .findIndex(entry => (entry.fees?.base_fee ?? 0) > 0) > -1 && (
                 <InfoSection label="Base Fee" valueClassName={infoStyles.borderedCard}>
                   {toArray([data.originData, data, data.callbackData])
-                    .filter(entry => entry?.fees)
-                    .map((entry, index) => (
+                    .filter((entry): entry is GMPMessage => typeof entry === 'object' && entry !== null && entry.fees !== undefined)
+                    .map((entry, index) => {
+                      const entryFees = entry.fees!;
+                      return (
                       <div key={index} className={gasStyles.valueRow}>
                         {renderFiPlus(index)}
                         <div className={gasStyles.valueColumn}>
                           <div className={gasStyles.valueRow}>
                             <Number
-                              value={entry.fees.base_fee}
+                              value={entryFees.base_fee}
                               format="0,0.000000"
-                            suffix={formatTokenSuffix(entry.fees.source_token?.symbol)}
+                            suffix={formatTokenSuffix(entryFees.source_token?.symbol)}
                               noTooltip
                               className={infoStyles.inlineNumber}
                             />
-                            {renderUsdValue(entry.fees.base_fee_usd)}
+                            {renderUsdValue(entryFees.base_fee_usd)}
                           </div>
-                          {entry.fees.source_confirm_fee > 0 && (
+                          {(entryFees.source_confirm_fee ?? 0) > 0 && (
                             <>
                               <div className={gasStyles.nestedRow}>
                                 <span className={infoStyles.inlineLabel}>
                                   - Confirm Fee:
                                 </span>
                                 <Number
-                                  value={entry.fees.source_confirm_fee}
+                                  value={entryFees.source_confirm_fee}
                                   format="0,0.000000"
-                                suffix={formatTokenSuffix(entry.fees.source_token?.symbol)}
+                                suffix={formatTokenSuffix(entryFees.source_token?.symbol)}
                                   noTooltip
                                   className={gasStyles.nestedNumber}
                                 />
                                 {renderUsdValue(
-                                  entry.fees.source_confirm_fee *
-                                    (entry.fees.source_token?.token_price?.usd ?? 0),
+                                  (entryFees.source_confirm_fee ?? 0) *
+                                    (entryFees.source_token?.token_price?.usd ?? 0),
                                   gasStyles.nestedNumberMuted
                                 )}
                               </div>
@@ -229,20 +227,20 @@ export function InfoGasMetrics({
                                 </span>
                                 <Number
                                   value={
-                                    entry.fees.base_fee - entry.fees.source_confirm_fee > 0
-                                      ? entry.fees.base_fee - entry.fees.source_confirm_fee
+                                    (entryFees.base_fee ?? 0) - (entryFees.source_confirm_fee ?? 0) > 0
+                                      ? (entryFees.base_fee ?? 0) - (entryFees.source_confirm_fee ?? 0)
                                       : 0
                                   }
                                   format="0,0.000000"
-                                suffix={formatTokenSuffix(entry.fees.source_token?.symbol)}
+                                suffix={formatTokenSuffix(entryFees.source_token?.symbol)}
                                   noTooltip
                                   className={gasStyles.nestedNumber}
                                 />
                                 {renderUsdValue(
-                                  (entry.fees.base_fee - entry.fees.source_confirm_fee > 0
-                                    ? entry.fees.base_fee - entry.fees.source_confirm_fee
+                                  ((entryFees.base_fee ?? 0) - (entryFees.source_confirm_fee ?? 0) > 0
+                                    ? (entryFees.base_fee ?? 0) - (entryFees.source_confirm_fee ?? 0)
                                     : 0) *
-                                    (entry.fees.source_token?.token_price?.usd ?? 0),
+                                    (entryFees.source_token?.token_price?.usd ?? 0),
                                   gasStyles.nestedNumberMuted
                                 )}
                               </div>
@@ -250,69 +248,72 @@ export function InfoGasMetrics({
                           )}
                         </div>
                       </div>
-                    ))}
+                    );})}
                 </InfoSection>
               )}
 
-              {toArray([data.originData, data, data.callbackData]).findIndex(
-                entry =>
-                  entry?.express_executed &&
-                  entry?.fees?.express_supported &&
-                  entry.fees.express_fee > 0
-              ) > -1 && (
+              {toArray([data.originData, data, data.callbackData])
+                .filter((entry): entry is GMPMessage => typeof entry === 'object' && entry !== null)
+                .findIndex(entry =>
+                  entry.express_executed &&
+                  entry.fees?.express_supported &&
+                  (entry.fees.express_fee ?? 0) > 0
+                ) > -1 && (
                 <InfoSection label="Express Fee" valueClassName={infoStyles.borderedCard}>
                   {toArray([data.originData, data, data.callbackData])
-                    .filter(entry => entry?.fees?.express_supported)
-                    .map((entry, index) => (
+                    .filter((entry): entry is GMPMessage => typeof entry === 'object' && entry !== null && entry.fees?.express_supported === true)
+                    .map((entry, index) => {
+                      const entryFees = entry.fees!;
+                      return (
                       <div key={index} className={gasStyles.valueRow}>
                         {renderFiPlus(index)}
                         <div className={gasStyles.valueColumn}>
                           <div className={gasStyles.valueRow}>
                             <Number
-                              value={entry.fees.express_fee}
+                              value={entryFees.express_fee}
                               format="0,0.000000"
-                            suffix={formatTokenSuffix(entry.fees.source_token?.symbol)}
+                            suffix={formatTokenSuffix(entryFees.source_token?.symbol)}
                               noTooltip
                               className={infoStyles.inlineNumber}
                             />
-                            {renderUsdValue(entry.fees.express_fee_usd)}
+                            {renderUsdValue(entryFees.express_fee_usd)}
                           </div>
-                          {entry.fees.source_express_fee && (
+                          {entryFees.source_express_fee && (
                             <>
-                              {isNumber(entry.fees.source_express_fee.relayer_fee) && (
+                              {isNumber(entryFees.source_express_fee.relayer_fee) && (
                                 <div className={gasStyles.nestedRow}>
                                   <span className={infoStyles.inlineLabel}>
                                     - Relayer Fee:
                                   </span>
                                   <Number
-                                    value={entry.fees.source_express_fee.relayer_fee}
+                                    value={entryFees.source_express_fee.relayer_fee}
                                     format="0,0.000000"
-                                suffix={formatTokenSuffix(entry.fees.source_token?.symbol)}
+                                suffix={formatTokenSuffix(entryFees.source_token?.symbol)}
                                     noTooltip
                                     className={gasStyles.nestedNumber}
                                   />
                                   {renderUsdValue(
-                                    entry.fees.source_express_fee.relayer_fee_usd,
+                                    entryFees.source_express_fee.relayer_fee_usd,
                                     gasStyles.nestedNumberMuted
                                   )}
                                 </div>
                               )}
                               {isNumber(
-                                entry.fees.source_express_fee.express_gas_overhead_fee
+                                entryFees.source_express_fee.express_gas_overhead_fee
                               ) && (
                                 <div className={gasStyles.nestedRow}>
                                   <span className={infoStyles.inlineLabel}>
                                     - Overhead Fee:
                                   </span>
                                   <Number
-                                    value={entry.fees.source_express_fee.express_gas_overhead_fee}
+                                    value={entryFees.source_express_fee.express_gas_overhead_fee}
                                     format="0,0.000000"
-                                suffix={formatTokenSuffix(entry.fees.source_token?.symbol)}
+                                suffix={formatTokenSuffix(entryFees.source_token?.symbol)}
                                     noTooltip
                                     className={gasStyles.nestedNumber}
                                   />
                                   {renderUsdValue(
-                                    entry.fees.source_express_fee
+                                    entryFees.source_express_fee
                                       .express_gas_overhead_fee_usd,
                                     gasStyles.nestedNumberMuted
                                   )}
@@ -322,38 +323,38 @@ export function InfoGasMetrics({
                           )}
                         </div>
                       </div>
-                    ))}
+                    );})}
                 </InfoSection>
               )}
             </>
           ) : (
             <>
-              {combinedFees?.base_fee > 0 && (
+              {(combinedFees?.base_fee ?? 0) > 0 && (
                 <InfoSection label="Base Fee">
                   <div className={gasStyles.valueColumn}>
                     <div className={gasStyles.valueRow}>
                       <Number
-                        value={combinedFees.base_fee}
+                        value={combinedFees?.base_fee ?? 0}
                         format="0,0.000000"
                         suffix={formatTokenSuffix(sourceToken?.symbol)}
                         noTooltip
                         className={infoStyles.inlineNumber}
                       />
-                      {renderUsdValue(combinedFees.base_fee_usd)}
+                      {renderUsdValue(combinedFees?.base_fee_usd)}
                     </div>
-                    {combinedFees.source_confirm_fee > 0 && (
+                    {(combinedFees?.source_confirm_fee ?? 0) > 0 && (
                       <>
                         <div className={gasStyles.nestedRow}>
                           <span className={infoStyles.inlineLabel}>- Confirm Fee:</span>
                           <Number
-                            value={combinedFees.source_confirm_fee}
+                            value={combinedFees?.source_confirm_fee ?? 0}
                             format="0,0.000000"
                         suffix={formatTokenSuffix(sourceToken?.symbol)}
                             noTooltip
                             className={gasStyles.nestedNumber}
                           />
                           {renderUsdValue(
-                            combinedFees.source_confirm_fee *
+                            (combinedFees?.source_confirm_fee ?? 0) *
                               (sourceToken?.token_price?.usd ?? 0),
                             gasStyles.nestedNumberMuted
                           )}
@@ -362,8 +363,8 @@ export function InfoGasMetrics({
                           <span className={infoStyles.inlineLabel}>- Approve Fee:</span>
                           <Number
                             value={
-                              combinedFees.base_fee - combinedFees.source_confirm_fee > 0
-                                ? combinedFees.base_fee - combinedFees.source_confirm_fee
+                              (combinedFees?.base_fee ?? 0) - (combinedFees?.source_confirm_fee ?? 0) > 0
+                                ? (combinedFees?.base_fee ?? 0) - (combinedFees?.source_confirm_fee ?? 0)
                                 : 0
                             }
                             format="0,0.000000"
@@ -372,8 +373,8 @@ export function InfoGasMetrics({
                             className={gasStyles.nestedNumber}
                           />
                           {renderUsdValue(
-                            (combinedFees.base_fee - combinedFees.source_confirm_fee > 0
-                              ? combinedFees.base_fee - combinedFees.source_confirm_fee
+                            ((combinedFees?.base_fee ?? 0) - (combinedFees?.source_confirm_fee ?? 0) > 0
+                              ? (combinedFees?.base_fee ?? 0) - (combinedFees?.source_confirm_fee ?? 0)
                               : 0) * (sourceToken?.token_price?.usd ?? 0),
                             gasStyles.nestedNumberMuted
                           )}
@@ -384,7 +385,7 @@ export function InfoGasMetrics({
                 </InfoSection>
               )}
 
-              {combinedFees?.express_supported && combinedFees.express_fee > 0 && (
+              {combinedFees?.express_supported && (combinedFees.express_fee ?? 0) > 0 && (
                 <InfoSection label="Express Fee">
                   <div className={gasStyles.valueColumn}>
                     <div className={gasStyles.valueRow}>

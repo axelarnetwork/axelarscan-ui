@@ -310,4 +310,94 @@ export interface AddGasParams {
   destination_chain_type?: string;
 }
 
+// Wallet context types
+export interface WalletContext {
+  cosmosWalletStore: {
+    signer: unknown;
+    chainId?: string | null;
+  };
+  signer: unknown;
+  suiWalletStore: {
+    address?: string | null;
+  };
+  stellarWalletStore: {
+    address?: string | null;
+    provider?: unknown;
+    network?: unknown;
+    sorobanRpcUrl?: string | null;
+  };
+  xrplWalletStore: {
+    address?: string | null;
+  };
+}
+
+// SDK response types
+export interface AddNativeGasResponse {
+  success?: boolean;
+  error?: unknown;
+  transaction?: {
+    transactionHash?: string;
+  };
+}
+
+export interface ManualRelayResponse {
+  success?: boolean;
+  error?: {
+    message?: string;
+  } | string;
+  confirmTx?: {
+    transactionHash?: string;
+  };
+  signCommandTx?: {
+    transactionHash?: string;
+  };
+  routeMessageTx?: {
+    transactionHash?: string;
+  };
+}
+
+export interface ExecuteResponse {
+  success?: boolean;
+  error?: unknown;
+  transaction?: {
+    transactionHash?: string;
+  };
+}
+
+export interface AddGasToCosmosChainResponse {
+  success?: boolean;
+  error?: unknown;
+  broadcastResult?: {
+    transactionHash?: string;
+    code?: number;
+  };
+}
+
+export interface SuiSignAndExecuteResponse {
+  error?: unknown;
+  digest?: string;
+}
+
+export interface StellarSignResponse {
+  signedTxXdr?: string;
+  error?: unknown;
+}
+
+export interface StellarSendTransactionResponse {
+  error?: string | unknown;
+  status?: string;
+  hash?: string;
+  errorResult?: unknown;
+}
+
+export interface XRPLSignAndSubmitResponse {
+  tx_json?: {
+    meta?: {
+      TransactionResult?: string;
+    };
+  };
+  tx_hash?: string;
+  error?: unknown;
+}
+
 

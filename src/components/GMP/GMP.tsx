@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck
 'use client';
 
 import { useSignAndExecuteTransaction as useSuiSignAndExecuteTransaction } from '@mysten/dapp-kit';
@@ -42,11 +40,13 @@ import {
 } from './GMP.hooks';
 import { gmpStyles } from './GMP.styles';
 import {
+  ChainMetadata,
   GMPButtonMap,
   GMPMessage,
   GMPProps,
   GMPSettlementData,
   GMPToastState,
+  WalletContext,
 } from './GMP.types';
 import { getDefaultGasLimit, isGMPMessage } from './GMP.utils';
 import { GMPContainer } from './GMPContainer';
@@ -82,7 +82,12 @@ export function GMP({ tx, lite }: GMPProps) {
   const sdk = useGMPRecoveryAPI();
 
   const getData = useCallback(async (): Promise<GMPMessage | undefined> => {
-    const { commandId } = { ...getParams(searchParams) };
+    const params = getParams(searchParams) as unknown as Record<
+      string,
+      unknown
+    >;
+    const commandId =
+      typeof params.commandId === 'string' ? params.commandId : undefined;
 
     if (commandId) {
       const response = await searchGMP({ commandId });
@@ -126,9 +131,13 @@ export function GMP({ tx, lite }: GMPProps) {
             isSecondHopOfInterchainTransfer(parsedMessage)) ||
             isAxelar(parsedMessage.call.chain))
         ) {
-          router.push(`/gmp/${parsedMessage.call.parentMessageID}`);
+          const parentMessageId = parsedMessage.call.parentMessageID;
+          if (parentMessageId && typeof parentMessageId === 'string') {
+            router.push(`/gmp/${parentMessageId}`);
+          }
         } else {
           if (
+            parsedMessage.simplified_status &&
             ['received', 'failed'].includes(parsedMessage.simplified_status) &&
             (parsedMessage.executed || parsedMessage.error) &&
             (parsedMessage.refunded || parsedMessage.not_to_refund)
@@ -138,9 +147,10 @@ export function GMP({ tx, lite }: GMPProps) {
 
           // callback
           if (parsedMessage.callback?.transactionHash) {
+            const callbackTxHash = parsedMessage.callback.transactionHash;
             const { data } = {
               ...(await searchGMP({
-                txHash: parsedMessage.callback.transactionHash,
+                txHash: callbackTxHash,
                 txIndex: parsedMessage.callback.transactionIndex,
                 txLogIndex: parsedMessage.callback.logIndex,
               })),
@@ -149,23 +159,24 @@ export function GMP({ tx, lite }: GMPProps) {
             parsedMessage.callbackData = toArray(data).find(callbackEntry =>
               equalsIgnoreCase(
                 callbackEntry.call?.transactionHash,
-                parsedMessage.callback.transactionHash
+                callbackTxHash
               )
             );
             parsedMessage.callbackData = await parseCustomData(
               parsedMessage.callbackData
             );
           } else if (parsedMessage.executed?.transactionHash) {
+            const executedTxHash = parsedMessage.executed.transactionHash;
             const { data } = {
               ...(await searchGMP({
-                txHash: parsedMessage.executed.transactionHash,
+                txHash: executedTxHash,
               })),
             };
 
             parsedMessage.callbackData = toArray(data).find(callbackEntry =>
               equalsIgnoreCase(
                 callbackEntry.call?.transactionHash,
-                parsedMessage.executed.transactionHash
+                executedTxHash
               )
             );
             parsedMessage.callbackData = await parseCustomData(
@@ -184,17 +195,22 @@ export function GMP({ tx, lite }: GMPProps) {
             parsedMessage.callbackData = await parseCustomData(
               parsedMessage.callbackData
             );
-          } else if (toArray(parsedMessage.executed?.childMessageIDs) > 0) {
+          } else if (
+            parsedMessage.executed?.childMessageIDs &&
+            Array.isArray(parsedMessage.executed.childMessageIDs) &&
+            parsedMessage.executed.childMessageIDs.length > 0
+          ) {
+            const childMessageId = parsedMessage.executed.childMessageIDs[0];
             const { data } = {
               ...(await searchGMP({
-                messageId: parsedMessage.executed.childMessageIDs?.[0],
+                messageId: childMessageId,
               })),
             };
 
             parsedMessage.callbackData = toArray(data).find(callbackEntry =>
               equalsIgnoreCase(
                 callbackEntry.call?.returnValues?.messageId,
-                parsedMessage.executed.childMessageIDs?.[0]
+                childMessageId
               )
             );
             parsedMessage.callbackData = await parseCustomData(
@@ -217,39 +233,43 @@ export function GMP({ tx, lite }: GMPProps) {
               (parsedMessage.is_call_from_relayer &&
                 !isAxelar(parsedMessage.call.returnValues?.destinationChain)))
           ) {
-            const { data } = {
-              ...(await searchGMP(
-                parsedMessage.call.transactionHash
-                  ? { txHash: parsedMessage.call.transactionHash }
-                  : { messageId: parsedMessage.call.parentMessageID }
-              )),
-            };
+            const searchParams = parsedMessage.call.transactionHash
+              ? { txHash: parsedMessage.call.transactionHash }
+              : parsedMessage.call.parentMessageID
+                ? { messageId: parsedMessage.call.parentMessageID }
+                : null;
 
-            parsedMessage.originData = toArray(data).find(originEntry =>
-              parsedMessage.call.transactionHash
-                ? toArray([
-                    originEntry.express_executed?.transactionHash,
-                    originEntry.executed?.transactionHash,
-                  ]).findIndex(transactionHash =>
-                    equalsIgnoreCase(
-                      transactionHash,
-                      parsedMessage.call?.transactionHash
-                    )
-                  ) > -1
-                : toArray([
-                    originEntry.express_executed?.messageId,
-                    originEntry.executed?.messageId,
-                    originEntry.executed?.returnValues?.messageId,
-                  ]).findIndex(messageIdValue =>
-                    equalsIgnoreCase(
-                      messageIdValue,
-                      parsedMessage.call?.parentMessageID
-                    )
-                  ) > -1
-            );
-            parsedMessage.originData = await parseCustomData(
-              parsedMessage.originData
-            );
+            if (searchParams) {
+              const { data } = { ...(await searchGMP(searchParams)) };
+
+              parsedMessage.originData = toArray(data).find(originEntry => {
+                const callTransactionHash = parsedMessage.call?.transactionHash;
+                const callParentMessageId = parsedMessage.call?.parentMessageID;
+
+                return callTransactionHash
+                  ? toArray([
+                      originEntry.express_executed?.transactionHash,
+                      originEntry.executed?.transactionHash,
+                    ]).findIndex(
+                      transactionHash =>
+                        typeof transactionHash === 'string' &&
+                        equalsIgnoreCase(transactionHash, callTransactionHash)
+                    ) > -1
+                  : toArray([
+                      originEntry.express_executed?.messageId,
+                      originEntry.executed?.messageId,
+                      originEntry.executed?.returnValues?.messageId,
+                    ]).findIndex(
+                      messageIdValue =>
+                        typeof messageIdValue === 'string' &&
+                        typeof callParentMessageId === 'string' &&
+                        equalsIgnoreCase(messageIdValue, callParentMessageId)
+                    ) > -1;
+              });
+              parsedMessage.originData = await parseCustomData(
+                parsedMessage.originData
+              );
+            }
           }
 
           if (isAxelar(parsedMessage.originData?.call?.chain)) {
@@ -266,8 +286,9 @@ export function GMP({ tx, lite }: GMPProps) {
 
             while (
               (!isNumber(totalEvents) ||
-                totalEvents > filledEventsAccumulator.length ||
-                offset < totalEvents) &&
+                (typeof totalEvents === 'number' &&
+                  totalEvents > filledEventsAccumulator.length) ||
+                (typeof totalEvents === 'number' && offset < totalEvents)) &&
               retryCount < 10
             ) {
               const settlementResponse = {
@@ -321,8 +342,9 @@ export function GMP({ tx, lite }: GMPProps) {
 
             while (
               (!isNumber(totalEvents) ||
-                totalEvents > forwardedEventsAccumulator.length ||
-                offset < totalEvents) &&
+                (typeof totalEvents === 'number' &&
+                  totalEvents > forwardedEventsAccumulator.length) ||
+                (typeof totalEvents === 'number' && offset < totalEvents)) &&
               retryCount < 10
             ) {
               const settlementResponse = {
@@ -390,8 +412,10 @@ export function GMP({ tx, lite }: GMPProps) {
   useEffect(() => {
     getData();
 
-    const interval = !ended && setInterval(() => getData(), 0.5 * 60 * 1000);
-    return () => clearInterval(interval);
+    if (!ended) {
+      const interval = setInterval(() => getData(), 0.5 * 60 * 1000);
+      return () => clearInterval(interval);
+    }
   }, [tx, searchParams, ended, setData, setEnded, getData]);
 
   // toast
@@ -401,9 +425,9 @@ export function GMP({ tx, lite }: GMPProps) {
 
     toast.remove();
 
-    if (message) {
+    if (message && status) {
       if ((hash && chainData?.explorer) || status === 'failed') {
-        let icon;
+        let icon: React.ReactNode;
 
         switch (status) {
           case 'success':
@@ -424,7 +448,7 @@ export function GMP({ tx, lite }: GMPProps) {
                 {message}
               </span>
             </div>
-            {chainData?.explorer && (
+            {chainData?.explorer && hash && chain && (
               <div className="ml-6 flex items-center justify-between gap-x-4 pl-0.5 sm:ml-7 sm:pl-0">
                 <ExplorerLink
                   value={hash}
@@ -453,9 +477,6 @@ export function GMP({ tx, lite }: GMPProps) {
           case 'success':
             toast.success(message, { duration });
             break;
-          case 'failed':
-            toast.error(message, { duration });
-            break;
           default:
             break;
         }
@@ -463,26 +484,37 @@ export function GMP({ tx, lite }: GMPProps) {
     }
   }, [response, chains]);
 
-  const isAddGasSupported = (targetChain, targetChainType) => {
+  const isAddGasSupported = (
+    targetChain: string | undefined,
+    targetChainType: string | undefined
+  ): boolean => {
     if (targetChainType !== 'vm') return true;
 
-    if (isNumber(getChainData(targetChain, chains)?.chain_id)) return true;
+    const chainData = getChainData(targetChain, chains);
+    if (isNumber(chainData?.chain_id)) return true;
 
-    return ['sui', 'stellar', 'xrpl'].includes(headString(targetChain));
+    if (targetChain && typeof targetChain === 'string') {
+      const normalizedChain = headString(targetChain);
+      if (normalizedChain) {
+        return ['sui', 'stellar', 'xrpl'].includes(normalizedChain);
+      }
+    }
+
+    return false;
   };
 
   const isWalletConnectedForChain = (
-    targetChain,
-    targetChainType,
-    chainMetadataList = chains,
-    walletContext = {
+    targetChain: string | undefined,
+    targetChainType: string | undefined,
+    chainMetadataList: ChainMetadata[] | null = chains,
+    walletContext: WalletContext = {
       cosmosWalletStore,
       signer,
       suiWalletStore,
       stellarWalletStore,
       xrplWalletStore,
     }
-  ) => {
+  ): boolean => {
     if (targetChainType === 'cosmos') {
       return Boolean(walletContext.cosmosWalletStore?.signer);
     }
@@ -490,6 +522,8 @@ export function GMP({ tx, lite }: GMPProps) {
     if (isNumber(getChainData(targetChain, chainMetadataList)?.chain_id)) {
       return Boolean(walletContext.signer);
     }
+
+    if (!targetChain) return false;
 
     const normalizedChain = headString(targetChain);
     if (normalizedChain === 'sui') {
@@ -505,20 +539,29 @@ export function GMP({ tx, lite }: GMPProps) {
     return false;
   };
 
-  const renderWalletComponent = (targetChain, targetChainType) => {
+  const renderWalletComponent = (
+    targetChain: string | undefined,
+    targetChainType: string | undefined
+  ): React.ReactNode => {
     const { chain_id: chainIdentifier } = {
       ...getChainData(targetChain, chains),
     };
 
     if (targetChainType === 'cosmos') {
-      return <CosmosWallet connectChainId={chainIdentifier} />;
+      return (
+        <CosmosWallet
+          connectChainId={
+            typeof chainIdentifier === 'string' ? chainIdentifier : undefined
+          }
+        />
+      );
     }
 
     if (isNumber(chainIdentifier)) {
-      return <EVMWallet connectChainId={chainIdentifier} />;
+      return <EVMWallet connectChainId={chainIdentifier as number} />;
     }
 
-    const normalizedChain = headString(targetChain);
+    const normalizedChain = targetChain ? headString(targetChain) : '';
     if (normalizedChain === 'sui') return <SuiWallet />;
     if (normalizedChain === 'stellar') return <StellarWallet />;
     if (normalizedChain === 'xrpl') return <XRPLWallet />;
@@ -527,11 +570,11 @@ export function GMP({ tx, lite }: GMPProps) {
   };
 
   const shouldSwitchChain = (
-    targetChainId,
-    targetChainType,
+    targetChainId: string | number | undefined,
+    targetChainType: string | undefined,
     cosmosStore = cosmosWalletStore,
-    evmChainId = chainId
-  ) =>
+    evmChainId: number | null = chainId
+  ): boolean =>
     targetChainId !==
     (targetChainType === 'cosmos'
       ? cosmosStore?.chainId
@@ -540,7 +583,7 @@ export function GMP({ tx, lite }: GMPProps) {
         : targetChainId);
 
   // addNativeGas for evm, addGasToCosmosChain for cosmos, amplifier (addGasToSuiChain, addGasToStellarChain, addGasToXrplChain)
-  const addGas = async data => {
+  const addGas = async (data: GMPMessage): Promise<void> => {
     if (
       data?.call &&
       sdk &&
@@ -582,7 +625,7 @@ export function GMP({ tx, lite }: GMPProps) {
               data.interchain_token_deployment_started.destinationChain;
           } else if (data.link_token_started?.destinationChain) {
             nextHopDestinationChain = data.link_token_started.destinationChain;
-          } else {
+          } else if (chain) {
             switch (headString(chain)) {
               case 'xrpl':
                 if (chain.startsWith('xrpl-evm')) {
@@ -626,14 +669,22 @@ export function GMP({ tx, lite }: GMPProps) {
           }
         }
 
+        if (!chain) {
+          throw new Error('Chain is required for gas operations');
+        }
+
         const gasLimit = isNumber(estimatedGasUsed) ? estimatedGasUsed : 700000;
         const decimals =
           source_token?.decimals || (headString(chain) === 'sui' ? 9 : 18);
 
         if (!gasAddedAmount) {
+          const baseFee = base_fee ?? 0;
+          const expressFee = express_fee ?? 0;
+          const gasPrice = source_token?.gas_price ?? 0;
+
           gasAddedAmount = toBigNumber(
-            BigInt(parseUnits((base_fee + express_fee) * 1.1, decimals)) +
-              BigInt(parseUnits(gasLimit * source_token?.gas_price, decimals))
+            BigInt(parseUnits((baseFee + expressFee) * 1.1, decimals)) +
+              BigInt(parseUnits(gasLimit * gasPrice, decimals))
           );
         }
 
@@ -647,6 +698,10 @@ export function GMP({ tx, lite }: GMPProps) {
             refundAddress: address,
           });
 
+          if (!chain || !transactionHash) {
+            throw new Error('Missing required parameters for addNativeGas');
+          }
+
           const response = await sdk.addNativeGas(
             chain,
             transactionHash,
@@ -654,12 +709,11 @@ export function GMP({ tx, lite }: GMPProps) {
             {
               evmWalletDetails: {
                 useWindowEthereum: true,
-                provider,
-                signer,
+                provider: provider ?? undefined,
               },
               destChain: destinationChain,
               logIndex,
-              refundAddress: address,
+              refundAddress: address ?? undefined,
             }
           );
 
@@ -674,7 +728,9 @@ export function GMP({ tx, lite }: GMPProps) {
           setResponse({
             status: success ? 'success' : 'failed',
             message:
-              parseError(error)?.message || error || 'Pay gas successful',
+              parseError(error)?.message ||
+              String(error) ||
+              'Pay gas successful',
             hash: transaction?.transactionHash,
             chain,
           });
@@ -694,14 +750,34 @@ export function GMP({ tx, lite }: GMPProps) {
           }
         } else if (chain_type === 'cosmos' && !isAxelar(chain)) {
           const token = 'autocalculate';
-          const sendOptions = {
+
+          if (
+            !ENVIRONMENT ||
+            !cosmosWalletStore.signer ||
+            !chain ||
+            !transactionHash ||
+            !messageId
+          ) {
+            throw new Error(
+              'Missing required parameters for addGasToCosmosChain'
+            );
+          }
+
+          const sendOptions: {
+            environment: string;
+            offlineSigner: typeof cosmosWalletStore.signer;
+            txFee: {
+              gas: string;
+              amount: Array<{ denom: string; amount: string }>;
+            };
+          } = {
             environment: ENVIRONMENT,
             offlineSigner: cosmosWalletStore.signer,
             txFee: {
               gas: '300000',
               amount: [
                 {
-                  denom: sourceChainData?.native_token?.denom,
+                  denom: String(sourceChainData?.native_token?.denom ?? 'uaxl'),
                   amount: '30000',
                 },
               ],
@@ -723,12 +799,12 @@ export function GMP({ tx, lite }: GMPProps) {
             gasLimit,
             chain,
             token,
-            sendOptions,
-          });
+            sendOptions: sendOptions as never,
+          } as never);
 
           console.log('[addGas response]', response);
 
-          const { success, error, broadcastResult } = { ...response };
+          const { success, info, broadcastResult } = { ...response };
 
           if (success) {
             await sleep(1000);
@@ -736,8 +812,7 @@ export function GMP({ tx, lite }: GMPProps) {
 
           setResponse({
             status: success ? 'success' : 'failed',
-            message:
-              parseError(error)?.message || error || 'Pay gas successful',
+            message: info || 'Pay gas successful',
             hash: broadcastResult?.transactionHash,
             chain,
           });
@@ -762,33 +837,39 @@ export function GMP({ tx, lite }: GMPProps) {
             refundAddress: suiWalletStore.address,
           });
 
-          let response = await sdk.addGasToSuiChain({
+          if (!messageId || !suiWalletStore.address) {
+            throw new Error('Missing required parameters for Sui gas addition');
+          }
+
+          const suiTransaction = await sdk.addGasToSuiChain({
             messageId,
             amount: gasAddedAmount,
             gasParams: '0x',
             refundAddress: suiWalletStore.address,
           });
 
-          if (response) {
-            response = await suiSignAndExecuteTransaction({
-              transaction: response,
-              chain: `sui:${ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}`,
-              options: {
-                showEffects: true,
-                showEvents: true,
-                showObjectChanges: true,
-              },
+          if (suiTransaction) {
+            const suiResponse = await suiSignAndExecuteTransaction({
+              transaction: suiTransaction as never,
+              chain:
+                `sui:${ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}` as never,
             });
 
-            console.log('[addGas response]', response);
+            console.log('[addGas response]', suiResponse);
+
+            const suiEffectsStatus = (
+              suiResponse as {
+                effects?: { status?: { status?: string; error?: unknown } };
+              }
+            )?.effects?.status;
 
             setResponse({
-              status: response?.error ? 'failed' : 'success',
+              status:
+                suiEffectsStatus?.status === 'success' ? 'success' : 'failed',
               message:
-                parseError(response?.error)?.message ||
-                response?.error ||
+                parseError(suiEffectsStatus?.error)?.message ||
                 'Pay gas successful',
-              hash: response?.digest,
+              hash: (suiResponse as { digest?: string })?.digest,
               chain,
             });
           }
@@ -800,7 +881,13 @@ export function GMP({ tx, lite }: GMPProps) {
             refundAddress: stellarWalletStore.address,
           });
 
-          let response = await sdk.addGasToStellarChain({
+          if (!sender || !messageId || !stellarWalletStore.address) {
+            throw new Error(
+              'Missing required parameters for Stellar gas addition'
+            );
+          }
+
+          const stellarTransactionXdr = await sdk.addGasToStellarChain({
             senderAddress: sender,
             messageId,
             amount: gasAddedAmount,
@@ -808,7 +895,8 @@ export function GMP({ tx, lite }: GMPProps) {
           });
 
           if (
-            response &&
+            stellarTransactionXdr &&
+            typeof stellarTransactionXdr === 'string' &&
             stellarWalletStore.provider &&
             stellarWalletStore.network &&
             stellarWalletStore.sorobanRpcUrl
@@ -821,48 +909,59 @@ export function GMP({ tx, lite }: GMPProps) {
 
             const preparedTransaction = await server.prepareTransaction(
               StellarSDK.TransactionBuilder.fromXDR(
-                response,
+                stellarTransactionXdr,
                 stellarWalletStore.network.networkPassphrase
               )
             );
 
-            response = await stellarWalletStore.provider.signTransaction(
-              preparedTransaction.toXDR()
-            );
+            const signedResult =
+              await stellarWalletStore.provider.signTransaction(
+                preparedTransaction.toXDR()
+              );
 
-            if (response?.signedTxXdr) {
+            if (signedResult?.signedTxXdr) {
               console.log('[stellar sendTransaction]', {
-                ...response,
+                ...signedResult,
                 network: stellarWalletStore.network,
               });
 
+              let stellarResponse:
+                | StellarSDK.rpc.Api.SendTransactionResponse
+                | undefined;
+              let stellarError: string | undefined;
+
               try {
-                response = await server.sendTransaction(
+                stellarResponse = await server.sendTransaction(
                   StellarSDK.TransactionBuilder.fromXDR(
-                    response.signedTxXdr,
+                    signedResult.signedTxXdr,
                     stellarWalletStore.network.networkPassphrase
                   )
                 );
-                response.error = JSON.parse(
-                  JSON.stringify(response.errorResult)
-                )._attributes.result._switch.name;
-              } catch (error) {}
+
+                if (stellarResponse.errorResult) {
+                  stellarError = JSON.parse(
+                    JSON.stringify(stellarResponse.errorResult)
+                  )?._attributes?.result?._switch?.name;
+                }
+              } catch (error) {
+                stellarError = String(error);
+              }
+
+              console.log('[addGas response]', stellarResponse);
+
+              setResponse({
+                status:
+                  stellarError || stellarResponse?.status === 'ERROR'
+                    ? 'failed'
+                    : 'success',
+                message:
+                  parseError(stellarError)?.message ||
+                  stellarError ||
+                  'Pay gas successful',
+                hash: stellarResponse?.hash,
+                chain,
+              });
             }
-
-            console.log('[addGas response]', response);
-
-            setResponse({
-              status:
-                response?.error || response?.status === 'ERROR'
-                  ? 'failed'
-                  : 'success',
-              message:
-                parseError(response?.error)?.message ||
-                response?.error ||
-                'Pay gas successful',
-              hash: response?.hash,
-              chain,
-            });
           }
         } else if (headString(chain) === 'xrpl') {
           console.log('[addGas request]', {
@@ -872,30 +971,47 @@ export function GMP({ tx, lite }: GMPProps) {
             refundAddress: xrplWalletStore.address,
           });
 
-          let response = await sdk.addGasToXrplChain({
+          if (!xrplWalletStore.address || !messageId) {
+            throw new Error(
+              'Missing required parameters for XRPL gas addition'
+            );
+          }
+
+          const gasAddedAmountStr = formatUnits(gasAddedAmount, decimals);
+          const xrplTransaction = await sdk.addGasToXrplChain({
             senderAddress: xrplWalletStore.address,
             messageId,
-            amount: formatUnits(gasAddedAmount, decimals),
+            amount:
+              typeof gasAddedAmountStr === 'string'
+                ? gasAddedAmountStr
+                : String(gasAddedAmountStr),
           });
 
-          if (response) {
-            response = await xrplSignAndSubmitTransaction(
-              response,
-              `xrpl:${ENVIRONMENT === 'mainnet' ? '0' : ENVIRONMENT === 'devnet-amplifier' ? '2' : '1'}`
+          if (xrplTransaction && typeof xrplTransaction === 'string') {
+            const xrplResponse = await xrplSignAndSubmitTransaction(
+              xrplTransaction as never,
+              `xrpl:${ENVIRONMENT === 'mainnet' ? '0' : ENVIRONMENT === 'devnet-amplifier' ? '2' : '1'}` as never
             );
 
-            console.log('[addGas response]', response);
+            console.log('[addGas response]', xrplResponse);
+
+            const xrplResult = (
+              xrplResponse as {
+                result?: {
+                  meta?: { TransactionResult?: string };
+                  hash?: string;
+                };
+              }
+            )?.result;
 
             setResponse({
               status:
-                response?.tx_json?.meta?.TransactionResult === 'tesSUCCESS'
+                xrplResult?.meta?.TransactionResult === 'tesSUCCESS'
                   ? 'success'
                   : 'failed',
               message:
-                parseError(response?.error)?.message ||
-                response?.error ||
-                'Pay gas successful',
-              hash: response?.tx_hash,
+                parseError(xrplResult?.meta)?.message || 'Pay gas successful',
+              hash: xrplResult?.hash,
               chain,
             });
           }
@@ -909,7 +1025,10 @@ export function GMP({ tx, lite }: GMPProps) {
   };
 
   // manualRelayToDestChain (confirm source evm, approve destination evm, RouteMessage destination cosmos)
-  const approve = async (data, afterPayGas = false) => {
+  const approve = async (
+    data: GMPMessage,
+    afterPayGas: boolean = false
+  ): Promise<void> => {
     if (data?.call && sdk) {
       setProcessing(true);
 
@@ -935,19 +1054,25 @@ export function GMP({ tx, lite }: GMPProps) {
           message_id,
         } = { ...data.call };
 
+        const messageIdStr =
+          typeof message_id === 'string' ? message_id : undefined;
+
         console.log('[manualRelayToDestChain request]', {
           transactionHash,
           logIndex,
           eventIndex,
-          message_id,
+          message_id: messageIdStr,
         });
         const response = await sdk.manualRelayToDestChain(
-          transactionHash,
+          transactionHash ?? '',
           logIndex,
           eventIndex,
-          { useWindowEthereum: true, provider, signer },
+          {
+            useWindowEthereum: true,
+            provider: provider ?? undefined,
+          },
           false,
-          message_id
+          messageIdStr
         );
         console.log('[manualRelayToDestChain response]', response);
 
@@ -959,11 +1084,15 @@ export function GMP({ tx, lite }: GMPProps) {
           await sleep(15 * 1000);
         }
         if (success || !afterPayGas) {
+          const errorMessage =
+            typeof error === 'object' && error !== null && 'message' in error
+              ? (error as { message?: string }).message
+              : String(error || '');
+
           setResponse({
             status: success || !error ? 'success' : 'failed',
             message:
-              error?.message ||
-              error ||
+              errorMessage ||
               `${destination_chain_type === 'cosmos' ? 'Execute' : 'Approve'} successful`,
             hash:
               routeMessageTx?.transactionHash ||
@@ -981,7 +1110,7 @@ export function GMP({ tx, lite }: GMPProps) {
   };
 
   // execute for evm only
-  const execute = async data => {
+  const execute = async (data: GMPMessage): Promise<void> => {
     if (data?.approved && sdk && signer) {
       setProcessing(true);
       setResponse({ status: 'pending', message: 'Executing...' });
@@ -990,6 +1119,10 @@ export function GMP({ tx, lite }: GMPProps) {
         const { transactionHash, logIndex } = { ...data.call };
         const gasLimitBuffer = '200000';
 
+        if (!transactionHash) {
+          throw new Error('Missing transaction hash for execute');
+        }
+
         console.log('[execute request]', {
           transactionHash,
           logIndex,
@@ -997,9 +1130,8 @@ export function GMP({ tx, lite }: GMPProps) {
         });
         const response = await sdk.execute(transactionHash, logIndex, {
           useWindowEthereum: true,
-          provider,
-          signer,
-          gasLimitBuffer,
+          provider: provider ?? undefined,
+          gasLimitBuffer: Number(gasLimitBuffer),
         });
         console.log('[execute response]', response);
 
@@ -1028,9 +1160,8 @@ export function GMP({ tx, lite }: GMPProps) {
     }
   };
 
-  const { call, gas_paid, confirm, approved, executed, error, gas } = {
-    ...data,
-  };
+  const { call, gas_paid, confirm, approved, executed, error, gas } =
+    data || {};
 
   const sourceChainData = getChainData(call?.chain, chains);
   const destinationChainData = getChainData(
@@ -1038,11 +1169,11 @@ export function GMP({ tx, lite }: GMPProps) {
     chains
   );
 
-  let addGasButton;
-  let approveButton;
-  let executeButton;
+  let addGasButton: React.ReactNode;
+  let approveButton: React.ReactNode;
+  let executeButton: React.ReactNode;
 
-  if (call) {
+  if (call && data) {
     // addGasButton
     if (sourceChainData && !isAxelar(call.chain)) {
       if (
@@ -1056,13 +1187,15 @@ export function GMP({ tx, lite }: GMPProps) {
             !approved &&
             !(confirm && !data.confirm_failed) &&
             (call.chain_type !== 'cosmos' ||
-              timeDiff(call.block_timestamp * 1000) >= 60) &&
+              (call.block_timestamp &&
+                timeDiff(call.block_timestamp * 1000) >= 60)) &&
             // no gas paid or not enough gas
             (!(gas_paid || data.gas_paid_to_callback) ||
               data.is_insufficient_fee ||
               data.is_invalid_gas_paid ||
               data.not_enough_gas_to_execute ||
-              gas?.gas_remain_amount < 0.000001)) ||
+              (gas?.gas_remain_amount !== undefined &&
+                gas.gas_remain_amount < 0.000001))) ||
             // when need more gas by another
             (data.callbackData &&
               // not enough gas
@@ -1070,7 +1203,11 @@ export function GMP({ tx, lite }: GMPProps) {
                 data.callbackData.not_enough_gas_to_execute ||
                 // some patterns of error is detected
                 checkNeedMoreGasFromError(data.callbackData.error)) &&
-              timeDiff(data.callbackData.created_at?.ms) > 60))) ||
+              data.callbackData.created_at &&
+              typeof data.callbackData.created_at === 'object' &&
+              'ms' in data.callbackData.created_at &&
+              typeof data.callbackData.created_at.ms === 'number' &&
+              timeDiff(data.callbackData.created_at.ms) > 60))) ||
         // when need more gas by itself on destination axelar
         (isAxelar(call.returnValues?.destinationChain) &&
           checkNeedMoreGasFromError(error))
@@ -1084,6 +1221,7 @@ export function GMP({ tx, lite }: GMPProps) {
               stellarWalletStore,
               xrplWalletStore,
             }) &&
+              sourceChainData &&
               !shouldSwitchChain(
                 sourceChainData.chain_id || sourceChainData.id,
                 call.chain_type,
@@ -1123,13 +1261,20 @@ export function GMP({ tx, lite }: GMPProps) {
       (!executed ||
         (executed.axelarTransactionHash &&
           !executed.transactionHash &&
-          (error || timeDiff(executed.block_timestamp * 1000) >= 3600))) &&
+          (error ||
+            (executed.block_timestamp &&
+              timeDiff(executed.block_timestamp * 1000) >= 3600)))) &&
       // confirmed / confirm failed / called more than finality
       (confirm ||
         data.confirm_failed ||
-        timeDiff(call.block_timestamp * 1000) >= finalityTime) &&
+        (call.block_timestamp &&
+          timeDiff(call.block_timestamp * 1000) >= finalityTime)) &&
       // confirmed or called more than 1 min
-      timeDiff((confirm || call).block_timestamp * 1000) >= 60 &&
+      ((confirm &&
+        confirm.block_timestamp &&
+        timeDiff(confirm.block_timestamp * 1000) >= 60) ||
+        (call.block_timestamp &&
+          timeDiff(call.block_timestamp * 1000) >= 60)) &&
       // valid call and sufficient fee / gas
       !data.is_invalid_call &&
       !data.is_insufficient_fee &&
@@ -1184,7 +1329,9 @@ export function GMP({ tx, lite }: GMPProps) {
           timeDiff(
             ((call.destination_chain_type === 'cosmos'
               ? confirm?.block_timestamp
-              : approved.block_timestamp) || call.block_timestamp) * 1000
+              : approved?.block_timestamp) ||
+              call.block_timestamp ||
+              0) * 1000
           ) >= (call.destination_chain_type === 'cosmos' ? 300 : 120))
       ) {
         executeButton = (
@@ -1233,6 +1380,7 @@ export function GMP({ tx, lite }: GMPProps) {
 
   if (
     call &&
+    data &&
     (!confirm || data.confirm_failed) &&
     !isAxelar(call.chain) &&
     sourceChainData?.chain_type !== 'cosmos'
@@ -1247,7 +1395,7 @@ export function GMP({ tx, lite }: GMPProps) {
   }
 
   return (
-    <GMPContainer data={data} lite={lite} tx={tx}>
+    <GMPContainer data={data}>
       {data && (
         <>
           <Info
@@ -1268,7 +1416,7 @@ export function GMP({ tx, lite }: GMPProps) {
                       Object.entries(data).filter(
                         ([key]) => !find(key, ['originData', 'callbackData'])
                       )
-                    ),
+                    ) as Partial<GMPMessage>,
                   }}
                 />
               )}
@@ -1281,7 +1429,7 @@ export function GMP({ tx, lite }: GMPProps) {
                       Object.entries(data).filter(
                         ([key]) => !find(key, ['originData', 'callbackData'])
                       )
-                    ),
+                    ) as Partial<GMPMessage>,
                   }}
                 />
               )}
@@ -1292,5 +1440,3 @@ export function GMP({ tx, lite }: GMPProps) {
     </GMPContainer>
   );
 }
-
-/* eslint-enable @typescript-eslint/ban-ts-comment */

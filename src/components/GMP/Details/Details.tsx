@@ -1,28 +1,21 @@
-// @ts-nocheck
-import _ from 'lodash';
 import clsx from 'clsx';
+import _ from 'lodash';
 import Link from 'next/link';
+import React from 'react';
 
 import { Copy } from '@/components/Copy';
 import { ExplorerLink } from '@/components/ExplorerLink';
 import { useGlobalStore } from '@/components/Global';
-import { Number } from '@/components/Number';
+import { Number as NumberDisplay } from '@/components/Number';
 import { ChainProfile, Profile } from '@/components/Profile';
 import { Tag } from '@/components/Tag';
 import { TimeAgo } from '@/components/Time';
 import { getChainData } from '@/lib/config';
-import {
-  isNumber,
-  numberFormat,
-  toNumber,
-} from '@/lib/number';
+import { isNumber, numberFormat, toNumber } from '@/lib/number';
 import { split, toArray } from '@/lib/parser';
-import {
-  ellipse,
-  headString,
-  isString,
-} from '@/lib/string';
+import { ellipse, headString, isString } from '@/lib/string';
 
+import { GMPEventLog } from '../GMP.types';
 import { getStep } from '../GMP.utils';
 import { detailsStyles } from './Details.styles';
 import { DetailsProps } from './Details.types';
@@ -35,7 +28,8 @@ export function Details({ data }: DetailsProps) {
   const { call, gas_paid, approved, refunded, fees, gas } = { ...data };
 
   const sourceChain = call?.chain;
-  const destinationChain = approved?.chain || call?.returnValues?.destinationChain;
+  const destinationChain =
+    approved?.chain || call?.returnValues?.destinationChain;
 
   const destinationChainData = getChainData(destinationChain, chains);
   const axelarChainData = getChainData('axelarnet', chains);
@@ -95,8 +89,27 @@ export function Details({ data }: DetailsProps) {
         </thead>
         <tbody className={detailsStyles.tableBody}>
           {steps
-            .filter(step => step.status !== 'pending' || step.data?.axelarTransactionHash)
+            .filter(
+              step =>
+                step.status !== 'pending' ||
+                (typeof step.data === 'object' &&
+                  step.data !== null &&
+                  'axelarTransactionHash' in step.data &&
+                  step.data.axelarTransactionHash)
+            )
             .map((step, index) => {
+              // Type guard to extract GMPEventLog from step.data
+              const stepData: GMPEventLog | undefined =
+                step.id === 'pay_gas' && isString(step.data)
+                  ? typeof data.originData?.gas_paid === 'object'
+                    ? (data.originData.gas_paid as GMPEventLog)
+                    : undefined
+                  : typeof step.data === 'object' &&
+                      step.data !== null &&
+                      !Array.isArray(step.data)
+                    ? (step.data as GMPEventLog)
+                    : undefined;
+
               const {
                 transactionHash,
                 logIndex,
@@ -113,20 +126,16 @@ export function Details({ data }: DetailsProps) {
                 block_timestamp,
                 created_at,
                 proposal_id,
-              } = {
-                ...(step.id === 'pay_gas' && isString(step.data)
-                  ? data.originData?.gas_paid
-                  : step.data),
-              };
+              } = stepData || {};
 
               const { url, block_path, transaction_path } = {
                 ...step.chainData?.explorer,
               };
 
-              let stepTX;
-              let stepURL;
-              const stepMoreInfos: JSX.Element[] = [];
-              const stepMoreTransactions: JSX.Element[] = [];
+              let stepTX: string | number | undefined;
+              let stepURL: string | undefined;
+              const stepMoreInfos: React.ReactElement[] = [];
+              const stepMoreTransactions: React.ReactElement[] = [];
 
               switch (step.id) {
                 case 'confirm':
@@ -143,7 +152,11 @@ export function Details({ data }: DetailsProps) {
 
                   if (confirmation_txhash && poll_id) {
                     stepMoreInfos.push(
-                      <Copy key={stepMoreInfos.length} size={16} value={poll_id}>
+                      <Copy
+                        key={stepMoreInfos.length}
+                        size={16}
+                        value={poll_id}
+                      >
                         <Link
                           href={
                             contract_address
@@ -173,12 +186,15 @@ export function Details({ data }: DetailsProps) {
                         isNumber(blockNumber) &&
                         toNumber(transactionHash) === toNumber(blockNumber)
                       ) {
-                        stepURL = `${url}${block_path.replace('{block}', transactionHash)}`;
-                      } else if (transaction_path) {
-                        stepURL = `${url}${transaction_path.replace('{tx}', transactionHash)}`;
+                        stepURL = `${url}${block_path.replace('{block}', String(transactionHash))}`;
+                      } else if (transaction_path && transactionHash) {
+                        stepURL = `${url}${transaction_path.replace('{tx}', String(transactionHash))}`;
                       }
                     }
-                  } else if (axelarTransactionHash && axelarChainData?.explorer?.url) {
+                  } else if (
+                    axelarTransactionHash &&
+                    axelarChainData?.explorer?.url
+                  ) {
                     stepTX = axelarTransactionHash;
                     stepURL = `${axelarChainData.explorer.url}${axelarChainData.explorer.transaction_path.replace('{tx}', axelarTransactionHash)}`;
                   }
@@ -189,7 +205,10 @@ export function Details({ data }: DetailsProps) {
                     axelarChainData?.explorer?.url
                   ) {
                     stepMoreInfos.push(
-                      <div key={stepMoreInfos.length} className="flex items-center gap-x-1">
+                      <div
+                        key={stepMoreInfos.length}
+                        className="flex items-center gap-x-1"
+                      >
                         <Copy size={16} value={axelarTransactionHash}>
                           <Link
                             href={`${axelarChainData.explorer.url}${axelarChainData.explorer.transaction_path.replace('{tx}', axelarTransactionHash)}`}
@@ -211,11 +230,19 @@ export function Details({ data }: DetailsProps) {
                     );
                   }
 
-                  if (['send', 'pay_gas', 'approve'].includes(step.id) && chain_type === 'evm') {
+                  if (
+                    ['send', 'pay_gas', 'approve'].includes(step.id) &&
+                    chain_type === 'evm'
+                  ) {
                     if (isNumber(logIndex)) {
                       stepMoreInfos.push(
-                        <div key={stepMoreInfos.length} className="flex items-center gap-x-1">
-                          <span className="text-xs text-zinc-700 dark:text-zinc-300">LogIndex:</span>
+                        <div
+                          key={stepMoreInfos.length}
+                          className="flex items-center gap-x-1"
+                        >
+                          <span className="text-xs text-zinc-700 dark:text-zinc-300">
+                            LogIndex:
+                          </span>
                           <ExplorerLink
                             value={transactionHash}
                             chain={step.chainData?.id}
@@ -234,8 +261,13 @@ export function Details({ data }: DetailsProps) {
 
                     if (step.id === 'send' && isNumber(eventIndex)) {
                       stepMoreInfos.push(
-                        <div key={stepMoreInfos.length} className="flex items-center gap-x-1">
-                          <span className="text-xs text-zinc-700 dark:text-zinc-300">EventIndex:</span>
+                        <div
+                          key={stepMoreInfos.length}
+                          className="flex items-center gap-x-1"
+                        >
+                          <span className="text-xs text-zinc-700 dark:text-zinc-300">
+                            EventIndex:
+                          </span>
                           <ExplorerLink
                             value={transactionHash}
                             chain={step.chainData?.id}
@@ -255,7 +287,11 @@ export function Details({ data }: DetailsProps) {
 
                   if (step.id === 'approve' && returnValues?.commandId) {
                     stepMoreInfos.push(
-                      <Copy key={stepMoreInfos.length} size={16} value={returnValues.commandId}>
+                      <Copy
+                        key={stepMoreInfos.length}
+                        size={16}
+                        value={returnValues.commandId}
+                      >
                         {chain_type === 'vm' ? (
                           <span className="text-xs">Command ID</span>
                         ) : (
@@ -271,15 +307,32 @@ export function Details({ data }: DetailsProps) {
                     );
                   }
 
-                  if (step.id === 'execute' && step.status === 'failed' && data.error) {
-                    const { error } = { ...data.error };
+                  if (
+                    step.id === 'execute' &&
+                    step.status === 'failed' &&
+                    data.error
+                  ) {
+                    // Type assertion for error object structure
+                    const errorData = data.error as GMPEventLog & {
+                      error?: {
+                        data?: { message?: string };
+                        message?: string;
+                        reason?: string;
+                        code?: string | number;
+                        body?: string;
+                      };
+                    };
+                    const error = errorData.error;
                     const message = error?.data?.message || error?.message;
                     const reason = error?.reason;
                     const code = error?.code;
                     const body = error?.body?.replaceAll('"""', '');
 
                     stepMoreInfos.push(
-                      <div key={stepMoreInfos.length} className="flex w-64 flex-col gap-y-1">
+                      <div
+                        key={stepMoreInfos.length}
+                        className="flex w-64 flex-col gap-y-1"
+                      >
                         {message && (!reason || !axelarTransactionHash) && (
                           <div className="whitespace-pre-wrap text-xs font-normal text-red-600 dark:text-red-500">
                             {ellipse(message, 256)}
@@ -291,27 +344,28 @@ export function Details({ data }: DetailsProps) {
                           </div>
                         )}
                         <div className="flex flex-col gap-y-4">
-                          {code && (call.destination_chain_type === 'evm' ? (
-                            <Link
-                              href={
-                                isNumber(code)
-                                  ? 'https://docs.metamask.io/guide/ethereum-provider.html#errors'
-                                  : `https://docs.ethers.io/v5/api/utils/logger/#errors-${
-                                      isString(code)
-                                        ? `-${split(code, { toCase: 'lower', delimiter: '_' }).join('-')}`
-                                        : 'ethereum'
-                                    }`
-                              }
-                              target="_blank"
-                              className="flex h-6 w-fit items-center rounded-xl bg-zinc-50 px-2.5 py-1 text-2xs dark:bg-zinc-800"
-                            >
-                              {code}
-                            </Link>
-                          ) : (
-                            <div className="flex h-6 w-fit items-center rounded-xl bg-zinc-50 px-2.5 py-1 text-2xs dark:bg-zinc-800">
-                              {code}
-                            </div>
-                          ))}
+                          {code &&
+                            (call?.destination_chain_type === 'evm' ? (
+                              <Link
+                                href={
+                                  isNumber(code)
+                                    ? 'https://docs.metamask.io/guide/ethereum-provider.html#errors'
+                                    : `https://docs.ethers.io/v5/api/utils/logger/#errors-${
+                                        isString(code)
+                                          ? `-${split(code, { toCase: 'lower', delimiter: '_' }).join('-')}`
+                                          : 'ethereum'
+                                      }`
+                                }
+                                target="_blank"
+                                className="flex h-6 w-fit items-center rounded-xl bg-zinc-50 px-2.5 py-1 text-2xs dark:bg-zinc-800"
+                              >
+                                {code}
+                              </Link>
+                            ) : (
+                              <div className="flex h-6 w-fit items-center rounded-xl bg-zinc-50 px-2.5 py-1 text-2xs dark:bg-zinc-800">
+                                {code}
+                              </div>
+                            ))}
                           {body && (
                             <div className="w-fit whitespace-pre-wrap break-all bg-zinc-50 p-2.5 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
                               {ellipse(body, 256)}
@@ -329,30 +383,42 @@ export function Details({ data }: DetailsProps) {
                         : data.gas_added_transactions)) ||
                     (step.id === 'refund' && data.refunded_more_transactions)
                   ) {
-                    for (const { transactionHash: txHash } of toArray(
+                    const transactions =
                       step.id === 'pay_gas'
                         ? isString(step.data)
-                          ? data.originData.gas_added_transactions
+                          ? data.originData?.gas_added_transactions
                           : data.gas_added_transactions
-                        : data.refunded_more_transactions
-                    )) {
+                        : data.refunded_more_transactions;
+
+                    for (const transaction of toArray(transactions)) {
+                      const txHash =
+                        typeof transaction === 'object' &&
+                        transaction !== null &&
+                        'transactionHash' in transaction
+                          ? transaction.transactionHash
+                          : undefined;
+
+                      if (!txHash) continue;
                       stepMoreTransactions.push(
-                        <div key={stepMoreTransactions.length} className="flex items-center gap-x-1">
-                          <Copy size={16} value={txHash}>
-                            {url ? (
+                        <div
+                          key={stepMoreTransactions.length}
+                          className="flex items-center gap-x-1"
+                        >
+                          <Copy size={16} value={String(txHash)}>
+                            {url && transaction_path ? (
                               <Link
-                                href={`${url}${transaction_path.replace('{tx}', txHash)}`}
+                                href={`${url}${transaction_path.replace('{tx}', String(txHash))}`}
                                 target="_blank"
                                 className="text-xs font-medium text-blue-600 dark:text-blue-500"
                               >
-                                {ellipse(txHash)}
+                                {ellipse(String(txHash))}
                               </Link>
                             ) : (
-                              ellipse(txHash)
+                              ellipse(String(txHash))
                             )}
                           </Copy>
                           <ExplorerLink
-                            value={txHash}
+                            value={String(txHash)}
                             chain={step.chainData?.id}
                             width={14}
                             height={14}
@@ -366,7 +432,10 @@ export function Details({ data }: DetailsProps) {
               }
 
               const fromAddress = transaction?.from;
-              let toAddress = contract_address;
+              let toAddress: string | undefined =
+                typeof contract_address === 'string'
+                  ? contract_address
+                  : undefined;
 
               switch (step.id) {
                 case 'send':
@@ -376,18 +445,31 @@ export function Details({ data }: DetailsProps) {
                   break;
                 case 'pay_gas':
                   if (!toAddress && chain_type === 'cosmos') {
-                    toAddress = returnValues?.recipient;
+                    const recipient = returnValues?.recipient;
+                    toAddress =
+                      typeof recipient === 'string' ? recipient : undefined;
                   }
                   break;
                 case 'execute':
                   if (!toAddress && chain_type === 'cosmos') {
-                    toAddress =
+                    const destAddress =
                       returnValues?.destinationContractAddress ||
                       returnValues?.receiver;
+                    toAddress =
+                      typeof destAddress === 'string' ? destAddress : undefined;
                   }
                   break;
                 case 'refund':
-                  toAddress = gas_paid?.returnValues?.refundAddress || toAddress;
+                  const refundAddress =
+                    typeof gas_paid === 'object' &&
+                    gas_paid !== null &&
+                    'returnValues' in gas_paid
+                      ? gas_paid.returnValues?.refundAddress
+                      : undefined;
+                  toAddress =
+                    (typeof refundAddress === 'string'
+                      ? refundAddress
+                      : undefined) || toAddress;
                   break;
                 default:
                   break;
@@ -397,12 +479,20 @@ export function Details({ data }: DetailsProps) {
 
               switch (step.id) {
                 case 'pay_gas':
-                  gasAmount = isString(step.data)
-                    ? (step.data *
-                        fees?.destination_native_token?.gas_price *
-                        fees?.destination_native_token?.token_price?.usd) /
-                      fees?.source_token?.token_price?.usd
-                    : gas?.gas_paid_amount;
+                  if (isString(step.data)) {
+                    const dataValue = Number(step.data);
+                    const destGasPrice =
+                      fees?.destination_native_token?.gas_price ?? 0;
+                    const destTokenPrice =
+                      fees?.destination_native_token?.token_price?.usd ?? 0;
+                    const srcTokenPrice =
+                      fees?.source_token?.token_price?.usd ?? 1;
+                    gasAmount =
+                      (dataValue * destGasPrice * destTokenPrice) /
+                      srcTokenPrice;
+                  } else {
+                    gasAmount = gas?.gas_paid_amount;
+                  }
                   break;
                 case 'express':
                   gasAmount = gas?.gas_express_amount;
@@ -411,44 +501,60 @@ export function Details({ data }: DetailsProps) {
                   gasAmount = fees?.source_confirm_fee;
                   break;
                 case 'approve':
-                  gasAmount = gas?.gas_approve_amount - fees?.source_confirm_fee;
+                  gasAmount =
+                    (gas?.gas_approve_amount ?? 0) -
+                    (fees?.source_confirm_fee ?? 0);
                   break;
                 case 'execute':
                   gasAmount = gas?.gas_execute_amount;
                   break;
                 case 'refund':
-                  gasAmount =
-                    refunded?.amount +
-                    _.sum(toArray(data.refunded_more_transactions).map(item => toNumber(item.amount)));
+                  const refundedAmount =
+                    typeof refunded?.amount === 'number' ? refunded.amount : 0;
+                  const moreRefunds = _.sum(
+                    toArray(data.refunded_more_transactions)
+                      .filter(
+                        (item): item is GMPEventLog =>
+                          typeof item === 'object' && item !== null
+                      )
+                      .map(item => toNumber(item.amount))
+                  );
+                  gasAmount = refundedAmount + moreRefunds;
                   break;
                 default:
                   break;
               }
 
-              const gasElement = isNumber(gasAmount) && gasAmount >= 0 && (
-                <Number
-                  value={gasAmount}
-                  format="0,0.000000"
-                  suffix={` ${fees?.source_token?.symbol}`}
-                  noTooltip
-                  className="font-medium text-zinc-900 dark:text-zinc-100"
-                />
-              );
+              const gasElement =
+                isNumber(gasAmount) &&
+                gasAmount >= 0 &&
+                fees?.source_token?.symbol ? (
+                  <NumberDisplay
+                    value={gasAmount}
+                    format="0,0.000000"
+                    suffix={` ${fees.source_token.symbol}`}
+                    noTooltip
+                    className="font-medium text-zinc-900 dark:text-zinc-100"
+                  />
+                ) : null;
 
               const gasConvertedElement =
-                data.originData?.fees?.source_token?.token_price?.usd > 0 &&
-                gasElement && (
-                  <Number
+                data.originData?.fees?.source_token?.token_price?.usd &&
+                data.originData.fees.source_token.token_price.usd > 0 &&
+                gasElement &&
+                gasAmount !== undefined &&
+                fees?.source_token?.token_price?.usd !== undefined ? (
+                  <NumberDisplay
                     value={
-                      (gasAmount * fees?.source_token?.token_price?.usd) /
+                      (gasAmount * fees.source_token.token_price.usd) /
                       data.originData.fees.source_token.token_price.usd
                     }
                     format="0,0.000000"
-                    suffix={` ${data.originData.fees.source_token.symbol}`}
+                    suffix={` ${data.originData.fees.source_token.symbol ?? ''}`}
                     noTooltip
                     className="text-xs font-medium text-zinc-400 dark:text-zinc-500"
                   />
-                );
+                ) : null;
 
               return (
                 <tr key={index} className={detailsStyles.row}>
@@ -475,15 +581,23 @@ export function Details({ data }: DetailsProps) {
                             )}
                           </Copy>
                           {!proposal_id && (
-                            <ExplorerLink value={stepTX} chain={step.chainData?.id} customURL={stepURL} />
+                            <ExplorerLink
+                              value={stepTX}
+                              chain={step.chainData?.id}
+                              customURL={stepURL}
+                            />
                           )}
                         </div>
                       )}
                       {stepMoreInfos.length > 0 && (
-                        <div className="flex items-start gap-x-3">{stepMoreInfos}</div>
+                        <div className="flex items-start gap-x-3">
+                          {stepMoreInfos}
+                        </div>
                       )}
                       {stepMoreTransactions.length > 0 && (
-                        <div className="flex flex-col gap-y-1.5">{stepMoreTransactions}</div>
+                        <div className="flex flex-col gap-y-1.5">
+                          {stepMoreTransactions}
+                        </div>
                       )}
                     </div>
                   </td>
@@ -492,27 +606,53 @@ export function Details({ data }: DetailsProps) {
                       {toNumber(blockNumber) > 0 &&
                         (url && block_path ? (
                           <Link
-                            href={`${url}${block_path.replace('{block}', blockNumber)}`}
+                            href={`${url}${block_path.replace('{block}', String(blockNumber))}`}
                             target="_blank"
                             className="font-medium text-blue-600 dark:text-blue-500"
                           >
-                            <Number value={blockNumber} />
+                            <NumberDisplay
+                              value={
+                                isNumber(blockNumber)
+                                  ? blockNumber
+                                  : toNumber(blockNumber)
+                              }
+                            />
                           </Link>
                         ) : (
-                          <Number value={blockNumber} />
+                          <NumberDisplay
+                            value={
+                              isNumber(blockNumber)
+                                ? blockNumber
+                                : toNumber(blockNumber)
+                            }
+                          />
                         ))}
-                      {axelarBlockNumber &&
-                        (axelarChainData?.explorer?.url && axelarChainData.explorer.block_path ? (
+                      {axelarBlockNumber ? (
+                        axelarChainData?.explorer?.url &&
+                        axelarChainData.explorer.block_path ? (
                           <Link
-                            href={`${axelarChainData.explorer.url}${axelarChainData.explorer.block_path.replace('{block}', axelarBlockNumber)}`}
+                            href={`${axelarChainData.explorer.url}${axelarChainData.explorer.block_path.replace('{block}', String(axelarBlockNumber))}`}
                             target="_blank"
                             className="font-medium text-blue-600 dark:text-blue-500"
                           >
-                            <Number value={axelarBlockNumber} />
+                            <NumberDisplay
+                              value={
+                                isNumber(axelarBlockNumber)
+                                  ? axelarBlockNumber
+                                  : toNumber(axelarBlockNumber)
+                              }
+                            />
                           </Link>
                         ) : (
-                          <Number value={axelarBlockNumber} />
-                        ))}
+                          <NumberDisplay
+                            value={
+                              isNumber(axelarBlockNumber)
+                                ? axelarBlockNumber
+                                : toNumber(axelarBlockNumber)
+                            }
+                          />
+                        )
+                      ) : null}
                     </div>
                   </td>
                   <td className="px-3 py-4 text-left">
@@ -520,7 +660,10 @@ export function Details({ data }: DetailsProps) {
                       {fromAddress && (
                         <div className="flex items-center gap-x-4">
                           <span className={detailsStyles.cellLabel}>From:</span>
-                          <Profile address={fromAddress} chain={step.chainData?.id} />
+                          <Profile
+                            address={fromAddress}
+                            chain={step.chainData?.id}
+                          />
                         </div>
                       )}
                       {toAddress && (
@@ -529,7 +672,7 @@ export function Details({ data }: DetailsProps) {
                           <Profile
                             address={toAddress}
                             chain={
-                              step.data?.axelarTransactionHash
+                              stepData?.axelarTransactionHash
                                 ? destinationChainData?.id
                                 : step.chainData?.id
                             }
@@ -537,10 +680,10 @@ export function Details({ data }: DetailsProps) {
                               step.id === 'execute' &&
                               ['stellar'].includes(
                                 headString(
-                                  step.data?.axelarTransactionHash
+                                  stepData?.axelarTransactionHash
                                     ? destinationChainData?.id
                                     : step.chainData?.id
-                                )
+                                ) ?? ''
                               )
                             }
                           />
@@ -571,7 +714,11 @@ export function Details({ data }: DetailsProps) {
                     </div>
                   </td>
                   <td className="flex items-center justify-end py-4 pl-3 pr-4 text-right sm:pr-0">
-                    <TimeAgo timestamp={block_timestamp * 1000 || created_at?.ms} />
+                    <TimeAgo
+                      timestamp={
+                        (block_timestamp ?? 0) * 1000 || created_at?.ms
+                      }
+                    />
                   </td>
                 </tr>
               );
@@ -581,5 +728,3 @@ export function Details({ data }: DetailsProps) {
     </div>
   );
 }
-
-
