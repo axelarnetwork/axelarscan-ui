@@ -30,7 +30,7 @@ export function Info({
   data,
   estimatedTimeSpent,
   executeData,
-  recovery,
+  refreshData,
   tx,
   lite,
 }: InfoProps) {
@@ -161,7 +161,7 @@ export function Info({
             data={data}
             chains={chains}
             estimatedTimeSpent={estimatedTimeSpent}
-            recovery={recovery}
+            refreshData={refreshData}
           />
           <InfoPath
             data={data}

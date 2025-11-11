@@ -1,10 +1,10 @@
-import { ChainTimeEstimate, GMPMessage, GMPRecoveryActions } from '../GMP.types';
+import { ChainTimeEstimate, GMPMessage } from '../GMP.types';
 
 export interface InfoProps {
   data: GMPMessage;
   estimatedTimeSpent?: ChainTimeEstimate | null;
   executeData?: string | null;
-  recovery: GMPRecoveryActions;
+  refreshData: () => Promise<GMPMessage | undefined>;
   tx?: string;
   lite?: boolean;
 }
