@@ -541,46 +541,46 @@ export function GMP({ tx, lite }: GMPProps) {
     onExecute: execute,
   };
 
+  if (!data) {
+    return <GMPContainer data={null} />;
+  }
+
   return (
     <GMPContainer data={data}>
-      {data && (
+      <Info
+        data={data}
+        estimatedTimeSpent={estimatedTimeSpent}
+        executeData={executeData}
+        recovery={recoveryActions}
+        tx={tx}
+        lite={lite}
+      />
+      {!lite && (
         <>
-          <Info
-            data={data}
-            estimatedTimeSpent={estimatedTimeSpent}
-            executeData={executeData}
-            recovery={recoveryActions}
-            tx={tx}
-            lite={lite}
-          />
-          {!lite && (
-            <>
-              {data.originData && (
-                <Details
-                  data={{
-                    ...data.originData,
-                    callbackData: Object.fromEntries(
-                      Object.entries(data).filter(
-                        ([key]) => !find(key, ['originData', 'callbackData'])
-                      )
-                    ) as Partial<GMPMessage>,
-                  }}
-                />
-              )}
-              <Details data={data} />
-              {data.callbackData && (
-                <Details
-                  data={{
-                    ...data.callbackData,
-                    originData: Object.fromEntries(
-                      Object.entries(data).filter(
-                        ([key]) => !find(key, ['originData', 'callbackData'])
-                      )
-                    ) as Partial<GMPMessage>,
-                  }}
-                />
-              )}
-            </>
+          {data.originData && (
+            <Details
+              data={{
+                ...data.originData,
+                callbackData: Object.fromEntries(
+                  Object.entries(data).filter(
+                    ([key]) => !find(key, ['originData', 'callbackData'])
+                  )
+                ) as Partial<GMPMessage>,
+              }}
+            />
+          )}
+          <Details data={data} />
+          {data.callbackData && (
+            <Details
+              data={{
+                ...data.callbackData,
+                originData: Object.fromEntries(
+                  Object.entries(data).filter(
+                    ([key]) => !find(key, ['originData', 'callbackData'])
+                  )
+                ) as Partial<GMPMessage>,
+              }}
+            />
           )}
         </>
       )}
