@@ -85,21 +85,24 @@ export function InfoGasMetrics({
     ) : null;
 
   const gasChargedLabel = (
-    <span className={gasStyles.inlineLabel}>
-      <span className="whitespace-nowrap">Gas Charged</span>
+    <>
+      <span className={gasStyles.labelText}>Gas Charged</span>
       <Tooltip
         content="The total gas charged to users. This amount may be less than the gas used (Gas Used) due to Axelar's gas subsidy policy."
         className={gasStyles.inlineTooltip}
       >
         <PiInfo className={gasStyles.infoIcon} />
       </Tooltip>
-    </span>
+    </>
   );
 
   return (
     <>
       {shouldShowGasCharged && (
-        <InfoSection label={gasChargedLabel}>
+        <InfoSection
+          label={gasChargedLabel}
+          labelClassName={gasStyles.labelRow}
+        >
           <div className={gasStyles.valueRow}>
             <Number
               value={gasChargedAmount}
@@ -153,17 +156,17 @@ export function InfoGasMetrics({
             isNumber(gasData?.gas_used_amount) && (
               <InfoSection
                 label={
-                  <span className={gasStyles.inlineLabel}>
-                    <span>Gas Used</span>
+                  <>
+                    <span className={gasStyles.labelText}>Gas Used</span>
                     <Tooltip
                       content="The total gas used to accommodate the cross-chain transaction."
-                      className={gasStyles.inlineTooltip}
+                      className={gasStyles.inlineTooltipWide}
                     >
-        <PiInfo className={gasStyles.infoIcon} />
                       <PiInfo className={gasStyles.infoIcon} />
                     </Tooltip>
-                  </span>
+                  </>
                 }
+                labelClassName={gasStyles.labelRow}
               >
                 <div className={gasStyles.valueRow}>
                   <Number

@@ -5,8 +5,11 @@ export const gasStyles = {
   nestedNumber: 'text-xs font-medium',
   nestedNumberMuted: 'text-xs font-normal text-zinc-400 dark:text-zinc-500',
   inlineTooltip: 'w-40 text-xs',
+  inlineTooltipWide: 'w-44 text-xs',
   inlineLabel: 'whitespace-nowrap text-xs text-zinc-700 dark:text-zinc-300',
   infoIcon: 'text-zinc-400 dark:text-zinc-500',
   plusIcon: 'text-zinc-400 dark:text-zinc-500',
   borderedCard: 'flex items-center gap-x-4 overflow-x-auto',
+  labelRow: 'flex items-center',
+  labelText: 'mr-1 whitespace-nowrap',
 } as const;
