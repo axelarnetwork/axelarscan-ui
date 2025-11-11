@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 
 import { isAxelar } from '@/lib/chain';
 import { getChainData } from '@/lib/config';
@@ -7,7 +7,8 @@ import { AddGasButton } from '../AddGasButton';
 import { ApproveButton } from '../ApproveButton';
 import { ExecuteButton } from '../ExecuteButton';
 import { infoStyles } from './Info.styles';
-import { RecoveryButtonsProps } from './Info.types';
+import { RecoveryButtonsProps } from './RecoveryButtons.types';
+import { recoveryButtonsStyles } from './RecoveryButtons.styles';
 import {
   shouldShowAddGasButton,
   shouldShowApproveButton,
@@ -35,7 +36,7 @@ export function RecoveryButtons({
   } = recovery;
 
   const entries = useMemo(() => {
-    const values: Array<[string, React.ReactNode]> = [];
+    const values: Array<[string, ReactNode]> = [];
 
     if (shouldShowAddGasButton(data, response, chains)) {
       values.push([
@@ -136,13 +137,13 @@ export function RecoveryButtons({
     <div className={infoStyles.section}>
       <dt className={infoStyles.label}>Recovery</dt>
       <dd className={infoStyles.value}>
-        <div className={infoStyles.recoveryList}>
+        <div className={recoveryButtonsStyles.list}>
           {entries.map(([key, node]) => (
-            <div key={key} className={infoStyles.recoveryItem}>
-              <span className={infoStyles.recoveryItemLabel}>
+            <div key={key} className={recoveryButtonsStyles.item}>
+              <span className={recoveryButtonsStyles.label}>
                 {toTitle(key)}:
               </span>
-              <div className={infoStyles.recoveryItemValue}>{node}</div>
+              <div className={recoveryButtonsStyles.value}>{node}</div>
             </div>
           ))}
         </div>

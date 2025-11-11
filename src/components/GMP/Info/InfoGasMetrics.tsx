@@ -71,7 +71,7 @@ export function InfoGasMetrics({
   const formatTokenSuffix = (symbol?: string) => (symbol ? ` ${symbol}` : '');
 
   const renderFiPlus = (index: number) =>
-    index > 0 ? <FiPlus size={18} className={infoStyles.plusIcon} /> : null;
+    index > 0 ? <FiPlus size={18} className={gasStyles.plusIcon} /> : null;
 
   const renderUsdValue = (value?: number, className?: string) =>
     value && value > 0 ? (
@@ -85,13 +85,13 @@ export function InfoGasMetrics({
     ) : null;
 
   const gasChargedLabel = (
-    <span className={infoStyles.labelInline}>
+    <span className={gasStyles.inlineLabel}>
       <span className="whitespace-nowrap">Gas Charged</span>
       <Tooltip
         content="The total gas charged to users. This amount may be less than the gas used (Gas Used) due to Axelar's gas subsidy policy."
-        className={infoStyles.inlineInfoTooltip}
+        className={gasStyles.inlineTooltip}
       >
-        <PiInfo className={infoStyles.infoIcon} />
+        <PiInfo className={gasStyles.infoIcon} />
       </Tooltip>
     </span>
   );
@@ -153,13 +153,14 @@ export function InfoGasMetrics({
             isNumber(gasData?.gas_used_amount) && (
               <InfoSection
                 label={
-                  <span className={infoStyles.labelInline}>
+                  <span className={gasStyles.inlineLabel}>
                     <span>Gas Used</span>
                     <Tooltip
                       content="The total gas used to accommodate the cross-chain transaction."
-                      className={infoStyles.inlineInfoTooltip}
+                      className={gasStyles.inlineTooltip}
                     >
-                      <PiInfo className={infoStyles.infoIcon} />
+        <PiInfo className={gasStyles.infoIcon} />
+                      <PiInfo className={gasStyles.infoIcon} />
                     </Tooltip>
                   </span>
                 }
@@ -190,7 +191,7 @@ export function InfoGasMetrics({
                 .findIndex(entry => (entry.fees?.base_fee ?? 0) > 0) > -1 && (
                 <InfoSection
                   label="Base Fee"
-                  valueClassName={infoStyles.borderedCard}
+                  valueClassName={gasStyles.borderedCard}
                 >
                   {toArray([data.originData, data, data.callbackData])
                     .filter(
@@ -220,7 +221,7 @@ export function InfoGasMetrics({
                             {(entryFees.source_confirm_fee ?? 0) > 0 && (
                               <>
                                 <div className={gasStyles.nestedRow}>
-                                  <span className={infoStyles.inlineLabel}>
+                                  <span className={gasStyles.inlineLabel}>
                                     - Confirm Fee:
                                   </span>
                                   <Number
@@ -240,7 +241,7 @@ export function InfoGasMetrics({
                                   )}
                                 </div>
                                 <div className={gasStyles.nestedRow}>
-                                  <span className={infoStyles.inlineLabel}>
+                                  <span className={gasStyles.inlineLabel}>
                                     - Approve Fee:
                                   </span>
                                   <Number
@@ -293,7 +294,7 @@ export function InfoGasMetrics({
                 ) > -1 && (
                 <InfoSection
                   label="Express Fee"
-                  valueClassName={infoStyles.borderedCard}
+                  valueClassName={gasStyles.borderedCard}
                 >
                   {toArray([data.originData, data, data.callbackData])
                     .filter(
@@ -326,7 +327,7 @@ export function InfoGasMetrics({
                                   entryFees.source_express_fee.relayer_fee
                                 ) && (
                                   <div className={gasStyles.nestedRow}>
-                                    <span className={infoStyles.inlineLabel}>
+                                    <span className={gasStyles.inlineLabel}>
                                       - Relayer Fee:
                                     </span>
                                     <Number
@@ -352,7 +353,7 @@ export function InfoGasMetrics({
                                     .express_gas_overhead_fee
                                 ) && (
                                   <div className={gasStyles.nestedRow}>
-                                    <span className={infoStyles.inlineLabel}>
+                                    <span className={gasStyles.inlineLabel}>
                                       - Overhead Fee:
                                     </span>
                                     <Number
@@ -401,7 +402,7 @@ export function InfoGasMetrics({
                     {(combinedFees?.source_confirm_fee ?? 0) > 0 && (
                       <>
                         <div className={gasStyles.nestedRow}>
-                          <span className={infoStyles.inlineLabel}>
+                          <span className={gasStyles.inlineLabel}>
                             - Confirm Fee:
                           </span>
                           <Number
@@ -418,7 +419,7 @@ export function InfoGasMetrics({
                           )}
                         </div>
                         <div className={gasStyles.nestedRow}>
-                          <span className={infoStyles.inlineLabel}>
+                          <span className={gasStyles.inlineLabel}>
                             - Approve Fee:
                           </span>
                           <Number
@@ -471,7 +472,7 @@ export function InfoGasMetrics({
                             combinedFees.source_express_fee.relayer_fee
                           ) && (
                             <div className={gasStyles.nestedRow}>
-                              <span className={infoStyles.inlineLabel}>
+                              <span className={gasStyles.inlineLabel}>
                                 - Relayer Fee:
                               </span>
                               <Number
@@ -494,7 +495,7 @@ export function InfoGasMetrics({
                               .express_gas_overhead_fee
                           ) && (
                             <div className={gasStyles.nestedRow}>
-                              <span className={infoStyles.inlineLabel}>
+                              <span className={gasStyles.inlineLabel}>
                                 - Overhead Fee:
                               </span>
                               <Number

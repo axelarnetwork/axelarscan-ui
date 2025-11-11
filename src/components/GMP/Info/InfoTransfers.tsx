@@ -4,9 +4,10 @@ import { Image } from '@/components/Image';
 import { AssetProfile, Profile } from '@/components/Profile';
 import { Tooltip } from '@/components/Tooltip';
 import { getChainData } from '@/lib/config';
-import { infoStyles } from './Info.styles';
 import { InfoSection } from './InfoSection';
-import { InfoTransfersProps } from './Info.types';
+import { InfoTransfersProps } from './InfoTransfers.types';
+import { infoStyles } from './Info.styles';
+import { infoTransfersStyles } from './InfoTransfers.styles';
 
 export function InfoTransfers({ data, chains }: InfoTransfersProps) {
   if (
@@ -18,7 +19,7 @@ export function InfoTransfers({ data, chains }: InfoTransfersProps) {
 
   return (
     <InfoSection label="Settlement Filled">
-      <div className={infoStyles.transferList}>
+      <div className={infoTransfersStyles.list}>
         {data.interchain_transfers.map((transfer, index) => {
           const destinationChainData = getChainData(
             transfer.destinationChain,
@@ -28,7 +29,7 @@ export function InfoTransfers({ data, chains }: InfoTransfersProps) {
           return (
             <div
               key={`${transfer.destinationChain}-${index}`}
-              className={infoStyles.transferRow}
+              className={infoTransfersStyles.row}
             >
               <AssetProfile
                 value={transfer.contract_address || transfer.symbol}
@@ -43,7 +44,7 @@ export function InfoTransfers({ data, chains }: InfoTransfersProps) {
               />
               <MdKeyboardArrowRight
                 size={20}
-                className={infoStyles.arrowIcon}
+                className={infoTransfersStyles.arrowIcon}
               />
               {destinationChainData && transfer.recipient && (
                 <Tooltip

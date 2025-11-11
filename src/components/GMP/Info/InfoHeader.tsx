@@ -4,8 +4,8 @@ import { Copy } from '@/components/Copy';
 import { ExplorerLink } from '@/components/ExplorerLink';
 import { isNumber } from '@/lib/number';
 import { ellipse } from '@/lib/string';
-import { infoStyles } from './Info.styles';
-import { InfoHeaderProps } from './Info.types';
+import { infoHeaderStyles } from './InfoHeader.styles';
+import { InfoHeaderProps } from './InfoHeader.types';
 
 export function InfoHeader({
   call,
@@ -26,14 +26,14 @@ export function InfoHeader({
       : undefined;
 
   return (
-    <div className={infoStyles.headerSubtitle}>
-      <div className={infoStyles.flexRow}>
+    <div className={infoHeaderStyles.subtitle}>
+      <div className={infoHeaderStyles.row}>
         <Copy value={messageId || txhash}>
           {proposalOrTxLink ? (
             <Link
               href={proposalOrTxLink}
               target="_blank"
-              className={infoStyles.iconButton}
+              className={infoHeaderStyles.iconButton}
             >
               {ellipse(messageId || txhash, 12)}
             </Link>

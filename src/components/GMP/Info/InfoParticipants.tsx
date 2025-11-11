@@ -1,10 +1,11 @@
 import { PiWarningCircle } from 'react-icons/pi';
 
 import { Profile } from '@/components/Profile';
-import { infoStyles } from './Info.styles';
-import { InfoSection } from './InfoSection';
-import { InfoParticipantsProps } from './Info.types';
 import { isAxelar } from '@/lib/chain';
+import { InfoParticipantsProps } from './InfoParticipants.types';
+import { InfoSection } from './InfoSection';
+import { infoParticipantsStyles } from './InfoParticipants.styles';
+import { infoStyles } from './Info.styles';
 
 export function InfoParticipants({
   data,
@@ -63,7 +64,7 @@ export function InfoParticipants({
       </InfoSection>
       {!lite && showAdditionalDetails && (
         <InfoSection label="Source Address">
-          <div className={infoStyles.profileColumn}>
+          <div className={infoParticipantsStyles.profileColumn}>
             {sourceAddressValue ? (
               <Profile
                 address={sourceAddressValue}
@@ -76,7 +77,7 @@ export function InfoParticipants({
             )}
             {(data.originData?.is_invalid_source_address ||
               data.is_invalid_source_address) && (
-              <div className={infoStyles.warningRowTall}>
+              <div className={infoParticipantsStyles.warningRowTall}>
                 <PiWarningCircle size={20} />
                 <span>Invalid Address</span>
               </div>
@@ -85,7 +86,7 @@ export function InfoParticipants({
         </InfoSection>
       )}
       <InfoSection label="Destination Contract">
-        <div className={infoStyles.profileColumn}>
+        <div className={infoParticipantsStyles.profileColumn}>
           {destinationContract ? (
             <Profile
               address={destinationContract}
@@ -97,7 +98,7 @@ export function InfoParticipants({
           )}
           {(data.callbackData?.is_invalid_contract_address ||
             data.is_invalid_contract_address) && (
-            <div className={infoStyles.warningRowTall}>
+            <div className={infoParticipantsStyles.warningRowTall}>
               <PiWarningCircle size={20} />
               <span>Invalid Contract</span>
             </div>

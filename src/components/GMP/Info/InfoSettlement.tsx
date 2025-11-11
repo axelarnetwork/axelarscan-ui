@@ -1,8 +1,8 @@
 import { MdKeyboardArrowRight } from 'react-icons/md';
 
 import { ExplorerLink } from '@/components/ExplorerLink';
-import { infoStyles } from './Info.styles';
-import { InfoSettlementProps } from './Info.types';
+import { InfoSettlementProps } from './InfoSettlement.types';
+import { infoSettlementStyles } from './InfoSettlement.styles';
 import { ellipse } from '@/lib/string';
 import { toArray } from '@/lib/parser';
 
@@ -38,15 +38,15 @@ export function InfoSettlement({
   return (
     <InfoSection
       label="Settlement Status"
-      valueClassName={infoStyles.settlementValueSpacing}
+      valueClassName={infoSettlementStyles.valueSpacing}
     >
-      <div className={infoStyles.settlementGrid}>
-        <div className={infoStyles.settlementColumn}>
-          <div className={infoStyles.settlementColumnContent}>
-            <span className={infoStyles.settlementColumnTitle}>
+    <div className={infoSettlementStyles.grid}>
+      <div className={infoSettlementStyles.column}>
+        <div className={infoSettlementStyles.columnContent}>
+          <span className={infoSettlementStyles.columnTitle}>
               Settlement Forwarded
             </span>
-            <div className={infoStyles.settlementLinks}>
+          <div className={infoSettlementStyles.links}>
               {settlementForwardedEvents ? (
                 <ExplorerLink
                   value={txhash}
@@ -73,12 +73,12 @@ export function InfoSettlement({
           <MdKeyboardArrowRight size={14} />
         </div>
 
-        <div className={infoStyles.settlementColumn}>
-          <div className={infoStyles.settlementColumnContent}>
-            <span className={infoStyles.settlementColumnTitle}>
+        <div className={infoSettlementStyles.column}>
+          <div className={infoSettlementStyles.columnContent}>
+            <span className={infoSettlementStyles.columnTitle}>
               Settlement Processed
             </span>
-            <div className={infoStyles.settlementLinks}>
+            <div className={infoSettlementStyles.links}>
               {settlementForwardedEvents ? (
                 <ExplorerLink
                   value={executed?.transactionHash}
@@ -108,12 +108,12 @@ export function InfoSettlement({
           <MdKeyboardArrowRight size={14} />
         </div>
 
-        <div className={infoStyles.settlementColumn}>
-          <div className={infoStyles.settlementColumnContent}>
-            <span className={infoStyles.settlementColumnTitle}>
+        <div className={infoSettlementStyles.column}>
+          <div className={infoSettlementStyles.columnContent}>
+            <span className={infoSettlementStyles.columnTitle}>
               Settlement Filled
             </span>
-            <div className={infoStyles.settlementLinks}>
+            <div className={infoSettlementStyles.links}>
               {settlementFilledEvents ? (
                 <ExplorerLink
                   value={txhash}
@@ -140,12 +140,12 @@ export function InfoSettlement({
           <MdKeyboardArrowRight size={14} />
         </div>
 
-        <div className={infoStyles.settlementColumn}>
-          <div className={infoStyles.settlementColumnContent}>
-            <span className={infoStyles.settlementColumnTitle}>
+        <div className={infoSettlementStyles.column}>
+          <div className={infoSettlementStyles.columnContent}>
+            <span className={infoSettlementStyles.columnTitle}>
               Tokens Released
             </span>
-            <div className={infoStyles.settlementLinks}>
+            <div className={infoSettlementStyles.links}>
               {settlementFilledEvents ? (
                 <ExplorerLink
                   value={executed?.transactionHash}

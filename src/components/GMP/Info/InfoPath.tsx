@@ -2,8 +2,8 @@ import { MdKeyboardArrowRight } from 'react-icons/md';
 import { PiWarningCircle } from 'react-icons/pi';
 
 import { ChainProfile } from '@/components/Profile';
-import { infoStyles } from './Info.styles';
-import { InfoPathProps } from './Info.types';
+import { InfoPathProps } from './InfoPath.types';
+import { infoPathStyles } from './InfoPath.styles';
 import { InfoSection } from './InfoSection';
 
 export function InfoPath({
@@ -14,7 +14,7 @@ export function InfoPath({
 }: InfoPathProps) {
   return (
     <InfoSection label="Path">
-      <div className={infoStyles.pathRow}>
+    <div className={infoPathStyles.row}>
         {isMultihop ? (
           <>
             <ChainProfile
@@ -51,10 +51,10 @@ export function InfoPath({
           <>
             <ChainProfile value={sourceChain} />
             <MdKeyboardArrowRight size={24} />
-            <div className={infoStyles.pathColumn}>
+          <div className={infoPathStyles.column}>
               <ChainProfile value={destinationChain} />
               {data.is_invalid_destination_chain && (
-                <div className={infoStyles.warningRow}>
+                <div className={infoPathStyles.warning}>
                   <PiWarningCircle size={20} />
                   <span>Invalid Chain</span>
                 </div>
