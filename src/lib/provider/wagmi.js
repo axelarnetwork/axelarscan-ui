@@ -139,6 +139,20 @@ export const CHAINS = toArray(
             default: { name: 'Berascan', url: 'https://berascan.com' },
           },
         },
+        {
+          _id: 'monad',
+          id: 143,
+          network: 'monad',
+          name: 'Monad',
+          nativeCurrency: { name: 'Mon', symbol: 'MON', decimals: 18 },
+          rpcUrls: { default: { http: ['https://rpc.monad.xyz/'] } },
+          blockExplorers: {
+            default: {
+              name: '',
+              url: '',
+            },
+          },
+        },
       ]
     : [
         ['testnet', 'stagenet'].includes(ENVIRONMENT) && {
@@ -346,7 +360,7 @@ export const CHAINS = toArray(
           id: 10143,
           network: 'monad',
           name: 'Monad',
-          nativeCurrency: { name: 'Monad', symbol: 'MON', decimals: 18 },
+          nativeCurrency: { name: 'Mon', symbol: 'MON', decimals: 18 },
           rpcUrls: { default: { http: ['https://testnet-rpc.monad.xyz'] } },
           blockExplorers: {
             default: {
