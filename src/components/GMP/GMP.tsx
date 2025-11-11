@@ -24,10 +24,10 @@ import { getParams } from '@/lib/operator';
 import { toArray } from '@/lib/parser';
 import { equalsIgnoreCase, find } from '@/lib/string';
 
-import { executeAddGas } from './AddGasButton';
-import { executeApprove } from './ApproveButton';
+import { executeAddGas } from './AddGasButton/AddGasButton.utils';
+import { executeApprove } from './ApproveButton/ApproveButton.utils';
 import { Details } from './Details/Details';
-import { executeExecute } from './ExecuteButton';
+import { executeExecute } from './ExecuteButton/ExecuteButton.utils';
 import {
   useEstimatedGasUsed,
   useEstimatedTimeSpent,

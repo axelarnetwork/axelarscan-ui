@@ -4,7 +4,7 @@ import { getChainData } from '@/lib/config';
 
 import { gmpStyles } from '../GMP.styles';
 import { isWalletConnectedForChain, shouldSwitchChain } from '../GMP.utils';
-import { WalletSelector } from '../WalletSelector';
+import { WalletSelector } from '../WalletSelector/WalletSelector';
 import { AddGasButtonProps } from './AddGasButton.types';
 
 export function AddGasButton({
