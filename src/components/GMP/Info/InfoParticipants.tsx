@@ -56,10 +56,7 @@ export function InfoParticipants({
     <>
       <InfoSection label="Sender">
         {senderProfileAddress ? (
-          <Profile
-            address={senderProfileAddress}
-            chain={senderProfileChain}
-          />
+          <Profile address={senderProfileAddress} chain={senderProfileChain} />
         ) : (
           <span className={infoStyles.inlineNumberMuted}>Not available</span>
         )}
@@ -73,9 +70,12 @@ export function InfoParticipants({
                 chain={sourceAddressChain}
               />
             ) : (
-              <span className={infoStyles.inlineNumberMuted}>Not available</span>
+              <span className={infoStyles.inlineNumberMuted}>
+                Not available
+              </span>
             )}
-            {(data.originData?.is_invalid_source_address || data.is_invalid_source_address) && (
+            {(data.originData?.is_invalid_source_address ||
+              data.is_invalid_source_address) && (
               <div className={infoStyles.warningRowTall}>
                 <PiWarningCircle size={20} />
                 <span>Invalid Address</span>
@@ -95,7 +95,8 @@ export function InfoParticipants({
           ) : (
             <span className={infoStyles.inlineNumberMuted}>Not available</span>
           )}
-          {(data.callbackData?.is_invalid_contract_address || data.is_invalid_contract_address) && (
+          {(data.callbackData?.is_invalid_contract_address ||
+            data.is_invalid_contract_address) && (
             <div className={infoStyles.warningRowTall}>
               <PiWarningCircle size={20} />
               <span>Invalid Contract</span>
@@ -105,14 +106,9 @@ export function InfoParticipants({
       </InfoSection>
       {effectiveRecipientAddress && (
         <InfoSection label={recipientLabel}>
-          <Profile
-            address={effectiveRecipientAddress}
-            chain={recipientChain}
-          />
+          <Profile address={effectiveRecipientAddress} chain={recipientChain} />
         </InfoSection>
       )}
     </>
   );
 }
-
-

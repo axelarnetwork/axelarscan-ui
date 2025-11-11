@@ -5,5 +5,3 @@ export interface ContractCallDataProps {
   executeData?: string;
   isMultihop: boolean;
 }
-
-

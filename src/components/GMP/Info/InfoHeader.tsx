@@ -2,11 +2,10 @@ import Link from 'next/link';
 
 import { Copy } from '@/components/Copy';
 import { ExplorerLink } from '@/components/ExplorerLink';
-import { GMPTransactionInfo } from '../GMP.types';
+import { isNumber } from '@/lib/number';
+import { ellipse } from '@/lib/string';
 import { infoStyles } from './Info.styles';
 import { InfoHeaderProps } from './Info.types';
-import { ellipse } from '@/lib/string';
-import { isNumber } from '@/lib/number';
 
 export function InfoHeader({
   call,
@@ -31,7 +30,11 @@ export function InfoHeader({
       <div className={infoStyles.flexRow}>
         <Copy value={messageId || txhash}>
           {proposalOrTxLink ? (
-            <Link href={proposalOrTxLink} target="_blank" className={infoStyles.iconButton}>
+            <Link
+              href={proposalOrTxLink}
+              target="_blank"
+              className={infoStyles.iconButton}
+            >
               {ellipse(messageId || txhash, 12)}
             </Link>
           ) : (
@@ -49,5 +52,3 @@ export function InfoHeader({
     </div>
   );
 }
-
-

@@ -11,10 +11,10 @@ import { toArray } from '@/lib/parser';
 import { isString } from '@/lib/string';
 import { timeDiff } from '@/lib/time';
 
+import { GMPEventLog, GMPMessage } from '../GMP.types';
 import { getStep } from '../GMP.utils';
 import { statusTimelineStyles } from './StatusTimeline.styles';
 import { StatusTimelineProps } from './StatusTimeline.types';
-import { GMPEventLog, GMPMessage } from '../GMP.types';
 
 export function StatusTimeline({
   timeline,
@@ -25,8 +25,7 @@ export function StatusTimeline({
   expressExecuted,
 }: StatusTimelineProps) {
   const entries = toArray(timeline).filter(
-    (entry): entry is GMPMessage =>
-      typeof entry === 'object' && entry !== null
+    (entry): entry is GMPMessage => typeof entry === 'object' && entry !== null
   );
 
   if (entries.length === 0) {
@@ -102,17 +101,12 @@ export function StatusTimeline({
 
                   const {
                     transactionHash,
-                    logIndex,
-                    eventIndex,
                     chain_type,
                     confirmation_txhash,
                     poll_id,
                     axelarTransactionHash,
                     blockNumber,
-                    transaction,
-                    returnValues,
                     contract_address,
-                    block_timestamp,
                   } = stepEventLog ?? {};
 
                   const { url, block_path, transaction_path } = {
@@ -145,7 +139,10 @@ export function StatusTimeline({
                       if (transactionHash && url) {
                         if (id === 'send' && chain_type === 'cosmos') {
                           stepURL = `${url}${transaction_path?.replace('{tx}', transactionHash)}`;
-                        } else if (block_path && typeof blockNumber !== 'undefined') {
+                        } else if (
+                          block_path &&
+                          typeof blockNumber !== 'undefined'
+                        ) {
                           stepURL = `${url}${block_path.replace('{block}', String(blockNumber))}`;
                         } else {
                           stepURL = `${url}${transaction_path?.replace('{tx}', transactionHash)}`;
@@ -154,7 +151,8 @@ export function StatusTimeline({
                       break;
                   }
 
-                  const hasPreviousStep = steps[stepIndex - 1]?.status !== 'pending';
+                  const hasPreviousStep =
+                    steps[stepIndex - 1]?.status !== 'pending';
 
                   const stepContent = (
                     <>
@@ -185,8 +183,12 @@ export function StatusTimeline({
                         {title}
                       </span>
                       {id === 'express' && (
-                        <div className={statusTimelineStyles.expressLabelWrapper}>
-                          <span className={statusTimelineStyles.expressLabel}>Received</span>
+                        <div
+                          className={statusTimelineStyles.expressLabelWrapper}
+                        >
+                          <span className={statusTimelineStyles.expressLabel}>
+                            Received
+                          </span>
                         </div>
                       )}
                       {!isAxelar(sourceChain) && parentMessageID && (
@@ -208,16 +210,21 @@ export function StatusTimeline({
                               return idValue.toString();
                             return undefined;
                           })
-                          .filter((idValue): idValue is string => Boolean(idValue))
+                          .filter((idValue): idValue is string =>
+                            Boolean(idValue)
+                          )
                           .map(childId => (
-                            <div key={childId} className={statusTimelineStyles.hopLinkWrapper}>
-                            <Link
-                              href={`/gmp/${childId}`}
-                              target="_blank"
-                              className={statusTimelineStyles.hopLink}
+                            <div
+                              key={childId}
+                              className={statusTimelineStyles.hopLinkWrapper}
                             >
-                              next Hop →
-                            </Link>
+                              <Link
+                                href={`/gmp/${childId}`}
+                                target="_blank"
+                                className={statusTimelineStyles.hopLink}
+                              >
+                                next Hop →
+                              </Link>
                             </div>
                           ))}
                     </>
@@ -281,19 +288,27 @@ export function StatusTimeline({
                               timeDiff(
                                 moment(),
                                 'seconds',
-                                (rootCall.block_timestamp + estimatedTimeSpent.confirm) *
+                                (rootCall.block_timestamp +
+                                  estimatedTimeSpent.confirm) *
                                   1000
                               ) > 0 && (
-                                <div className={statusTimelineStyles.pendingTimeWrapper}>
+                                <div
+                                  className={
+                                    statusTimelineStyles.pendingTimeWrapper
+                                  }
+                                >
                                   <TimeUntil
                                     timestamp={
-                                      (rootCall.block_timestamp + estimatedTimeSpent.confirm) *
+                                      (rootCall.block_timestamp +
+                                        estimatedTimeSpent.confirm) *
                                       1000
                                     }
                                     prefix="("
                                     suffix=")"
                                     noTooltip
-                                    className={statusTimelineStyles.pendingTimeText}
+                                    className={
+                                      statusTimelineStyles.pendingTimeText
+                                    }
                                   />
                                 </div>
                               )}
@@ -341,14 +356,15 @@ export function StatusTimeline({
                   </span>
                 </div>
               )}
-            {entry?.is_invalid_gas_paid && !(entry.confirm || entry.approved) && (
-              <div className={statusTimelineStyles.warningRow}>
-                <PiWarningCircle size={16} />
-                <span className={statusTimelineStyles.warningText}>
-                  Invalid Gas Paid (source address mismatch)
-                </span>
-              </div>
-            )}
+            {entry?.is_invalid_gas_paid &&
+              !(entry.confirm || entry.approved) && (
+                <div className={statusTimelineStyles.warningRow}>
+                  <PiWarningCircle size={16} />
+                  <span className={statusTimelineStyles.warningText}>
+                    Invalid Gas Paid (source address mismatch)
+                  </span>
+                </div>
+              )}
             {entry?.not_enough_gas_to_execute &&
               !entry.executed &&
               !entry.is_executed && (
@@ -365,5 +381,3 @@ export function StatusTimeline({
     </div>
   );
 }
-
-

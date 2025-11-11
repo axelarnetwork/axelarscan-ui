@@ -49,7 +49,8 @@ export function InfoTime({
   const callBlockTimestamp = call?.block_timestamp;
 
   if (
-    (expressTimeSpent > 0 && ['express_executed', 'executed'].includes(status || '')) ||
+    (expressTimeSpent > 0 &&
+      ['express_executed', 'executed'].includes(status || '')) ||
     (totalTimeSpent > 0 && status === 'executed')
   ) {
     return (
@@ -59,13 +60,19 @@ export function InfoTime({
             ['express_executed', 'executed'].includes(status || '') && (
               <div className={infoStyles.timeExpressRow}>
                 <RiTimerFlashLine size={20} />
-                <TimeSpent fromTimestamp={0} toTimestamp={expressTimeSpent * 1000} />
+                <TimeSpent
+                  fromTimestamp={0}
+                  toTimestamp={expressTimeSpent * 1000}
+                />
               </div>
             )}
           {totalTimeSpent > 0 && status === 'executed' && (
             <div className={infoStyles.timeValueRow}>
               <MdOutlineTimer size={20} />
-              <TimeSpent fromTimestamp={0} toTimestamp={totalTimeSpent * 1000} />
+              <TimeSpent
+                fromTimestamp={0}
+                toTimestamp={totalTimeSpent * 1000}
+              />
             </div>
           )}
         </div>
@@ -84,7 +91,10 @@ export function InfoTime({
           {shouldRenderExpressEstimate && (
             <div className={infoStyles.timeExpressRow}>
               <RiTimerFlashLine size={20} />
-              <TimeSpent fromTimestamp={0} toTimestamp={(estimatedTimeSpent?.express_execute ?? 0) * 1000} />
+              <TimeSpent
+                fromTimestamp={0}
+                toTimestamp={(estimatedTimeSpent?.express_execute ?? 0) * 1000}
+              />
             </div>
           )}
           {totalEstimate > 0 && (
@@ -95,16 +105,15 @@ export function InfoTime({
           )}
         </div>
       </InfoSection>
-      {!['express_executed', 'executed'].includes(status || '') && callBlockTimestamp && (
-        <InfoSection label="Time Spent">
-          <div className={infoStyles.timeValueRow}>
-            <MdOutlineTimer size={20} />
-            <TimeSpent fromTimestamp={callBlockTimestamp * 1000} />
-          </div>
-        </InfoSection>
-      )}
+      {!['express_executed', 'executed'].includes(status || '') &&
+        callBlockTimestamp && (
+          <InfoSection label="Time Spent">
+            <div className={infoStyles.timeValueRow}>
+              <MdOutlineTimer size={20} />
+              <TimeSpent fromTimestamp={callBlockTimestamp * 1000} />
+            </div>
+          </InfoSection>
+        )}
     </>
   );
 }
-
-

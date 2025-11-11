@@ -348,9 +348,11 @@ export interface AddNativeGasResponse {
 
 export interface ManualRelayResponse {
   success?: boolean;
-  error?: {
-    message?: string;
-  } | string;
+  error?:
+    | {
+        message?: string;
+      }
+    | string;
   confirmTx?: {
     transactionHash?: string;
   };
@@ -405,5 +407,3 @@ export interface XRPLSignAndSubmitResponse {
   tx_hash?: string;
   error?: unknown;
 }
-
-

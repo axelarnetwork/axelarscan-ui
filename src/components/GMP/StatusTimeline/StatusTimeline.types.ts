@@ -8,5 +8,3 @@ export interface StatusTimelineProps {
   rootCall: GMPMessage['call'];
   expressExecuted?: GMPMessage['express_executed'];
 }
-
-

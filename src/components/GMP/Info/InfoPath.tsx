@@ -6,7 +6,12 @@ import { infoStyles } from './Info.styles';
 import { InfoPathProps } from './Info.types';
 import { InfoSection } from './InfoSection';
 
-export function InfoPath({ data, isMultihop, sourceChain, destinationChain }: InfoPathProps) {
+export function InfoPath({
+  data,
+  isMultihop,
+  sourceChain,
+  destinationChain,
+}: InfoPathProps) {
   return (
     <InfoSection label="Path">
       <div className={infoStyles.pathRow}>
@@ -61,5 +66,3 @@ export function InfoPath({ data, isMultihop, sourceChain, destinationChain }: In
     </InfoSection>
   );
 }
-
-

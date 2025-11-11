@@ -27,5 +27,3 @@ export function InfoSection({
     </div>
   );
 }
-
-

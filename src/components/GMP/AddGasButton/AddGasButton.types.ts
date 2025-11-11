@@ -1,4 +1,6 @@
 import { AxelarGMPRecoveryAPI } from '@axelar-network/axelarjs-sdk';
+import type { useSignAndExecuteTransaction as useSuiSignAndExecuteTransaction } from '@mysten/dapp-kit';
+import type { useSignAndSubmitTransaction as useXRPLSignAndSubmitTransaction } from '@xrpl-wallet-standard/react';
 import { providers } from 'ethers';
 
 import {
@@ -13,7 +15,11 @@ type SuiWalletStore = WalletContext['suiWalletStore'];
 type StellarWalletStore = WalletContext['stellarWalletStore'];
 type XRPLWalletStore = WalletContext['xrplWalletStore'];
 
-type GenericAsyncFn = (...args: any[]) => Promise<unknown>;
+type SuiSignAndExecuteFn = ReturnType<
+  typeof useSuiSignAndExecuteTransaction
+>['mutateAsync'];
+
+type XRPLSignAndSubmitFn = ReturnType<typeof useXRPLSignAndSubmitTransaction>;
 
 export interface AddGasActionParams {
   data: GMPMessage;
@@ -31,8 +37,8 @@ export interface AddGasActionParams {
   setProcessing: (processing: boolean) => void;
   getData: () => Promise<GMPMessage | undefined>;
   approve: (data: GMPMessage, auto?: boolean) => Promise<void>;
-  suiSignAndExecuteTransaction: GenericAsyncFn;
-  xrplSignAndSubmitTransaction: GenericAsyncFn;
+  suiSignAndExecuteTransaction: SuiSignAndExecuteFn;
+  xrplSignAndSubmitTransaction: XRPLSignAndSubmitFn;
 }
 
 export interface AddGasButtonProps {

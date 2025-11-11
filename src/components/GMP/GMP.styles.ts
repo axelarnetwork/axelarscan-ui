@@ -12,4 +12,3 @@ export const gmpStyles = {
         : 'bg-blue-600 hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600'
     }`,
 };
-

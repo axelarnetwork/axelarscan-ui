@@ -9,7 +9,10 @@ import { InfoSection } from './InfoSection';
 import { InfoTransfersProps } from './Info.types';
 
 export function InfoTransfers({ data, chains }: InfoTransfersProps) {
-  if (!Array.isArray(data.interchain_transfers) || data.interchain_transfers.length === 0) {
+  if (
+    !Array.isArray(data.interchain_transfers) ||
+    data.interchain_transfers.length === 0
+  ) {
     return null;
   }
 
@@ -17,10 +20,16 @@ export function InfoTransfers({ data, chains }: InfoTransfersProps) {
     <InfoSection label="Settlement Filled">
       <div className={infoStyles.transferList}>
         {data.interchain_transfers.map((transfer, index) => {
-          const destinationChainData = getChainData(transfer.destinationChain, chains);
+          const destinationChainData = getChainData(
+            transfer.destinationChain,
+            chains
+          );
 
           return (
-            <div key={`${transfer.destinationChain}-${index}`} className={infoStyles.transferRow}>
+            <div
+              key={`${transfer.destinationChain}-${index}`}
+              className={infoStyles.transferRow}
+            >
               <AssetProfile
                 value={transfer.contract_address || transfer.symbol}
                 chain={transfer.destinationChain}
@@ -32,10 +41,21 @@ export function InfoTransfers({ data, chains }: InfoTransfersProps) {
                 className={infoStyles.assetChip}
                 titleClassName="text-xs"
               />
-              <MdKeyboardArrowRight size={20} className={infoStyles.arrowIcon} />
+              <MdKeyboardArrowRight
+                size={20}
+                className={infoStyles.arrowIcon}
+              />
               {destinationChainData && transfer.recipient && (
-                <Tooltip content={destinationChainData.name} className={infoStyles.tooltip}>
-                  <Image src={destinationChainData.image} alt="" width={20} height={20} />
+                <Tooltip
+                  content={destinationChainData.name}
+                  className={infoStyles.tooltip}
+                >
+                  <Image
+                    src={destinationChainData.image}
+                    alt=""
+                    width={20}
+                    height={20}
+                  />
                 </Tooltip>
               )}
               <Profile
@@ -51,5 +71,3 @@ export function InfoTransfers({ data, chains }: InfoTransfersProps) {
     </InfoSection>
   );
 }
-
-

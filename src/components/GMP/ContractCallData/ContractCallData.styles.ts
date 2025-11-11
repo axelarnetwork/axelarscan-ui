@@ -10,8 +10,7 @@ export const contractCallDataStyles = {
   chainRow: 'flex items-center gap-x-2',
   chainTitle: 'text-sm font-semibold',
   statusTag: 'w-fit capitalize',
-  timeSpentExpress: 'flex items-center gap-x-1 text-green-600 dark:text-green-500',
+  timeSpentExpress:
+    'flex items-center gap-x-1 text-green-600 dark:text-green-500',
   timeSpentTotal: 'flex items-center gap-x-1 text-zinc-400 dark:text-zinc-500',
 } as const;
-
-

@@ -18,9 +18,7 @@ export function InfoSettlement({
   destinationChain,
   executed,
 }: InfoSettlementProps) {
-  const settlementForwardedData = toArray(
-    data.settlementForwardedData
-  ).filter(
+  const settlementForwardedData = toArray(data.settlementForwardedData).filter(
     (entry): entry is GMPSettlementData =>
       typeof entry === 'object' && entry !== null
   );
@@ -38,11 +36,16 @@ export function InfoSettlement({
   }
 
   return (
-    <InfoSection label="Settlement Status" valueClassName={infoStyles.settlementValueSpacing}>
+    <InfoSection
+      label="Settlement Status"
+      valueClassName={infoStyles.settlementValueSpacing}
+    >
       <div className={infoStyles.settlementGrid}>
         <div className={infoStyles.settlementColumn}>
           <div className={infoStyles.settlementColumnContent}>
-            <span className={infoStyles.settlementColumnTitle}>Settlement Forwarded</span>
+            <span className={infoStyles.settlementColumnTitle}>
+              Settlement Forwarded
+            </span>
             <div className={infoStyles.settlementLinks}>
               {settlementForwardedEvents ? (
                 <ExplorerLink
@@ -57,7 +60,9 @@ export function InfoSettlement({
                     key={index}
                     value={entry?.call?.transactionHash}
                     chain="axelarnet"
-                    customURL={entry?.message_id ? `/gmp/${entry.message_id}` : undefined}
+                    customURL={
+                      entry?.message_id ? `/gmp/${entry.message_id}` : undefined
+                    }
                     title={ellipse(entry?.call?.transactionHash ?? '', 6, '0x')}
                     iconOnly={false}
                   />
@@ -70,7 +75,9 @@ export function InfoSettlement({
 
         <div className={infoStyles.settlementColumn}>
           <div className={infoStyles.settlementColumnContent}>
-            <span className={infoStyles.settlementColumnTitle}>Settlement Processed</span>
+            <span className={infoStyles.settlementColumnTitle}>
+              Settlement Processed
+            </span>
             <div className={infoStyles.settlementLinks}>
               {settlementForwardedEvents ? (
                 <ExplorerLink
@@ -87,7 +94,11 @@ export function InfoSettlement({
                       key={index}
                       value={entry?.executed?.transactionHash}
                       chain={entry?.executed?.chain}
-                      title={ellipse(entry?.executed?.transactionHash ?? '', 6, '0x')}
+                      title={ellipse(
+                        entry?.executed?.transactionHash ?? '',
+                        6,
+                        '0x'
+                      )}
                       iconOnly={false}
                     />
                   ))
@@ -99,7 +110,9 @@ export function InfoSettlement({
 
         <div className={infoStyles.settlementColumn}>
           <div className={infoStyles.settlementColumnContent}>
-            <span className={infoStyles.settlementColumnTitle}>Settlement Filled</span>
+            <span className={infoStyles.settlementColumnTitle}>
+              Settlement Filled
+            </span>
             <div className={infoStyles.settlementLinks}>
               {settlementFilledEvents ? (
                 <ExplorerLink
@@ -114,7 +127,9 @@ export function InfoSettlement({
                     key={index}
                     value={entry?.call?.transactionHash}
                     chain="axelarnet"
-                    customURL={entry?.message_id ? `/gmp/${entry.message_id}` : undefined}
+                    customURL={
+                      entry?.message_id ? `/gmp/${entry.message_id}` : undefined
+                    }
                     title={ellipse(entry?.call?.transactionHash ?? '', 6, '0x')}
                     iconOnly={false}
                   />
@@ -127,7 +142,9 @@ export function InfoSettlement({
 
         <div className={infoStyles.settlementColumn}>
           <div className={infoStyles.settlementColumnContent}>
-            <span className={infoStyles.settlementColumnTitle}>Tokens Released</span>
+            <span className={infoStyles.settlementColumnTitle}>
+              Tokens Released
+            </span>
             <div className={infoStyles.settlementLinks}>
               {settlementFilledEvents ? (
                 <ExplorerLink
@@ -142,7 +159,11 @@ export function InfoSettlement({
                     key={index}
                     value={entry?.executed?.transactionHash}
                     chain={entry?.executed?.chain}
-                    title={ellipse(entry?.executed?.transactionHash ?? '', 6, '0x')}
+                    title={ellipse(
+                      entry?.executed?.transactionHash ?? '',
+                      6,
+                      '0x'
+                    )}
                     iconOnly={false}
                   />
                 ))
@@ -154,5 +175,3 @@ export function InfoSettlement({
     </InfoSection>
   );
 }
-
-

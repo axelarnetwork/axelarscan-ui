@@ -5,5 +5,3 @@ export const gasStyles = {
   nestedNumber: 'text-xs font-medium',
   nestedNumberMuted: 'text-xs font-normal text-zinc-400 dark:text-zinc-500',
 } as const;
-
-

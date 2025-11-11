@@ -25,5 +25,3 @@ export function GMPContainer({ data, children }: GMPContainerProps) {
     </Container>
   );
 }
-
-

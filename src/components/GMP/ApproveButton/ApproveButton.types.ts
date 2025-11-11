@@ -19,4 +19,3 @@ export interface ApproveButtonProps {
   chains: ChainMetadata[] | null;
   estimatedTimeSpent: { confirm?: number } | null;
 }
-

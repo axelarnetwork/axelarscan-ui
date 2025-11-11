@@ -14,8 +14,7 @@ export const statusTimelineStyles = {
     'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400',
   stepCircleFailed:
     'bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-400',
-  stepLabel:
-    'absolute mt-1 whitespace-nowrap text-2xs font-medium',
+  stepLabel: 'absolute mt-1 whitespace-nowrap text-2xs font-medium',
   stepLabelSuccess: 'text-blue-600 dark:text-blue-500',
   stepLabelFailed: 'text-red-600 dark:text-red-500',
   shortTitleSpacing: 'ml-1',
@@ -34,8 +33,7 @@ export const statusTimelineStyles = {
   pendingBorderDefault: 'border-zinc-200 dark:border-zinc-700',
   pendingBorderActive: 'border-blue-600 dark:border-blue-500',
   pendingClock: 'h-5 w-5',
-  pendingLabel:
-    'absolute mt-12 whitespace-nowrap pt-1 text-2xs font-medium',
+  pendingLabel: 'absolute mt-12 whitespace-nowrap pt-1 text-2xs font-medium',
   pendingLabelActive: 'text-blue-600 dark:text-blue-500',
   pendingLabelInactive: 'text-zinc-400 dark:text-zinc-500',
   pendingTimeWrapper: 'absolute mt-20',
@@ -43,5 +41,3 @@ export const statusTimelineStyles = {
   warningRow: 'flex items-center gap-x-1 text-red-600 dark:text-red-500',
   warningText: 'text-xs',
 } as const;
-
-

@@ -145,4 +145,3 @@ declare module '@/components/GMPs' {
   export function customData<T = GMPMessage | null>(value: unknown): Promise<T>;
   export function getEvent(data: GMPMessage): string;
 }
-

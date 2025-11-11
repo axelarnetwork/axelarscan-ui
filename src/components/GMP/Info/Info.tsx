@@ -12,8 +12,8 @@ import { Tooltip } from '@/components/Tooltip';
 import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { toTitle } from '@/lib/string';
+import { GMPEventLog, GMPMessage } from '../GMP.types';
 import { StatusTimeline } from '../StatusTimeline/StatusTimeline';
-import { GMPMessage, GMPEventLog } from '../GMP.types';
 import { infoStyles } from './Info.styles';
 import { InfoGasMetrics } from './InfoGasMetrics';
 import { InfoHeader } from './InfoHeader';
@@ -40,7 +40,6 @@ export function Info({
   const {
     call,
     gas_paid,
-    gas_paid_to_callback,
     express_executed,
     confirm,
     approved,
@@ -71,7 +70,8 @@ export function Info({
   const contractAddressValue =
     approved?.returnValues?.contractAddress ||
     call?.returnValues?.destinationContractAddress;
-  const contractAddress = typeof contractAddressValue === 'string' ? contractAddressValue : undefined;
+  const contractAddress =
+    typeof contractAddressValue === 'string' ? contractAddressValue : undefined;
 
   const sourceChainData = getChainData(sourceChain, chains);
   const { url, transaction_path } = { ...sourceChainData?.explorer };
@@ -106,14 +106,13 @@ export function Info({
     data.originData,
     data,
     data.callbackData,
-  ]).filter((d): d is GMPMessage => 
-    d !== undefined && 
-    typeof d === 'object' && 
-    (
-      ((d.time_spent?.call_express_executed ?? 0) > 0 &&
+  ]).filter(
+    (d): d is GMPMessage =>
+      d !== undefined &&
+      typeof d === 'object' &&
+      (((d.time_spent?.call_express_executed ?? 0) > 0 &&
         ['express_executed', 'executed'].includes(d.status ?? '')) ||
-      ((d.time_spent?.total ?? 0) > 0 && d.status === 'executed')
-    )
+        ((d.time_spent?.total ?? 0) > 0 && d.status === 'executed'))
   );
   const showDetails = !lite && seeMore;
 
@@ -142,7 +141,14 @@ export function Info({
             <dt className={infoStyles.label}>Status</dt>
             <dd className={infoStyles.value}>
               <StatusTimeline
-                timeline={toArray([data.originData, data, data.callbackData]).filter((d): d is GMPMessage => d !== undefined && typeof d === 'object')}
+                timeline={toArray([
+                  data.originData,
+                  data,
+                  data.callbackData,
+                ]).filter(
+                  (d): d is GMPMessage =>
+                    d !== undefined && typeof d === 'object'
+                )}
                 chains={chains}
                 estimatedTimeSpent={estimatedTimeSpent}
                 isMultihop={isMultihop}
@@ -190,7 +196,11 @@ export function Info({
                 <AssetProfile
                   value={symbol}
                   chain={data.originData?.call?.chain ?? sourceChain}
-                  amount={(data.originData?.amount ?? data.amount) as number | undefined}
+                  amount={
+                    (data.originData?.amount ?? data.amount) as
+                      | number
+                      | undefined
+                  }
                   ITSPossible={true}
                   onlyITS={!getEvent(data)?.includes('ContractCall')}
                   width={16}
@@ -198,8 +208,10 @@ export function Info({
                   className={infoStyles.assetChip}
                   titleClassName="text-xs"
                 />
-                {!!(data.originData?.interchain_transfer?.contract_address ||
-                  interchain_transfer?.contract_address) && (
+                {!!(
+                  data.originData?.interchain_transfer?.contract_address ||
+                  interchain_transfer?.contract_address
+                ) && (
                   <Tooltip
                     content="Token Address"
                     className={infoStyles.tooltip}
@@ -208,7 +220,7 @@ export function Info({
                       address={
                         (data.originData?.interchain_transfer
                           ?.contract_address ||
-                        interchain_transfer?.contract_address) as string
+                          interchain_transfer?.contract_address) as string
                       }
                       chain={data.originData?.call?.chain ?? sourceChain}
                       noResolveName={true}
@@ -245,20 +257,21 @@ export function Info({
             showAdditionalDetails={showDetails}
             call={call}
           />
-        <InfoGasMetrics
-          data={data}
-          gasData={gasData}
-          refundedData={refundedData}
-          refundedMoreData={toArray(refundedMoreData).filter((entry): entry is GMPEventLog => 
-            typeof entry === 'object' && entry !== null
-          )}
-          showDetails={showDetails}
-          fees={fees}
-          gas={gas}
-          gasPaid={typeof gas_paid === 'object' ? gas_paid : undefined}
-          gasPaidToCallback={data.gas_paid_to_callback_amount}
-          isMultihop={isMultihop}
-        />
+          <InfoGasMetrics
+            data={data}
+            gasData={gasData}
+            refundedData={refundedData}
+            refundedMoreData={toArray(refundedMoreData).filter(
+              (entry): entry is GMPEventLog =>
+                typeof entry === 'object' && entry !== null
+            )}
+            showDetails={showDetails}
+            fees={fees}
+            gas={gas}
+            gasPaid={typeof gas_paid === 'object' ? gas_paid : undefined}
+            gasPaidToCallback={data.gas_paid_to_callback_amount}
+            isMultihop={isMultihop}
+          />
           {showDetails && (
             <div
               className={clsx(
@@ -266,14 +279,21 @@ export function Info({
                 data.callbackData && infoStyles.detailsGridTwoCols
               )}
             >
-              {[data, data.callbackData].filter((d): d is GMPMessage => d !== undefined && typeof d === 'object').map((d, i) => (
-                <ContractCallData
-                  key={i}
-                  data={d}
-                  executeData={i === 0 && executeData ? executeData : undefined}
-                  isMultihop={isMultihop}
-                />
-              ))}
+              {[data, data.callbackData]
+                .filter(
+                  (d): d is GMPMessage =>
+                    d !== undefined && typeof d === 'object'
+                )
+                .map((d, i) => (
+                  <ContractCallData
+                    key={i}
+                    data={d}
+                    executeData={
+                      i === 0 && executeData ? executeData : undefined
+                    }
+                    isMultihop={isMultihop}
+                  />
+                ))}
             </div>
           )}
         </dl>
