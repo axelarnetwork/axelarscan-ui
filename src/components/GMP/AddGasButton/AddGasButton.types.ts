@@ -1,14 +1,19 @@
 import { AxelarGMPRecoveryAPI } from '@axelar-network/axelarjs-sdk';
-import { SignAndExecuteTransaction } from '@mysten/dapp-kit';
-import { SignAndSubmitTransaction } from '@xrpl-wallet-standard/react';
 import { providers } from 'ethers';
 
-import { CosmosWalletState } from '@/components/Wallet/CosmosWallet.hooks';
-import { StellarWalletState } from '@/components/Wallet/StellarWallet';
-import { SuiWalletState } from '@/components/Wallet/SuiWallet.hooks';
-import { XRPLWalletState } from '@/components/Wallet/XRPLWallet.hooks';
+import {
+  ChainMetadata,
+  GMPMessage,
+  GMPToastState,
+  WalletContext,
+} from '../GMP.types';
 
-import { ChainMetadata, GMPMessage, GMPToastState } from '../GMP.types';
+type CosmosWalletStore = WalletContext['cosmosWalletStore'];
+type SuiWalletStore = WalletContext['suiWalletStore'];
+type StellarWalletStore = WalletContext['stellarWalletStore'];
+type XRPLWalletStore = WalletContext['xrplWalletStore'];
+
+type GenericAsyncFn = (...args: any[]) => Promise<unknown>;
 
 export interface AddGasActionParams {
   data: GMPMessage;
@@ -17,17 +22,17 @@ export interface AddGasActionParams {
   provider: providers.Web3Provider | null;
   signer: providers.JsonRpcSigner | null;
   address: string | null;
-  cosmosWalletStore: CosmosWalletState;
-  suiWalletStore: SuiWalletState;
-  stellarWalletStore: StellarWalletState;
-  xrplWalletStore: XRPLWalletState;
+  cosmosWalletStore: CosmosWalletStore;
+  suiWalletStore: SuiWalletStore;
+  stellarWalletStore: StellarWalletStore;
+  xrplWalletStore: XRPLWalletStore;
   estimatedGasUsed: number | null;
   setResponse: (response: GMPToastState) => void;
   setProcessing: (processing: boolean) => void;
   getData: () => Promise<GMPMessage | undefined>;
   approve: (data: GMPMessage, auto?: boolean) => Promise<void>;
-  suiSignAndExecuteTransaction: SignAndExecuteTransaction;
-  xrplSignAndSubmitTransaction: SignAndSubmitTransaction;
+  suiSignAndExecuteTransaction: GenericAsyncFn;
+  xrplSignAndSubmitTransaction: GenericAsyncFn;
 }
 
 export interface AddGasButtonProps {
@@ -38,9 +43,8 @@ export interface AddGasButtonProps {
   chains: ChainMetadata[] | null;
   chainId: number | null;
   signer: providers.JsonRpcSigner | null;
-  cosmosWalletStore: CosmosWalletState;
-  suiWalletStore: SuiWalletState;
-  stellarWalletStore: StellarWalletState;
-  xrplWalletStore: XRPLWalletState;
+  cosmosWalletStore: CosmosWalletStore;
+  suiWalletStore: SuiWalletStore;
+  stellarWalletStore: StellarWalletStore;
+  xrplWalletStore: XRPLWalletStore;
 }
-

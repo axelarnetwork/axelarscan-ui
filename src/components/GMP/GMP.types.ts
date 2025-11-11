@@ -313,7 +313,7 @@ export interface AddGasParams {
 // Wallet context types
 export interface WalletContext {
   cosmosWalletStore: {
-    signer: unknown;
+    signer?: unknown;
     chainId?: string | null;
   };
   signer: unknown;
@@ -322,8 +322,14 @@ export interface WalletContext {
   };
   stellarWalletStore: {
     address?: string | null;
-    provider?: unknown;
-    network?: unknown;
+    provider?: {
+      signTransaction?: (txXdr: string) => Promise<{ signedTxXdr?: string }>;
+      disconnect?: () => Promise<void>;
+    } | null;
+    network?: {
+      network?: string;
+      networkPassphrase?: string;
+    } | null;
     sorobanRpcUrl?: string | null;
   };
   xrplWalletStore: {

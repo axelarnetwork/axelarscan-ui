@@ -1,12 +1,17 @@
 import { AxelarGMPRecoveryAPI } from '@axelar-network/axelarjs-sdk';
 import { providers } from 'ethers';
 
-import { CosmosWalletState } from '@/components/Wallet/CosmosWallet.hooks';
-import { StellarWalletState } from '@/components/Wallet/StellarWallet';
-import { SuiWalletState } from '@/components/Wallet/SuiWallet.hooks';
-import { XRPLWalletState } from '@/components/Wallet/XRPLWallet.hooks';
+import type {
+  ChainMetadata,
+  GMPMessage,
+  GMPToastState,
+  WalletContext,
+} from '../GMP.types';
 
-import { ChainMetadata, GMPMessage, GMPToastState } from '../GMP.types';
+type CosmosWalletStore = WalletContext['cosmosWalletStore'];
+type SuiWalletStore = WalletContext['suiWalletStore'];
+type StellarWalletStore = WalletContext['stellarWalletStore'];
+type XRPLWalletStore = WalletContext['xrplWalletStore'];
 
 export interface ExecuteActionParams {
   data: GMPMessage;
@@ -26,9 +31,8 @@ export interface ExecuteButtonProps {
   chains: ChainMetadata[] | null;
   chainId: number | null;
   signer: providers.JsonRpcSigner | null;
-  cosmosWalletStore: CosmosWalletState;
-  suiWalletStore: SuiWalletState;
-  stellarWalletStore: StellarWalletState;
-  xrplWalletStore: XRPLWalletState;
+  cosmosWalletStore: CosmosWalletStore;
+  suiWalletStore: SuiWalletStore;
+  stellarWalletStore: StellarWalletStore;
+  xrplWalletStore: XRPLWalletStore;
 }
-

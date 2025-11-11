@@ -1,19 +1,15 @@
 import { isAxelar } from '@/lib/chain';
-import { getChainData } from '@/lib/config';
 import { parseError } from '@/lib/parser';
 import { equalsIgnoreCase } from '@/lib/string';
 import { timeDiff } from '@/lib/time';
 
-import { ChainMetadata, GMPMessage } from '../GMP.types';
+import { GMPMessage } from '../GMP.types';
 import { ExecuteActionParams } from './ExecuteButton.types';
 
 /**
  * Determines if the Execute button should be shown based on transaction state
  */
-export function shouldShowExecuteButton(
-  data: GMPMessage | null,
-  chains: ChainMetadata[] | null
-): boolean {
+export function shouldShowExecuteButton(data: GMPMessage | null): boolean {
   if (!data?.call) return false;
 
   const { call, confirm, approved, executed, error } = data;
@@ -49,7 +45,8 @@ export function shouldShowExecuteButton(
   const relevantTimestamp = isCosmosDestination
     ? confirm?.block_timestamp
     : approved?.block_timestamp;
-  const timestampToUse = (relevantTimestamp || call.block_timestamp || 0) * 1000;
+  const timestampToUse =
+    (relevantTimestamp || call.block_timestamp || 0) * 1000;
   const minWaitTime = isCosmosDestination ? 300 : 120; // 5 min for cosmos, 2 min for evm
   const hasError = Boolean(error);
   const hasEnoughTimePassed = timeDiff(timestampToUse) >= minWaitTime;
@@ -119,4 +116,3 @@ export async function executeExecute(
 
   setProcessing(false);
 }
-

@@ -21,16 +21,22 @@ export function ExecuteButton({
   stellarWalletStore,
   xrplWalletStore,
 }: ExecuteButtonProps) {
-  // Check if button should be shown
-  if (!shouldShowExecuteButton(data, chains)) {
+  if (!shouldShowExecuteButton(data)) {
     return null;
   }
 
-  const { call } = data!;
+  if (!data || !data.call) {
+    return null;
+  }
+
+  const call = data.call;
   const isCosmosDestination = call.destination_chain_type === 'cosmos';
 
   // Compute wallet state
-  const destinationChainData = getChainData(call.returnValues?.destinationChain, chains);
+  const destinationChainData = getChainData(
+    call.returnValues?.destinationChain,
+    chains
+  );
   const walletContext = {
     cosmosWalletStore,
     signer,
@@ -52,7 +58,9 @@ export function ExecuteButton({
       {(isCosmosDestination || (isWalletConnected && !needsSwitchChain)) && (
         <button
           disabled={processing}
-          onClick={() => (isCosmosDestination ? onApprove(data!) : onExecute(data!))}
+          onClick={() =>
+            isCosmosDestination ? onApprove(data!) : onExecute(data!)
+          }
           className={clsx(gmpStyles.actionButton(processing))}
         >
           Execut{processing ? 'ing...' : 'e'}

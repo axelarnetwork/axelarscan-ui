@@ -56,20 +56,22 @@ export function shouldShowAddGasButton(
       (gas?.gas_remain_amount !== undefined &&
         gas.gas_remain_amount < 0.000001));
 
-  const shouldShowForCallback =
+  const shouldShowForCallback = Boolean(
     data.callbackData &&
-    (data.callbackData.is_insufficient_fee ||
-      data.callbackData.not_enough_gas_to_execute ||
-      checkNeedMoreGasFromError(data.callbackData.error)) &&
-    data.callbackData.created_at &&
-    typeof data.callbackData.created_at === 'object' &&
-    'ms' in data.callbackData.created_at &&
-    typeof data.callbackData.created_at.ms === 'number' &&
-    timeDiff(data.callbackData.created_at.ms) > 60;
+      (data.callbackData.is_insufficient_fee ||
+        data.callbackData.not_enough_gas_to_execute ||
+        checkNeedMoreGasFromError(data.callbackData.error)) &&
+      data.callbackData.created_at &&
+      typeof data.callbackData.created_at === 'object' &&
+      'ms' in data.callbackData.created_at &&
+      typeof data.callbackData.created_at.ms === 'number' &&
+      timeDiff(data.callbackData.created_at.ms) > 60
+  );
 
-  const shouldShowForAxelarDestination =
+  const shouldShowForAxelarDestination = Boolean(
     isAxelar(call.returnValues?.destinationChain) &&
-    checkNeedMoreGasFromError(error);
+      checkNeedMoreGasFromError(error)
+  );
 
   return (
     shouldShowForSelf || shouldShowForCallback || shouldShowForAxelarDestination
@@ -420,6 +422,9 @@ export async function executeAddGas(params: AddGasActionParams): Promise<void> {
         stellarWalletStore.network &&
         stellarWalletStore.sorobanRpcUrl
       ) {
+        const networkPassphrase =
+          stellarWalletStore.network!.networkPassphrase!;
+
         const server = new StellarSDK.rpc.Server(
           sourceChainData?.endpoints?.rpc?.[0] ||
             stellarWalletStore.sorobanRpcUrl,
@@ -429,11 +434,11 @@ export async function executeAddGas(params: AddGasActionParams): Promise<void> {
         const preparedTransaction = await server.prepareTransaction(
           StellarSDK.TransactionBuilder.fromXDR(
             stellarTransactionXdr,
-            stellarWalletStore.network.networkPassphrase
+            networkPassphrase
           )
         );
 
-        const signedResult = await stellarWalletStore.provider.signTransaction(
+        const signedResult = await stellarWalletStore.provider.signTransaction!(
           preparedTransaction.toXDR()
         );
 
@@ -452,7 +457,7 @@ export async function executeAddGas(params: AddGasActionParams): Promise<void> {
             stellarResponse = await server.sendTransaction(
               StellarSDK.TransactionBuilder.fromXDR(
                 signedResult.signedTxXdr,
-                stellarWalletStore.network.networkPassphrase
+                networkPassphrase
               )
             );
 

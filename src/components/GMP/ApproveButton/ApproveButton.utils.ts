@@ -1,4 +1,3 @@
-import { isAxelar } from '@/lib/chain';
 import { sleep } from '@/lib/operator';
 import { parseError } from '@/lib/parser';
 import { timeDiff } from '@/lib/time';
@@ -31,50 +30,57 @@ export function shouldShowApproveButton(
 
   // Check if already approved/executed
   const isAlreadyApproved = isCosmosDestination
-    ? (isCosmosSource && executed?.transactionHash) ||
-      (confirm && confirm.poll_id !== data.confirm_failed_event?.poll_id)
-    : approved || isVMDestination;
+    ? Boolean(
+        (isCosmosSource && executed?.transactionHash) ||
+          (confirm && confirm.poll_id !== data.confirm_failed_event?.poll_id)
+      )
+    : Boolean(approved) || isVMDestination;
 
   if (isAmplifierCall) return false;
   if (isAlreadyApproved) return false;
   if (data.is_executed) return false;
 
   // Check execution status
-  const hasValidExecution =
+  const hasValidExecution = Boolean(
     !executed ||
-    (executed.axelarTransactionHash &&
-      !executed.transactionHash &&
-      (error ||
-        (executed.block_timestamp &&
-          timeDiff(executed.block_timestamp * 1000) >= 3600)));
+      (executed.axelarTransactionHash &&
+        !executed.transactionHash &&
+        (error ||
+          (executed.block_timestamp &&
+            timeDiff(executed.block_timestamp * 1000) >= 3600)))
+  );
 
   if (!hasValidExecution) return false;
 
   // Check if confirmed or enough time has passed
-  const hasConfirmation =
+  const hasConfirmation = Boolean(
     confirm ||
-    data.confirm_failed ||
-    (call.block_timestamp && timeDiff(call.block_timestamp * 1000) >= finalityTime);
+      data.confirm_failed ||
+      (call.block_timestamp &&
+        timeDiff(call.block_timestamp * 1000) >= finalityTime)
+  );
 
   if (!hasConfirmation) return false;
 
   // Check if enough time has passed since confirmation or call
-  const hasEnoughTimePassed =
+  const hasEnoughTimePassed = Boolean(
     (confirm &&
       confirm.block_timestamp &&
       timeDiff(confirm.block_timestamp * 1000) >= 60) ||
-    (call.block_timestamp && timeDiff(call.block_timestamp * 1000) >= 60);
+      (call.block_timestamp && timeDiff(call.block_timestamp * 1000) >= 60)
+  );
 
   if (!hasEnoughTimePassed) return false;
 
   // Check if valid call with sufficient gas
-  const hasValidGas =
+  const hasValidGas = Boolean(
     !data.is_invalid_call &&
-    !data.is_insufficient_fee &&
-    (gas?.gas_remain_amount ||
-      data.gas_paid_to_callback ||
-      data.is_call_from_relayer ||
-      call.proposal_id);
+      !data.is_insufficient_fee &&
+      (gas?.gas_remain_amount ||
+        data.gas_paid_to_callback ||
+        data.is_call_from_relayer ||
+        call.proposal_id)
+  );
 
   return hasValidGas;
 }
@@ -173,4 +179,3 @@ export async function executeApprove(
 
   setProcessing(false);
 }
-

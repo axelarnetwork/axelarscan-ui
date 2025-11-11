@@ -18,7 +18,12 @@ export function ApproveButton({
     return null;
   }
 
-  const { call, confirm } = data!;
+  if (!data || !data.call) {
+    return null;
+  }
+
+  const call = data.call;
+  const confirm = data.confirm;
 
   // Determine button text
   const isConfirmed = Boolean(confirm && !data!.confirm_failed);
@@ -32,14 +37,18 @@ export function ApproveButton({
         onClick={() => onApprove(data!)}
         className={clsx(gmpStyles.actionButton(processing))}
       >
-        {(!isConfirmed || data!.confirm_failed) && !isAxelarChain && !isCosmosChain
+        {(!isConfirmed || data!.confirm_failed) &&
+        !isAxelarChain &&
+        !isCosmosChain
           ? 'Confirm'
           : isCosmosChain
             ? 'Execut'
             : 'Approv'}
         {processing
           ? 'ing...'
-          : (!isConfirmed || data!.confirm_failed) && !isAxelarChain && !isCosmosChain
+          : (!isConfirmed || data!.confirm_failed) &&
+              !isAxelarChain &&
+              !isCosmosChain
             ? ''
             : 'e'}
       </button>
