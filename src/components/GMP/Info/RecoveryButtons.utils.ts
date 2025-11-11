@@ -1,66 +1,205 @@
 import { checkNeedMoreGasFromError } from '@/components/GMPs';
 import { isAxelar } from '@/lib/chain';
 import { getChainData } from '@/lib/config';
-import { equalsIgnoreCase } from '@/lib/string';
+import { equalsIgnoreCase, headString } from '@/lib/string';
 import { timeDiff } from '@/lib/time';
 
-import type {
-  ChainMetadata,
-  GMPMessage,
-  GMPToastState,
-} from '../GMP.types';
-import { isAddGasSupported } from '../GMP.utils';
+import type { ChainMetadata, GMPMessage, GMPToastState } from '../GMP.types';
 
+/**
+ * Axelar only supports the add-gas flow on chains that expose the relevant
+ * APIs.
+ *
+ * @param targetChain      The human-readable chain identifier (e.g. axelar, osmosis, sui-1).
+ * @param targetChainType  Axelar's chain type classification (cosmos, evm, vm).
+ * @param chains           Cached chain metadata for lookups.
+ */
+function isChainSupportedForAddGas(
+  targetChain: string | undefined,
+  targetChainType: string | undefined,
+  chains: ChainMetadata[] | null
+): boolean {
+  if (targetChainType !== 'vm') {
+    return true;
+  }
+
+  const chainData = getChainData(targetChain, chains);
+  if (chainData && typeof chainData.chain_id === 'number') {
+    return true;
+  }
+
+  const normalizedChain = headString(targetChain)?.toLowerCase();
+
+  return Boolean(
+    normalizedChain && ['sui', 'stellar', 'xrpl'].includes(normalizedChain)
+  );
+}
+
+/**
+ * The original call still needs gas when:
+ *  - Nothing has executed yet.
+ *  - We have not already approved the message.
+ *  - Cosmos calls have waited at least a minute for finality.
+ *  - One of the gas shortage indicators from Axelar is present.
+ */
+function needsGasForOriginalCall({
+  call,
+  gas_paid,
+  confirm,
+  approved,
+  executed,
+  gas,
+  gmp,
+}: {
+  call: GMPMessage['call'];
+  gas_paid: GMPMessage['gas_paid'];
+  confirm: GMPMessage['confirm'];
+  approved: GMPMessage['approved'];
+  executed: GMPMessage['executed'];
+  gas: GMPMessage['gas'];
+  gmp: GMPMessage;
+}): boolean {
+  if (executed || gmp.is_executed || approved) {
+    return false;
+  }
+
+  if (confirm && !gmp.confirm_failed) {
+    return false;
+  }
+
+  const cosmosNeedsFinality =
+    call?.chain_type === 'cosmos' &&
+    (!call.block_timestamp || timeDiff(call.block_timestamp * 1000) < 60);
+
+  if (cosmosNeedsFinality) {
+    return false;
+  }
+
+  const shortageDetected =
+    !(gas_paid || gmp.gas_paid_to_callback) ||
+    gmp.is_insufficient_fee ||
+    gmp.is_invalid_gas_paid ||
+    gmp.not_enough_gas_to_execute ||
+    (gas?.gas_remain_amount !== undefined && gas.gas_remain_amount < 0.000001);
+
+  return shortageDetected;
+}
+
+/**
+ * Callback chains need extra gas when the callback leg exists and any of the
+ * failure markers Axelar emits are present, provided the callback record is
+ * older than one minute.
+ */
+function needsGasForCallback(gmp: GMPMessage): boolean {
+  const callback = gmp.callbackData;
+  if (
+    !callback ||
+    !(
+      callback.is_insufficient_fee ||
+      callback.not_enough_gas_to_execute ||
+      checkNeedMoreGasFromError(callback.error)
+    )
+  ) {
+    return false;
+  }
+
+  const createdAt = callback.created_at;
+  if (
+    !createdAt ||
+    typeof createdAt !== 'object' ||
+    !('ms' in createdAt) ||
+    typeof createdAt.ms !== 'number'
+  ) {
+    return false;
+  }
+
+  return timeDiff(createdAt.ms) > 60;
+}
+
+/**
+ * Determine whether the “Add Gas” recovery button should be rendered.
+ *
+ * - Only chains that support the add-gas flow (EVM, Cosmos, Sui, Stellar,
+ *   XRPL) can show the button.
+ * - If the most recent action already reported “Pay gas successful” we
+ *   suppress the button to avoid duplicate submissions.
+ * - Beyond those guards we surface the button when any of the three
+ *   problem scenarios are true:
+ *     * The original call is still awaiting gas (self check).
+ *     * A callback leg ran out of gas (callback check).
+ *     * The call is routing back through Axelar and the last transaction
+ *       error indicates additional gas is required.
+ *
+ * @param data      The full GMP message object.
+ * @param response  The latest toast state which can signal a recent success.
+ * @param chains    Axelar chain metadata used for lookups.
+ */
 export function shouldShowAddGasButton(
   data: GMPMessage | null,
   response: GMPToastState | null,
   chains: ChainMetadata[] | null
 ): boolean {
-  if (!data?.call) return false;
+  if (!data?.call) {
+    return false;
+  }
 
   const { call, gas_paid, confirm, approved, executed, error, gas } = data;
   const sourceChainData = getChainData(call.chain, chains);
 
-  if (!sourceChainData || isAxelar(call.chain)) return false;
-  if (!isAddGasSupported(call.chain, call.chain_type, chains)) return false;
-  if (response?.message === 'Pay gas successful') return false;
+  if (!sourceChainData) {
+    return false;
+  }
 
-  const shouldShowForSelf =
-    !executed &&
-    !data.is_executed &&
-    !approved &&
-    !(confirm && !data.confirm_failed) &&
-    (call.chain_type !== 'cosmos' ||
-      (call.block_timestamp && timeDiff(call.block_timestamp * 1000) >= 60)) &&
-    (!(gas_paid || data.gas_paid_to_callback) ||
-      data.is_insufficient_fee ||
-      data.is_invalid_gas_paid ||
-      data.not_enough_gas_to_execute ||
-      (gas?.gas_remain_amount !== undefined &&
-        gas.gas_remain_amount < 0.000001));
+  if (isAxelar(call.chain)) {
+    return false;
+  }
 
-  const shouldShowForCallback = Boolean(
-    data.callbackData &&
-      (data.callbackData.is_insufficient_fee ||
-        data.callbackData.not_enough_gas_to_execute ||
-        checkNeedMoreGasFromError(data.callbackData.error)) &&
-      data.callbackData.created_at &&
-      typeof data.callbackData.created_at === 'object' &&
-      'ms' in data.callbackData.created_at &&
-      typeof data.callbackData.created_at.ms === 'number' &&
-      timeDiff(data.callbackData.created_at.ms) > 60
-  );
+  if (!isChainSupportedForAddGas(call.chain, call.chain_type, chains)) {
+    return false;
+  }
 
-  const shouldShowForAxelarDestination = Boolean(
+  if (response?.message === 'Pay gas successful') {
+    return false;
+  }
+
+  if (
+    needsGasForOriginalCall({
+      call,
+      gas_paid,
+      confirm,
+      approved,
+      executed,
+      gas,
+      gmp: data,
+    })
+  ) {
+    return true;
+  }
+
+  if (needsGasForCallback(data)) {
+    return true;
+  }
+
+  const waitingOnAxelar =
     isAxelar(call.returnValues?.destinationChain) &&
-      checkNeedMoreGasFromError(error)
-  );
+    checkNeedMoreGasFromError(error);
 
-  return (
-    shouldShowForSelf || shouldShowForCallback || shouldShowForAxelarDestination
-  );
+  return Boolean(waitingOnAxelar);
 }
 
+/**
+ * Decide if the “Approve / Confirm / Execute” recovery button should be shown.
+ *
+ * - No button for amplifier calls (Axelar handles those internally).
+ * - Skip when the destination leg has already been fully approved/executed.
+ * - Require a valid pending Axelar execution (including retries on errors).
+ * - Ensure the original transaction is old enough / has finality.
+ * - Finally, only allow the button when there’s usable gas on the message.
+ *
+ * Depending on the source/destination chain pair the button text/rendered
+ * action changes (Confirm / Approve / Execute). The caller decides which
+ * label to use based on this boolean.
+ */
 export function shouldShowApproveButton(
   data: GMPMessage | null,
   chains: ChainMetadata[] | null,
@@ -131,6 +270,16 @@ export function shouldShowApproveButton(
   return hasValidGas;
 }
 
+/**
+ * Determine if the “Execute” recovery button should appear.
+ *
+ * We only surface the button when:
+ * - The destination chain is neither VM-only (e.g. Cosmos, Sui, Stellar, XRPL) nor Axelar itself.
+ * - The call carries a payload (executeWithToken / execute),
+ * - The message has an approved/confirmed step ready to execute,
+ * - There is no successful execution recorded (or the failure hash matches).
+ * - Enough time has passed since confirmation (or an explicit error exists).
+ */
 export function shouldShowExecuteButton(data: GMPMessage | null): boolean {
   if (!data?.call) return false;
 
@@ -171,4 +320,3 @@ export function shouldShowExecuteButton(data: GMPMessage | null): boolean {
 
   return hasError || hasEnoughTimePassed;
 }
-

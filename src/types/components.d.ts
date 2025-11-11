@@ -75,20 +75,6 @@ declare module '@/components/Profile' {
   export function AssetProfile(props: AssetProfileProps): JSX.Element;
 }
 
-declare module '@/components/Number' {
-  export interface NumberProps {
-    value?: number | string | null;
-    format?: string;
-    prefix?: string;
-    suffix?: string;
-    noTooltip?: boolean;
-    className?: string;
-    title?: string;
-  }
-
-  export function Number(props: NumberProps): JSX.Element;
-}
-
 declare module '@/components/Tag' {
   export interface TagProps {
     className?: string;

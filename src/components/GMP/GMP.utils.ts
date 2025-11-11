@@ -299,26 +299,6 @@ export function getDefaultGasLimit(chain?: string): number {
 /**
  * Check if adding gas is supported for the given chain
  */
-export function isAddGasSupported(
-  targetChain: string | undefined,
-  targetChainType: string | undefined,
-  chains: ChainMetadata[] | null
-): boolean {
-  if (targetChainType !== 'vm') return true;
-
-  const chainData = getChainData(targetChain, chains);
-  if (isNumber(chainData?.chain_id)) return true;
-
-  if (targetChain && typeof targetChain === 'string') {
-    const normalizedChain = headString(targetChain);
-    if (normalizedChain) {
-      return ['sui', 'stellar', 'xrpl'].includes(normalizedChain);
-    }
-  }
-
-  return false;
-}
-
 /**
  * Check if a wallet is connected for the given chain
  */
