@@ -23,6 +23,9 @@ export const statusTimelineStyles = {
   hopLinkWrapper: 'absolute mt-6',
   hopLink:
     'whitespace-nowrap rounded-md border border-blue-600 px-2 py-1.5 text-base font-semibold text-blue-600 dark:border-blue-500 dark:text-blue-500',
+  chainProfileIcon: 'h-5',
+  chainProfileTitle: 'text-sm font-semibold',
+  stepIcon: 'h-5 w-5 text-white',
   connectorWrapper: 'absolute inset-0 flex items-center',
   connectorLineBase: 'h-0.5 w-full',
   connectorLineSuccess: 'bg-blue-600 dark:bg-blue-500',

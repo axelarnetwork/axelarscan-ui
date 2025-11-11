@@ -89,7 +89,7 @@ export function ContractCallData({
                 value={sourceChain}
                 width={20}
                 height={20}
-                className="h-5"
+                className={contractCallDataStyles.chainProfileIcon}
                 titleClassName={contractCallDataStyles.chainTitle}
               />
               <MdKeyboardArrowRight size={20} />
@@ -97,7 +97,7 @@ export function ContractCallData({
                 value={destinationChain}
                 width={20}
                 height={20}
-                className="h-5"
+                className={contractCallDataStyles.chainProfileIcon}
                 titleClassName={contractCallDataStyles.chainTitle}
               />
             </div>
@@ -133,7 +133,7 @@ export function ContractCallData({
               <div className={contractCallDataStyles.section}>
                 <dt className={contractCallDataStyles.label}>Time Spent</dt>
                 <dd className={contractCallDataStyles.value}>
-                  <div className="flex flex-col gap-y-2">
+                  <div className={contractCallDataStyles.timeSpentList}>
                     {time_spent?.call_express_executed &&
                       ['express_executed', 'executed'].includes(
                         status ?? ''
@@ -209,7 +209,7 @@ export function ContractCallData({
                 childrenClassName={contractCallDataStyles.copyWrapper}
                 className={contractCallDataStyles.copyButton}
               >
-                <span className="text-xs">{sourceChain}</span>
+                <span className={contractCallDataStyles.chainLabel}>{sourceChain}</span>
               </Copy>
             </dd>
           </div>
@@ -224,7 +224,7 @@ export function ContractCallData({
                 childrenClassName={contractCallDataStyles.copyWrapper}
                 className={contractCallDataStyles.copyButton}
               >
-                <span className="text-xs">{destinationChain}</span>
+                <span className={contractCallDataStyles.chainLabel}>{destinationChain}</span>
               </Copy>
             </dd>
           </div>
@@ -309,7 +309,7 @@ export function ContractCallData({
                 childrenClassName={contractCallDataStyles.copyWrapper}
                 className={contractCallDataStyles.copyButton}
               >
-                <span className="text-xs">{sourceSymbol}</span>
+                <span className={contractCallDataStyles.chainLabel}>{sourceSymbol}</span>
               </Copy>
             </dd>
           </div>
@@ -324,7 +324,7 @@ export function ContractCallData({
                 childrenClassName={contractCallDataStyles.copyWrapper}
                 className={contractCallDataStyles.copyButton}
               >
-                <span className="text-xs">{destinationSymbol}</span>
+                <span className={contractCallDataStyles.chainLabel}>{destinationSymbol}</span>
               </Copy>
             </dd>
           </div>
@@ -339,7 +339,7 @@ export function ContractCallData({
                 childrenClassName={contractCallDataStyles.copyWrapper}
                 className={contractCallDataStyles.copyButton}
               >
-                <span className="text-xs">{amountInUnits}</span>
+                <span className={contractCallDataStyles.chainLabel}>{amountInUnits}</span>
               </Copy>
             </dd>
           </div>

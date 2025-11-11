@@ -67,16 +67,16 @@ export function StatusTimeline({
                   value={sourceChain}
                   width={20}
                   height={20}
-                  className="h-5"
-                  titleClassName="text-sm font-semibold"
+                  className={statusTimelineStyles.chainProfileIcon}
+                  titleClassName={statusTimelineStyles.chainProfileTitle}
                 />
                 <MdKeyboardArrowRight size={20} />
                 <ChainProfile
                   value={destinationChain}
                   width={20}
                   height={20}
-                  className="h-5"
-                  titleClassName="text-sm font-semibold"
+                  className={statusTimelineStyles.chainProfileIcon}
+                  titleClassName={statusTimelineStyles.chainProfileTitle}
                 />
               </div>
             )}
@@ -165,9 +165,9 @@ export function StatusTimeline({
                         )}
                       >
                         {status === 'failed' ? (
-                          <MdClose className="h-5 w-5 text-white" />
+                          <MdClose className={statusTimelineStyles.stepIcon} />
                         ) : (
-                          <MdCheck className="h-5 w-5 text-white" />
+                          <MdCheck className={statusTimelineStyles.stepIcon} />
                         )}
                       </div>
                       <span

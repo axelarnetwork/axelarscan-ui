@@ -1,6 +1,5 @@
 import clsx from 'clsx';
 import moment from 'moment';
-import { useState } from 'react';
 import { RxCaretDown, RxCaretUp } from 'react-icons/rx';
 
 import { useGlobalStore } from '@/components/Global';
@@ -25,6 +24,7 @@ import { InfoTransfers } from './InfoTransfers';
 import { RecoveryButtons } from './RecoveryButtons';
 
 import { InfoProps } from './Info.types';
+import { useInfoState } from './Info.hooks';
 
 export function Info({
   data,
@@ -34,7 +34,7 @@ export function Info({
   tx,
   lite,
 }: InfoProps) {
-  const [seeMore, setSeeMore] = useState(false);
+  const { seeMore, toggleSeeMore } = useInfoState();
   const { chains } = useGlobalStore();
 
   const {
@@ -289,10 +289,7 @@ export function Info({
       </div>
       {!lite && (
         <div className={infoStyles.toggleContainer}>
-          <button
-            onClick={() => setSeeMore(!seeMore)}
-            className={infoStyles.toggleButton}
-          >
+          <button onClick={toggleSeeMore} className={infoStyles.toggleButton}>
             <span>See {seeMore ? 'Less' : 'More'}</span>
             {seeMore ? <RxCaretUp size={14} /> : <RxCaretDown size={14} />}
           </button>

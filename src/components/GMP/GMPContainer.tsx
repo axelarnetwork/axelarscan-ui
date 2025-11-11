@@ -6,6 +6,7 @@ import { Response } from '@/components/Response';
 import { Spinner } from '@/components/Spinner';
 
 import { GMPMessage } from './GMP.types';
+import { gmpContainerStyles } from './GMPContainer.styles';
 
 interface GMPContainerProps extends PropsWithChildren {
   data: GMPMessage | null;
@@ -13,14 +14,14 @@ interface GMPContainerProps extends PropsWithChildren {
 
 export function GMPContainer({ data, children }: GMPContainerProps) {
   return (
-    <Container className="sm:mt-8">
+    <Container className={gmpContainerStyles.wrapper}>
       <Toaster />
       {!data ? (
         <Spinner />
       ) : data.status === 'errorOnGetData' ? (
         <Response data={data} />
       ) : (
-        <div className="flex max-w-7xl flex-col gap-y-4">{children}</div>
+        <div className={gmpContainerStyles.content}>{children}</div>
       )}
     </Container>
   );

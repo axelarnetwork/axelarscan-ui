@@ -1,6 +1,8 @@
 export const detailsStyles = {
   container: '-mx-4 mt-8 overflow-x-auto sm:-mx-0 lg:overflow-x-visible',
   multiHopHeader: 'flex items-center gap-x-2',
+  chainProfileIcon: 'h-5',
+  chainProfileTitle: 'text-sm font-semibold',
   table: 'min-w-full divide-y divide-zinc-200 dark:divide-zinc-700',
   tableHead: 'sticky top-0 z-10 bg-white dark:bg-zinc-900',
   tableHeadRow: 'text-sm font-semibold text-zinc-800 dark:text-zinc-200',
@@ -22,4 +24,32 @@ export const detailsStyles = {
   statusBlock: 'flex flex-col gap-y-1.5',
   statusList: 'flex items-center',
   statusStep: 'relative',
-};
+  link: 'text-xs text-blue-600 underline dark:text-blue-500',
+  inlineRow: 'flex items-center gap-x-1',
+  inlineMuted: 'text-xs text-zinc-700 dark:text-zinc-300',
+  mediaAuto: 'h-auto',
+  textXs: 'text-xs',
+  metaColumn: 'flex w-64 flex-col gap-y-1',
+  errorText:
+    'whitespace-pre-wrap text-xs font-normal text-red-600 dark:text-red-500',
+  errorEmphasis:
+    'whitespace-pre-wrap text-xs font-medium text-red-600 dark:text-red-500',
+  columnStackLarge: 'flex flex-col gap-y-4',
+  infoPill:
+    'flex h-6 w-fit items-center rounded-xl bg-zinc-50 px-2.5 py-1 text-2xs dark:bg-zinc-800',
+  codeBlock:
+    'w-fit whitespace-pre-wrap break-all bg-zinc-50 p-2.5 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
+  linkMedium: 'text-xs font-medium text-blue-600 dark:text-blue-500',
+  textEmphasis: 'font-medium text-zinc-900 dark:text-zinc-100',
+  textSubtle: 'text-xs font-medium text-zinc-400 dark:text-zinc-500',
+  textMedium: 'font-medium text-zinc-700 dark:text-zinc-300',
+  tableCellNarrow: 'px-3 py-4 text-left',
+  rowStart: 'flex items-start gap-x-3',
+  columnTight: 'flex flex-col gap-y-1.5',
+  rowLargeGap: 'flex items-center gap-x-4',
+  tableCellEnd:
+    'flex items-center justify-end py-4 pl-3 pr-4 text-right sm:pr-0',
+  explorerLinkText: 'text-blue-600 dark:text-blue-500 text-xs',
+  explorerLinkContainer: '!gap-x-1.5',
+} as const;
+

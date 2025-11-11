@@ -9,6 +9,9 @@ export const contractCallDataStyles = {
   copyText: 'break-all text-xs',
   chainRow: 'flex items-center gap-x-2',
   chainTitle: 'text-sm font-semibold',
+  chainProfileIcon: 'h-5',
+  timeSpentList: 'flex flex-col gap-y-2',
+  chainLabel: 'text-xs',
   statusTag: 'w-fit capitalize',
   timeSpentExpress:
     'flex items-center gap-x-1 text-green-600 dark:text-green-500',

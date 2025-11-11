@@ -48,16 +48,16 @@ export function Details({ data }: DetailsProps) {
             value={sourceChain}
             width={20}
             height={20}
-            className="h-5"
-            titleClassName="text-sm font-semibold"
+            className={detailsStyles.chainProfileIcon}
+            titleClassName={detailsStyles.chainProfileTitle}
           />
           <MdKeyboardArrowRight size={20} />
           <ChainProfile
             value={destinationChain}
             width={20}
             height={20}
-            className="h-5"
-            titleClassName="text-sm font-semibold"
+            className={detailsStyles.chainProfileIcon}
+            titleClassName={detailsStyles.chainProfileTitle}
           />
         </div>
       )}
@@ -164,7 +164,7 @@ export function Details({ data }: DetailsProps) {
                               : `/evm-poll/${poll_id}`
                           }
                           target="_blank"
-                          className="text-xs text-blue-600 underline dark:text-blue-500"
+                          className={detailsStyles.link}
                         >
                           Poll: {poll_id}
                         </Link>
@@ -207,13 +207,13 @@ export function Details({ data }: DetailsProps) {
                     stepMoreInfos.push(
                       <div
                         key={stepMoreInfos.length}
-                        className="flex items-center gap-x-1"
+                        className={detailsStyles.inlineRow}
                       >
                         <Copy size={16} value={axelarTransactionHash}>
                           <Link
                             href={`${axelarChainData.explorer.url}${axelarChainData.explorer.transaction_path.replace('{tx}', axelarTransactionHash)}`}
                             target="_blank"
-                            className="text-xs text-blue-600 underline dark:text-blue-500"
+                            className={detailsStyles.link}
                           >
                             {['send', 'pay_gas'].includes(step.id)
                               ? 'MessageReceived'
@@ -238,9 +238,9 @@ export function Details({ data }: DetailsProps) {
                       stepMoreInfos.push(
                         <div
                           key={stepMoreInfos.length}
-                          className="flex items-center gap-x-1"
+                          className={detailsStyles.inlineRow}
                         >
-                          <span className="text-xs text-zinc-700 dark:text-zinc-300">
+                          <span className={detailsStyles.inlineMuted}>
                             LogIndex:
                           </span>
                           <ExplorerLink
@@ -251,9 +251,9 @@ export function Details({ data }: DetailsProps) {
                             iconOnly={false}
                             width={14}
                             height={14}
-                            containerClassName="!gap-x-1.5"
-                            nonIconClassName="text-blue-600 dark:text-blue-500 text-xs"
-                            className="h-auto"
+                            containerClassName={detailsStyles.explorerLinkContainer}
+                            nonIconClassName={detailsStyles.explorerLinkText}
+                            className={detailsStyles.mediaAuto}
                           />
                         </div>
                       );
@@ -263,9 +263,9 @@ export function Details({ data }: DetailsProps) {
                       stepMoreInfos.push(
                         <div
                           key={stepMoreInfos.length}
-                          className="flex items-center gap-x-1"
+                          className={detailsStyles.inlineRow}
                         >
-                          <span className="text-xs text-zinc-700 dark:text-zinc-300">
+                          <span className={detailsStyles.inlineMuted}>
                             EventIndex:
                           </span>
                           <ExplorerLink
@@ -276,9 +276,9 @@ export function Details({ data }: DetailsProps) {
                             iconOnly={false}
                             width={14}
                             height={14}
-                            containerClassName="!gap-x-1.5"
-                            nonIconClassName="text-blue-600 dark:text-blue-500 text-xs"
-                            className="h-auto"
+                            containerClassName={detailsStyles.explorerLinkContainer}
+                            nonIconClassName={detailsStyles.explorerLinkText}
+                            className={detailsStyles.mediaAuto}
                           />
                         </div>
                       );
@@ -293,12 +293,14 @@ export function Details({ data }: DetailsProps) {
                         value={returnValues.commandId}
                       >
                         {chain_type === 'vm' ? (
-                          <span className="text-xs">Command ID</span>
+                          <span className={detailsStyles.textXs}>
+                            Command ID
+                          </span>
                         ) : (
                           <Link
                             href={`/evm-batches?commandId=${returnValues.commandId}`}
                             target="_blank"
-                            className="text-xs text-blue-600 underline dark:text-blue-500"
+                            className={detailsStyles.link}
                           >
                             Command ID
                           </Link>
@@ -331,19 +333,19 @@ export function Details({ data }: DetailsProps) {
                     stepMoreInfos.push(
                       <div
                         key={stepMoreInfos.length}
-                        className="flex w-64 flex-col gap-y-1"
+                        className={detailsStyles.metaColumn}
                       >
                         {message && (!reason || !axelarTransactionHash) && (
-                          <div className="whitespace-pre-wrap text-xs font-normal text-red-600 dark:text-red-500">
+                          <div className={detailsStyles.errorText}>
                             {ellipse(message, 256)}
                           </div>
                         )}
                         {reason && (
-                          <div className="whitespace-pre-wrap text-xs font-medium text-red-600 dark:text-red-500">
+                          <div className={detailsStyles.errorEmphasis}>
                             Reason: {ellipse(reason, 256)}
                           </div>
                         )}
-                        <div className="flex flex-col gap-y-4">
+                        <div className={detailsStyles.columnStackLarge}>
                           {code &&
                             (call?.destination_chain_type === 'evm' ? (
                               <Link
@@ -357,17 +359,17 @@ export function Details({ data }: DetailsProps) {
                                       }`
                                 }
                                 target="_blank"
-                                className="flex h-6 w-fit items-center rounded-xl bg-zinc-50 px-2.5 py-1 text-2xs dark:bg-zinc-800"
+                                className={detailsStyles.infoPill}
                               >
                                 {code}
                               </Link>
                             ) : (
-                              <div className="flex h-6 w-fit items-center rounded-xl bg-zinc-50 px-2.5 py-1 text-2xs dark:bg-zinc-800">
+                              <div className={detailsStyles.infoPill}>
                                 {code}
                               </div>
                             ))}
                           {body && (
-                            <div className="w-fit whitespace-pre-wrap break-all bg-zinc-50 p-2.5 text-xs text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                            <div className={detailsStyles.codeBlock}>
                               {ellipse(body, 256)}
                             </div>
                           )}
@@ -402,14 +404,14 @@ export function Details({ data }: DetailsProps) {
                       stepMoreTransactions.push(
                         <div
                           key={stepMoreTransactions.length}
-                          className="flex items-center gap-x-1"
+                          className={detailsStyles.inlineRow}
                         >
                           <Copy size={16} value={String(txHash)}>
                             {url && transaction_path ? (
                               <Link
                                 href={`${url}${transaction_path.replace('{tx}', String(txHash))}`}
                                 target="_blank"
-                                className="text-xs font-medium text-blue-600 dark:text-blue-500"
+                                className={detailsStyles.link}
                               >
                                 {ellipse(String(txHash))}
                               </Link>
@@ -422,7 +424,7 @@ export function Details({ data }: DetailsProps) {
                             chain={step.chainData?.id}
                             width={14}
                             height={14}
-                            className="h-auto"
+                            className={detailsStyles.mediaAuto}
                           />
                         </div>
                       );
@@ -534,7 +536,7 @@ export function Details({ data }: DetailsProps) {
                     format="0,0.000000"
                     suffix={` ${fees.source_token.symbol}`}
                     noTooltip
-                    className="font-medium text-zinc-900 dark:text-zinc-100"
+                    className={detailsStyles.textEmphasis}
                   />
                 ) : null;
 
@@ -552,27 +554,27 @@ export function Details({ data }: DetailsProps) {
                     format="0,0.000000"
                     suffix={` ${data.originData.fees.source_token.symbol ?? ''}`}
                     noTooltip
-                    className="text-xs font-medium text-zinc-400 dark:text-zinc-500"
+                    className={detailsStyles.textSubtle}
                   />
                 ) : null;
 
               return (
                 <tr key={index} className={detailsStyles.row}>
                   <td className={detailsStyles.cellStep}>
-                    <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                    <span className={detailsStyles.textMedium}>
                       {step.title}
                     </span>
                   </td>
-                  <td className="px-3 py-4 text-left">
+                  <td className={detailsStyles.tableCellNarrow}>
                     <div className={detailsStyles.columnStack}>
                       {stepTX && (
-                        <div className="flex items-center gap-x-1">
+                        <div className={detailsStyles.inlineRow}>
                           <Copy value={stepTX}>
                             {stepURL ? (
                               <Link
                                 href={stepURL}
                                 target="_blank"
-                                className="font-medium text-blue-600 dark:text-blue-500"
+                                className={detailsStyles.linkMedium}
                               >
                                 {ellipse(stepTX)}
                               </Link>
@@ -590,25 +592,25 @@ export function Details({ data }: DetailsProps) {
                         </div>
                       )}
                       {stepMoreInfos.length > 0 && (
-                        <div className="flex items-start gap-x-3">
+                        <div className={detailsStyles.rowStart}>
                           {stepMoreInfos}
                         </div>
                       )}
                       {stepMoreTransactions.length > 0 && (
-                        <div className="flex flex-col gap-y-1.5">
+                        <div className={detailsStyles.columnTight}>
                           {stepMoreTransactions}
                         </div>
                       )}
                     </div>
                   </td>
-                  <td className="px-3 py-4 text-left">
+                  <td className={detailsStyles.tableCellNarrow}>
                     <div className={detailsStyles.columnStack}>
                       {toNumber(blockNumber) > 0 &&
                         (url && block_path ? (
                           <Link
                             href={`${url}${block_path.replace('{block}', String(blockNumber))}`}
                             target="_blank"
-                            className="font-medium text-blue-600 dark:text-blue-500"
+                            className={detailsStyles.linkMedium}
                           >
                             <NumberDisplay
                               value={
@@ -633,7 +635,7 @@ export function Details({ data }: DetailsProps) {
                           <Link
                             href={`${axelarChainData.explorer.url}${axelarChainData.explorer.block_path.replace('{block}', String(axelarBlockNumber))}`}
                             target="_blank"
-                            className="font-medium text-blue-600 dark:text-blue-500"
+                            className={detailsStyles.linkMedium}
                           >
                             <NumberDisplay
                               value={
@@ -655,10 +657,10 @@ export function Details({ data }: DetailsProps) {
                       ) : null}
                     </div>
                   </td>
-                  <td className="px-3 py-4 text-left">
+                  <td className={detailsStyles.tableCellNarrow}>
                     <div className={detailsStyles.columnStack}>
                       {fromAddress && (
-                        <div className="flex items-center gap-x-4">
+                        <div className={detailsStyles.rowLargeGap}>
                           <span className={detailsStyles.cellLabel}>From:</span>
                           <Profile
                             address={fromAddress}
@@ -667,7 +669,7 @@ export function Details({ data }: DetailsProps) {
                         </div>
                       )}
                       {toAddress && (
-                        <div className="flex items-center gap-x-4">
+                        <div className={detailsStyles.rowLargeGap}>
                           <span className={detailsStyles.cellLabel}>To:</span>
                           <Profile
                             address={toAddress}
@@ -691,7 +693,7 @@ export function Details({ data }: DetailsProps) {
                       )}
                     </div>
                   </td>
-                  <td className="px-3 py-4 text-left">
+                  <td className={detailsStyles.tableCellNarrow}>
                     {step.status && (
                       <Tag
                         className={clsx(
@@ -707,13 +709,13 @@ export function Details({ data }: DetailsProps) {
                       </Tag>
                     )}
                   </td>
-                  <td className="px-3 py-4 text-left">
+                  <td className={detailsStyles.tableCellNarrow}>
                     <div className={detailsStyles.columnStack}>
                       {gasElement}
                       {gasConvertedElement}
                     </div>
                   </td>
-                  <td className="flex items-center justify-end py-4 pl-3 pr-4 text-right sm:pr-0">
+                  <td className={detailsStyles.tableCellEnd}>
                     <TimeAgo
                       timestamp={
                         (block_timestamp ?? 0) * 1000 || created_at?.ms
