@@ -24,10 +24,10 @@ import { getParams } from '@/lib/operator';
 import { toArray } from '@/lib/parser';
 import { equalsIgnoreCase, find } from '@/lib/string';
 
-import { AddGasButton, executeAddGas } from './AddGasButton';
-import { ApproveButton, executeApprove } from './ApproveButton';
+import { executeAddGas } from './AddGasButton';
+import { executeApprove } from './ApproveButton';
 import { Details } from './Details/Details';
-import { ExecuteButton, executeExecute } from './ExecuteButton';
+import { executeExecute } from './ExecuteButton';
 import {
   useEstimatedGasUsed,
   useEstimatedTimeSpent,
@@ -35,9 +35,9 @@ import {
   useGMPRecoveryAPI,
 } from './GMP.hooks';
 import {
-  GMPButtonMap,
   GMPMessage,
   GMPProps,
+  GMPRecoveryActions,
   GMPSettlementData,
   GMPToastState,
 } from './GMP.types';
@@ -527,79 +527,19 @@ export function GMP({ tx, lite }: GMPProps) {
   };
 
   // Render buttons - they handle their own visibility logic internally
-  const addGasButton = (
-    <AddGasButton
-      data={data}
-      processing={processing}
-      onAddGas={addGas}
-      response={response}
-      chains={chains}
-      chainId={chainId}
-      signer={signer}
-      cosmosWalletStore={cosmosWalletStore}
-      suiWalletStore={suiWalletStore}
-      stellarWalletStore={stellarWalletStore}
-      xrplWalletStore={xrplWalletStore}
-    />
-  );
-
-  const approveButton = (
-    <ApproveButton
-      data={data}
-      processing={processing}
-      onApprove={approve}
-      chains={chains}
-      estimatedTimeSpent={estimatedTimeSpent}
-    />
-  );
-
-  const executeButton = (
-    <ExecuteButton
-      data={data}
-      processing={processing}
-      onExecute={execute}
-      onApprove={approve}
-      chains={chains}
-      chainId={chainId}
-      signer={signer}
-      cosmosWalletStore={cosmosWalletStore}
-      suiWalletStore={suiWalletStore}
-      stellarWalletStore={stellarWalletStore}
-      xrplWalletStore={xrplWalletStore}
-    />
-  );
-
-  const { call, confirm } = data || {};
-  const sourceChainData = getChainData(call?.chain, chains);
-
-  const buttons: GMPButtonMap = {};
-
-  if (addGasButton) {
-    buttons.pay_gas = addGasButton;
-  }
-
-  if (executeButton) {
-    buttons.execute = executeButton;
-  }
-
-  let approveKey: keyof GMPButtonMap | 'approve' | 'confirm' | 'execute' =
-    'approve';
-
-  if (
-    call &&
-    data &&
-    (!confirm || data.confirm_failed) &&
-    !isAxelar(call.chain) &&
-    sourceChainData?.chain_type !== 'cosmos'
-  ) {
-    approveKey = 'confirm';
-  } else if (sourceChainData?.chain_type === 'cosmos' && !executeButton) {
-    approveKey = 'execute';
-  }
-
-  if (approveButton) {
-    buttons[approveKey] = approveButton;
-  }
+  const recoveryActions: GMPRecoveryActions = {
+    processing,
+    response,
+    chainId,
+    signer,
+    cosmosWalletStore,
+    suiWalletStore,
+    stellarWalletStore,
+    xrplWalletStore,
+    onAddGas: addGas,
+    onApprove: approve,
+    onExecute: execute,
+  };
 
   return (
     <GMPContainer data={data}>
@@ -609,7 +549,7 @@ export function GMP({ tx, lite }: GMPProps) {
             data={data}
             estimatedTimeSpent={estimatedTimeSpent}
             executeData={executeData}
-            buttons={buttons}
+            recovery={recoveryActions}
             tx={tx}
             lite={lite}
           />

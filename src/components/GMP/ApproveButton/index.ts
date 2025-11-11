@@ -1,5 +1,5 @@
 export { ApproveButton } from './ApproveButton';
-export { executeApprove, shouldShowApproveButton } from './ApproveButton.utils';
+export { executeApprove } from './ApproveButton.utils';
 export type {
   ApproveActionParams,
   ApproveButtonProps,

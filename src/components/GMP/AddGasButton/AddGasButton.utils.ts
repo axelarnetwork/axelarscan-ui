@@ -1,6 +1,5 @@
 import * as StellarSDK from '@stellar/stellar-sdk';
 
-import { checkNeedMoreGasFromError } from '@/components/GMPs';
 import { estimateITSFee } from '@/lib/api/gmp';
 import { isAxelar } from '@/lib/chain';
 import { ENVIRONMENT, getChainData } from '@/lib/config';
@@ -8,75 +7,9 @@ import { formatUnits, isNumber, parseUnits, toBigNumber } from '@/lib/number';
 import { sleep } from '@/lib/operator';
 import { parseError } from '@/lib/parser';
 import { headString } from '@/lib/string';
-import { timeDiff } from '@/lib/time';
 
-import { ChainMetadata, GMPMessage, GMPToastState } from '../GMP.types';
-import {
-  getDefaultGasLimit,
-  isAddGasSupported,
-  isWalletConnectedForChain,
-} from '../GMP.utils';
+import { getDefaultGasLimit, isWalletConnectedForChain } from '../GMP.utils';
 import { AddGasActionParams } from './AddGasButton.types';
-
-/**
- * Determines if the Add Gas button should be shown based on transaction state
- */
-export function shouldShowAddGasButton(
-  data: GMPMessage | null,
-  response: GMPToastState | null,
-  chains: ChainMetadata[] | null
-): boolean {
-  if (!data?.call) return false;
-
-  const { call, gas_paid, confirm, approved, executed, error, gas } = data;
-  const sourceChainData = getChainData(call.chain, chains);
-
-  // Must have source chain data and not be Axelar chain
-  if (!sourceChainData || isAxelar(call.chain)) return false;
-
-  // Check if add gas is supported for this chain
-  if (!isAddGasSupported(call.chain, call.chain_type, chains)) return false;
-
-  // Don't show if gas was just successfully added
-  if (response?.message === 'Pay gas successful') return false;
-
-  // Check if button should be shown based on transaction state
-  const shouldShowForSelf =
-    !executed &&
-    !data.is_executed &&
-    !approved &&
-    !(confirm && !data.confirm_failed) &&
-    (call.chain_type !== 'cosmos' ||
-      (call.block_timestamp && timeDiff(call.block_timestamp * 1000) >= 60)) &&
-    // no gas paid or not enough gas
-    (!(gas_paid || data.gas_paid_to_callback) ||
-      data.is_insufficient_fee ||
-      data.is_invalid_gas_paid ||
-      data.not_enough_gas_to_execute ||
-      (gas?.gas_remain_amount !== undefined &&
-        gas.gas_remain_amount < 0.000001));
-
-  const shouldShowForCallback = Boolean(
-    data.callbackData &&
-      (data.callbackData.is_insufficient_fee ||
-        data.callbackData.not_enough_gas_to_execute ||
-        checkNeedMoreGasFromError(data.callbackData.error)) &&
-      data.callbackData.created_at &&
-      typeof data.callbackData.created_at === 'object' &&
-      'ms' in data.callbackData.created_at &&
-      typeof data.callbackData.created_at.ms === 'number' &&
-      timeDiff(data.callbackData.created_at.ms) > 60
-  );
-
-  const shouldShowForAxelarDestination = Boolean(
-    isAxelar(call.returnValues?.destinationChain) &&
-      checkNeedMoreGasFromError(error)
-  );
-
-  return (
-    shouldShowForSelf || shouldShowForCallback || shouldShowForAxelarDestination
-  );
-}
 
 /**
  * Execute the add gas action for a GMP transaction

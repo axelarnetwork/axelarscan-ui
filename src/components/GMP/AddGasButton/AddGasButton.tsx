@@ -6,13 +6,12 @@ import { gmpStyles } from '../GMP.styles';
 import { isWalletConnectedForChain, shouldSwitchChain } from '../GMP.utils';
 import { WalletSelector } from '../WalletSelector';
 import { AddGasButtonProps } from './AddGasButton.types';
-import { shouldShowAddGasButton } from './AddGasButton.utils';
 
 export function AddGasButton({
   data,
   processing,
   onAddGas,
-  response,
+  response: _response,
   chains,
   chainId,
   signer,
@@ -21,14 +20,11 @@ export function AddGasButton({
   stellarWalletStore,
   xrplWalletStore,
 }: AddGasButtonProps) {
-  // Check if button should be shown
-  if (!shouldShowAddGasButton(data, response, chains)) {
+  if (!data?.call) {
     return null;
   }
 
-  // At this point, data and call are guaranteed to exist by shouldShowAddGasButton
-  const { call, gas_paid } = data!;
-  if (!call) return null; // Type guard for TypeScript
+  const { call, gas_paid } = data;
 
   const sourceChainData = getChainData(call.chain, chains)!;
 

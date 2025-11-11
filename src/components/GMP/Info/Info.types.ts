@@ -1,8 +1,8 @@
 import {
   ChainMetadata,
   ChainTimeEstimate,
-  GMPButtonMap,
   GMPMessage,
+  GMPRecoveryActions,
   GMPTransactionInfo,
 } from '../GMP.types';
 
@@ -10,9 +10,16 @@ export interface InfoProps {
   data: GMPMessage;
   estimatedTimeSpent?: ChainTimeEstimate | null;
   executeData?: string | null;
-  buttons: GMPButtonMap;
+  recovery: GMPRecoveryActions;
   tx?: string;
   lite?: boolean;
+}
+
+export interface RecoveryButtonsProps {
+  data: GMPMessage;
+  chains: ChainMetadata[] | null;
+  estimatedTimeSpent?: ChainTimeEstimate | null;
+  recovery: GMPRecoveryActions;
 }
 
 export interface InfoHeaderProps {

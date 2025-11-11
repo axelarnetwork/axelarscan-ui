@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import type { providers } from 'ethers';
 
 export interface ExplorerPaths {
   url?: string;
@@ -292,8 +292,6 @@ export interface GMPStep {
   chainData?: ChainMetadata;
 }
 
-export type GMPButtonMap = Record<string, ReactNode>;
-
 export interface ChainTimeEstimate {
   key?: string;
   total?: number;
@@ -335,6 +333,20 @@ export interface WalletContext {
   xrplWalletStore: {
     address?: string | null;
   };
+}
+
+export interface GMPRecoveryActions {
+  processing: boolean;
+  response: GMPToastState | null;
+  chainId: number | null;
+  signer: providers.JsonRpcSigner | null;
+  cosmosWalletStore: WalletContext['cosmosWalletStore'];
+  suiWalletStore: WalletContext['suiWalletStore'];
+  stellarWalletStore: WalletContext['stellarWalletStore'];
+  xrplWalletStore: WalletContext['xrplWalletStore'];
+  onAddGas: (data: GMPMessage) => Promise<void>;
+  onApprove: (data: GMPMessage, afterPayGas?: boolean) => Promise<void>;
+  onExecute: (data: GMPMessage) => Promise<void>;
 }
 
 // SDK response types

@@ -1,5 +1,5 @@
 export { ExecuteButton } from './ExecuteButton';
-export { executeExecute, shouldShowExecuteButton } from './ExecuteButton.utils';
+export { executeExecute } from './ExecuteButton.utils';
 export type {
   ExecuteActionParams,
   ExecuteButtonProps,

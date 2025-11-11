@@ -6,7 +6,6 @@ import { gmpStyles } from '../GMP.styles';
 import { shouldSwitchChain } from '../GMP.utils';
 import { WalletSelector } from '../WalletSelector';
 import { ExecuteButtonProps } from './ExecuteButton.types';
-import { shouldShowExecuteButton } from './ExecuteButton.utils';
 
 export function ExecuteButton({
   data,
@@ -21,10 +20,6 @@ export function ExecuteButton({
   stellarWalletStore,
   xrplWalletStore,
 }: ExecuteButtonProps) {
-  if (!shouldShowExecuteButton(data)) {
-    return null;
-  }
-
   if (!data || !data.call) {
     return null;
   }

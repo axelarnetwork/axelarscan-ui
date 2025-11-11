@@ -4,20 +4,14 @@ import { isAxelar } from '@/lib/chain';
 
 import { gmpStyles } from '../GMP.styles';
 import { ApproveButtonProps } from './ApproveButton.types';
-import { shouldShowApproveButton } from './ApproveButton.utils';
 
 export function ApproveButton({
   data,
   processing,
   onApprove,
-  chains,
-  estimatedTimeSpent,
+  chains: _chains,
+  estimatedTimeSpent: _estimatedTimeSpent,
 }: ApproveButtonProps) {
-  // Check if button should be shown
-  if (!shouldShowApproveButton(data, chains, estimatedTimeSpent)) {
-    return null;
-  }
-
   if (!data || !data.call) {
     return null;
   }

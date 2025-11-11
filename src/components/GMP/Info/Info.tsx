@@ -11,7 +11,6 @@ import { Tag } from '@/components/Tag';
 import { Tooltip } from '@/components/Tooltip';
 import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
-import { toTitle } from '@/lib/string';
 import { GMPEventLog, GMPMessage } from '../GMP.types';
 import { StatusTimeline } from '../StatusTimeline/StatusTimeline';
 import { infoStyles } from './Info.styles';
@@ -23,6 +22,7 @@ import { InfoSection } from './InfoSection';
 import { InfoSettlement } from './InfoSettlement';
 import { InfoTime } from './InfoTime';
 import { InfoTransfers } from './InfoTransfers';
+import { RecoveryButtons } from './RecoveryButtons';
 
 import { InfoProps } from './Info.types';
 
@@ -30,7 +30,7 @@ export function Info({
   data,
   estimatedTimeSpent,
   executeData,
-  buttons,
+  recovery,
   tx,
   lite,
 }: InfoProps) {
@@ -157,23 +157,12 @@ export function Info({
               />
             </dd>
           </div>
-          {Object.keys({ ...buttons }).length > 0 && (
-            <div className={infoStyles.section}>
-              <dt className={infoStyles.label}>Recovery</dt>
-              <dd className={infoStyles.value}>
-                <div className={infoStyles.recoveryList}>
-                  {Object.entries(buttons).map(([k, v]) => (
-                    <div key={k} className={infoStyles.recoveryItem}>
-                      <span className={infoStyles.recoveryItemLabel}>
-                        {toTitle(k)}:
-                      </span>
-                      <div className={infoStyles.recoveryItemValue}>{v}</div>
-                    </div>
-                  ))}
-                </div>
-              </dd>
-            </div>
-          )}
+          <RecoveryButtons
+            data={data}
+            chains={chains}
+            estimatedTimeSpent={estimatedTimeSpent}
+            recovery={recovery}
+          />
           <InfoPath
             data={data}
             isMultihop={isMultihop}

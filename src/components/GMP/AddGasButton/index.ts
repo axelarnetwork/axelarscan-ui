@@ -3,4 +3,4 @@ export type {
   AddGasActionParams,
   AddGasButtonProps,
 } from './AddGasButton.types';
-export { executeAddGas, shouldShowAddGasButton } from './AddGasButton.utils';
+export { executeAddGas } from './AddGasButton.utils';
