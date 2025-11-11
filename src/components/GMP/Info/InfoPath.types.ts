@@ -6,4 +6,3 @@ export interface InfoPathProps {
   sourceChain: string | undefined;
   destinationChain: string | undefined;
 }
-

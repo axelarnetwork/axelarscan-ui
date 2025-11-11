@@ -11,4 +11,3 @@ export interface InfoParticipantsProps {
   showAdditionalDetails: boolean;
   call?: GMPMessage['call'];
 }
-

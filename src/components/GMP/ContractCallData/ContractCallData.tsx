@@ -209,7 +209,9 @@ export function ContractCallData({
                 childrenClassName={contractCallDataStyles.copyWrapper}
                 className={contractCallDataStyles.copyButton}
               >
-                <span className={contractCallDataStyles.chainLabel}>{sourceChain}</span>
+                <span className={contractCallDataStyles.chainLabel}>
+                  {sourceChain}
+                </span>
               </Copy>
             </dd>
           </div>
@@ -224,7 +226,9 @@ export function ContractCallData({
                 childrenClassName={contractCallDataStyles.copyWrapper}
                 className={contractCallDataStyles.copyButton}
               >
-                <span className={contractCallDataStyles.chainLabel}>{destinationChain}</span>
+                <span className={contractCallDataStyles.chainLabel}>
+                  {destinationChain}
+                </span>
               </Copy>
             </dd>
           </div>
@@ -309,7 +313,9 @@ export function ContractCallData({
                 childrenClassName={contractCallDataStyles.copyWrapper}
                 className={contractCallDataStyles.copyButton}
               >
-                <span className={contractCallDataStyles.chainLabel}>{sourceSymbol}</span>
+                <span className={contractCallDataStyles.chainLabel}>
+                  {sourceSymbol}
+                </span>
               </Copy>
             </dd>
           </div>
@@ -324,7 +330,9 @@ export function ContractCallData({
                 childrenClassName={contractCallDataStyles.copyWrapper}
                 className={contractCallDataStyles.copyButton}
               >
-                <span className={contractCallDataStyles.chainLabel}>{destinationSymbol}</span>
+                <span className={contractCallDataStyles.chainLabel}>
+                  {destinationSymbol}
+                </span>
               </Copy>
             </dd>
           </div>
@@ -339,7 +347,9 @@ export function ContractCallData({
                 childrenClassName={contractCallDataStyles.copyWrapper}
                 className={contractCallDataStyles.copyButton}
               >
-                <span className={contractCallDataStyles.chainLabel}>{amountInUnits}</span>
+                <span className={contractCallDataStyles.chainLabel}>
+                  {amountInUnits}
+                </span>
               </Copy>
             </dd>
           </div>

@@ -251,7 +251,9 @@ export function Details({ data }: DetailsProps) {
                             iconOnly={false}
                             width={14}
                             height={14}
-                            containerClassName={detailsStyles.explorerLinkContainer}
+                            containerClassName={
+                              detailsStyles.explorerLinkContainer
+                            }
                             nonIconClassName={detailsStyles.explorerLinkText}
                             className={detailsStyles.mediaAuto}
                           />
@@ -276,7 +278,9 @@ export function Details({ data }: DetailsProps) {
                             iconOnly={false}
                             width={14}
                             height={14}
-                            containerClassName={detailsStyles.explorerLinkContainer}
+                            containerClassName={
+                              detailsStyles.explorerLinkContainer
+                            }
                             nonIconClassName={detailsStyles.explorerLinkText}
                             className={detailsStyles.mediaAuto}
                           />

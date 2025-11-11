@@ -52,4 +52,3 @@ export const detailsStyles = {
   explorerLinkText: 'text-blue-600 dark:text-blue-500 text-xs',
   explorerLinkContainer: '!gap-x-1.5',
 } as const;
-

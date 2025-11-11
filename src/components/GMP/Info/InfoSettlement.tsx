@@ -40,13 +40,13 @@ export function InfoSettlement({
       label="Settlement Status"
       valueClassName={infoSettlementStyles.valueSpacing}
     >
-    <div className={infoSettlementStyles.grid}>
-      <div className={infoSettlementStyles.column}>
-        <div className={infoSettlementStyles.columnContent}>
-          <span className={infoSettlementStyles.columnTitle}>
+      <div className={infoSettlementStyles.grid}>
+        <div className={infoSettlementStyles.column}>
+          <div className={infoSettlementStyles.columnContent}>
+            <span className={infoSettlementStyles.columnTitle}>
               Settlement Forwarded
             </span>
-          <div className={infoSettlementStyles.links}>
+            <div className={infoSettlementStyles.links}>
               {settlementForwardedEvents ? (
                 <ExplorerLink
                   value={txhash}

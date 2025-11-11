@@ -8,4 +8,3 @@ export interface InfoHeaderProps {
   transactionPath?: string;
   sourceChain: string | undefined;
 }
-

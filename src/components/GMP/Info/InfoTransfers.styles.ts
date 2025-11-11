@@ -3,4 +3,3 @@ export const infoTransfersStyles = {
   row: 'flex items-center gap-x-1',
   arrowIcon: 'text-zinc-700 dark:text-zinc-300',
 } as const;
-

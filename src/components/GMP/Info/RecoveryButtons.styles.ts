@@ -14,4 +14,3 @@ export const recoveryButtonsStyles = {
   toastSuccessIcon: 'text-green-600',
   toastFailedIcon: 'text-red-600',
 } as const;
-

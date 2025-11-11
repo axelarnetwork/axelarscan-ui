@@ -3,4 +3,3 @@ export const infoHeaderStyles = {
   row: 'flex items-center gap-x-1',
   iconButton: 'font-semibold text-blue-600 dark:text-blue-500',
 } as const;
-

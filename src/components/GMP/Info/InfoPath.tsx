@@ -14,7 +14,7 @@ export function InfoPath({
 }: InfoPathProps) {
   return (
     <InfoSection label="Path">
-    <div className={infoPathStyles.row}>
+      <div className={infoPathStyles.row}>
         {isMultihop ? (
           <>
             <ChainProfile
@@ -51,7 +51,7 @@ export function InfoPath({
           <>
             <ChainProfile value={sourceChain} />
             <MdKeyboardArrowRight size={24} />
-          <div className={infoPathStyles.column}>
+            <div className={infoPathStyles.column}>
               <ChainProfile value={destinationChain} />
               {data.is_invalid_destination_chain && (
                 <div className={infoPathStyles.warning}>

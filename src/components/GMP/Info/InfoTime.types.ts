@@ -11,4 +11,3 @@ export interface InfoTimeProps {
   approved?: GMPMessage['approved'];
   call?: GMPMessage['call'];
 }
-

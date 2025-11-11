@@ -9,4 +9,3 @@ export interface InfoSettlementProps {
   destinationChain: string | undefined;
   executed: GMPMessage['executed'];
 }
-

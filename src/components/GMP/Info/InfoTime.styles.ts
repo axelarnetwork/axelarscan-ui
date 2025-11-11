@@ -4,4 +4,3 @@ export const infoTimeStyles = {
   expressRow: 'flex items-center gap-x-1 text-green-600 dark:text-green-500',
   detailColumn: 'flex flex-col gap-y-2',
 } as const;
-

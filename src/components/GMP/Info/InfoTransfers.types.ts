@@ -4,4 +4,3 @@ export interface InfoTransfersProps {
   data: GMPMessage;
   chains: ChainMetadata[] | undefined;
 }
-

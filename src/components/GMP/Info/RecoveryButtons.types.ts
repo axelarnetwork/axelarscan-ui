@@ -1,4 +1,8 @@
-import type { ChainMetadata, ChainTimeEstimate, GMPMessage } from '../GMP.types';
+import type {
+  ChainMetadata,
+  ChainTimeEstimate,
+  GMPMessage,
+} from '../GMP.types';
 
 export interface RecoveryButtonsProps {
   data: GMPMessage;
@@ -6,4 +10,3 @@ export interface RecoveryButtonsProps {
   estimatedTimeSpent?: ChainTimeEstimate | null;
   refreshData: () => Promise<GMPMessage | undefined>;
 }
-
