@@ -1,3 +1,4 @@
+import type { Dispatch, SetStateAction } from 'react';
 import { AxelarGMPRecoveryAPI } from '@axelar-network/axelarjs-sdk';
 import type { useSignAndExecuteTransaction as useSuiSignAndExecuteTransaction } from '@mysten/dapp-kit';
 import type { useSignAndSubmitTransaction as useXRPLSignAndSubmitTransaction } from '@xrpl-wallet-standard/react';
@@ -44,13 +45,11 @@ export interface AddGasActionParams {
 export interface AddGasButtonProps {
   data: GMPMessage | null;
   processing: boolean;
-  onAddGas: (data: GMPMessage) => Promise<void>;
-  response: GMPToastState | null;
   chains: ChainMetadata[] | null;
-  chainId: number | null;
-  signer: providers.JsonRpcSigner | null;
-  cosmosWalletStore: CosmosWalletStore;
-  suiWalletStore: SuiWalletStore;
-  stellarWalletStore: StellarWalletStore;
-  xrplWalletStore: XRPLWalletStore;
+  sdk: AxelarGMPRecoveryAPI | null;
+  estimatedGasUsed: number | null;
+  setProcessing: Dispatch<SetStateAction<boolean>>;
+  setResponse: Dispatch<SetStateAction<GMPToastState | null>>;
+  refreshData: () => Promise<GMPMessage | undefined>;
+  approve: (data: GMPMessage, auto?: boolean) => Promise<void>;
 }

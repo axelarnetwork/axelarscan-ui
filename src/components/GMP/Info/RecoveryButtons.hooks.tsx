@@ -1,7 +1,5 @@
 'use client';
 
-import { useSignAndExecuteTransaction as useSuiSignAndExecuteTransaction } from '@mysten/dapp-kit';
-import { useSignAndSubmitTransaction as useXRPLSignAndSubmitTransaction } from '@xrpl-wallet-standard/react';
 import {
   useCallback,
   useEffect,
@@ -22,7 +20,6 @@ import { isAxelar } from '@/lib/chain';
 import { getChainData } from '@/lib/config';
 
 import { AddGasButton } from '../AddGasButton/AddGasButton';
-import { executeAddGas } from '../AddGasButton/AddGasButton.utils';
 import { ApproveButton } from '../ApproveButton/ApproveButton';
 import { executeApprove } from '../ApproveButton/ApproveButton.utils';
 import { ExecuteButton } from '../ExecuteButton/ExecuteButton';
@@ -48,14 +45,11 @@ export function useRecoveryButtons({
   const [processing, setProcessing] = useState<boolean>(false);
   const [response, setResponse] = useState<GMPToastState | null>(null);
 
-  const { chainId, address, provider, signer } = useEVMWalletStore();
+  const { chainId, provider, signer } = useEVMWalletStore();
   const cosmosWalletStore = useCosmosWalletStore();
   const suiWalletStore = useSuiWalletStore();
   const stellarWalletStore = useStellarWalletStore();
   const xrplWalletStore = useXRPLWalletStore();
-  const { mutateAsync: suiSignAndExecuteTransaction } =
-    useSuiSignAndExecuteTransaction();
-  const xrplSignAndSubmitTransaction = useXRPLSignAndSubmitTransaction();
   const estimatedGasUsed = useEstimatedGasUsed(data);
   const sdk = useGMPRecoveryAPI();
 
@@ -89,46 +83,6 @@ export function useRecoveryButtons({
       });
     },
     [provider, refreshData, sdk, signer]
-  );
-
-  const addGas = useCallback(
-    async (message: GMPMessage): Promise<void> => {
-      await executeAddGas({
-        data: message,
-        sdk: sdk ?? null,
-        chains,
-        provider,
-        signer,
-        address,
-        cosmosWalletStore,
-        suiWalletStore,
-        stellarWalletStore,
-        xrplWalletStore,
-        estimatedGasUsed,
-        setResponse,
-        setProcessing,
-        getData: refreshData,
-        approve,
-        suiSignAndExecuteTransaction,
-        xrplSignAndSubmitTransaction,
-      });
-    },
-    [
-      address,
-      approve,
-      chains,
-      cosmosWalletStore,
-      estimatedGasUsed,
-      provider,
-      refreshData,
-      sdk,
-      signer,
-      stellarWalletStore,
-      suiSignAndExecuteTransaction,
-      suiWalletStore,
-      xrplSignAndSubmitTransaction,
-      xrplWalletStore,
-    ]
   );
 
   useEffect(() => {
@@ -206,15 +160,13 @@ export function useRecoveryButtons({
           key="pay_gas"
           data={data}
           processing={processing}
-          onAddGas={addGas}
-          response={response}
           chains={chains}
-          chainId={chainId}
-          signer={signer}
-          cosmosWalletStore={cosmosWalletStore}
-          suiWalletStore={suiWalletStore}
-          stellarWalletStore={stellarWalletStore}
-          xrplWalletStore={xrplWalletStore}
+          sdk={sdk ?? null}
+          estimatedGasUsed={estimatedGasUsed}
+          setProcessing={setProcessing}
+          setResponse={setResponse}
+          refreshData={refreshData}
+          approve={approve}
         />,
       ]);
     }
@@ -274,15 +226,17 @@ export function useRecoveryButtons({
 
     return values;
   }, [
-    addGas,
     approve,
     chains,
     cosmosWalletStore,
     data,
     estimatedTimeSpent,
+    estimatedGasUsed,
     execute,
     processing,
     response,
+    sdk,
+    refreshData,
     signer,
     stellarWalletStore,
     suiWalletStore,
