@@ -4,13 +4,13 @@ import { PiInfo } from 'react-icons/pi';
 
 import { Number } from '@/components/Number';
 import { Tooltip } from '@/components/Tooltip';
-import { GMPMessage, GMPEventLog } from '../GMP.types';
-import { gasStyles } from './InfoGasMetrics.styles';
-import { InfoSection } from './InfoSection';
-import { infoStyles } from './Info.styles';
 import { isNumber, toNumber } from '@/lib/number';
 import { toArray } from '@/lib/parser';
 import { timeDiff } from '@/lib/time';
+import { GMPEventLog, GMPMessage } from '../GMP.types';
+import { infoStyles } from './Info.styles';
+import { gasStyles } from './InfoGasMetrics.styles';
+import { InfoSection } from './InfoSection';
 
 interface InfoGasMetricsProps {
   data: GMPMessage;
@@ -456,6 +456,9 @@ export function InfoGasMetrics({
               )}
 
               {combinedFees?.express_supported &&
+                Boolean(
+                  data.originData?.express_executed || data.express_executed
+                ) &&
                 (combinedFees.express_fee ?? 0) > 0 && (
                   <InfoSection label="Express Fee">
                     <div className={gasStyles.valueColumn}>
