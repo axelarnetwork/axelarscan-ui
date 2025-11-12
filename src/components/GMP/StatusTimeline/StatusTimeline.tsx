@@ -160,11 +160,6 @@ export function StatusTimeline({
                           transactionHash === blockNumber
                         ) {
                           stepURL = `${url}${block_path.replace('{block}', String(transactionHash))}`;
-                        } else if (
-                          block_path &&
-                          typeof blockNumber !== 'undefined'
-                        ) {
-                          stepURL = `${url}${block_path.replace('{block}', String(blockNumber))}`;
                         } else {
                           stepURL = `${url}${transaction_path?.replace('{tx}', transactionHash)}`;
                         }

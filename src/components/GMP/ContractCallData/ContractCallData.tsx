@@ -139,12 +139,15 @@ export function ContractCallData({
                 </Tag>
               </dd>
             </div>
-            {(time_spent?.call_express_executed || time_spent?.total) && (
+            {((time_spent?.call_express_executed ?? 0) > 0 &&
+              ['express_executed', 'executed'].includes(status ?? '')) ||
+            ((time_spent?.total ?? 0) > 0 && status === 'executed') ? (
               <div className={contractCallDataStyles.section}>
                 <dt className={contractCallDataStyles.label}>Time Spent</dt>
                 <dd className={contractCallDataStyles.value}>
                   <div className={contractCallDataStyles.timeSpentList}>
-                    {time_spent?.call_express_executed &&
+                    {time_spent &&
+                      (time_spent.call_express_executed ?? 0) > 0 &&
                       ['express_executed', 'executed'].includes(
                         status ?? ''
                       ) && (
@@ -160,19 +163,21 @@ export function ContractCallData({
                           />
                         </div>
                       )}
-                    {time_spent?.total && status === 'executed' && (
-                      <div className={contractCallDataStyles.timeSpentTotal}>
-                        <MdOutlineTimer size={20} />
-                        <TimeSpent
-                          fromTimestamp={0}
-                          toTimestamp={(time_spent.total ?? 0) * 1000}
-                        />
-                      </div>
-                    )}
+                    {time_spent &&
+                      (time_spent.total ?? 0) > 0 &&
+                      status === 'executed' && (
+                        <div className={contractCallDataStyles.timeSpentTotal}>
+                          <MdOutlineTimer size={20} />
+                          <TimeSpent
+                            fromTimestamp={0}
+                            toTimestamp={(time_spent.total ?? 0) * 1000}
+                          />
+                        </div>
+                      )}
                   </div>
                 </dd>
               </div>
-            )}
+            ) : null}
           </>
         )}
         {messageId && (

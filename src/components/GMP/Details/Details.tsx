@@ -503,11 +503,12 @@ export function Details({ data }: DetailsProps) {
                       fees?.destination_native_token?.gas_price ?? 0;
                     const destTokenPrice =
                       fees?.destination_native_token?.token_price?.usd ?? 0;
-                    const srcTokenPrice =
-                      fees?.source_token?.token_price?.usd ?? 1;
-                    gasAmount =
-                      (dataValue * destGasPrice * destTokenPrice) /
-                      srcTokenPrice;
+                    const srcTokenPrice = fees?.source_token?.token_price?.usd;
+                    // Allow division by undefined to result in NaN, matching original behavior
+                    gasAmount = srcTokenPrice
+                      ? (dataValue * destGasPrice * destTokenPrice) /
+                        srcTokenPrice
+                      : NaN;
                   } else {
                     gasAmount = gas?.gas_paid_amount;
                   }
