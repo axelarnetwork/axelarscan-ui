@@ -152,18 +152,17 @@ function needsGasForCallback(gmp: GMPMessage): boolean {
     return false;
   }
 
-  // Require a valid timestamp to avoid racing a pending success.
-  const createdAt = callback.created_at;
-  if (
-    !createdAt ||
-    typeof createdAt !== 'object' ||
-    !('ms' in createdAt) ||
-    typeof createdAt.ms !== 'number'
-  ) {
-    return false;
-  }
+  // Preserve legacy behaviour: if the callback timestamp is missing, fall back
+  // to the default `timeDiff` window (which is already > 60 seconds).
+  const createdAtMs =
+    callback.created_at &&
+    typeof callback.created_at === 'object' &&
+    'ms' in callback.created_at &&
+    typeof callback.created_at.ms === 'number'
+      ? callback.created_at.ms
+      : undefined;
 
-  return timeDiff(createdAt.ms) > 60;
+  return timeDiff(createdAtMs) > 60;
 }
 
 /**
@@ -210,8 +209,12 @@ export function shouldShowAddGasButton(
     return false;
   }
 
-  // Avoid duplicate “Pay gas successful” loops.
-  if (response?.message === 'Pay gas successful') {
+  const waitingOnAxelar =
+    isAxelar(call.returnValues?.destinationChain) &&
+    checkNeedMoreGasFromError(error);
+
+  // Avoid duplicate “Pay gas successful” loops unless the Axelar destination flow still needs recovery.
+  if (response?.message === 'Pay gas successful' && !waitingOnAxelar) {
     return false;
   }
 
@@ -236,10 +239,6 @@ export function shouldShowAddGasButton(
   }
 
   // Finally handle Axelar → Axelar hops that emit gas-related errors.
-  const waitingOnAxelar =
-    isAxelar(call.returnValues?.destinationChain) &&
-    checkNeedMoreGasFromError(error);
-
   return Boolean(waitingOnAxelar);
 }
 
