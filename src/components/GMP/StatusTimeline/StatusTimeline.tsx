@@ -131,14 +131,35 @@ export function StatusTimeline({
                       }
                       break;
                     case 'execute':
-                      if (axelarTransactionHash && url) {
-                        stepURL = `${url}${transaction_path?.replace('{tx}', axelarTransactionHash)}`;
+                    case 'executed':
+                      if (transactionHash || axelarTransactionHash) {
+                        const hashToUse =
+                          transactionHash || axelarTransactionHash;
+                        if (
+                          block_path &&
+                          typeof transactionHash === 'number' &&
+                          typeof blockNumber === 'number' &&
+                          transactionHash === blockNumber
+                        ) {
+                          stepURL = `${url}${block_path.replace('{block}', String(transactionHash))}`;
+                        } else if (transaction_path) {
+                          stepURL = `${url}${transaction_path.replace('{tx}', String(hashToUse))}`;
+                        }
                       }
                       break;
                     default:
-                      if (transactionHash && url) {
+                      if (stepEventLog?.proposal_id) {
+                        stepURL = `/proposal/${stepEventLog.proposal_id}`;
+                      } else if (transactionHash && url) {
                         if (id === 'send' && chain_type === 'cosmos') {
                           stepURL = `${url}${transaction_path?.replace('{tx}', transactionHash)}`;
+                        } else if (
+                          block_path &&
+                          typeof transactionHash === 'number' &&
+                          typeof blockNumber === 'number' &&
+                          transactionHash === blockNumber
+                        ) {
+                          stepURL = `${url}${block_path.replace('{block}', String(transactionHash))}`;
                         } else if (
                           block_path &&
                           typeof blockNumber !== 'undefined'
