@@ -433,14 +433,11 @@ export async function executeAddGas(params: AddGasActionParams): Promise<void> {
         throw new Error('Missing required parameters for XRPL gas addition');
       }
 
-      const gasAddedAmountStr = formatUnits(gasAddedAmount, decimals);
+      const formattedXrplAmount = String(formatUnits(gasAddedAmount, decimals));
       const xrplTransaction = await sdk.addGasToXrplChain({
         senderAddress: xrplWalletStore.address,
         messageId,
-        amount:
-          typeof gasAddedAmountStr === 'string'
-            ? gasAddedAmountStr
-            : String(gasAddedAmountStr),
+        amount: formattedXrplAmount,
       });
 
       if (xrplTransaction && typeof xrplTransaction === 'string') {
@@ -451,23 +448,38 @@ export async function executeAddGas(params: AddGasActionParams): Promise<void> {
 
         console.log('[addGas response]', xrplResponse);
 
-        const xrplResult = (
-          xrplResponse as {
-            result?: {
-              meta?: { TransactionResult?: string };
-              hash?: string;
-            };
-          }
-        )?.result;
+        const { tx_hash: txHash, tx_json: txJson } = xrplResponse;
+
+        const xrplError = (xrplResponse as { error?: unknown })?.error;
+
+        const transactionMeta =
+          typeof txJson?.meta === 'object' && txJson.meta !== null
+            ? txJson.meta
+            : undefined;
+
+        const transactionResult =
+          transactionMeta && 'TransactionResult' in transactionMeta
+            ? transactionMeta.TransactionResult
+            : undefined;
+
+        const status =
+          transactionResult === 'tesSUCCESS' ? 'success' : 'failed';
+
+        const parsedXrplError = parseError(xrplError)?.message;
+
+        const errorMessage =
+          typeof xrplError === 'string' ? xrplError : parsedXrplError;
+
+        const message =
+          errorMessage ||
+          (status === 'success'
+            ? 'Pay gas successful'
+            : transactionResult || 'Pay gas failed');
 
         setResponse({
-          status:
-            xrplResult?.meta?.TransactionResult === 'tesSUCCESS'
-              ? 'success'
-              : 'failed',
-          message:
-            parseError(xrplResult?.meta)?.message || 'Pay gas successful',
-          hash: xrplResult?.hash,
+          status,
+          message,
+          hash: txHash,
           chain,
         });
       }
