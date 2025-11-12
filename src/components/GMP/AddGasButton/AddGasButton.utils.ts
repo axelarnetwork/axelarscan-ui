@@ -446,7 +446,7 @@ export async function executeAddGas(params: AddGasActionParams): Promise<void> {
       if (xrplTransaction && typeof xrplTransaction === 'string') {
         const xrplResponse = await xrplSignAndSubmitTransaction(
           xrplTransaction as never,
-          `xrpl:${ENVIRONMENT === 'mainnet' ? '0' : ENVIRONMENT === 'devnet-amplifier' ? '2' : '1'}` as never
+          `xrpl:${getXrplNetworkCode()}` as never
         );
 
         console.log('[addGas response]', xrplResponse);
@@ -478,3 +478,15 @@ export async function executeAddGas(params: AddGasActionParams): Promise<void> {
 
   setProcessing(false);
 }
+
+const getXrplNetworkCode = (): '0' | '1' | '2' => {
+  if (ENVIRONMENT === 'mainnet') {
+    return '0';
+  }
+
+  if (ENVIRONMENT === 'devnet-amplifier') {
+    return '2';
+  }
+
+  return '1';
+};

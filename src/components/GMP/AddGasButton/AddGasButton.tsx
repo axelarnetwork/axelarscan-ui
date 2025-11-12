@@ -51,6 +51,13 @@ export function AddGasButton({
     chainId
   );
 
+  let buttonLabel: string;
+  if (processing) {
+    buttonLabel = gas_paid ? 'Adding gas...' : 'Paying gas...';
+  } else {
+    buttonLabel = gas_paid ? 'Add gas' : 'Pay gas';
+  }
+
   return (
     <div key="addGas" className={gmpStyles.actionRow}>
       {isWalletConnected && !needsSwitchChain && (
@@ -59,8 +66,7 @@ export function AddGasButton({
           onClick={() => onAddGas(data!)}
           className={clsx(gmpStyles.actionButton(processing))}
         >
-          {gas_paid ? 'Add' : 'Pay'}
-          {processing ? 'ing' : ''} gas{processing ? '...' : ''}
+          {buttonLabel}
         </button>
       )}
       <WalletSelector

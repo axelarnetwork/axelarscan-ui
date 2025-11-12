@@ -17,7 +17,187 @@ export function isGMPMessage(value: unknown): value is GMPMessage {
   return typeof value === 'object' && value !== null;
 }
 
-export function getStep(
+function resolvePayGasTitle(
+  call: GMPEventLog | undefined,
+  hasGasPayment: boolean
+) {
+  if (hasGasPayment) {
+    return 'Gas Paid';
+  }
+
+  const recentlySent = timeDiff((call?.block_timestamp ?? 0) * 1000) < 30;
+  return recentlySent ? 'Checking Gas Paid' : 'Pay Gas';
+}
+
+interface ConfirmResolutionContext {
+  call?: GMPEventLog;
+  confirm?: GMPEventLog;
+  confirmFailed?: GMPEventLog;
+  confirmFailedEvent?: GMPEventLog;
+  approved?: GMPEventLog;
+  executed?: GMPEventLog;
+  isExecuted?: boolean;
+  error?: GMPEventLog | undefined;
+  isInvalidCall?: boolean;
+  gasPaid?: GMPEventLog | string | undefined;
+  gasPaidToCallback?: GMPEventLog | undefined;
+  expressExecuted?: GMPEventLog | undefined;
+}
+
+function hasSuccessfulConfirmation({
+  call,
+  confirm,
+  confirmFailedEvent,
+  approved,
+  executed,
+  isExecuted,
+  error,
+}: ConfirmResolutionContext): boolean {
+  if (!confirm && !approved && !executed && !isExecuted && !error) {
+    return false;
+  }
+
+  const confirmationValid = Boolean(
+    confirm &&
+      (call?.chain_type === 'cosmos' ||
+        confirm?.poll_id !== confirmFailedEvent?.poll_id)
+  );
+
+  return (
+    confirmationValid ||
+    Boolean(approved) ||
+    Boolean(executed) ||
+    Boolean(isExecuted) ||
+    Boolean(error)
+  );
+}
+
+function resolveConfirmTitle(context: ConfirmResolutionContext) {
+  if (hasSuccessfulConfirmation(context)) {
+    return 'Confirmed';
+  }
+
+  if (context.isInvalidCall) {
+    return 'Invalid Call';
+  }
+
+  if (context.confirmFailed) {
+    return 'Failed to Confirm';
+  }
+
+  if (context.gasPaid || context.gasPaidToCallback || context.expressExecuted) {
+    return 'Waiting for Finality';
+  }
+
+  return 'Confirm';
+}
+
+function resolveConfirmStatus(
+  context: ConfirmResolutionContext
+): 'success' | 'failed' | 'pending' {
+  if (hasSuccessfulConfirmation(context)) {
+    return 'success';
+  }
+
+  if (context.isInvalidCall || context.confirmFailed) {
+    return 'failed';
+  }
+
+  return 'pending';
+}
+
+function resolveApproveTitle(
+  call: GMPEventLog | undefined,
+  confirm: GMPEventLog | undefined,
+  confirmFailedEvent: GMPEventLog | undefined,
+  approved: GMPEventLog | undefined
+) {
+  if (approved) {
+    return 'Approved';
+  }
+
+  const canShowApproving = Boolean(
+    confirm &&
+      (['cosmos', 'vm'].includes(call?.chain_type ?? '') ||
+        confirm?.poll_id !== confirmFailedEvent?.poll_id)
+  );
+
+  return canShowApproving ? 'Approving' : 'Approve';
+}
+
+interface ExecuteResolutionContext {
+  executed?: GMPEventLog;
+  isExecuted?: boolean;
+  error?: GMPEventLog | undefined;
+  errored: boolean;
+  confirm?: GMPEventLog;
+  call?: GMPEventLog;
+}
+
+function hasSuccessfulExecution({
+  executed,
+  isExecuted,
+  error,
+}: ExecuteResolutionContext): boolean {
+  if (isExecuted) {
+    return true;
+  }
+
+  if (!executed) {
+    return false;
+  }
+
+  const missingAxelarHash = !executed.axelarTransactionHash;
+  const hasExecutableTransaction = Boolean(executed.transactionHash && !error);
+
+  return missingAxelarHash || hasExecutableTransaction;
+}
+
+function shouldWaitForIbc({
+  executed,
+  confirm,
+  call,
+}: ExecuteResolutionContext): boolean {
+  if (!executed?.axelarTransactionHash) {
+    return false;
+  }
+
+  const referenceTimestamp =
+    (confirm?.block_timestamp ?? call?.block_timestamp ?? 0) * 1000;
+  return timeDiff(referenceTimestamp) >= 60;
+}
+
+function resolveExecuteTitle(context: ExecuteResolutionContext): string {
+  if (hasSuccessfulExecution(context)) {
+    return 'Executed';
+  }
+
+  if (context.errored) {
+    return 'Error';
+  }
+
+  if (shouldWaitForIbc(context)) {
+    return 'Waiting for IBC';
+  }
+
+  return 'Execute';
+}
+
+function resolveExecuteStatus(
+  context: ExecuteResolutionContext
+): 'success' | 'failed' | 'pending' {
+  if (hasSuccessfulExecution(context)) {
+    return 'success';
+  }
+
+  if (context.errored) {
+    return 'failed';
+  }
+
+  return 'pending';
+}
+
+export function getGMPSteps(
   data: GMPMessage | undefined,
   chains: ChainMetadata[] | undefined
 ): GMPStep[] {
@@ -83,16 +263,15 @@ export function getStep(
       | GMPEventLog
       | string
       | undefined;
+    const hasGasPayment = Boolean(gas_paid || gas_paid_to_callback);
+    const payGasTitle = resolvePayGasTitle(call, hasGasPayment);
+    const payGasStatus = hasGasPayment ? 'success' : 'pending';
 
     addStep(
       buildStep(
         'pay_gas',
-        gas_paid || gas_paid_to_callback
-          ? 'Gas Paid'
-          : timeDiff((call?.block_timestamp ?? 0) * 1000) < 30
-            ? 'Checking Gas Paid'
-            : 'Pay Gas',
-        gas_paid || gas_paid_to_callback ? 'success' : 'pending',
+        payGasTitle,
+        payGasStatus,
         payGasData,
         !gas_paid && gas_paid_to_callback
           ? callbackGasChainData
@@ -118,35 +297,23 @@ export function getStep(
     (confirm || !approved || !(executed || is_executed || error));
 
   if (shouldAddConfirmStep) {
-    const confirmTitle =
-      (confirm &&
-        (call?.chain_type === 'cosmos' ||
-          confirm?.poll_id !== confirm_failed_event?.poll_id)) ||
-      approved ||
-      executed ||
-      is_executed ||
-      error
-        ? 'Confirmed'
-        : is_invalid_call
-          ? 'Invalid Call'
-          : confirm_failed
-            ? 'Failed to Confirm'
-            : gas_paid || gas_paid_to_callback || express_executed
-              ? 'Waiting for Finality'
-              : 'Confirm';
+    const confirmContext: ConfirmResolutionContext = {
+      call,
+      confirm,
+      confirmFailed: confirm_failed,
+      confirmFailedEvent: confirm_failed_event,
+      approved,
+      executed,
+      isExecuted: is_executed,
+      error,
+      isInvalidCall: is_invalid_call,
+      gasPaid: gas_paid,
+      gasPaidToCallback: gas_paid_to_callback,
+      expressExecuted: express_executed,
+    };
 
-    const confirmStatus =
-      (confirm &&
-        (call?.chain_type === 'cosmos' ||
-          confirm?.poll_id !== confirm_failed_event?.poll_id)) ||
-      approved ||
-      executed ||
-      is_executed ||
-      error
-        ? 'success'
-        : is_invalid_call || confirm_failed
-          ? 'failed'
-          : 'pending';
+    const confirmTitle = resolveConfirmTitle(confirmContext);
+    const confirmStatus = resolveConfirmStatus(confirmContext);
 
     addStep(
       buildStep(
@@ -166,13 +333,12 @@ export function getStep(
     (approved || (!executed && !error));
 
   if (shouldAddApproveStep) {
-    const approveTitle = approved
-      ? 'Approved'
-      : confirm &&
-          (['cosmos', 'vm'].includes(call?.chain_type ?? '') ||
-            confirm?.poll_id !== confirm_failed_event?.poll_id)
-        ? 'Approving'
-        : 'Approve';
+    const approveTitle = resolveApproveTitle(
+      call,
+      confirm,
+      confirm_failed_event,
+      approved
+    );
 
     addStep(
       buildStep(
@@ -185,30 +351,17 @@ export function getStep(
     );
   }
 
-  const executeTitle =
-    (executed &&
-      (!executed.axelarTransactionHash ||
-        (executed.transactionHash && !error))) ||
-    is_executed
-      ? 'Executed'
-      : errored
-        ? 'Error'
-        : executed?.axelarTransactionHash &&
-            timeDiff(
-              (confirm?.block_timestamp ?? call?.block_timestamp ?? 0) * 1000
-            ) >= 60
-          ? 'Waiting for IBC'
-          : 'Execute';
+  const executeContext: ExecuteResolutionContext = {
+    executed,
+    isExecuted: is_executed,
+    error,
+    errored,
+    confirm,
+    call,
+  };
 
-  const executeStatus =
-    (executed &&
-      (!executed.axelarTransactionHash ||
-        (executed.transactionHash && !error))) ||
-    is_executed
-      ? 'success'
-      : errored
-        ? 'failed'
-        : 'pending';
+  const executeTitle = resolveExecuteTitle(executeContext);
+  const executeStatus = resolveExecuteStatus(executeContext);
 
   addStep(
     buildStep(
@@ -235,6 +388,13 @@ export function getStep(
   }
 
   return steps;
+}
+
+export function getStep(
+  data: GMPMessage | undefined,
+  chains: ChainMetadata[] | null | undefined
+): GMPStep[] {
+  return getGMPSteps(data, chains ?? undefined);
 }
 
 function buildStep(

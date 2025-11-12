@@ -16,6 +16,22 @@ import { AssetAddressEntry, AssetDataEntry } from '../GMP.types';
 import { contractCallDataStyles } from './ContractCallData.styles';
 import { ContractCallDataProps } from './ContractCallData.types';
 
+const statusColorByState: Record<string, string> = {
+  received: 'bg-green-600 dark:bg-green-500',
+  approved: 'bg-orange-500 dark:bg-orange-600',
+  failed: 'bg-red-600 dark:bg-red-500',
+};
+
+const DEFAULT_STATUS_COLOR = 'bg-yellow-400 dark:bg-yellow-500';
+
+function getStatusTagClass(status?: string): string {
+  if (!status) {
+    return DEFAULT_STATUS_COLOR;
+  }
+
+  return statusColorByState[status] ?? DEFAULT_STATUS_COLOR;
+}
+
 export function ContractCallData({
   data,
   executeData,
@@ -111,13 +127,7 @@ export function ContractCallData({
                 <Tag
                   className={clsx(
                     contractCallDataStyles.statusTag,
-                    data.simplified_status === 'received'
-                      ? 'bg-green-600 dark:bg-green-500'
-                      : data.simplified_status === 'approved'
-                        ? 'bg-orange-500 dark:bg-orange-600'
-                        : data.simplified_status === 'failed'
-                          ? 'bg-red-600 dark:bg-red-500'
-                          : 'bg-yellow-400 dark:bg-yellow-500'
+                    getStatusTagClass(data.simplified_status)
                   )}
                 >
                   {data.simplified_status === 'received' &&

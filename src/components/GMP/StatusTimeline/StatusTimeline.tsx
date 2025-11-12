@@ -11,7 +11,7 @@ import { toArray } from '@/lib/parser';
 import { isString } from '@/lib/string';
 import { timeDiff } from '@/lib/time';
 
-import { GMPEventLog, GMPMessage } from '../GMP.types';
+import { GMPEventLog, GMPMessage, GMPStep } from '../GMP.types';
 import { getStep } from '../GMP.utils';
 import { statusTimelineStyles } from './StatusTimeline.styles';
 import { StatusTimelineProps } from './StatusTimeline.types';
@@ -34,7 +34,7 @@ export function StatusTimeline({
 
   return (
     <div className={statusTimelineStyles.list}>
-      {entries.map((entry, index) => {
+      {entries.map((entry: GMPMessage, index: number) => {
         const { call } = { ...entry };
 
         const sourceChain = call?.chain;
@@ -86,7 +86,7 @@ export function StatusTimeline({
               className={clsx(statusTimelineStyles.nav, navHeightClass)}
             >
               <ol className={statusTimelineStyles.navList}>
-                {steps.map((step, stepIndex) => {
+                {steps.map((step: GMPStep, stepIndex: number) => {
                   const { id, title, status, data, chainData } = step;
 
                   const rawStepData =

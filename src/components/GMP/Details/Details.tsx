@@ -15,12 +15,24 @@ import { isNumber, numberFormat, toNumber } from '@/lib/number';
 import { split, toArray } from '@/lib/parser';
 import { ellipse, headString, isString } from '@/lib/string';
 
-import { GMPEventLog } from '../GMP.types';
+import { GMPEventLog, GMPStep } from '../GMP.types';
 import { getStep } from '../GMP.utils';
 import { detailsStyles } from './Details.styles';
 import { DetailsProps } from './Details.types';
 
 import { MdKeyboardArrowRight } from 'react-icons/md';
+
+const getStepStatusClass = (status?: string): string => {
+  if (status === 'success') {
+    return 'bg-green-600 dark:bg-green-500';
+  }
+
+  if (status === 'failed') {
+    return 'bg-red-600 dark:bg-red-500';
+  }
+
+  return '';
+};
 
 export function Details({ data }: DetailsProps) {
   const { chains } = useGlobalStore();
@@ -97,7 +109,7 @@ export function Details({ data }: DetailsProps) {
                   'axelarTransactionHash' in step.data &&
                   step.data.axelarTransactionHash)
             )
-            .map((step, index) => {
+            .map((step: GMPStep, index: number) => {
               // Type guard to extract GMPEventLog from step.data
               const stepData: GMPEventLog | undefined =
                 step.id === 'pay_gas' && isString(step.data)
@@ -702,11 +714,7 @@ export function Details({ data }: DetailsProps) {
                       <Tag
                         className={clsx(
                           detailsStyles.tag,
-                          step.status === 'success'
-                            ? 'bg-green-600 dark:bg-green-500'
-                            : step.status === 'failed'
-                              ? 'bg-red-600 dark:bg-red-500'
-                              : ''
+                          getStepStatusClass(step.status)
                         )}
                       >
                         {step.status}

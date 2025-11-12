@@ -24,6 +24,15 @@ export function ApproveButton({
   const isAxelarChain = isAxelar(call.chain);
   const isCosmosChain = call.chain_type === 'cosmos';
 
+  let buttonLabel: string;
+  if (!isConfirmed && !isAxelarChain && !isCosmosChain) {
+    buttonLabel = processing ? 'Confirming...' : 'Confirm';
+  } else if (isCosmosChain) {
+    buttonLabel = processing ? 'Executing...' : 'Execute';
+  } else {
+    buttonLabel = processing ? 'Approving...' : 'Approve';
+  }
+
   return (
     <div key="approve" className={gmpStyles.actionRow}>
       <button
@@ -31,20 +40,7 @@ export function ApproveButton({
         onClick={() => onApprove(data!)}
         className={clsx(gmpStyles.actionButton(processing))}
       >
-        {(!isConfirmed || data!.confirm_failed) &&
-        !isAxelarChain &&
-        !isCosmosChain
-          ? 'Confirm'
-          : isCosmosChain
-            ? 'Execut'
-            : 'Approv'}
-        {processing
-          ? 'ing...'
-          : (!isConfirmed || data!.confirm_failed) &&
-              !isAxelarChain &&
-              !isCosmosChain
-            ? ''
-            : 'e'}
+        {buttonLabel}
       </button>
     </div>
   );

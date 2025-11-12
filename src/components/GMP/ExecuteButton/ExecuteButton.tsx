@@ -48,6 +48,8 @@ export function ExecuteButton({
     chainId
   );
 
+  const buttonLabel = processing ? 'Executing...' : 'Execute';
+
   return (
     <div key="execute" className={gmpStyles.actionRow}>
       {(isCosmosDestination || (isWalletConnected && !needsSwitchChain)) && (
@@ -58,7 +60,7 @@ export function ExecuteButton({
           }
           className={clsx(gmpStyles.actionButton(processing))}
         >
-          Execut{processing ? 'ing...' : 'e'}
+          {buttonLabel}
         </button>
       )}
       {!isCosmosDestination && (
