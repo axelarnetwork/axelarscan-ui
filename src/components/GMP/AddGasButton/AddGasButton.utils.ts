@@ -163,6 +163,7 @@ export async function executeAddGas(params: AddGasActionParams): Promise<void> {
         logIndex,
         refundAddress: address,
         provider,
+        signer,
         destinationChainType: destination_chain_type,
         setResponse,
         getData,
@@ -262,6 +263,7 @@ interface EvmHandlerParams extends DataAwareHandlerParams {
   logIndex: number | undefined;
   refundAddress: string | null;
   provider: NonNullableProvider;
+  signer: AddGasActionParams['signer'];
   destinationChainType: string | undefined;
   getData: NonNullableGetData;
   approve: NonNullableApprove;
@@ -277,6 +279,7 @@ async function handleEvmAddGas({
   logIndex,
   refundAddress,
   provider,
+  signer,
   destinationChainType,
   setResponse,
   getData,
@@ -295,6 +298,8 @@ async function handleEvmAddGas({
     evmWalletDetails: {
       useWindowEthereum: true,
       provider: provider ?? undefined,
+      // @ts-expect-error - NOTE: Investigate if "signer" is required, it is defined for backwards compatibility.
+      signer: signer ?? undefined,
     },
     destChain: destinationChain,
     logIndex,
@@ -312,7 +317,9 @@ async function handleEvmAddGas({
   setResponse({
     status: success ? 'success' : 'failed',
     message:
-      parseError(error)?.message || String(error) || 'Pay gas successful',
+      parseError(error)?.message ||
+      (typeof error === 'string' ? error : undefined) ||
+      'Pay gas successful',
     hash: transaction?.transactionHash,
     chain,
   });
@@ -410,15 +417,21 @@ async function handleCosmosAddGas({
 
   console.log('[addGas response]', response);
 
-  const { success, info, broadcastResult } = { ...response };
+  const { success, broadcastResult } = { ...response };
+  const cosmosError = (response as { error?: unknown }).error;
 
   if (success) {
     await sleep(1000);
   }
 
+  const message =
+    parseError(cosmosError)?.message ??
+    (typeof cosmosError === 'string' ? cosmosError : undefined) ??
+    'Pay gas successful';
+
   setResponse({
     status: success ? 'success' : 'failed',
-    message: info || 'Pay gas successful',
+    message,
     hash: broadcastResult?.transactionHash,
     chain,
   });
@@ -480,6 +493,12 @@ async function handleSuiAddGas({
   const suiResponse = await suiSignAndExecuteTransaction({
     transaction: suiTransaction,
     chain: `sui:${ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}`,
+    // @ts-expect-error - NOTE: Investigate if "options" is required, it is defined for backwards compatibility.
+    options: {
+      showEffects: true,
+      showEvents: true,
+      showObjectChanges: true,
+    },
   });
 
   console.log('[addGas response]', suiResponse);
@@ -495,10 +514,21 @@ async function handleSuiAddGas({
       ? (suiResponse as { digest?: string }).digest
       : undefined;
 
+  const suiError =
+    (suiResponse as { error?: unknown })?.error ?? suiEffectsStatus?.error;
+  const isSuiSuccess =
+    (suiEffectsStatus?.status === 'success' ||
+      typeof suiEffectsStatus?.status === 'undefined') &&
+    !suiError;
+  const suiStatus = isSuiSuccess ? 'success' : 'failed';
+  const suiMessage =
+    parseError(suiError)?.message ||
+    (typeof suiError === 'string' ? suiError : undefined) ||
+    'Pay gas successful';
+
   setResponse({
-    status: suiEffectsStatus?.status === 'success' ? 'success' : 'failed',
-    message:
-      parseError(suiEffectsStatus?.error)?.message || 'Pay gas successful',
+    status: suiStatus,
+    message: suiMessage,
     hash: suiDigest,
     chain,
   });

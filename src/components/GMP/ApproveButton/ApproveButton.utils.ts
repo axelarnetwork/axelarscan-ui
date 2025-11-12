@@ -10,8 +10,15 @@ import { ApproveActionParams } from './ApproveButton.types';
 export async function executeApprove(
   params: ApproveActionParams
 ): Promise<void> {
-  const { data, sdk, provider, setResponse, setProcessing, afterPayGas } =
-    params;
+  const {
+    data,
+    sdk,
+    provider,
+    signer,
+    setResponse,
+    setProcessing,
+    afterPayGas,
+  } = params;
 
   if (!data?.call || !sdk) {
     return;
@@ -58,6 +65,8 @@ export async function executeApprove(
       {
         useWindowEthereum: true,
         provider: provider ?? undefined,
+        // @ts-expect-error - NOTE: Investigate if "signer" is required, it is defined for backwards compatibility.
+        signer: signer ?? undefined,
       },
       false,
       messageIdStr
@@ -74,15 +83,23 @@ export async function executeApprove(
     }
 
     if (success || !afterPayGas) {
-      const errorMessage =
-        typeof error === 'object' && error !== null && 'message' in error
-          ? (error as { message?: string }).message
-          : String(error || '');
+      const parsedError = parseError(error)?.message;
+      const rawError =
+        typeof error === 'string'
+          ? error
+          : typeof error === 'object' && error !== null && 'message' in error
+            ? (error as { message?: unknown }).message
+            : undefined;
+      const normalizedError =
+        parsedError ||
+        (typeof rawError === 'string' && rawError.length > 0
+          ? rawError
+          : undefined);
 
       setResponse({
         status: success || !error ? 'success' : 'failed',
         message:
-          errorMessage ||
+          normalizedError ||
           `${destination_chain_type === 'cosmos' ? 'Execute' : 'Approve'} successful`,
         hash:
           routeMessageTx?.transactionHash ||

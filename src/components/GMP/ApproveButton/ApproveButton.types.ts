@@ -8,6 +8,7 @@ export interface ApproveActionParams {
   data: GMPMessage;
   sdk: AxelarGMPRecoveryAPI | null;
   provider: providers.Web3Provider | null;
+  signer: providers.JsonRpcSigner | null;
   setResponse: (response: GMPToastState) => void;
   setProcessing: (processing: boolean) => void;
   afterPayGas?: boolean;

@@ -38,7 +38,10 @@ export function useRecoveryButtons({
     toast.remove();
 
     if (message && status) {
-      if ((hash && chainData?.explorer) || status === 'failed') {
+      const hasExplorerLink = Boolean(chainData?.explorer && hash && chain);
+      const shouldShowCustomToast = hasExplorerLink || status === 'failed';
+
+      if (shouldShowCustomToast) {
         const icon =
           status === 'success' ? (
             <PiCheckCircleFill
@@ -60,7 +63,7 @@ export function useRecoveryButtons({
                 {message}
               </span>
             </div>
-            {chainData?.explorer && hash && chain && (
+            {hasExplorerLink && (
               <div className={recoveryButtonsStyles.toastExplorerRow}>
                 <ExplorerLink
                   value={hash}
@@ -79,15 +82,21 @@ export function useRecoveryButtons({
           </div>,
           { duration: 60000 }
         );
-      } else {
-        const duration = 10000;
+      }
 
-        switch (status) {
+      if (!shouldShowCustomToast) {
+        const duration = 10000;
+        const fallbackStatus = status as GMPToastState['status'];
+
+        switch (fallbackStatus) {
           case 'pending':
             toast.loading(message);
             break;
           case 'success':
             toast.success(message, { duration });
+            break;
+          case 'failed':
+            toast.error(message, { duration });
             break;
           default:
             break;

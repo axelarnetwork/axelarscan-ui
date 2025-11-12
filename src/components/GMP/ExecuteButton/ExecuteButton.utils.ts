@@ -48,6 +48,8 @@ export async function executeExecute(
     const response = await sdk.execute(transactionHash, logIndex, {
       useWindowEthereum: true,
       provider: provider ?? undefined,
+      // @ts-expect-error - NOTE: Investigate if "signer" is required, it is defined for backwards compatibility.
+      signer: signer ?? undefined,
       gasLimitBuffer: Number(gasLimitBuffer),
     });
 
