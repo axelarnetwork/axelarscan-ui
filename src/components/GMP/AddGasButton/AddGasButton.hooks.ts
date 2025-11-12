@@ -1,6 +1,6 @@
 import { useSignAndExecuteTransaction as useSuiSignAndExecuteTransaction } from '@mysten/dapp-kit';
 import { useSignAndSubmitTransaction as useXRPLSignAndSubmitTransaction } from '@xrpl-wallet-standard/react';
-import { useCallback, useMemo } from 'react';
+import { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
 
 import { getChainData } from '@/lib/config';
 
@@ -10,8 +10,10 @@ import { useStellarWalletStore } from '@/components/Wallet/StellarWallet';
 import { useSuiWalletStore } from '@/components/Wallet/SuiWallet';
 import { useXRPLWalletStore } from '@/components/Wallet/XRPLWallet';
 
+import { useApproveAction } from '../ApproveButton/ApproveButton.hooks';
+import { useEstimatedGasUsed, useGMPRecoveryAPI } from '../GMP.hooks';
+import type { ChainMetadata, GMPMessage, GMPToastState } from '../GMP.types';
 import { isWalletConnectedForChain, shouldSwitchChain } from '../GMP.utils';
-import { AddGasButtonProps } from './AddGasButton.types';
 import { executeAddGas } from './AddGasButton.utils';
 
 interface UseAddGasButtonResult {
@@ -23,20 +25,20 @@ interface UseAddGasButtonResult {
   handleAddGas: () => Promise<void>;
 }
 
+interface UseAddGasButtonOptions {
+  data: GMPMessage | null;
+  processing: boolean;
+  chains: ChainMetadata[] | null;
+  setProcessing: Dispatch<SetStateAction<boolean>>;
+  setResponse: Dispatch<SetStateAction<GMPToastState | null>>;
+  refreshData: () => Promise<GMPMessage | undefined>;
+}
+
 export function useAddGasButton(
-  props: AddGasButtonProps
+  props: UseAddGasButtonOptions
 ): UseAddGasButtonResult {
-  const {
-    data,
-    processing,
-    chains,
-    sdk,
-    estimatedGasUsed,
-    setProcessing,
-    setResponse,
-    refreshData,
-    approve,
-  } = props;
+  const { data, processing, chains, setProcessing, setResponse, refreshData } =
+    props;
 
   const call = data?.call;
   const sourceChainData = call
@@ -51,6 +53,9 @@ export function useAddGasButton(
   const { mutateAsync: suiSignAndExecuteTransaction } =
     useSuiSignAndExecuteTransaction();
   const xrplSignAndSubmitTransaction = useXRPLSignAndSubmitTransaction();
+  const sdk = useGMPRecoveryAPI();
+  const estimatedGasUsed = useEstimatedGasUsed(data);
+  const approve = useApproveAction({ setProcessing, setResponse });
 
   const walletContext = useMemo(
     () => ({
@@ -114,7 +119,7 @@ export function useAddGasButton(
 
     await executeAddGas({
       data,
-      sdk,
+      sdk: sdk ?? null,
       chains,
       provider,
       signer,

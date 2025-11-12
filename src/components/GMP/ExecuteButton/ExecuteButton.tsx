@@ -1,63 +1,40 @@
 import clsx from 'clsx';
 
-import { getChainData } from '@/lib/config';
-
 import { gmpStyles } from '../GMP.styles';
-import { shouldSwitchChain } from '../GMP.utils';
 import { WalletSelector } from '../WalletSelector/WalletSelector';
+import { useExecuteButton } from './ExecuteButton.hooks';
 import { ExecuteButtonProps } from './ExecuteButton.types';
 
-export function ExecuteButton({
-  data,
-  processing,
-  onExecute,
-  onApprove,
-  chains,
-  chainId,
-  signer,
-  cosmosWalletStore,
-  suiWalletStore,
-  stellarWalletStore,
-  xrplWalletStore,
-}: ExecuteButtonProps) {
-  if (!data || !data.call) {
+export function ExecuteButton(props: ExecuteButtonProps) {
+  const { data, processing, chains, setProcessing, setResponse, refreshData } =
+    props;
+  const {
+    buttonLabel,
+    isCosmosDestination,
+    isWalletConnected,
+    needsSwitchChain,
+    targetChain,
+    targetChainType,
+    handleExecute,
+  } = useExecuteButton({
+    data,
+    processing,
+    chains,
+    setProcessing,
+    setResponse,
+    refreshData,
+  });
+
+  if (!data?.call) {
     return null;
   }
-
-  const call = data.call;
-  const isCosmosDestination = call.destination_chain_type === 'cosmos';
-
-  // Compute wallet state
-  const destinationChainData = getChainData(
-    call.returnValues?.destinationChain,
-    chains
-  );
-  const walletContext = {
-    cosmosWalletStore,
-    signer,
-    suiWalletStore,
-    stellarWalletStore,
-    xrplWalletStore,
-  };
-
-  const isWalletConnected = Boolean(signer);
-  const needsSwitchChain = shouldSwitchChain(
-    destinationChainData?.chain_id,
-    call.destination_chain_type,
-    walletContext,
-    chainId
-  );
-
-  const buttonLabel = processing ? 'Executing...' : 'Execute';
 
   return (
     <div key="execute" className={gmpStyles.actionRow}>
       {(isCosmosDestination || (isWalletConnected && !needsSwitchChain)) && (
         <button
           disabled={processing}
-          onClick={() =>
-            isCosmosDestination ? onApprove(data!) : onExecute(data!)
-          }
+          onClick={handleExecute}
           className={clsx(gmpStyles.actionButton(processing))}
         >
           {buttonLabel}
@@ -65,8 +42,8 @@ export function ExecuteButton({
       )}
       {!isCosmosDestination && (
         <WalletSelector
-          targetChain={call.returnValues?.destinationChain}
-          targetChainType={call.destination_chain_type}
+          targetChain={targetChain}
+          targetChainType={targetChainType}
           chains={chains}
         />
       )}

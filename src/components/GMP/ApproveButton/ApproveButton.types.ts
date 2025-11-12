@@ -1,7 +1,8 @@
+import type { Dispatch, SetStateAction } from 'react';
 import { AxelarGMPRecoveryAPI } from '@axelar-network/axelarjs-sdk';
 import { providers } from 'ethers';
 
-import { ChainMetadata, GMPMessage, GMPToastState } from '../GMP.types';
+import { GMPMessage, GMPToastState } from '../GMP.types';
 
 export interface ApproveActionParams {
   data: GMPMessage;
@@ -15,7 +16,6 @@ export interface ApproveActionParams {
 export interface ApproveButtonProps {
   data: GMPMessage | null;
   processing: boolean;
-  onApprove: (data: GMPMessage) => Promise<void>;
-  chains: ChainMetadata[] | null;
-  estimatedTimeSpent: { confirm?: number } | null;
+  setProcessing: Dispatch<SetStateAction<boolean>>;
+  setResponse: Dispatch<SetStateAction<GMPToastState | null>>;
 }

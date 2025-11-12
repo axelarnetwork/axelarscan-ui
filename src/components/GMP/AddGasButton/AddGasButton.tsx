@@ -5,7 +5,8 @@ import { useAddGasButton } from './AddGasButton.hooks';
 import { AddGasButtonProps } from './AddGasButton.types';
 
 export function AddGasButton(props: AddGasButtonProps) {
-  const { data, processing, chains } = props;
+  const { data, processing, chains, setProcessing, setResponse, refreshData } =
+    props;
   const {
     buttonLabel,
     isWalletConnected,
@@ -13,7 +14,14 @@ export function AddGasButton(props: AddGasButtonProps) {
     targetChain,
     targetChainType,
     handleAddGas,
-  } = useAddGasButton(props);
+  } = useAddGasButton({
+    data,
+    processing,
+    chains,
+    setProcessing,
+    setResponse,
+    refreshData,
+  });
 
   if (!data?.call) {
     return null;

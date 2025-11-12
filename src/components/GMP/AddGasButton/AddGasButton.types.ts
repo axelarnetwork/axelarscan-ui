@@ -46,10 +46,7 @@ export interface AddGasButtonProps {
   data: GMPMessage | null;
   processing: boolean;
   chains: ChainMetadata[] | null;
-  sdk: AxelarGMPRecoveryAPI | null;
-  estimatedGasUsed: number | null;
   setProcessing: Dispatch<SetStateAction<boolean>>;
   setResponse: Dispatch<SetStateAction<GMPToastState | null>>;
   refreshData: () => Promise<GMPMessage | undefined>;
-  approve: (data: GMPMessage, auto?: boolean) => Promise<void>;
 }

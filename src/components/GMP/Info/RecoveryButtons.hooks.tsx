@@ -1,31 +1,17 @@
 'use client';
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import toast from 'react-hot-toast';
 import { PiCheckCircleFill, PiXCircleFill } from 'react-icons/pi';
 
 import { ExplorerLink } from '@/components/ExplorerLink';
-import { useCosmosWalletStore } from '@/components/Wallet/CosmosWallet.hooks';
-import { useEVMWalletStore } from '@/components/Wallet/EVMWallet';
-import { useStellarWalletStore } from '@/components/Wallet/StellarWallet';
-import { useSuiWalletStore } from '@/components/Wallet/SuiWallet';
-import { useXRPLWalletStore } from '@/components/Wallet/XRPLWallet';
 import { isAxelar } from '@/lib/chain';
 import { getChainData } from '@/lib/config';
 
 import { AddGasButton } from '../AddGasButton/AddGasButton';
 import { ApproveButton } from '../ApproveButton/ApproveButton';
-import { executeApprove } from '../ApproveButton/ApproveButton.utils';
 import { ExecuteButton } from '../ExecuteButton/ExecuteButton';
-import { executeExecute } from '../ExecuteButton/ExecuteButton.utils';
-import { useEstimatedGasUsed, useGMPRecoveryAPI } from '../GMP.hooks';
-import type { GMPMessage, GMPToastState } from '../GMP.types';
+import type { GMPToastState } from '../GMP.types';
 import { recoveryButtonsStyles } from './RecoveryButtons.styles';
 import { RecoveryButtonsProps } from './RecoveryButtons.types';
 import {
@@ -44,46 +30,6 @@ export function useRecoveryButtons({
 }: RecoveryButtonsProps): RecoveryButtonEntry[] {
   const [processing, setProcessing] = useState<boolean>(false);
   const [response, setResponse] = useState<GMPToastState | null>(null);
-
-  const { chainId, provider, signer } = useEVMWalletStore();
-  const cosmosWalletStore = useCosmosWalletStore();
-  const suiWalletStore = useSuiWalletStore();
-  const stellarWalletStore = useStellarWalletStore();
-  const xrplWalletStore = useXRPLWalletStore();
-  const estimatedGasUsed = useEstimatedGasUsed(data);
-  const sdk = useGMPRecoveryAPI();
-
-  const approve = useCallback(
-    async (
-      message: GMPMessage,
-      afterPayGas: boolean = false
-    ): Promise<void> => {
-      await executeApprove({
-        data: message,
-        sdk: sdk ?? null,
-        provider,
-        setResponse,
-        setProcessing,
-        afterPayGas,
-      });
-    },
-    [provider, sdk]
-  );
-
-  const execute = useCallback(
-    async (message: GMPMessage): Promise<void> => {
-      await executeExecute({
-        data: message,
-        sdk: sdk ?? null,
-        provider,
-        signer,
-        setResponse,
-        setProcessing,
-        getData: refreshData,
-      });
-    },
-    [provider, refreshData, sdk, signer]
-  );
 
   useEffect(() => {
     const { status, message, hash, chain } = { ...response };
@@ -161,12 +107,9 @@ export function useRecoveryButtons({
           data={data}
           processing={processing}
           chains={chains}
-          sdk={sdk ?? null}
-          estimatedGasUsed={estimatedGasUsed}
           setProcessing={setProcessing}
           setResponse={setResponse}
           refreshData={refreshData}
-          approve={approve}
         />,
       ]);
     }
@@ -176,15 +119,10 @@ export function useRecoveryButtons({
         key="execute"
         data={data}
         processing={processing}
-        onExecute={execute}
-        onApprove={approve}
         chains={chains}
-        chainId={chainId}
-        signer={signer}
-        cosmosWalletStore={cosmosWalletStore}
-        suiWalletStore={suiWalletStore}
-        stellarWalletStore={stellarWalletStore}
-        xrplWalletStore={xrplWalletStore}
+        setProcessing={setProcessing}
+        setResponse={setResponse}
+        refreshData={refreshData}
       />
     ) : null;
 
@@ -217,32 +155,14 @@ export function useRecoveryButtons({
           key={approveKey}
           data={data}
           processing={processing}
-          onApprove={approve}
-          chains={chains}
-          estimatedTimeSpent={estimatedTimeSpent ?? null}
+          setProcessing={setProcessing}
+          setResponse={setResponse}
         />,
       ]);
     }
 
     return values;
-  }, [
-    approve,
-    chains,
-    cosmosWalletStore,
-    data,
-    estimatedTimeSpent,
-    estimatedGasUsed,
-    execute,
-    processing,
-    response,
-    sdk,
-    refreshData,
-    signer,
-    stellarWalletStore,
-    suiWalletStore,
-    xrplWalletStore,
-    chainId,
-  ]);
+  }, [chains, data, estimatedTimeSpent, processing, response, refreshData]);
 
   return entries;
 }
