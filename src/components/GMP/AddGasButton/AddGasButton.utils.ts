@@ -1,16 +1,21 @@
-import * as StellarSDK from '@stellar/stellar-sdk';
-
 import { estimateITSFee } from '@/lib/api/gmp';
 import { isAxelar } from '@/lib/chain';
-import { ENVIRONMENT, getChainData } from '@/lib/config';
+import { ENVIRONMENT as _ENVIRONMENT, getChainData } from '@/lib/config';
 import { formatUnits, isNumber, parseUnits, toBigNumber } from '@/lib/number';
 import { sleep } from '@/lib/operator';
 import { parseError } from '@/lib/parser';
 import { headString } from '@/lib/string';
-
+import type {
+  AxelarGMPRecoveryAPI,
+  Environment,
+} from '@axelar-network/axelarjs-sdk';
+import type { OfflineSigner } from '@cosmjs/proto-signing';
+import * as StellarSDK from '@stellar/stellar-sdk';
 import type { GMPMessage } from '../GMP.types';
 import { getDefaultGasLimit, isWalletConnectedForChain } from '../GMP.utils';
 import { AddGasActionParams } from './AddGasButton.types';
+
+const ENVIRONMENT = _ENVIRONMENT as Environment;
 
 /**
  * Execute the add gas action for a GMP transaction
@@ -344,6 +349,11 @@ interface CosmosHandlerParams extends DataAwareHandlerParams {
   approve: NonNullableApprove;
 }
 
+// NOTE: Investigate if "messageId" is required.
+type CosmosAddGasParams = Parameters<
+  AxelarGMPRecoveryAPI['addGasToCosmosChain']
+>[0] & { messageId: string };
+
 async function handleCosmosAddGas({
   sdk,
   data,
@@ -363,9 +373,10 @@ async function handleCosmosAddGas({
   }
 
   const token = 'autocalculate';
+  const offlineSigner = cosmosWalletStore.signer as OfflineSigner;
   const sendOptions = {
     environment: ENVIRONMENT,
-    offlineSigner: cosmosWalletStore.signer,
+    offlineSigner,
     txFee: {
       gas: '300000',
       amount: [
@@ -386,14 +397,16 @@ async function handleCosmosAddGas({
     sendOptions,
   });
 
-  const response = await sdk.addGasToCosmosChain({
+  const cosmosParams: CosmosAddGasParams = {
     txHash: transactionHash,
     messageId,
     gasLimit,
     chain,
     token,
-    sendOptions: sendOptions as never,
-  } as never);
+    sendOptions,
+  };
+
+  const response = await sdk.addGasToCosmosChain(cosmosParams);
 
   console.log('[addGas response]', response);
 
@@ -465,8 +478,8 @@ async function handleSuiAddGas({
   }
 
   const suiResponse = await suiSignAndExecuteTransaction({
-    transaction: suiTransaction as never,
-    chain: `sui:${ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}` as never,
+    transaction: suiTransaction,
+    chain: `sui:${ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}`,
   });
 
   console.log('[addGas response]', suiResponse);
@@ -477,11 +490,16 @@ async function handleSuiAddGas({
     }
   )?.effects?.status;
 
+  const suiDigest =
+    'digest' in (suiResponse as Record<string, unknown>)
+      ? (suiResponse as { digest?: string }).digest
+      : undefined;
+
   setResponse({
     status: suiEffectsStatus?.status === 'success' ? 'success' : 'failed',
     message:
       parseError(suiEffectsStatus?.error)?.message || 'Pay gas successful',
-    hash: (suiResponse as { digest?: string })?.digest,
+    hash: suiDigest,
     chain,
   });
 }
@@ -636,7 +654,7 @@ async function handleXrplAddGas({
 
   const xrplResponse = await xrplSignAndSubmitTransaction(
     xrplTransaction as never,
-    `xrpl:${getXrplNetworkCode()}` as never
+    `xrpl:${getXrplNetworkCode()}`
   );
 
   console.log('[addGas response]', xrplResponse);
