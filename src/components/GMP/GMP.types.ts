@@ -1,5 +1,7 @@
 import type { providers } from 'ethers';
 
+export type ChainType = 'cosmos' | 'evm' | 'vm';
+
 export interface ExplorerPaths {
   url?: string;
   block_path?: string;
@@ -68,8 +70,8 @@ export interface GMPTransactionDetails {
 export interface GMPEventLog {
   id?: string;
   chain?: string;
-  chain_type?: string;
-  destination_chain_type?: string;
+  chain_type?: ChainType;
+  destination_chain_type?: ChainType;
   transactionHash?: string;
   transactionIndex?: number;
   logIndex?: number;
@@ -304,8 +306,8 @@ export interface ChainTimeEstimate {
 
 export interface AddGasParams {
   chain?: string;
-  chain_type?: string;
-  destination_chain_type?: string;
+  chain_type?: ChainType;
+  destination_chain_type?: ChainType;
 }
 
 // Wallet context types

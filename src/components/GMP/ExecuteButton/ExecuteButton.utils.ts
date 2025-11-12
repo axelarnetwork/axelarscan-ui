@@ -1,6 +1,18 @@
-import { parseError } from '@/lib/parser';
+import { AxelarGMPRecoveryAPI } from '@axelar-network/axelarjs-sdk';
+import { providers } from 'ethers';
 
-import { ExecuteActionParams } from './ExecuteButton.types';
+import { parseError } from '@/lib/parser';
+import { GMPMessage, GMPToastState } from '../GMP.types';
+
+interface ExecuteActionParams {
+  data: GMPMessage;
+  sdk: AxelarGMPRecoveryAPI | null;
+  provider: providers.Web3Provider | null;
+  signer: providers.JsonRpcSigner | null;
+  setResponse: (response: GMPToastState) => void;
+  setProcessing: (processing: boolean) => void;
+  getData: () => Promise<GMPMessage | undefined>;
+}
 
 /**
  * Execute the execute action for a GMP transaction on EVM chains
