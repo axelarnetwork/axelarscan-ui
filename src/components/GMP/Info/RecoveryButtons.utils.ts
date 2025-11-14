@@ -75,23 +75,9 @@ function isChainSupportedForAddGas(
  * If any of the above checks fail we suppress the add-gas affordance unless
  * other recovery paths require it (e.g. callback leg).
  */
-function needsGasForOriginalCall({
-  call,
-  gas_paid,
-  confirm,
-  approved,
-  executed,
-  gas,
-  gmp,
-}: {
-  call: GMPMessage['call'];
-  gas_paid: GMPMessage['gas_paid'];
-  confirm: GMPMessage['confirm'];
-  approved: GMPMessage['approved'];
-  executed: GMPMessage['executed'];
-  gas: GMPMessage['gas'];
-  gmp: GMPMessage;
-}): boolean {
+function needsGasForOriginalCall(gmp: GMPMessage): boolean {
+  const { call, gas_paid, confirm, approved, executed, gas } = gmp;
+
   // If the message is already executed (or marked executed) we do not need more gas.
   if (executed || gmp.is_executed || approved) {
     return false;
@@ -175,7 +161,7 @@ function needsGasForCallback(gmp: GMPMessage): boolean {
  *  • At least one of the gas-shortage heuristics returns true:
  *      – `needsGasForOriginalCall` indicates the source leg still needs gas.
  *      – `needsGasForCallback` flags a callback insufficiency.
- *      – The Axelar destination is itself and the last error signals a gas gap.
+ *      – Gas-related errors are detected in the error message.
  *
  * @param data      The full GMP message.
  * @param response  Latest toast state (used to avoid duplicate “pay gas” attempts).
@@ -191,7 +177,7 @@ export function shouldShowAddGasButton(
     return false;
   }
 
-  const { call, gas_paid, confirm, approved, executed, error, gas } = data;
+  const { call, error } = data;
   const sourceChainData = getChainData(call.chain, chains);
 
   // Ignore unknown source chains (metadata missing).
@@ -209,9 +195,10 @@ export function shouldShowAddGasButton(
     return false;
   }
 
+  const needsMoreGasFromError = checkNeedMoreGasFromError(error);
+
   const waitingOnAxelar =
-    isAxelar(call.returnValues?.destinationChain) &&
-    checkNeedMoreGasFromError(error);
+    isAxelar(call.returnValues?.destinationChain) && needsMoreGasFromError;
 
   // Avoid duplicate “Pay gas successful” loops unless the Axelar destination flow still needs recovery.
   if (response?.message === 'Pay gas successful' && !waitingOnAxelar) {
@@ -219,17 +206,7 @@ export function shouldShowAddGasButton(
   }
 
   // Short-circuit when the origin leg clearly needs gas.
-  if (
-    needsGasForOriginalCall({
-      call,
-      gas_paid,
-      confirm,
-      approved,
-      executed,
-      gas,
-      gmp: data,
-    })
-  ) {
+  if (needsGasForOriginalCall(data)) {
     return true;
   }
 
@@ -238,8 +215,8 @@ export function shouldShowAddGasButton(
     return true;
   }
 
-  // Finally handle Axelar → Axelar hops that emit gas-related errors.
-  return Boolean(waitingOnAxelar);
+  // Finally handle any remaining gas-related errors detected in the error message.
+  return needsMoreGasFromError;
 }
 
 /**
