@@ -1,0 +1,1 @@
+export { GMP } from './GMP';

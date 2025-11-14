@@ -10,7 +10,7 @@ import { numberStyles } from './Number.styles';
 import { processNumberValue } from './Number.utils';
 
 export interface NumberProps {
-  value: number | string;
+  value?: number | string | null;
   format?: string;
   delimiter?: string;
   maxDecimals?: number;
