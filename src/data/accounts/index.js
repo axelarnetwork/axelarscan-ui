@@ -1253,7 +1253,8 @@ const data = [
   },
   {
     address: 'axelar1ensvyl4p5gkdmjcezgjd5se5ykxmdqagl67xgm',
-    name: 'Whispernode',
+    name: 'Liquify',
+    image: '/logos/accounts/liquify.svg',
     environment: 'mainnet',
   },
   {
