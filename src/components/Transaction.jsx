@@ -197,7 +197,7 @@ const renderEntries = entries =>
     <div key={i} className="grid grid-cols-3 gap-x-4">
       <span className="py-2 text-xs font-medium">{k}</span>
       <div className="col-span-2 flex items-start gap-x-2">
-        <Tag className="[word-break:break-word] !rounded border border-zinc-200 bg-transparent px-3 py-2 font-sans text-zinc-700 dark:border-zinc-700 dark:bg-transparent dark:text-zinc-300">
+        <Tag className="[overflow-wrap:anywhere] !rounded border border-zinc-200 bg-transparent px-3 py-2 font-sans text-zinc-700 dark:border-zinc-700 dark:bg-transparent dark:text-zinc-300">
           {isString(v) ? (
             ellipse(v, 256)
           ) : v && typeof v === 'object' ? (
