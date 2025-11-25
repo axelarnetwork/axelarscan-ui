@@ -20,7 +20,7 @@ export const statusTimelineStyles = {
   shortTitleSpacing: 'ml-1',
   expressLabelWrapper: 'absolute mt-3',
   expressLabel: 'text-2xs font-medium text-green-600 dark:text-green-500',
-  hopLinkWrapper: 'absolute mt-6',
+  hopLinkWrapper: 'flex flex-wrap gap-2 mt-2',
   hopLink:
     'whitespace-nowrap rounded-md border border-blue-600 px-2 py-1.5 text-base font-semibold text-blue-600 dark:border-blue-500 dark:text-blue-500',
   chainProfileIcon: 'h-5',
