@@ -336,31 +336,29 @@ export function StatusTimeline({
               </div>
             ) : null}
 
-            {!isAxelar(destinationChain) ?
-              toArray(childMessageIDs)
-                .map(idValue => {
-                  if (typeof idValue === 'string') return idValue;
-                  if (typeof idValue === 'number')
-                    return idValue.toString();
-                  return undefined;
-                })
-                .filter((idValue): idValue is string =>
-                  Boolean(idValue)
-                )
-                .map(childId => (
-                  <div
-                    key={childId}
-                    className={statusTimelineStyles.hopLinkWrapper}
-                  >
-                    <Link
-                      href={`/gmp/${childId}`}
-                      target="_blank"
-                      className={statusTimelineStyles.hopLink}
+            {!isAxelar(destinationChain)
+              ? toArray(childMessageIDs)
+                  .map(idValue => {
+                    if (typeof idValue === 'string') return idValue;
+                    if (typeof idValue === 'number') return idValue.toString();
+                    return undefined;
+                  })
+                  .filter((idValue): idValue is string => Boolean(idValue))
+                  .map(childId => (
+                    <div
+                      key={childId}
+                      className={statusTimelineStyles.hopLinkWrapper}
                     >
-                      next Hop →
-                    </Link>
-                  </div>
-                )) : null}
+                      <Link
+                        href={`/gmp/${childId}`}
+                        target="_blank"
+                        className={statusTimelineStyles.hopLink}
+                      >
+                        next Hop →
+                      </Link>
+                    </div>
+                  ))
+              : null}
 
             {entry?.is_insufficient_fee &&
               !(entry.confirm || entry.approved) &&
