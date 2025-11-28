@@ -35,8 +35,17 @@ export const searchBlocks = async params =>
   await request('searchBlocks', params);
 export const searchTransactions = async params =>
   await request('searchTransactions', params);
-export const getTransactions = async params =>
-  await request('getTransactions', params);
+export const getTransactions = async params => {
+  // after the upgrade to cosmos 0.50.0 the "events" parameter has changed to "query"
+  // for backwards compatibility, and while the upgrade is still ongoing, we need to support both
+  // we're sending requests including both fields, putting the same value to both
+  // TODO: keep only "query" after the upgrade to 0.50.0
+  const { events, ...rest } = params;
+  return await request('getTransactions', {
+    ...rest,
+    ...(events && { events, query: events }),
+  });
+};
 export const getValidators = async params =>
   await request('getValidators', params);
 export const getValidatorsVotes = async params =>
