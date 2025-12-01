@@ -6,9 +6,13 @@ export const getAttributeValue = (attributes, key) => {
   return toJson(value) || removeDoubleQuote(value);
 };
 
-export const getLogEventByType = (logs, type) =>
-  toArray(logs)
-    .find(d =>
-      toArray(d.events).find(e => includesSomePatterns(e.type, toArray(type)))
-    )
-    ?.events.find(e => includesSomePatterns(e.type, toArray(type)));
+export const getMsgIndexFromEvent = event => {
+  const attr = toArray(event?.attributes).find(a => a.key === 'msg_index');
+  if (!attr || attr.value === undefined || attr.value === null || attr.value === '') return;
+
+  const index = Number(attr.value);
+  return Number.isNaN(index) ? undefined : index;
+};
+
+export const getEventByType = (events, type) =>
+  toArray(events).find(e => includesSomePatterns(e.type, toArray(type)));

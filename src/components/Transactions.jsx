@@ -29,7 +29,7 @@ import { Pagination, TablePagination } from '@/components/Pagination';
 import { useGlobalStore } from '@/components/Global';
 import { searchTransactions, getTransactions } from '@/lib/api/validator';
 import { searchDepositAddresses } from '@/lib/api/token-transfer';
-import { getAttributeValue, getLogEventByType } from '@/lib/chain/cosmos';
+import { getAttributeValue, getMsgIndexFromEvent, getEventByType } from '@/lib/chain/cosmos';
 import {
   axelarContracts,
   getAxelarContractAddresses,
@@ -618,11 +618,9 @@ export const getType = data => {
             camel(isString(d.msg) ? d.msg : Object.keys({ ...d.msg })[0])
           ),
           toArray(messages).map(d => d.inner_message?.['@type']),
-          toArray(data.logs).flatMap(d =>
-            toArray(d.events)
-              .filter(e => equalsIgnoreCase(e.type, 'message'))
-              .map(e => getAttributeValue(e.attributes, 'action'))
-          ),
+          toArray(data.events)
+            .filter(e => equalsIgnoreCase(e.type, 'message'))
+            .map(e => getAttributeValue(e.attributes, 'action')),
           toArray(messages).map(m => m['@type'])
         ).map(d => capitalize(lastString(d, '.')))
       )
@@ -640,6 +638,7 @@ export const getActivities = (data, assets) => {
 
   let result;
 
+  // Direct send / IBC / client / acknowledgement related messages
   if (
     includesSomePatterns(
       messages.map(d => d['@type']),
@@ -655,7 +654,7 @@ export const getActivities = (data, assets) => {
     )
   ) {
     result = toArray(
-      messages.flatMap(d => {
+      messages.flatMap((d, i) => {
         let { sender, recipient, amount, source_channel, destination_channel } =
           { ...d };
 
@@ -666,8 +665,12 @@ export const getActivities = (data, assets) => {
           amount = [d.token];
         }
 
+        // Scope send_packet event to this message via msg_index
+        const msgEvents = toArray(data.events).filter(
+          e => getMsgIndexFromEvent(e) === i
+        );
         const { attributes } = {
-          ...getLogEventByType(data.logs, 'send_packet'),
+          ...getEventByType(msgEvents, 'send_packet'),
         };
 
         if (attributes) {
@@ -709,10 +712,10 @@ export const getActivities = (data, assets) => {
         return (
           amount?.length > 0 &&
           (Array.isArray(amount) && toArray(amount).length > 0
-            ? toArray(amount).map(d => ({
-                ...d,
+            ? toArray(amount).map(x => ({
+                ...x,
                 ...activity,
-                amount: formatUnits(d.amount, assetData?.decimals || 6),
+                amount: formatUnits(x.amount, assetData?.decimals || 6),
               }))
             : {
                 ...activity,
@@ -721,7 +724,9 @@ export const getActivities = (data, assets) => {
         );
       })
     );
-  } else if (
+  }
+  // Confirm* / Vote-related messages
+  else if (
     includesSomePatterns(
       messages.flatMap(d => toArray([d['@type'], d.inner_message?.['@type']])),
       [
@@ -759,12 +764,12 @@ export const getActivities = (data, assets) => {
             events: toArray(vote?.events).flatMap(e =>
               Object.entries(e)
                 .filter(
-                  ([k, v]) => v && typeof v === 'object' && !Array.isArray(v)
+                  ([, v]) => v && typeof v === 'object' && !Array.isArray(v)
                 )
                 .map(([k, v]) => ({
                   event: k,
                   ...Object.fromEntries(
-                    Object.entries(v).map(([k, v]) => [k, toHex(v)])
+                    Object.entries(v).map(([k2, v2]) => [k2, toHex(v2)])
                   ),
                 }))
             ),
@@ -775,124 +780,139 @@ export const getActivities = (data, assets) => {
   }
 
   if (toArray(result).length < 1) {
-    result = toArray(data.logs).flatMap(d => {
-      let { events } = { ...d };
+    result = toArray(data.events).flatMap(e => {
+      if (find(e.type, ['delegate', 'unbond', 'transfer'])) {
+        const out = [];
+        const template = { type: e.type, action: e.type };
+        let _e = _.cloneDeep(template);
 
-      events = toArray(events).flatMap(e => {
-        if (find(e.type, ['delegate', 'unbond', 'transfer'])) {
-          const data = [];
-          const template = { type: e.type, action: e.type, log: d.log };
-          let _e = _.cloneDeep(template);
+        toArray(e.attributes).forEach(a => {
+          const { key, value } = { ...a };
+          _e[key] = value;
 
-          toArray(e.attributes).forEach(a => {
-            const { key, value } = { ...a };
-            _e[key] = value;
+          switch (key) {
+            case 'amount': {
+              const index =
+                split(value, { delimiter: '' }).findIndex(
+                  c => !isNumber(c)
+                ) || -1;
+              if (index > -1) {
+                const denom = value.substring(index);
+                const assetData = getAssetData(denom, assets);
+                _e.denom = assetData?.denom || denom;
+                _e.symbol = assetData?.symbol;
+                _e[key] = formatUnits(
+                  value.replace(denom, ''),
+                  assetData?.decimals || 6
+                );
+              }
+              break;
+            }
+            case 'validator':
+              _e.recipient = value;
+              break;
+            default:
+              break;
+          }
 
-            switch (key) {
-              case 'amount':
-                const index =
-                  split(value, { delimiter: '' }).findIndex(
-                    c => !isNumber(c)
-                  ) || -1;
-                if (index > -1) {
-                  const denom = value.substring(index);
-                  const assetData = getAssetData(denom, assets);
-                  _e.denom = assetData?.denom || denom;
-                  _e.symbol = assetData?.symbol;
-                  _e[key] = formatUnits(
-                    value.replace(denom, ''),
-                    assetData?.decimals || 6
-                  );
-                }
+          if (
+            key ===
+            (e.attributes.findIndex(a => a.key === 'denom') > -1
+              ? 'denom'
+              : 'amount')
+          ) {
+            const { delegator_address } = {
+              ...messages.find(x => x.delegator_address),
+            };
+
+            switch (e.type.toLowerCase()) {
+              case 'delegate':
+                _e.sender = _e.sender || delegator_address;
                 break;
-              case 'validator':
-                _e.recipient = value;
+              case 'unbond':
+                _e.recipient = _e.recipient || delegator_address;
                 break;
               default:
                 break;
             }
 
-            if (
-              key ===
-              (e.attributes.findIndex(a => a.key === 'denom') > -1
-                ? 'denom'
-                : 'amount')
-            ) {
-              const { delegator_address } = {
-                ...messages.find(d => d.delegator_address),
-              };
+            out.push(_e);
+            _e = _.cloneDeep(template);
+          }
+        });
 
-              switch (e.type.toLowerCase()) {
-                case 'delegate':
-                  _e.sender = _e.sender || delegator_address;
-                  break;
-                case 'unbond':
-                  _e.recipient = _e.recipient || delegator_address;
-                  break;
-                default:
-                  break;
+        return out;
+      }
+
+      const event = {
+        type: e.type,
+        ..._.assign.apply(
+          _,
+          toArray(e.attributes).map(({ key, value }) => {
+            const attribute = {};
+
+            switch (key) {
+              case 'amount': {
+                const i =
+                  split(value, { delimiter: '' }).findIndex(
+                    c => !isNumber(c)
+                  ) || -1;
+
+                if (i > -1) {
+                  const denom = value.substring(i);
+                  const assetData = getAssetData(denom, assets);
+
+                  attribute.denom = assetData?.denom || denom;
+                  attribute.symbol = assetData?.symbol;
+                  attribute[key] = formatUnits(
+                    value.replace(denom, ''),
+                    assetData?.decimals || 6
+                  );
+                }
+                break;
               }
-
-              data.push(_e);
-              _e = _.cloneDeep(template);
+              case 'action':
+                attribute[key] = lastString(value, '.');
+                break;
+              default:
+                attribute[key] = removeDoubleQuote(value);
+                break;
             }
-          });
 
-          return data;
-        }
+            let { symbol, amount } = { ...attribute };
 
-        const event = {
-          type: e.type,
-          log: d.log,
-          ..._.assign.apply(
-            _,
-            toArray(e.attributes).map(({ key, value }) => {
-              const attribute = {};
+            if (
+              key === 'amount' &&
+              isString(value) &&
+              (data.denom || data.asset)
+            ) {
+              symbol =
+                getAssetData(data.denom || data.asset, assets)?.symbol ||
+                symbol;
+            }
 
-              switch (key) {
-                case 'amount':
-                  const i =
-                    split(value, { delimiter: '' }).findIndex(
-                      c => !isNumber(c)
-                    ) || -1;
+            if (!symbol) {
+              const denom = getAttributeValue(e.attributes, 'denom');
+              const amountData = getAttributeValue(e.attributes, 'amount');
 
-                  if (i > -1) {
-                    const denom = value.substring(i);
-                    const assetData = getAssetData(denom, assets);
+              if (denom) {
+                const assetData = getAssetData(denom, assets);
 
-                    attribute.denom = assetData?.denom || denom;
-                    attribute.symbol = assetData?.symbol;
-                    attribute[key] = formatUnits(
-                      value.replace(denom, ''),
-                      assetData?.decimals || 6
-                    );
-                  }
-                  break;
-                case 'action':
-                  attribute[key] = lastString(value, '.');
-                  break;
-                default:
-                  attribute[key] = removeDoubleQuote(value);
-                  break;
-              }
+                attribute.denom = assetData?.denom || denom;
 
-              let { symbol, amount } = { ...attribute };
+                if (assetData?.symbol) {
+                  symbol = assetData.symbol;
+                }
 
-              if (
-                key === 'amount' &&
-                isString(value) &&
-                (data.denom || data.asset)
-              ) {
-                symbol =
-                  getAssetData(data.denom || data.asset, assets)?.symbol ||
-                  symbol;
-              }
+                amount = formatUnits(amountData, assetData?.decimals || 6);
+              } else {
+                const i =
+                  split(amountData, { delimiter: '' }).findIndex(
+                    c => !isNumber(c)
+                  ) || -1;
 
-              if (!symbol) {
-                const denom = getAttributeValue(e.attributes, 'denom');
-                const amountData = getAttributeValue(e.attributes, 'amount');
-
-                if (denom) {
+                if (i > -1) {
+                  const denom = amountData.substring(i);
                   const assetData = getAssetData(denom, assets);
 
                   attribute.denom = assetData?.denom || denom;
@@ -901,70 +921,47 @@ export const getActivities = (data, assets) => {
                     symbol = assetData.symbol;
                   }
 
-                  amount = formatUnits(amountData, assetData?.decimals || 6);
-                } else {
-                  const i =
-                    split(amountData, { delimiter: '' }).findIndex(
-                      c => !isNumber(c)
-                    ) || -1;
-
-                  if (i > -1) {
-                    const denom = amountData.substring(i);
-                    const assetData = getAssetData(denom, assets);
-
-                    attribute.denom = assetData?.denom || denom;
-
-                    if (assetData?.symbol) {
-                      symbol = assetData.symbol;
-                    }
-
-                    amount = formatUnits(
-                      amountData.replace(denom, ''),
-                      assetData?.decimals || 6
-                    );
-                  }
+                  amount = formatUnits(
+                    amountData.replace(denom, ''),
+                    assetData?.decimals || 6
+                  );
                 }
               }
 
-              return { ...attribute, symbol, amount };
-            })
+              attribute.symbol = symbol;
+              attribute.amount = amount;
+            }
+
+            return attribute;
+          })
+        ),
+      };
+
+      return [
+        {
+          ...event,
+          action: event.action || e.type,
+          recipient : _.uniq(
+            toArray(e.attributes)
+              .filter(a => a.key === 'recipient')
+              .map(a => a.value)
           ),
-        };
-
-        return [
-          {
-            ...event,
-            action: event.action || e.type,
-            recipient: _.uniq(
-              toArray(e.attributes)
-                .filter(a => a.key === 'recipient')
-                .map(a => a.value)
-            ),
-          },
-        ];
-      });
-
-      const delegateEventTypes = ['delegate', 'unbond'];
-      const transferEventTypes = ['transfer'];
-
-      if (
-        includesSomePatterns(
-          events.map(e => e.type),
-          delegateEventTypes
-        )
-      ) {
-        return events.filter(e => delegateEventTypes.includes(e.type));
-      } else if (
-        includesSomePatterns(
-          events.map(e => e.type),
-          transferEventTypes
-        )
-      ) {
-        return events.filter(e => transferEventTypes.includes(e.type));
-      }
-
-      return _.assign.apply(_, events);
+        },
+      ];
     });
+
+    const delegateEventTypes = ['delegate', 'unbond'];
+    const transferEventTypes = ['transfer'];
+
+    const resultTypes = toArray(result).map(e => e.type);
+
+    if (includesSomePatterns(resultTypes, delegateEventTypes)) {
+      result = toArray(result).filter(e => delegateEventTypes.includes(e.type));
+    } else if (includesSomePatterns(resultTypes, transferEventTypes)) {
+      result = toArray(result).filter(e => transferEventTypes.includes(e.type));
+    } else {
+      result = _.assign.apply(_, toArray(result));
+    }
   }
 
   if (toArray(result).length < 1 && data.code) {
@@ -1186,16 +1183,7 @@ export function Transactions({ height, address }) {
     };
 
     getData();
-  }, [
-    height,
-    address,
-    params,
-    setSearchResults,
-    refresh,
-    setRefresh,
-    chains,
-    assets,
-  ]);
+  }, [height, address, params, setSearchResults, refresh, setRefresh, chains, assets, searchResults]);
 
   const { data, total } = { ...searchResults?.[generateKeyByParams(params)] };
 
