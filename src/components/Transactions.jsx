@@ -941,7 +941,7 @@ export const getActivities = (data, assets) => {
         {
           ...event,
           action: event.action || e.type,
-          recipient : _.uniq(
+          recipient: _.uniq(
             toArray(e.attributes)
               .filter(a => a.key === 'recipient')
               .map(a => a.value)
@@ -1183,7 +1183,7 @@ export function Transactions({ height, address }) {
     };
 
     getData();
-  }, [height, address, params, setSearchResults, refresh, setRefresh, chains, assets, searchResults]);
+  }, [height, address, params, setSearchResults, refresh, setRefresh, chains, assets]);
 
   const { data, total } = { ...searchResults?.[generateKeyByParams(params)] };
 
