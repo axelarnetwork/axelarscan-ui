@@ -653,6 +653,9 @@ export const getActivities = (data, assets) => {
       ]
     )
   ) {
+    // Normalize events once outside the loop for better performance
+    const normalizedEvents = normalizeEvents(data);
+    
     result = toArray(
       messages.flatMap((d, i) => {
         let { sender, recipient, amount, source_channel, destination_channel } =
@@ -666,7 +669,7 @@ export const getActivities = (data, assets) => {
         }
 
         // Scope send_packet event to this message via msg_index
-        const msgEvents = normalizeEvents(data).filter(
+        const msgEvents = normalizedEvents.filter(
           e => getMsgIndexFromEvent(e) === i
         );
         const { attributes } = {
