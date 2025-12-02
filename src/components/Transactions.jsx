@@ -29,7 +29,7 @@ import { Pagination, TablePagination } from '@/components/Pagination';
 import { useGlobalStore } from '@/components/Global';
 import { searchTransactions, getTransactions } from '@/lib/api/validator';
 import { searchDepositAddresses } from '@/lib/api/token-transfer';
-import { getAttributeValue, getMsgIndexFromEvent, getEventByType } from '@/lib/chain/cosmos';
+import { getAttributeValue, getMsgIndexFromEvent, getEventByType, normalizeEvents } from '@/lib/chain/cosmos';
 import {
   axelarContracts,
   getAxelarContractAddresses,
@@ -618,7 +618,7 @@ export const getType = data => {
             camel(isString(d.msg) ? d.msg : Object.keys({ ...d.msg })[0])
           ),
           toArray(messages).map(d => d.inner_message?.['@type']),
-          toArray(data.events)
+          normalizeEvents(data)
             .filter(e => equalsIgnoreCase(e.type, 'message'))
             .map(e => getAttributeValue(e.attributes, 'action')),
           toArray(messages).map(m => m['@type'])
@@ -666,7 +666,7 @@ export const getActivities = (data, assets) => {
         }
 
         // Scope send_packet event to this message via msg_index
-        const msgEvents = toArray(data.events).filter(
+        const msgEvents = normalizeEvents(data).filter(
           e => getMsgIndexFromEvent(e) === i
         );
         const { attributes } = {
@@ -780,7 +780,7 @@ export const getActivities = (data, assets) => {
   }
 
   if (toArray(result).length < 1) {
-    result = toArray(data.events).flatMap(e => {
+    result = normalizeEvents(data).flatMap(e => {
       if (find(e.type, ['delegate', 'unbond', 'transfer'])) {
         const out = [];
         const template = { type: e.type, action: e.type };
