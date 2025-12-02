@@ -960,7 +960,7 @@ export const getActivities = (data, assets) => {
     } else if (includesSomePatterns(resultTypes, transferEventTypes)) {
       result = toArray(result).filter(e => transferEventTypes.includes(e.type));
     } else {
-      result = _.assign.apply(_, toArray(result));
+      result = [_.assign.apply(_, toArray(result))];
     }
   }
 
