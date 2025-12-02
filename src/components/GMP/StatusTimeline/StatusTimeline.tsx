@@ -207,42 +207,6 @@ export function StatusTimeline({
                           </span>
                         </div>
                       )}
-                      {!isAxelar(sourceChain) && parentMessageID && (
-                        <div className={statusTimelineStyles.hopLinkWrapper}>
-                          <Link
-                            href={`/gmp/${parentMessageID}`}
-                            target="_blank"
-                            className={statusTimelineStyles.hopLink}
-                          >
-                            ← prev Hop
-                          </Link>
-                        </div>
-                      )}
-                      {!isAxelar(destinationChain) &&
-                        toArray(childMessageIDs)
-                          .map(idValue => {
-                            if (typeof idValue === 'string') return idValue;
-                            if (typeof idValue === 'number')
-                              return idValue.toString();
-                            return undefined;
-                          })
-                          .filter((idValue): idValue is string =>
-                            Boolean(idValue)
-                          )
-                          .map(childId => (
-                            <div
-                              key={childId}
-                              className={statusTimelineStyles.hopLinkWrapper}
-                            >
-                              <Link
-                                href={`/gmp/${childId}`}
-                                target="_blank"
-                                className={statusTimelineStyles.hopLink}
-                              >
-                                next Hop →
-                              </Link>
-                            </div>
-                          ))}
                     </>
                   );
 
@@ -359,6 +323,42 @@ export function StatusTimeline({
                 })}
               </ol>
             </nav>
+
+            {!isAxelar(sourceChain) && parentMessageID ? (
+              <div className={statusTimelineStyles.hopLinkWrapper}>
+                <Link
+                  href={`/gmp/${parentMessageID}`}
+                  target="_blank"
+                  className={statusTimelineStyles.hopLink}
+                >
+                  ← prev Hop
+                </Link>
+              </div>
+            ) : null}
+
+            {!isAxelar(destinationChain)
+              ? toArray(childMessageIDs)
+                  .map(idValue => {
+                    if (typeof idValue === 'string') return idValue;
+                    if (typeof idValue === 'number') return idValue.toString();
+                    return undefined;
+                  })
+                  .filter((idValue): idValue is string => Boolean(idValue))
+                  .map(childId => (
+                    <div
+                      key={childId}
+                      className={statusTimelineStyles.hopLinkWrapper}
+                    >
+                      <Link
+                        href={`/gmp/${childId}`}
+                        target="_blank"
+                        className={statusTimelineStyles.hopLink}
+                      >
+                        next Hop →
+                      </Link>
+                    </div>
+                  ))
+              : null}
 
             {entry?.is_insufficient_fee &&
               !(entry.confirm || entry.approved) &&

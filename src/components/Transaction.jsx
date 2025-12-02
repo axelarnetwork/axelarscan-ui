@@ -1,36 +1,36 @@
 'use client';
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import Linkify from 'react-linkify';
 import clsx from 'clsx';
 import _ from 'lodash';
 import moment from 'moment';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { MdArrowForwardIos } from 'react-icons/md';
+import Linkify from 'react-linkify';
 
 import { Container } from '@/components/Container';
-import { Image } from '@/components/Image';
-import { Switch } from '@/components/Switch';
-import { JSONView } from '@/components/JSONView';
 import { Copy } from '@/components/Copy';
-import { Spinner } from '@/components/Spinner';
-import { Response } from '@/components/Response';
-import { Tag } from '@/components/Tag';
-import { Number } from '@/components/Number';
-import { Profile, ChainProfile } from '@/components/Profile';
-import { getType, getActivities, getSender } from '@/components/Transactions';
 import { useGlobalStore } from '@/components/Global';
+import { Image } from '@/components/Image';
+import { JSONView } from '@/components/JSONView';
+import { Number } from '@/components/Number';
+import { ChainProfile, Profile } from '@/components/Profile';
+import { Response } from '@/components/Response';
+import { Spinner } from '@/components/Spinner';
+import { Switch } from '@/components/Switch';
+import { Tag } from '@/components/Tag';
+import { getActivities, getSender, getType } from '@/components/Transactions';
 import { getTransaction } from '@/lib/api/validator';
-import { getChainData, getAssetData } from '@/lib/config';
-import { toHex, toJson, toArray, safeBase64ToString } from '@/lib/parser';
+import { getAssetData, getChainData } from '@/lib/config';
+import { formatUnits, isNumber } from '@/lib/number';
+import { base64ToString, toArray, toHex, toJson } from '@/lib/parser';
 import {
-  isString,
+  ellipse,
   find,
   includesSomePatterns,
-  ellipse,
+  isString,
   toTitle,
 } from '@/lib/string';
-import { isNumber, formatUnits } from '@/lib/number';
 import { TIME_FORMAT } from '@/lib/time';
 
 function Info({ data, tx }) {
@@ -197,7 +197,7 @@ const renderEntries = entries =>
     <div key={i} className="grid grid-cols-3 gap-x-4">
       <span className="py-2 text-xs font-medium">{k}</span>
       <div className="col-span-2 flex items-start gap-x-2">
-        <Tag className="break-all !rounded border border-zinc-200 bg-transparent px-3 py-2 font-sans text-zinc-700 dark:border-zinc-700 dark:bg-transparent dark:text-zinc-300">
+        <Tag className="!rounded border border-zinc-200 bg-transparent px-3 py-2 font-sans text-zinc-700 [overflow-wrap:anywhere] dark:border-zinc-700 dark:bg-transparent dark:text-zinc-300">
           {isString(v) ? (
             ellipse(v, 256)
           ) : v && typeof v === 'object' ? (
