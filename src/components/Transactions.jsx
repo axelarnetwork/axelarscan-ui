@@ -927,10 +927,10 @@ export const getActivities = (data, assets) => {
                   );
                 }
               }
-
-              attribute.symbol = symbol;
-              attribute.amount = amount;
             }
+
+            attribute.symbol = symbol;
+            attribute.amount = amount;
 
             return attribute;
           })
