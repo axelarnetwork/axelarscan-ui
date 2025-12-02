@@ -82,6 +82,28 @@ export const base64ToString = (string: string): string => {
 };
 
 /**
+ * Safely decodes a base64 encoded string to UTF-8
+ * Returns the original value if it's not a string or if decoding fails
+ *
+ * @param value - The value to decode (may be base64 encoded string or any other type)
+ * @returns Decoded UTF-8 string or original value if decoding fails
+ *
+ * @example
+ * ```ts
+ * safeBase64ToString('SGVsbG8=') // 'Hello'
+ * safeBase64ToString('invalid') // 'invalid'
+ * safeBase64ToString(null) // null
+ * ```
+ */
+export const safeBase64ToString = (value: unknown): unknown => {
+  if (typeof value !== 'string') {
+    return value;
+  }
+
+  return base64ToString(value);
+};
+
+/**
  * Extracts and encodes the last part of an IBC denom path to base64
  *
  * @param ibcDenom - The IBC denomination path

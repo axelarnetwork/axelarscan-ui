@@ -22,7 +22,7 @@ import { getType, getActivities, getSender } from '@/components/Transactions';
 import { useGlobalStore } from '@/components/Global';
 import { getTransaction } from '@/lib/api/validator';
 import { getChainData, getAssetData } from '@/lib/config';
-import { toHex, toJson, toArray } from '@/lib/parser';
+import { toHex, toJson, toArray, safeBase64ToString } from '@/lib/parser';
 import {
   isString,
   find,
@@ -476,7 +476,7 @@ function Data({ data }) {
                             Acknowledgement
                           </div>
                           <span className="text-xs">
-                            {d.acknowledgement}
+                            {safeBase64ToString(d.acknowledgement)}
                           </span>
                         </div>
                       )}
