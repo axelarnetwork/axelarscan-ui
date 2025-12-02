@@ -29,7 +29,12 @@ import { Pagination, TablePagination } from '@/components/Pagination';
 import { useGlobalStore } from '@/components/Global';
 import { searchTransactions, getTransactions } from '@/lib/api/validator';
 import { searchDepositAddresses } from '@/lib/api/token-transfer';
-import { getAttributeValue, getMsgIndexFromEvent, getEventByType, normalizeEvents } from '@/lib/chain/cosmos';
+import {
+  getAttributeValue,
+  getMsgIndexFromEvent,
+  getEventByType,
+  normalizeEvents,
+} from '@/lib/chain/cosmos';
 import {
   axelarContracts,
   getAxelarContractAddresses,
@@ -655,7 +660,7 @@ export const getActivities = (data, assets) => {
   ) {
     // Normalize events once outside the loop for better performance
     const normalizedEvents = normalizeEvents(data);
-    
+
     result = toArray(
       messages.flatMap((d, i) => {
         let { sender, recipient, amount, source_channel, destination_channel } =
@@ -796,9 +801,8 @@ export const getActivities = (data, assets) => {
           switch (key) {
             case 'amount': {
               const index =
-                split(value, { delimiter: '' }).findIndex(
-                  c => !isNumber(c)
-                ) || -1;
+                split(value, { delimiter: '' }).findIndex(c => !isNumber(c)) ||
+                -1;
               if (index > -1) {
                 const denom = value.substring(index);
                 const assetData = getAssetData(denom, assets);
@@ -1186,7 +1190,16 @@ export function Transactions({ height, address }) {
     };
 
     getData();
-  }, [height, address, params, setSearchResults, refresh, setRefresh, chains, assets]);
+  }, [
+    height,
+    address,
+    params,
+    setSearchResults,
+    refresh,
+    setRefresh,
+    chains,
+    assets,
+  ]);
 
   const { data, total } = { ...searchResults?.[generateKeyByParams(params)] };
 

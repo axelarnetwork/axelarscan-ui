@@ -8,7 +8,13 @@ export const getAttributeValue = (attributes, key) => {
 
 export const getMsgIndexFromEvent = event => {
   const attr = toArray(event?.attributes).find(a => a.key === 'msg_index');
-  if (!attr || attr.value === undefined || attr.value === null || attr.value === '') return;
+  if (
+    !attr ||
+    attr.value === undefined ||
+    attr.value === null ||
+    attr.value === ''
+  )
+    return;
 
   const index = Number(attr.value);
   return Number.isNaN(index) ? undefined : index;
@@ -51,8 +57,10 @@ const normalizeEventsFromLogs = logs => {
 export const normalizeEvents = tx_response => {
   const { events, logs } = { ...tx_response };
 
-  const eventsHaveMsgIndex = events && toArray(events).length > 0 && 
-    toArray(events).some(e => 
+  const eventsHaveMsgIndex =
+    events &&
+    toArray(events).length > 0 &&
+    toArray(events).some(e =>
       toArray(e?.attributes).some(a => a.key === 'msg_index')
     );
 
