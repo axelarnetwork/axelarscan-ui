@@ -148,8 +148,8 @@ export const CHAINS = toArray(
           rpcUrls: { default: { http: ['https://rpc.monad.xyz/'] } },
           blockExplorers: {
             default: {
-              name: '',
-              url: '',
+              name: 'MonadVision',
+              url: 'https://monadvision.com',
             },
           },
         },
