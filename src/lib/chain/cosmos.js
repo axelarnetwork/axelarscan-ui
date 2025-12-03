@@ -23,61 +23,42 @@ export const getMsgIndexFromEvent = event => {
 export const getEventByType = (events, type) =>
   toArray(events).find(e => includesSomePatterns(e.type, toArray(type)));
 
-const normalizeEventsFromLogs = logs => {
-  const normalizedEvents = [];
-  for (const log of toArray(logs)) {
-    const msgIndex = log.msg_index;
-
-    const logEvents = toArray(log.events);
-
-    for (const event of logEvents) {
-      const hasMsgIndex = toArray(event.attributes).some(
-        a => a.key === 'msg_index'
-      );
-
-      const attributes = hasMsgIndex
-        ? event.attributes
-        : msgIndex !== undefined && msgIndex !== null
-          ? [
-              ...toArray(event.attributes),
-              { key: 'msg_index', value: String(msgIndex), index: true },
-            ]
-          : event.attributes;
-
-      normalizedEvents.push({
-        ...event,
-        attributes,
-      });
-    }
-  }
-  return normalizedEvents;
-};
-
-// Normalize events from both tx_response.events (preferred) and tx_response.logs
+// Normalize events from both tx_response.logs (preferred) and tx_response.events
 export const normalizeEvents = tx_response => {
   const { events, logs } = { ...tx_response };
 
-  const eventsHaveMsgIndex =
-    events &&
-    toArray(events).length > 0 &&
-    toArray(events).some(e =>
-      toArray(e?.attributes).some(a => a.key === 'msg_index')
-    );
+  if (logs && toArray(logs).length > 0) {
+    const normalizedEvents = [];
+    for (const log of toArray(logs)) {
+      const msgIndex = log.msg_index;
 
-  if (events && toArray(events).length > 0) {
-    if (eventsHaveMsgIndex) {
-      return toArray(events);
+      const logEvents = toArray(log.events);
+
+      for (const event of logEvents) {
+        const hasMsgIndex = toArray(event.attributes).some(
+          a => a.key === 'msg_index'
+        );
+
+        const attributes = hasMsgIndex
+          ? event.attributes
+          : msgIndex !== undefined && msgIndex !== null
+            ? [
+                ...toArray(event.attributes),
+                { key: 'msg_index', value: String(msgIndex), index: true },
+              ]
+            : event.attributes;
+
+        normalizedEvents.push({
+          ...event,
+          attributes,
+        });
+      }
     }
-
-    if (logs && toArray(logs).length > 0) {
-      return normalizeEventsFromLogs(logs);
-    }
-
-    return toArray(events);
+    return normalizedEvents;
   }
 
-  if (logs && toArray(logs).length > 0) {
-    return normalizeEventsFromLogs(logs);
+  if (events && toArray(events).length > 0) {
+    return toArray(events);
   }
 
   return [];
