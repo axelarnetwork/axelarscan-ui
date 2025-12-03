@@ -23,7 +23,7 @@ import { getActivities, getSender, getType } from '@/components/Transactions';
 import { getTransaction } from '@/lib/api/validator';
 import { getAssetData, getChainData } from '@/lib/config';
 import { formatUnits, isNumber } from '@/lib/number';
-import { base64ToString, toArray, toHex, toJson } from '@/lib/parser';
+import { safeBase64ToString, toArray, toHex, toJson } from '@/lib/parser';
 import {
   ellipse,
   find,
@@ -476,7 +476,7 @@ function Data({ data }) {
                             Acknowledgement
                           </div>
                           <span className="text-xs">
-                            {base64ToString(d.acknowledgement)}
+                            {safeBase64ToString(d.acknowledgement)}
                           </span>
                         </div>
                       )}
