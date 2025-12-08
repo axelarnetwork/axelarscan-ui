@@ -24,7 +24,6 @@ import {
   getRPCStatus,
   searchUptimes,
   searchProposedBlocks,
-  searchHeartbeats,
   searchEVMPolls,
   getChainMaintainers,
   getValidatorDelegations,
@@ -499,65 +498,6 @@ function ProposedBlocks({ data }) {
   );
 }
 
-function Heartbeats({ data }) {
-  return (
-    data && (
-      <div className="my-2.5 flex flex-col gap-y-2">
-        <div className="flex items-center justify-between gap-x-4 pr-1">
-          <div className="flex flex-col">
-            <h3 className="text-sm font-semibold leading-6 text-zinc-900 dark:text-zinc-100">
-              Heartbeats
-            </h3>
-            <p className="text-xs leading-5 text-zinc-400 dark:text-zinc-500">
-              Latest {numberFormat(NUM_LATEST_BLOCKS, '0,0')} Blocks
-            </p>
-          </div>
-          <div className="flex flex-col items-end">
-            <Number
-              value={(data.filter(d => d.status).length * 100) / data.length}
-              suffix="%"
-              className="text-sm font-semibold leading-6 text-zinc-900 dark:text-zinc-100"
-            />
-            <Number
-              value={data.filter(d => d.status).length}
-              format="0,0"
-              suffix={`/${data.length}`}
-              className="text-xs leading-5 text-zinc-400 dark:text-zinc-500"
-            />
-          </div>
-        </div>
-        <div className="flex flex-wrap">
-          {data.map((d, i) => (
-            <Link
-              key={i}
-              href={
-                d.txhash
-                  ? `/tx/${d.txhash}`
-                  : `/block/${d.height || d.period_height}`
-              }
-              target="_blank"
-              className="h-5 w-5"
-            >
-              <Tooltip
-                content={numberFormat(d.height || d.period_height, '0,0')}
-              >
-                <div
-                  className={clsx(
-                    'm-0.5 h-4 w-4 rounded-sm',
-                    d.status
-                      ? 'bg-green-600 dark:bg-green-500'
-                      : 'bg-zinc-300 dark:bg-zinc-700'
-                  )}
-                />
-              </Tooltip>
-            </Link>
-          ))}
-        </div>
-      </div>
-    )
-  );
-}
-
 function Votes({ data }) {
   const { chains } = useGlobalStore();
 
@@ -650,7 +590,6 @@ function Votes({ data }) {
 const size = 200;
 const NUM_LATEST_BLOCKS = 10000;
 const NUM_LATEST_PROPOSED_BLOCKS = 2500;
-const NUM_BLOCKS_PER_HEARTBEAT = 50;
 
 export function Validator({ address }) {
   const router = useRouter();
@@ -659,7 +598,6 @@ export function Validator({ address }) {
   const [delegations, setDelegations] = useState(null);
   const [uptimes, setUptimes] = useState(null);
   const [proposedBlocks, setProposedBlocks] = useState(null);
-  const [heartbeats, setHeartbeats] = useState(null);
   const [votes, setVotes] = useState(null);
   const { chains, validators } = useGlobalStore();
   const { maintainers, setMaintainers } = useValidatorStore();
@@ -775,7 +713,6 @@ export function Validator({ address }) {
               'delegations',
               'uptimes',
               'proposedBlocks',
-              'heartbeats',
               'votes',
             ].map(
               d =>
@@ -835,64 +772,6 @@ export function Validator({ address }) {
                           toArray(data).filter(d =>
                             equalsIgnoreCase(d.proposer, consensus_address)
                           )
-                        );
-                      } catch (error) {}
-                      break;
-                    case 'heartbeats':
-                      const getEndBlock = (
-                        height,
-                        numBlocks = NUM_BLOCKS_PER_HEARTBEAT,
-                        fraction = 1
-                      ) => {
-                        height = toNumber(height) + numBlocks;
-
-                        while (height > 0 && height % numBlocks !== fraction) {
-                          height--;
-                        }
-
-                        return height - 1;
-                      };
-
-                      const getStartBlock = height =>
-                        getEndBlock(
-                          toNumber(height) - NUM_BLOCKS_PER_HEARTBEAT
-                        ) + 1;
-
-                      try {
-                        const fromBlock = getStartBlock(
-                          latest_block_height - NUM_LATEST_BLOCKS
-                        );
-                        const toBlock = getEndBlock(latest_block_height);
-
-                        const { data } = {
-                          ...(await searchHeartbeats({
-                            address: broadcaster_address,
-                            fromBlock,
-                            toBlock,
-                            size,
-                          })),
-                        };
-
-                        setHeartbeats(
-                          _.range(0, size).map(i => {
-                            const height = getStartBlock(
-                              toBlock - i * NUM_BLOCKS_PER_HEARTBEAT
-                            );
-                            const d = toArray(data).find(
-                              d => d.period_height === height
-                            );
-
-                            return {
-                              ...d,
-                              period_height: height,
-                              status:
-                                !!broadcaster_address &&
-                                equalsIgnoreCase(
-                                  d?.sender,
-                                  broadcaster_address
-                                ),
-                            };
-                          })
                         );
                       } catch (error) {}
                       break;
@@ -961,13 +840,12 @@ export function Validator({ address }) {
           <div className="md:col-span-2">
             <Info data={data} address={address} delegations={delegations} />
           </div>
-          {!(uptimes || proposedBlocks || heartbeats || votes) ? (
+          {!(uptimes || proposedBlocks || votes) ? (
             <Spinner />
           ) : (
             <div className="flex flex-col gap-y-4">
               <Uptimes data={uptimes} />
               <ProposedBlocks data={proposedBlocks} />
-              <Heartbeats data={heartbeats} />
               <Votes data={votes} />
             </div>
           )}

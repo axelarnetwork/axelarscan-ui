@@ -396,29 +396,6 @@ export function Validators({ status }) {
                   </th>
                   <th
                     scope="col"
-                    onClick={() => orderBy('heartbeat_uptime')}
-                    className="cursor-pointer px-3 py-3.5 text-left"
-                  >
-                    <div className="flex items-center">
-                      <span>Heartbeat</span>
-                      {order[0] === 'heartbeat_uptime' && (
-                        <Tooltip
-                          content={`Heartbeat: ${order[1]}`}
-                          className="whitespace-nowrap"
-                        >
-                          <div className="ml-2">
-                            {order[1] === 'asc' ? (
-                              <RxCaretUp size={16} />
-                            ) : (
-                              <RxCaretDown size={16} />
-                            )}
-                          </div>
-                        </Tooltip>
-                      )}
-                    </div>
-                  </th>
-                  <th
-                    scope="col"
                     className="whitespace-nowrap py-3.5 pl-3 pr-4 text-left sm:pr-0"
                   >
                     EVM Supported
@@ -624,29 +601,6 @@ export function Validators({ status }) {
                               </div>
                             )}
                         </div>
-                      </td>
-                      <td className="px-3 py-4 text-left">
-                        {d.broadcaster_address && (
-                          <div className="my-0.5 flex min-w-24 max-w-24 flex-col gap-y-2">
-                            {isNumber(d.heartbeat_uptime) && (
-                              <ProgressBar
-                                value={d.heartbeat_uptime}
-                                className={clsx(
-                                  d.heartbeat_uptime < 50
-                                    ? 'bg-red-600 dark:bg-red-500'
-                                    : d.heartbeat_uptime < 80
-                                      ? 'bg-yellow-400 dark:bg-yellow-500'
-                                      : 'bg-green-600 dark:bg-green-500'
-                                )}
-                              />
-                            )}
-                            {d.stale_heartbeats && (
-                              <span className="whitespace-nowrap text-xs font-medium text-red-600 dark:text-red-500">
-                                Stale Heartbeats
-                              </span>
-                            )}
-                          </div>
-                        )}
                       </td>
                       <td className="table-cell py-4 pl-3 pr-4 text-left sm:pr-0">
                         <div className="grid min-w-56 grid-cols-2 gap-x-2 gap-y-1 lg:grid-cols-3">
