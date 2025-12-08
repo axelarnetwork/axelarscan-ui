@@ -709,12 +709,7 @@ export function Validator({ address }) {
 
         if (latest_block_height) {
           await Promise.all(
-            [
-              'delegations',
-              'uptimes',
-              'proposedBlocks',
-              'votes',
-            ].map(
+            ['delegations', 'uptimes', 'proposedBlocks', 'votes'].map(
               d =>
                 new Promise(async resolve => {
                   switch (d) {
