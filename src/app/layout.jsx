@@ -1,6 +1,7 @@
 import Script from 'next/script';
 import { Inter, Lexend } from 'next/font/google';
 import clsx from 'clsx';
+import { Analytics } from '@vercel/analytics/next';
 
 import { Providers } from '@/app/providers';
 import { Layout } from '@/components/Layout';
@@ -69,6 +70,7 @@ export default function RootLayout({ children }) {
             <Layout>{children}</Layout>
           </div>
         </Providers>
+        <Analytics />
       </body>
     </html>
   );
