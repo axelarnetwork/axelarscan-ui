@@ -83,8 +83,7 @@ const looksLikeBase64 = (value: string): boolean => {
   return true;
 };
 
-const normalizeBase64 = (value: string): string =>
-  value.replace(/=+$/, '');
+const normalizeBase64 = (value: string): string => value.replace(/=+$/, '');
 
 /**
  * Decodes a base64 encoded string to UTF-8
