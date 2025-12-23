@@ -2,6 +2,7 @@ import { utils } from 'ethers';
 import _ from 'lodash';
 const { base64, getAddress, toUtf8String } = { ...utils };
 const decodeBase64 = base64.decode;
+const encodeBase64 = base64.encode;
 
 /**
  * Converts an object to a URL query string
@@ -61,6 +62,30 @@ export const getIcapAddress = <T>(string: T): T | string => {
   }
 };
 
+const looksLikeBase64 = (value: string): boolean => {
+  const normalized = value?.trim();
+
+  if (!normalized) {
+    return false;
+  }
+
+  // Must contain only valid base64 characters and optional padding
+  const base64Pattern = /^[A-Za-z0-9+/]+={0,2}$/;
+  if (!base64Pattern.test(normalized)) {
+    return false;
+  }
+
+  // Canonical base64 length is always a multiple of 4
+  if (normalized.length % 4 !== 0) {
+    return false;
+  }
+
+  return true;
+};
+
+const normalizeBase64 = (value: string): string =>
+  value.replace(/=+$/, '');
+
 /**
  * Decodes a base64 encoded string to UTF-8
  *
@@ -75,7 +100,20 @@ export const getIcapAddress = <T>(string: T): T | string => {
  */
 export const base64ToString = (string: string): string => {
   try {
-    return toUtf8String(decodeBase64(string));
+    if (!looksLikeBase64(string)) {
+      return string;
+    }
+
+    const decodedBytes = decodeBase64(string.trim());
+    const decodedString = toUtf8String(decodedBytes);
+
+    // Round-trip check to avoid false positives like plain numbers/words
+    const reEncoded = encodeBase64(decodedBytes);
+    if (normalizeBase64(reEncoded) !== normalizeBase64(string.trim())) {
+      return string;
+    }
+
+    return decodedString;
   } catch (error) {
     return string;
   }
