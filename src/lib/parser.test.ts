@@ -9,6 +9,7 @@ import {
   getValuesOfAxelarAddressKey,
   objToQS,
   parseError,
+  safeBase64ToString,
   split,
   toArray,
   toCase,
@@ -78,6 +79,14 @@ describe('parser utilities', () => {
       expect(base64ToString('V29ybGQ=')).toBe('World');
     });
 
+    it('should only decode canonical base64 and not plain strings', () => {
+      // canonical base64 that decodes to "373"
+      expect(base64ToString('Mzcz')).toBe('373');
+
+      // plain numeric string should not be treated as base64
+      expect(base64ToString('373')).toBe('373');
+    });
+
     it('should return original string if decoding fails', () => {
       expect(base64ToString('invalid')).toBe('invalid');
       expect(base64ToString('notbase64')).toBe('notbase64');
@@ -85,6 +94,36 @@ describe('parser utilities', () => {
 
     it('should handle empty strings', () => {
       expect(base64ToString('')).toBe('');
+    });
+  });
+
+  describe('safeBase64ToString', () => {
+    it('should return non-string values unchanged', () => {
+      expect(safeBase64ToString(null)).toBeNull();
+      expect(safeBase64ToString(123)).toBe(123);
+      expect(safeBase64ToString({ foo: 'bar' })).toEqual({ foo: 'bar' });
+    });
+
+    it('should decode valid base64 strings', () => {
+      expect(safeBase64ToString('SGVsbG8=')).toBe('Hello');
+      expect(safeBase64ToString('V29ybGQ=')).toBe('World');
+    });
+
+    it('should not treat plain numeric strings as base64', () => {
+      expect(safeBase64ToString('373')).toBe('373');
+      expect(safeBase64ToString('123456')).toBe('123456');
+    });
+
+    it('should handle base64 that decodes to numeric-looking strings', () => {
+      // "Mzcz" is base64 for "373"
+      expect(safeBase64ToString('Mzcz')).toBe('373');
+    });
+
+    it('should return original string for non-canonical or mismatched base64', () => {
+      // not valid base64
+      expect(safeBase64ToString('invalid')).toBe('invalid');
+      // wrong padding / non-canonical that fails round-trip
+      expect(safeBase64ToString('abcd')).toBe('abcd');
     });
   });
 
