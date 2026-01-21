@@ -356,9 +356,9 @@ export const CHAINS = toArray(
           testnet: true,
         },
         ['testnet', 'stagenet', 'devnet-amplifier'].includes(ENVIRONMENT) && {
-          _id: 'monad',
+          _id: 'monad-3',
           id: 10143,
-          network: 'monad',
+          network: 'monad-3',
           name: 'Monad',
           nativeCurrency: { name: 'Mon', symbol: 'MON', decimals: 18 },
           rpcUrls: { default: { http: ['https://testnet-rpc.monad.xyz'] } },
