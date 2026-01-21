@@ -355,10 +355,25 @@ export const CHAINS = toArray(
           },
           testnet: true,
         },
-        ['testnet', 'stagenet', 'devnet-amplifier'].includes(ENVIRONMENT) && {
+        ['testnet'].includes(ENVIRONMENT) && {
           _id: 'monad-3',
           id: 10143,
           network: 'monad-3',
+          name: 'Monad',
+          nativeCurrency: { name: 'Mon', symbol: 'MON', decimals: 18 },
+          rpcUrls: { default: { http: ['https://testnet-rpc.monad.xyz'] } },
+          blockExplorers: {
+            default: {
+              name: 'Monad',
+              url: 'https://testnet.monadexplorer.com',
+            },
+          },
+          testnet: true,
+        },
+        ['stagenet', 'devnet-amplifier'].includes(ENVIRONMENT) && {
+          _id: 'monad',
+          id: 10143,
+          network: 'monad',
           name: 'Monad',
           nativeCurrency: { name: 'Mon', symbol: 'MON', decimals: 18 },
           rpcUrls: { default: { http: ['https://testnet-rpc.monad.xyz'] } },
