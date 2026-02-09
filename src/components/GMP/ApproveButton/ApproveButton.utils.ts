@@ -49,8 +49,9 @@ export async function executeApprove(
       message_id,
     } = { ...data.call };
 
-    const isConfirmAction = (!data.confirm || data.confirm_failed) &&
-      data.call.chain_type !== 'cosmos';
+    const isConfirmAction = Boolean(
+      (!data.confirm || data.confirm_failed) && data.call.chain_type !== 'cosmos'
+    );
 
     const messageIdStr =
       typeof message_id === 'string' ? message_id : undefined;
