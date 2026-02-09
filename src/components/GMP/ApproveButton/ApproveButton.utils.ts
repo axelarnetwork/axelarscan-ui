@@ -15,7 +15,6 @@ export async function executeApprove(
     data,
     sdk,
     provider,
-    signer,
     setResponse,
     setProcessing,
     afterPayGas,
@@ -70,8 +69,6 @@ export async function executeApprove(
       {
         useWindowEthereum: true,
         provider: provider ?? undefined,
-        // @ts-expect-error - NOTE: Investigate if "signer" is required, it is defined for backwards compatibility.
-        signer: signer ?? undefined,
       },
       false,
       messageIdStr
@@ -106,13 +103,16 @@ export async function executeApprove(
         isConfirmAction
       );
 
+      const pendingMessage = normalizedError
+        ? `Confirmation submitted. Waiting for Axelar to finalize... (${normalizedError})`
+        : 'Confirmation submitted. Waiting for Axelar to finalize...';
+      const fallbackSuccessMessage = `${
+        destination_chain_type === 'cosmos' ? 'Execute' : 'Approve'
+      } successful`;
+
       setResponse({
         status: success || !error ? 'success' : treatAsPending ? 'pending' : 'failed',
-        message:
-          treatAsPending
-            ? 'Confirmation submitted. Waiting for Axelar to finalize...'
-            : normalizedError ||
-              `${destination_chain_type === 'cosmos' ? 'Execute' : 'Approve'} successful`,
+        message: treatAsPending ? pendingMessage : normalizedError || fallbackSuccessMessage,
         hash:
           routeMessageTx?.transactionHash ||
           signCommandTx?.transactionHash ||
