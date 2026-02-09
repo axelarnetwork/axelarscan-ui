@@ -2,6 +2,7 @@ import { sleep } from '@/lib/operator';
 import { parseError } from '@/lib/parser';
 
 import { ApproveActionParams } from './ApproveButton.types';
+import { shouldTreatConfirmErrorAsPending } from './ApproveButton.error.utils';
 
 /**
  * Execute the approve/confirm action for a GMP transaction
@@ -47,6 +48,9 @@ export async function executeApprove(
       eventIndex,
       message_id,
     } = { ...data.call };
+
+    const isConfirmAction = (!data.confirm || data.confirm_failed) &&
+      data.call.chain_type !== 'cosmos';
 
     const messageIdStr =
       typeof message_id === 'string' ? message_id : undefined;
@@ -96,11 +100,18 @@ export async function executeApprove(
           ? rawError
           : undefined);
 
+      const treatAsPending = shouldTreatConfirmErrorAsPending(
+        normalizedError,
+        isConfirmAction
+      );
+
       setResponse({
-        status: success || !error ? 'success' : 'failed',
+        status: success || !error ? 'success' : treatAsPending ? 'pending' : 'failed',
         message:
-          normalizedError ||
-          `${destination_chain_type === 'cosmos' ? 'Execute' : 'Approve'} successful`,
+          treatAsPending
+            ? 'Confirmation submitted. Waiting for Axelar to finalize...'
+            : normalizedError ||
+              `${destination_chain_type === 'cosmos' ? 'Execute' : 'Approve'} successful`,
         hash:
           routeMessageTx?.transactionHash ||
           signCommandTx?.transactionHash ||
