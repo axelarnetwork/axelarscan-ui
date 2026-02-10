@@ -31,6 +31,7 @@ import {
   GMPSettlementData,
 } from './GMP.types';
 import { getDefaultGasLimit, isGMPMessage } from './GMP.utils';
+import { normalizeRecoveryBytes } from './GMP.recovery.utils';
 
 type ChainCollection = ChainMetadata[] | null | undefined;
 
@@ -586,18 +587,37 @@ export function useEstimatedGasUsed(message: GMPMessage | null): number | null {
   return estimatedGasUsed;
 }
 
+const RECOVERY_BYTES_ENDPOINTS = new Set([
+  '/confirm_gateway_tx',
+  '/create_pending_transfers',
+  '/execute_pending_transfers',
+  '/route_message',
+  '/sign_commands',
+]);
+
 export function useGMPRecoveryAPI(): AxelarGMPRecoveryAPI | undefined {
   const [sdk, setSDK] = useState<AxelarGMPRecoveryAPI | undefined>();
 
   useEffect(() => {
     try {
-      setSDK(
-        new AxelarGMPRecoveryAPI({
-          environment: ENVIRONMENT as Environment,
-          axelarRpcUrl: process.env.NEXT_PUBLIC_RPC_URL,
-          axelarLcdUrl: process.env.NEXT_PUBLIC_LCD_URL,
-        })
-      );
+      const recoverySdk = new AxelarGMPRecoveryAPI({
+        environment: ENVIRONMENT as Environment,
+        axelarRpcUrl: process.env.NEXT_PUBLIC_RPC_URL,
+        axelarLcdUrl: process.env.NEXT_PUBLIC_LCD_URL,
+      });
+
+      const originalExecRecoveryUrlFetch =
+        recoverySdk.execRecoveryUrlFetch.bind(recoverySdk);
+
+      recoverySdk.execRecoveryUrlFetch = async (endpoint, params) => {
+        const response = await originalExecRecoveryUrlFetch(endpoint, params);
+        if (!RECOVERY_BYTES_ENDPOINTS.has(endpoint)) {
+          return response;
+        }
+        return normalizeRecoveryBytes(response) ?? response;
+      };
+
+      setSDK(recoverySdk);
     } catch (error) {
       setSDK(undefined);
     }

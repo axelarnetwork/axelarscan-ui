@@ -2,6 +2,17 @@ import { sleep } from '@/lib/operator';
 import { parseError } from '@/lib/parser';
 
 import { ApproveActionParams } from './ApproveButton.types';
+const shouldTreatConfirmAsPending = (
+  isConfirmAction: boolean,
+  success: boolean | undefined,
+  confirmTxHash: string | undefined
+): boolean => {
+  if (!isConfirmAction || success) {
+    return false;
+  }
+
+  return Boolean(confirmTxHash);
+};
 
 /**
  * Execute the approve/confirm action for a GMP transaction
@@ -10,15 +21,8 @@ import { ApproveActionParams } from './ApproveButton.types';
 export async function executeApprove(
   params: ApproveActionParams
 ): Promise<void> {
-  const {
-    data,
-    sdk,
-    provider,
-    signer,
-    setResponse,
-    setProcessing,
-    afterPayGas,
-  } = params;
+  const { data, sdk, provider, setResponse, setProcessing, afterPayGas } =
+    params;
 
   if (!data?.call || !sdk) {
     return;
@@ -48,6 +52,11 @@ export async function executeApprove(
       message_id,
     } = { ...data.call };
 
+    const isConfirmAction = Boolean(
+      (!data.confirm || data.confirm_failed) &&
+        data.call.chain_type !== 'cosmos'
+    );
+
     const messageIdStr =
       typeof message_id === 'string' ? message_id : undefined;
 
@@ -65,8 +74,6 @@ export async function executeApprove(
       {
         useWindowEthereum: true,
         provider: provider ?? undefined,
-        // @ts-expect-error - NOTE: Investigate if "signer" is required, it is defined for backwards compatibility.
-        signer: signer ?? undefined,
       },
       false,
       messageIdStr
@@ -96,11 +103,32 @@ export async function executeApprove(
           ? rawError
           : undefined);
 
+      const confirmTxHash =
+        confirmTx &&
+        typeof confirmTx === 'object' &&
+        'transactionHash' in confirmTx
+          ? (confirmTx as { transactionHash?: string }).transactionHash
+          : undefined;
+
+      const treatAsPending = shouldTreatConfirmAsPending(
+        isConfirmAction,
+        success,
+        confirmTxHash
+      );
+
+      const pendingMessage = normalizedError
+        ? `Confirmation submitted. Waiting for Axelar to finalize... (${normalizedError})`
+        : 'Confirmation submitted. Waiting for Axelar to finalize...';
+      const fallbackSuccessMessage = `${
+        destination_chain_type === 'cosmos' ? 'Execute' : 'Approve'
+      } successful`;
+
       setResponse({
-        status: success || !error ? 'success' : 'failed',
-        message:
-          normalizedError ||
-          `${destination_chain_type === 'cosmos' ? 'Execute' : 'Approve'} successful`,
+        status:
+          success || !error ? 'success' : treatAsPending ? 'pending' : 'failed',
+        message: treatAsPending
+          ? pendingMessage
+          : normalizedError || fallbackSuccessMessage,
         hash:
           routeMessageTx?.transactionHash ||
           signCommandTx?.transactionHash ||

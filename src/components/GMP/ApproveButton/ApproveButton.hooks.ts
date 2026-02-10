@@ -24,7 +24,7 @@ export function useApproveAction({
   setResponse,
 }: UseApproveActionParams) {
   const sdk = useGMPRecoveryAPI();
-  const { provider, signer } = useEVMWalletStore();
+  const { provider } = useEVMWalletStore();
 
   return useCallback(
     async (message: GMPMessage, afterPayGas: boolean = false) => {
@@ -32,13 +32,12 @@ export function useApproveAction({
         data: message,
         sdk: sdk ?? null,
         provider,
-        signer,
         setProcessing: value => setProcessing(value),
         setResponse: response => setResponse(response),
         afterPayGas,
       });
     },
-    [provider, sdk, setProcessing, setResponse, signer]
+    [provider, sdk, setProcessing, setResponse]
   );
 }
 
