@@ -363,7 +363,10 @@ export const CHAINS = toArray(
           nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
           rpcUrls: { default: { http: ['https://rpc.testnet.arc.network'] } },
           blockExplorers: {
-            default: { name: 'Arc Testnet Explorer', url: 'https://testnet.arcscan.app' },
+            default: {
+              name: 'Arc Testnet Explorer',
+              url: 'https://testnet.arcscan.app',
+            },
           },
           testnet: true,
         },
