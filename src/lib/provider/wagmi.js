@@ -356,6 +356,18 @@ export const CHAINS = toArray(
           testnet: true,
         },
         ['testnet'].includes(ENVIRONMENT) && {
+          _id: 'arc-8',
+          id: 5042002,
+          network: 'arc-8',
+          name: 'Arc',
+          nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
+          rpcUrls: { default: { http: ['https://rpc.testnet.arc.network'] } },
+          blockExplorers: {
+            default: { name: 'Arc Testnet Explorer', url: 'https://testnet.arcscan.app' },
+          },
+          testnet: true,
+        },
+        ['testnet'].includes(ENVIRONMENT) && {
           _id: 'monad-3',
           id: 10143,
           network: 'monad-3',
