@@ -21,14 +21,8 @@ const shouldTreatConfirmAsPending = (
 export async function executeApprove(
   params: ApproveActionParams
 ): Promise<void> {
-  const {
-    data,
-    sdk,
-    provider,
-    setResponse,
-    setProcessing,
-    afterPayGas,
-  } = params;
+  const { data, sdk, provider, setResponse, setProcessing, afterPayGas } =
+    params;
 
   if (!data?.call || !sdk) {
     return;
@@ -59,7 +53,8 @@ export async function executeApprove(
     } = { ...data.call };
 
     const isConfirmAction = Boolean(
-      (!data.confirm || data.confirm_failed) && data.call.chain_type !== 'cosmos'
+      (!data.confirm || data.confirm_failed) &&
+        data.call.chain_type !== 'cosmos'
     );
 
     const messageIdStr =
@@ -109,7 +104,9 @@ export async function executeApprove(
           : undefined);
 
       const confirmTxHash =
-        confirmTx && typeof confirmTx === 'object' && 'transactionHash' in confirmTx
+        confirmTx &&
+        typeof confirmTx === 'object' &&
+        'transactionHash' in confirmTx
           ? (confirmTx as { transactionHash?: string }).transactionHash
           : undefined;
 
@@ -127,8 +124,11 @@ export async function executeApprove(
       } successful`;
 
       setResponse({
-        status: success || !error ? 'success' : treatAsPending ? 'pending' : 'failed',
-        message: treatAsPending ? pendingMessage : normalizedError || fallbackSuccessMessage,
+        status:
+          success || !error ? 'success' : treatAsPending ? 'pending' : 'failed',
+        message: treatAsPending
+          ? pendingMessage
+          : normalizedError || fallbackSuccessMessage,
         hash:
           routeMessageTx?.transactionHash ||
           signCommandTx?.transactionHash ||

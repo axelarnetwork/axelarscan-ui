@@ -6,8 +6,8 @@ export const normalizeRecoveryBytes = (value: unknown): Uint8Array | null => {
   }
 
   if (Array.isArray(value)) {
-    const bytes = value.map((entry) => Number(entry));
-    if (bytes.every((entry) => Number.isFinite(entry))) {
+    const bytes = value.map(entry => Number(entry));
+    if (bytes.every(entry => Number.isFinite(entry))) {
       return new Uint8Array(bytes);
     }
     return null;
@@ -22,7 +22,7 @@ export const normalizeRecoveryBytes = (value: unknown): Uint8Array | null => {
     const bytes = entries
       .sort(([a], [b]) => Number(a) - Number(b))
       .map(([, entry]) => Number(entry));
-    if (bytes.every((entry) => Number.isFinite(entry))) {
+    if (bytes.every(entry => Number.isFinite(entry))) {
       return new Uint8Array(bytes);
     }
   }
