@@ -2,7 +2,17 @@ import { sleep } from '@/lib/operator';
 import { parseError } from '@/lib/parser';
 
 import { ApproveActionParams } from './ApproveButton.types';
-import { shouldTreatConfirmErrorAsPending } from './ApproveButton.error.utils';
+const shouldTreatConfirmAsPending = (
+  isConfirmAction: boolean,
+  success: boolean | undefined,
+  confirmTxHash: string | undefined
+): boolean => {
+  if (!isConfirmAction || success) {
+    return false;
+  }
+
+  return Boolean(confirmTxHash);
+};
 
 /**
  * Execute the approve/confirm action for a GMP transaction
@@ -98,9 +108,15 @@ export async function executeApprove(
           ? rawError
           : undefined);
 
-      const treatAsPending = shouldTreatConfirmErrorAsPending(
-        normalizedError,
-        isConfirmAction
+      const confirmTxHash =
+        confirmTx && typeof confirmTx === 'object' && 'transactionHash' in confirmTx
+          ? (confirmTx as { transactionHash?: string }).transactionHash
+          : undefined;
+
+      const treatAsPending = shouldTreatConfirmAsPending(
+        isConfirmAction,
+        success,
+        confirmTxHash
       );
 
       const pendingMessage = normalizedError
