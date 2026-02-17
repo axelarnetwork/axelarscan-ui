@@ -2,6 +2,20 @@ import { sleep } from '@/lib/operator';
 import { parseError } from '@/lib/parser';
 
 import { ApproveActionParams } from './ApproveButton.types';
+
+const isWalletRejectionError = (error: unknown): boolean => {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+
+  const { code, message } = error as { code?: unknown; message?: unknown };
+  if (code === 4001) {
+    return true;
+  }
+
+  return typeof message === 'string' && /reject|denied|cancel/i.test(message);
+};
+
 const shouldTreatConfirmAsPending = (
   isConfirmAction: boolean,
   success: boolean | undefined,
@@ -21,8 +35,15 @@ const shouldTreatConfirmAsPending = (
 export async function executeApprove(
   params: ApproveActionParams
 ): Promise<void> {
-  const { data, sdk, provider, setResponse, setProcessing, afterPayGas } =
-    params;
+  const {
+    data,
+    sdk,
+    provider,
+    cosmosSigner,
+    setResponse,
+    setProcessing,
+    afterPayGas,
+  } = params;
 
   if (!data?.call || !sdk) {
     return;
@@ -59,15 +80,33 @@ export async function executeApprove(
 
     const messageIdStr =
       typeof message_id === 'string' ? message_id : undefined;
+    const sourceChainType = data.call.chain_type;
 
-    console.log('[manualRelayToDestChain request]', {
+    const recoveryLogContext = {
+      source_chain_type: sourceChainType,
+      destination_chain_type,
       transactionHash,
       logIndex,
       eventIndex,
       message_id: messageIdStr,
+      has_evm_provider: Boolean(provider),
+      has_cosmos_signer: Boolean(cosmosSigner),
+      use_self_signing: true,
+    };
+
+    console.log('[manualRelayToDestChain request]', {
+      ...recoveryLogContext,
     });
 
-    const response = await sdk.manualRelayToDestChain(
+    if (!provider || !cosmosSigner) {
+      console.error('[recovery self-sign missing signing material]', {
+        ...recoveryLogContext,
+        missing_evm_provider: !provider,
+        missing_cosmos_signer: !cosmosSigner,
+      });
+    }
+
+    const response = await (sdk as any).manualRelayToDestChain(
       transactionHash ?? '',
       logIndex,
       eventIndex,
@@ -76,7 +115,11 @@ export async function executeApprove(
         provider: provider ?? undefined,
       },
       false,
-      messageIdStr
+      messageIdStr,
+      {
+        offlineSigner: cosmosSigner ?? undefined,
+      },
+      true
     );
 
     console.log('[manualRelayToDestChain response]', response);
@@ -84,6 +127,13 @@ export async function executeApprove(
     const { success, error, confirmTx, signCommandTx, routeMessageTx } = {
       ...response,
     };
+
+    if (!success && !error) {
+      console.error('[recovery unexpected response]', {
+        ...recoveryLogContext,
+        response,
+      });
+    }
 
     if (success) {
       await sleep(15 * 1000);
@@ -137,6 +187,10 @@ export async function executeApprove(
       });
     }
   } catch (error) {
+    console.error('[recovery self-sign request failed]', {
+      is_wallet_rejection: isWalletRejectionError(error),
+      error,
+    });
     setResponse({ status: 'failed', ...parseError(error) });
   }
 

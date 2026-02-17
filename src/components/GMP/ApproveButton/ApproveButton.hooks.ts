@@ -1,6 +1,7 @@
 import { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
 
 import { useEVMWalletStore } from '@/components/Wallet/EVMWallet';
+import { useCosmosWalletStore } from '@/components/Wallet/CosmosWallet.hooks';
 
 import { isAxelar } from '@/lib/chain';
 import { useGMPRecoveryAPI } from '../GMP.hooks';
@@ -25,6 +26,7 @@ export function useApproveAction({
 }: UseApproveActionParams) {
   const sdk = useGMPRecoveryAPI();
   const { provider } = useEVMWalletStore();
+  const cosmosWalletStore = useCosmosWalletStore();
 
   return useCallback(
     async (message: GMPMessage, afterPayGas: boolean = false) => {
@@ -32,12 +34,13 @@ export function useApproveAction({
         data: message,
         sdk: sdk ?? null,
         provider,
+        cosmosSigner: cosmosWalletStore.signer,
         setProcessing: value => setProcessing(value),
         setResponse: response => setResponse(response),
         afterPayGas,
       });
     },
-    [provider, sdk, setProcessing, setResponse]
+    [cosmosWalletStore.signer, provider, sdk, setProcessing, setResponse]
   );
 }
 
