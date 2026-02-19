@@ -6,6 +6,7 @@ import { CosmosWallet } from '@/components/Wallet/CosmosWallet';
 import { getChainData } from '@/lib/config';
 
 import { gmpStyles } from '../GMP.styles';
+import { WalletSelector } from '../WalletSelector/WalletSelector';
 import { useApproveButton } from './ApproveButton.hooks';
 import { ApproveButtonProps } from './ApproveButton.types';
 
@@ -14,11 +15,18 @@ export function ApproveButton(props: ApproveButtonProps) {
   const { data, processing, setProcessing, setResponse } = props;
   const axelarChainId = useMemo(() => {
     const chainData = getChainData('axelarnet', chains);
-    return typeof chainData?.chain_id === 'string' ? chainData.chain_id : undefined;
+    return typeof chainData?.chain_id === 'string'
+      ? chainData.chain_id
+      : undefined;
   }, [chains]);
   const {
     buttonLabel,
     isCosmosWalletConnected,
+    requiresCosmosWallet,
+    isEvmWalletConnected,
+    needsEvmWallet,
+    targetChain,
+    targetChainType,
     handleApprove,
   } = useApproveButton({
     data,
@@ -31,9 +39,13 @@ export function ApproveButton(props: ApproveButtonProps) {
     return null;
   }
 
+  const canApprove = requiresCosmosWallet
+    ? isCosmosWalletConnected
+    : !needsEvmWallet || isEvmWalletConnected;
+
   return (
     <div key="approve" className={gmpStyles.actionRow}>
-      {isCosmosWalletConnected && (
+      {canApprove && (
         <button
           disabled={processing}
           onClick={handleApprove}
@@ -42,7 +54,16 @@ export function ApproveButton(props: ApproveButtonProps) {
           {buttonLabel}
         </button>
       )}
-      <CosmosWallet connectChainId={axelarChainId} />
+      {requiresCosmosWallet && !isCosmosWalletConnected && (
+        <CosmosWallet connectChainId={axelarChainId} />
+      )}
+      {!requiresCosmosWallet && needsEvmWallet && !isEvmWalletConnected && (
+        <WalletSelector
+          targetChain={targetChain}
+          targetChainType={targetChainType}
+          chains={chains}
+        />
+      )}
     </div>
   );
 }

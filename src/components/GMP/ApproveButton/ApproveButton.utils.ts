@@ -104,6 +104,12 @@ export async function executeApprove(
     const messageIdStr =
       typeof message_id === 'string' ? message_id : undefined;
     const sourceChainType = data.call.chain_type;
+    const requiresCosmosSelfSigning = Boolean(
+      isConfirmAction ||
+        sourceChainType === 'cosmos' ||
+        destination_chain_type === 'cosmos'
+    );
+    const requiresEvmWalletDetails = sourceChainType === 'evm';
     const useSelfSigning = Boolean(cosmosSigner);
 
     const recoveryLogContext = {
@@ -120,9 +126,9 @@ export async function executeApprove(
 
     console.log('[manualRelayToDestChain request]', recoveryLogContext);
 
-    // Defense-in-depth: UI only renders Approve when signer is connected, but
-    // a disconnect can still race before this async call executes.
-    if (!useSelfSigning) {
+    // Defense-in-depth: UI only renders Connect Cosmos when required, but a
+    // disconnect can still race before this async call executes.
+    if (!useSelfSigning && requiresCosmosSelfSigning) {
       console.error('[recovery missing cosmos signer]', recoveryLogContext);
       setResponse({
         status: 'failed',
@@ -133,17 +139,22 @@ export async function executeApprove(
     }
 
     const options: ManualRelayToDestChainOptions = {
-      evmWalletDetails: {
-        useWindowEthereum: true,
-        provider: provider ?? undefined,
-      },
       escapeAfterConfirm: false,
       messageId: messageIdStr,
-      selfSigning: {
-        cosmosWalletDetails: {
-          offlineSigner: cosmosSigner,
+      ...(requiresEvmWalletDetails && {
+        evmWalletDetails: {
+          useWindowEthereum: true,
+          provider: provider ?? undefined,
         },
-      },
+      }),
+      ...(useSelfSigning &&
+        requiresCosmosSelfSigning && {
+          selfSigning: {
+            cosmosWalletDetails: {
+              offlineSigner: cosmosSigner,
+            },
+          },
+        }),
     };
 
     const manualRelayToDestChain = sdk.manualRelayToDestChain.bind(

@@ -109,6 +109,44 @@ describe('executeApprove', () => {
     errorSpy.mockRestore();
   });
 
+  it('does not require cosmos signer for evm-to-evm routes', async () => {
+    const manualRelayToDestChain = jest.fn().mockResolvedValue({
+      success: true,
+      routeMessageTx: { transactionHash: '0xroute' },
+    });
+    const setResponse = jest.fn();
+    const setProcessing = jest.fn();
+
+    await executeApprove({
+      data: {
+        ...createMessage({ destination_chain_type: 'evm' }),
+        confirm: {} as GMPMessage['confirm'],
+      } as GMPMessage,
+      sdk: {
+        manualRelayToDestChain,
+      } as unknown as AxelarGMPRecoveryAPI,
+      provider: {} as providers.Web3Provider,
+      cosmosSigner: null,
+      setResponse,
+      setProcessing,
+    });
+
+    expect(manualRelayToDestChain).toHaveBeenCalledWith('0xtx', 1, 2, {
+      evmWalletDetails: {
+        useWindowEthereum: true,
+        provider: expect.any(Object),
+      },
+      escapeAfterConfirm: false,
+      messageId: 'message-id',
+    });
+    expect(setResponse).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'failed',
+        message: 'Connect a Cosmos wallet to continue',
+      })
+    );
+  });
+
   it('proceeds without EVM provider when cosmos signer is connected', async () => {
     const manualRelayToDestChain = jest.fn().mockResolvedValue({
       success: true,
@@ -135,6 +173,15 @@ describe('executeApprove', () => {
     });
 
     expect(manualRelayToDestChain).toHaveBeenCalledTimes(1);
+    expect(manualRelayToDestChain).toHaveBeenCalledWith('0xtx', 1, 2, {
+      escapeAfterConfirm: false,
+      messageId: 'message-id',
+      selfSigning: {
+        cosmosWalletDetails: {
+          offlineSigner: expect.any(Object),
+        },
+      },
+    });
     expect(errorSpy).not.toHaveBeenCalled();
 
     errorSpy.mockRestore();

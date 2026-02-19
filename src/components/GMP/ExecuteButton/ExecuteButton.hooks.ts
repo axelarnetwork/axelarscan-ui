@@ -143,6 +143,7 @@ export function useExecuteButton(
   const approveAction = useApproveAction({
     setProcessing,
     setResponse,
+    cosmosSigner: cosmosWalletStore.signer,
   });
 
   const handleExecute = useCallback(async () => {
