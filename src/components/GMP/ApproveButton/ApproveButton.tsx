@@ -1,12 +1,26 @@
 import clsx from 'clsx';
+import { useMemo } from 'react';
+
+import { useGlobalStore } from '@/components/Global';
+import { CosmosWallet } from '@/components/Wallet/CosmosWallet';
+import { getChainData } from '@/lib/config';
 
 import { gmpStyles } from '../GMP.styles';
 import { useApproveButton } from './ApproveButton.hooks';
 import { ApproveButtonProps } from './ApproveButton.types';
 
 export function ApproveButton(props: ApproveButtonProps) {
+  const { chains } = useGlobalStore();
   const { data, processing, setProcessing, setResponse } = props;
-  const { buttonLabel, handleApprove } = useApproveButton({
+  const axelarChainId = useMemo(() => {
+    const chainData = getChainData('axelarnet', chains);
+    return typeof chainData?.chain_id === 'string' ? chainData.chain_id : undefined;
+  }, [chains]);
+  const {
+    buttonLabel,
+    isCosmosWalletConnected,
+    handleApprove,
+  } = useApproveButton({
     data,
     processing,
     setProcessing,
@@ -19,13 +33,16 @@ export function ApproveButton(props: ApproveButtonProps) {
 
   return (
     <div key="approve" className={gmpStyles.actionRow}>
-      <button
-        disabled={processing}
-        onClick={handleApprove}
-        className={clsx(gmpStyles.actionButton(processing))}
-      >
-        {buttonLabel}
-      </button>
+      {isCosmosWalletConnected && (
+        <button
+          disabled={processing}
+          onClick={handleApprove}
+          className={clsx(gmpStyles.actionButton(processing))}
+        >
+          {buttonLabel}
+        </button>
+      )}
+      <CosmosWallet connectChainId={axelarChainId} />
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { executeApprove } from './ApproveButton.utils';
 interface UseApproveActionParams {
   setProcessing: Dispatch<SetStateAction<boolean>>;
   setResponse: Dispatch<SetStateAction<GMPToastState | null>>;
+  cosmosSigner: ReturnType<typeof useCosmosWalletStore>['signer'];
 }
 
 interface UseApproveButtonOptions {
@@ -20,13 +21,19 @@ interface UseApproveButtonOptions {
   setResponse: Dispatch<SetStateAction<GMPToastState | null>>;
 }
 
+interface UseApproveButtonResult {
+  buttonLabel: string;
+  isCosmosWalletConnected: boolean;
+  handleApprove: () => Promise<void>;
+}
+
 export function useApproveAction({
   setProcessing,
   setResponse,
+  cosmosSigner,
 }: UseApproveActionParams) {
   const sdk = useGMPRecoveryAPI();
   const { provider } = useEVMWalletStore();
-  const cosmosWalletStore = useCosmosWalletStore();
 
   return useCallback(
     async (message: GMPMessage, afterPayGas: boolean = false) => {
@@ -34,19 +41,14 @@ export function useApproveAction({
         data: message,
         sdk: sdk ?? null,
         provider,
-        cosmosSigner: cosmosWalletStore.signer,
+        cosmosSigner,
         setProcessing: value => setProcessing(value),
         setResponse: response => setResponse(response),
         afterPayGas,
       });
     },
-    [cosmosWalletStore.signer, provider, sdk, setProcessing, setResponse]
+    [cosmosSigner, provider, sdk, setProcessing, setResponse]
   );
-}
-
-interface UseApproveButtonResult {
-  buttonLabel: string;
-  handleApprove: () => Promise<void>;
 }
 
 export function useApproveButton({
@@ -55,16 +57,21 @@ export function useApproveButton({
   setProcessing,
   setResponse,
 }: UseApproveButtonOptions): UseApproveButtonResult {
-  const approve = useApproveAction({ setProcessing, setResponse });
+  const cosmosWalletStore = useCosmosWalletStore();
+  const cosmosSigner = cosmosWalletStore.signer;
+  const approve = useApproveAction({ setProcessing, setResponse, cosmosSigner });
+
+  const call = data?.call;
+  const isCosmosWalletConnected = Boolean(cosmosSigner);
 
   const buttonLabel = useMemo(() => {
-    if (!data?.call) {
+    if (!call) {
       return '';
     }
 
     const isConfirmed = Boolean(data.confirm && !data.confirm_failed);
-    const isCosmosChain = data.call.chain_type === 'cosmos';
-    const isAxelarChain = isAxelar(data.call.chain);
+    const isCosmosChain = call.chain_type === 'cosmos';
+    const isAxelarChain = isAxelar(call.chain);
 
     if (!isConfirmed && !isAxelarChain && !isCosmosChain) {
       return processing ? 'Confirming...' : 'Confirm';
@@ -75,7 +82,7 @@ export function useApproveButton({
     }
 
     return processing ? 'Approving...' : 'Approve';
-  }, [data, processing]);
+  }, [call, data, processing]);
 
   const handleApprove = useCallback(async () => {
     if (!data) {
@@ -85,5 +92,5 @@ export function useApproveButton({
     await approve(data);
   }, [approve, data]);
 
-  return { buttonLabel, handleApprove };
+  return { buttonLabel, isCosmosWalletConnected, handleApprove };
 }

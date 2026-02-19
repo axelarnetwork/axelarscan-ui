@@ -98,10 +98,9 @@ describe('executeApprove', () => {
       })
     );
     expect(errorSpy).toHaveBeenCalledWith(
-      '[recovery missing wallet requirements]',
+      '[recovery missing cosmos signer]',
       expect.objectContaining({
         use_self_signing: false,
-        missing_cosmos_signer: true,
       })
     );
     expect(setProcessing).toHaveBeenCalledWith(true);
@@ -110,7 +109,7 @@ describe('executeApprove', () => {
     errorSpy.mockRestore();
   });
 
-  it('does not log missing EVM provider for cosmos-only routes', async () => {
+  it('proceeds without EVM provider when cosmos signer is connected', async () => {
     const manualRelayToDestChain = jest.fn().mockResolvedValue({
       success: true,
       routeMessageTx: { transactionHash: '0xroute' },
@@ -135,10 +134,8 @@ describe('executeApprove', () => {
       setProcessing: jest.fn(),
     });
 
-    expect(errorSpy).not.toHaveBeenCalledWith(
-      '[recovery missing wallet requirements]',
-      expect.objectContaining({ missing_evm_provider: true })
-    );
+    expect(manualRelayToDestChain).toHaveBeenCalledTimes(1);
+    expect(errorSpy).not.toHaveBeenCalled();
 
     errorSpy.mockRestore();
   });

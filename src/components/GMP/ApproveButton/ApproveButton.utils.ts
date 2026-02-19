@@ -2,7 +2,6 @@ import { sleep } from '@/lib/operator';
 import { parseError } from '@/lib/parser';
 
 import { ApproveActionParams } from './ApproveButton.types';
-import type { GMPMessage } from '../GMP.types';
 
 const isWalletRejectionError = (error: unknown): boolean => {
   if (!error || typeof error !== 'object') {
@@ -51,10 +50,6 @@ type ManualRelayToDestChainWithOptions = (
   txEventIndex?: number,
   options?: ManualRelayToDestChainOptions
 ) => Promise<ManualRelayResponse>;
-
-const shouldRequireEvmProvider = (data: GMPMessage): boolean =>
-  data.call?.chain_type === 'evm' ||
-  data.call?.destination_chain_type === 'evm';
 
 /**
  * Execute the approve/confirm action for a GMP transaction
@@ -109,10 +104,7 @@ export async function executeApprove(
     const messageIdStr =
       typeof message_id === 'string' ? message_id : undefined;
     const sourceChainType = data.call.chain_type;
-    const requiresEvmProvider = shouldRequireEvmProvider(data);
     const useSelfSigning = Boolean(cosmosSigner);
-    const missingCosmosSigner = !useSelfSigning;
-    const missingEvmProvider = requiresEvmProvider && !provider;
 
     const recoveryLogContext = {
       source_chain_type: sourceChainType,
@@ -128,18 +120,13 @@ export async function executeApprove(
 
     console.log('[manualRelayToDestChain request]', recoveryLogContext);
 
-    if (missingCosmosSigner || missingEvmProvider) {
-      console.error('[recovery missing wallet requirements]', {
-        ...recoveryLogContext,
-        missing_cosmos_signer: missingCosmosSigner,
-        missing_evm_provider: missingEvmProvider,
-      });
-
+    // Defense-in-depth: UI only renders Approve when signer is connected, but
+    // a disconnect can still race before this async call executes.
+    if (!useSelfSigning) {
+      console.error('[recovery missing cosmos signer]', recoveryLogContext);
       setResponse({
         status: 'failed',
-        message: missingCosmosSigner
-          ? 'Connect a Cosmos wallet to continue'
-          : 'Connect an EVM wallet to continue',
+        message: 'Connect a Cosmos wallet to continue',
       });
       setProcessing(false);
       return;
