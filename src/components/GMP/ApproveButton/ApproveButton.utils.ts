@@ -2,6 +2,7 @@ import { sleep } from '@/lib/operator';
 import { parseError } from '@/lib/parser';
 
 import { ApproveActionParams } from './ApproveButton.types';
+import type { GMPMessage } from '../GMP.types';
 
 const isWalletRejectionError = (error: unknown): boolean => {
   if (!error || typeof error !== 'object') {
@@ -27,6 +28,33 @@ const shouldTreatConfirmAsPending = (
 
   return Boolean(confirmTxHash);
 };
+
+type ManualRelayResponse = Awaited<
+  ReturnType<NonNullable<ApproveActionParams['sdk']>['manualRelayToDestChain']>
+>;
+type ManualRelayToDestChainOptions = {
+  evmWalletDetails?: {
+    useWindowEthereum?: boolean;
+    provider?: unknown;
+  };
+  escapeAfterConfirm?: boolean;
+  messageId?: string;
+  selfSigning?: {
+    cosmosWalletDetails: {
+      offlineSigner?: unknown;
+    };
+  };
+};
+type ManualRelayToDestChainWithOptions = (
+  txHash: string,
+  txLogIndex?: number,
+  txEventIndex?: number,
+  options?: ManualRelayToDestChainOptions
+) => Promise<ManualRelayResponse>;
+
+const shouldRequireEvmProvider = (data: GMPMessage): boolean =>
+  data.call?.chain_type === 'evm' ||
+  data.call?.destination_chain_type === 'evm';
 
 /**
  * Execute the approve/confirm action for a GMP transaction
@@ -81,6 +109,10 @@ export async function executeApprove(
     const messageIdStr =
       typeof message_id === 'string' ? message_id : undefined;
     const sourceChainType = data.call.chain_type;
+    const requiresEvmProvider = shouldRequireEvmProvider(data);
+    const useSelfSigning = Boolean(cosmosSigner);
+    const missingCosmosSigner = !useSelfSigning;
+    const missingEvmProvider = requiresEvmProvider && !provider;
 
     const recoveryLogContext = {
       source_chain_type: sourceChainType,
@@ -91,42 +123,57 @@ export async function executeApprove(
       message_id: messageIdStr,
       has_evm_provider: Boolean(provider),
       has_cosmos_signer: Boolean(cosmosSigner),
-      use_self_signing: true,
+      use_self_signing: useSelfSigning,
     };
 
-    console.log('[manualRelayToDestChain request]', {
-      ...recoveryLogContext,
-    });
+    console.log('[manualRelayToDestChain request]', recoveryLogContext);
 
-    if (!provider || !cosmosSigner) {
-      console.error('[recovery self-sign missing signing material]', {
+    if (missingCosmosSigner || missingEvmProvider) {
+      console.error('[recovery missing wallet requirements]', {
         ...recoveryLogContext,
-        missing_evm_provider: !provider,
-        missing_cosmos_signer: !cosmosSigner,
+        missing_cosmos_signer: missingCosmosSigner,
+        missing_evm_provider: missingEvmProvider,
       });
+
+      setResponse({
+        status: 'failed',
+        message: missingCosmosSigner
+          ? 'Connect a Cosmos wallet to continue'
+          : 'Connect an EVM wallet to continue',
+      });
+      setProcessing(false);
+      return;
     }
 
-    const response = await (sdk as any).manualRelayToDestChain(
-      transactionHash ?? '',
-      logIndex,
-      eventIndex,
-      {
+    const options: ManualRelayToDestChainOptions = {
+      evmWalletDetails: {
         useWindowEthereum: true,
         provider: provider ?? undefined,
       },
-      false,
-      messageIdStr,
-      {
-        offlineSigner: cosmosSigner ?? undefined,
+      escapeAfterConfirm: false,
+      messageId: messageIdStr,
+      selfSigning: {
+        cosmosWalletDetails: {
+          offlineSigner: cosmosSigner,
+        },
       },
-      true
+    };
+
+    const manualRelayToDestChain = sdk.manualRelayToDestChain.bind(
+      sdk
+    ) as ManualRelayToDestChainWithOptions;
+
+    const response: ManualRelayResponse = await manualRelayToDestChain(
+      transactionHash ?? '',
+      logIndex,
+      eventIndex,
+      options
     );
 
     console.log('[manualRelayToDestChain response]', response);
 
-    const { success, error, confirmTx, signCommandTx, routeMessageTx } = {
-      ...response,
-    };
+    const { success, error, confirmTx, signCommandTx, routeMessageTx } =
+      response;
 
     if (!success && !error) {
       console.error('[recovery unexpected response]', {
@@ -174,11 +221,11 @@ export async function executeApprove(
       } successful`;
 
       setResponse({
-        status:
-          success || !error ? 'success' : treatAsPending ? 'pending' : 'failed',
+        status: success ? 'success' : treatAsPending ? 'pending' : 'failed',
         message: treatAsPending
           ? pendingMessage
-          : normalizedError || fallbackSuccessMessage,
+          : normalizedError ||
+            (success ? fallbackSuccessMessage : 'Recovery failed'),
         hash:
           routeMessageTx?.transactionHash ||
           signCommandTx?.transactionHash ||
@@ -187,11 +234,16 @@ export async function executeApprove(
       });
     }
   } catch (error) {
+    const isWalletRejection = isWalletRejectionError(error);
     console.error('[recovery self-sign request failed]', {
-      is_wallet_rejection: isWalletRejectionError(error),
+      is_wallet_rejection: isWalletRejection,
       error,
     });
-    setResponse({ status: 'failed', ...parseError(error) });
+    setResponse(
+      isWalletRejection
+        ? { status: 'failed', message: 'Transaction cancelled' }
+        : { status: 'failed', ...parseError(error) }
+    );
   }
 
   setProcessing(false);
