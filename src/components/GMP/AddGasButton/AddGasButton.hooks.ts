@@ -55,7 +55,11 @@ export function useAddGasButton(
   const xrplSignAndSubmitTransaction = useXRPLSignAndSubmitTransaction();
   const sdk = useGMPRecoveryAPI();
   const estimatedGasUsed = useEstimatedGasUsed(data);
-  const approve = useApproveAction({ setProcessing, setResponse });
+  const approve = useApproveAction({
+    setProcessing,
+    setResponse,
+    cosmosSigner: cosmosWalletStore.signer,
+  });
 
   const walletContext = useMemo(
     () => ({
