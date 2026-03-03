@@ -717,10 +717,12 @@ export function Transfers({ address }) {
 
   return (
     <Container className="sm:mt-8">
-      <div role="alert" className="mb-4 flex items-center gap-x-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200">
-        <PiWarningCircle size={20} />
-        <span className="text-sm">Legacy Token Transfers are deprecated.</span>
-      </div>
+      {!address && (
+        <div role="alert" className="mb-4 flex items-center gap-x-2 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-200">
+          <PiWarningCircle size={20} />
+          <span className="text-sm">Legacy Token Transfers are deprecated.</span>
+        </div>
+      )}
       {!data ? (
         <Spinner />
       ) : (
