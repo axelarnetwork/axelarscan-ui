@@ -1,5 +1,6 @@
 import { getChainData } from '@/lib/config';
-import { toArray } from '@/lib/parser';
+import { toArray, toCase, split } from '@/lib/parser';
+import { equalsIgnoreCase } from '@/lib/string';
 import type { Chain } from '@/types';
 import type { TransferData, TransferStep } from './Transfer.types';
 
@@ -157,4 +158,138 @@ export function getStep(data: TransferData, chains: Chain[] | null | undefined):
       chainData: destinationChainData,
     },
   ]) as TransferStep[];
+}
+
+// ─── Utilities from Transfer.component.tsx ────────────────────
+
+export function isTerminalStatus(status?: string): boolean {
+  return ['received', 'failed'].includes(status ?? '');
+}
+
+export function makeErrorData(message: string): TransferData {
+  return {
+    status: 'errorOnGetData',
+    code: 404,
+    message,
+  };
+}
+
+// ─── Utilities from Info.component.tsx ─────────────────────────
+
+export function getDepositAddressLabel(type?: string): string {
+  if (type === 'send_token') return 'Gateway';
+  if (['wrap', 'unwrap', 'erc20_transfer'].includes(type ?? '')) return 'Contract';
+  return 'Deposit Address';
+}
+
+export function resolveSymbolAndImage(
+  symbol: string | undefined,
+  image: string | undefined,
+  type?: string
+): { symbol: string | undefined; image: string | undefined } {
+  if (!symbol || type !== 'wrap') {
+    return { symbol, image };
+  }
+
+  const WRAP_PREFIXES = ['w', 'axl'];
+  const prefixIndex = WRAP_PREFIXES.findIndex(
+    (p: string) =>
+      toCase(symbol, 'lower').startsWith(p) &&
+      !equalsIgnoreCase(p, symbol)
+  );
+
+  if (prefixIndex < 0) {
+    return { symbol, image };
+  }
+
+  const unwrappedSymbol = symbol.substring(WRAP_PREFIXES[prefixIndex].length);
+  let unwrappedImage = image;
+
+  if (unwrappedImage) {
+    unwrappedImage = split(unwrappedImage, { delimiter: '/' })
+      .map((s: string) => {
+        if (s?.includes('.')) {
+          const i = WRAP_PREFIXES.findIndex((p: string) =>
+            toCase(s, 'lower').startsWith(p)
+          );
+          if (i > -1) {
+            s = s.substring(WRAP_PREFIXES[i].length);
+          }
+        }
+        return s;
+      })
+      .join('/');
+
+    unwrappedImage = `${unwrappedImage.startsWith('/') ? '' : '/'}${unwrappedImage}`;
+  }
+
+  return { symbol: unwrappedSymbol, image: unwrappedImage };
+}
+
+export function resolveStepURL(
+  step: TransferStep,
+  axelarChainData: ReturnType<typeof getChainData>,
+  destinationChainData: ReturnType<typeof getChainData>
+): string | undefined {
+  const {
+    txhash,
+    poll_id,
+    batch_id,
+    transactionHash,
+    recv_txhash,
+    ack_txhash,
+    failed_txhash,
+    tx_hash_unwrap,
+  } = { ...step.data };
+  const { url, transaction_path } = { ...step.chainData?.explorer };
+
+  if (!url || !transaction_path) return undefined;
+
+  switch (step.id) {
+    case 'link':
+    case 'send':
+    case 'wrap':
+    case 'erc20_transfer':
+    case 'confirm':
+    case 'axelar_transfer':
+      if (txhash) return `${url}${transaction_path.replace('{tx}', txhash)}`;
+      break;
+    case 'vote':
+      if (txhash) return `/tx/${txhash}`;
+      if (poll_id) return `/evm-poll/${poll_id}`;
+      break;
+    case 'command':
+      if (transactionHash) return `${url}${transaction_path.replace('{tx}', transactionHash)}`;
+      if (batch_id && destinationChainData) return `/evm-batch/${destinationChainData.id}/${batch_id}`;
+      break;
+    case 'ibc_send':
+      if (recv_txhash) return `${url}${transaction_path.replace('{tx}', recv_txhash)}`;
+      if (ack_txhash) return `${axelarChainData?.explorer?.url}${axelarChainData?.explorer?.transaction_path?.replace('{tx}', ack_txhash)}`;
+      if (failed_txhash) return `${url}${transaction_path.replace('{tx}', failed_txhash)}`;
+      break;
+    case 'unwrap':
+      if (tx_hash_unwrap) return `${url}${transaction_path.replace('{tx}', tx_hash_unwrap)}`;
+      break;
+    default:
+      break;
+  }
+
+  return undefined;
+}
+
+// ─── Utilities from Details.component.tsx ──────────────────────
+
+export function resolveBlockURL(
+  step: TransferStep,
+  blockValue: string,
+  axelarChainData: ReturnType<typeof getChainData>
+): string {
+  const baseUrl = step.data?.height && step.id === 'ibc_send'
+    ? axelarChainData?.explorer?.url
+    : step.chainData?.explorer?.url;
+  const blockPath = step.data?.height && step.id === 'ibc_send'
+    ? axelarChainData?.explorer?.block_path
+    : step.chainData?.explorer?.block_path;
+
+  return `${baseUrl}${blockPath?.replace('{block}', blockValue)}`;
 }

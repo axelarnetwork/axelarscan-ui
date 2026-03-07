@@ -11,7 +11,7 @@ import { ExplorerLink } from '@/components/ExplorerLink';
 import { useChains } from '@/hooks/useGlobalData';
 import { getChainData } from '@/lib/config';
 import { ellipse } from '@/lib/string';
-import { getStep } from './Transfer.utils';
+import { getStep, resolveBlockURL } from './Transfer.utils';
 import type { DetailsProps, TransferStep } from './Transfer.types';
 import * as styles from './Transfer.styles';
 
@@ -204,27 +204,6 @@ function resolveStepTxInfo(
   return { stepTX, stepURL, stepMoreInfos };
 }
 
-function getStatusTagClass(status: string): string {
-  if (status === 'success') return styles.detailsTagSuccess;
-  if (status === 'failed') return styles.detailsTagFailed;
-  return '';
-}
-
-function resolveBlockURL(
-  step: TransferStep,
-  blockValue: string,
-  axelarChainData: ReturnType<typeof getChainData>
-): string {
-  const baseUrl = step.data?.height && step.id === 'ibc_send'
-    ? axelarChainData?.explorer?.url
-    : step.chainData?.explorer?.url;
-  const blockPath = step.data?.height && step.id === 'ibc_send'
-    ? axelarChainData?.explorer?.block_path
-    : step.chainData?.explorer?.block_path;
-
-  return `${baseUrl}${blockPath?.replace('{block}', blockValue)}`;
-}
-
 export function Details({ data }: DetailsProps) {
   const chains = useChains();
 
@@ -345,7 +324,7 @@ export function Details({ data }: DetailsProps) {
                     <Tag
                       className={clsx(
                         styles.tagFitCapitalize,
-                        getStatusTagClass(d.status)
+                        styles.getStatusTagClass(d.status)
                       )}
                     >
                       {d.status}

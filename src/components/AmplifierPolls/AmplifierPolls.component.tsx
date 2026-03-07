@@ -22,101 +22,15 @@ import { Pagination } from '@/components/Pagination';
 import { useChains } from '@/hooks/useGlobalData';
 import { getRPCStatus, searchAmplifierPolls } from '@/lib/api/validator';
 import { getChainData } from '@/lib/config';
-import { toArray, getValuesOfAxelarAddressKey } from '@/lib/parser';
+import { toArray } from '@/lib/parser';
 import { getParams, generateKeyByParams } from '@/lib/operator';
 import { toBoolean, ellipse, toTitle } from '@/lib/string';
-import type { AmplifierPollEntry, PollVote, PollVoteOption, PollRowProps } from './AmplifierPolls.types';
+import type { AmplifierPollEntry, PollVoteOption, PollRowProps } from './AmplifierPolls.types';
 import { Filters } from './Filters.component';
 import * as styles from './AmplifierPolls.styles';
+import { processPollData } from './AmplifierPolls.utils';
 
 const size = 25;
-
-function getStatusStyle(status: string): string {
-  if (status === 'completed') return styles.statusCompleted;
-  if (status === 'failed') return styles.statusFailed;
-  if (status === 'expired') return styles.statusExpired;
-  return styles.statusPending;
-}
-
-function getVoteOptionStyle(option: string): string {
-  if (option === 'no') return styles.voteOptionNo;
-  if (option === 'yes') return styles.voteOptionYes;
-  return styles.voteOptionDefault;
-}
-
-function deriveStatus(
-  d: AmplifierPollEntry,
-  latestBlockHeight: number,
-): string {
-  if (d.success) return 'completed';
-  if (d.failed) return 'failed';
-  if (d.expired || (d.expired_height ?? 0) < latestBlockHeight) return 'expired';
-  return 'pending';
-}
-
-function getVoteOptionSortIndex(option: string): number {
-  if (option === 'yes') return 0;
-  if (option === 'no') return 1;
-  return 2;
-}
-
-function buildVoteOptions(
-  votes: PollVote[],
-  participants: string[] | undefined,
-): PollVoteOption[] {
-  const voteOptions: PollVoteOption[] = Object.entries(_.groupBy(votes, 'option'))
-    .map(([k, v]) => ({
-      option: k,
-      value: v?.length,
-      voters: (v?.map((item) => item.voter)).filter(Boolean) as string[],
-    }))
-    .filter((v) => v.value)
-    .map((v) => ({
-      ...v,
-      i: getVoteOptionSortIndex(v.option),
-    }));
-
-  const participantCount = participants?.length ?? 0;
-  const hasParticipants = toArray(participants).length > 0;
-  const hasUnsubmitted = voteOptions.findIndex((v) => v.option === 'unsubmitted') >= 0;
-  const totalVotes = _.sumBy(voteOptions, 'value');
-
-  if (hasParticipants && !hasUnsubmitted && totalVotes < participantCount) {
-    voteOptions.push({
-      option: 'unsubmitted',
-      value: participantCount - totalVotes,
-    });
-  }
-
-  return _.orderBy(voteOptions, ['i'], ['asc']);
-}
-
-function processPollData(
-  data: AmplifierPollEntry[],
-  latestBlockHeight: number,
-): AmplifierPollEntry[] {
-  return _.orderBy(
-    data.map((d) => {
-      const votes = (
-        getValuesOfAxelarAddressKey(d as unknown as Record<string, unknown>) as PollVote[]
-      ).map((v) => ({
-        ...v,
-        option: v.vote ? 'yes' : typeof v.vote === 'boolean' ? 'no' : 'unsubmitted',
-      }));
-
-      return {
-        ...d,
-        status: deriveStatus(d, latestBlockHeight),
-        height: _.minBy(votes, 'height')?.height || d.height,
-        votes: _.orderBy(votes, ['height', 'created_at'], ['desc', 'desc']),
-        voteOptions: buildVoteOptions(votes, d.participants),
-        url: `/gmp/${d.transaction_id || 'search'}`,
-      } as AmplifierPollEntry;
-    }),
-    ['created_at.ms'],
-    ['desc'],
-  );
-}
 
 export function AmplifierPolls() {
   const searchParams = useSearchParams();
@@ -342,7 +256,7 @@ function PollRow({
             <Tag
               className={clsx(
                 styles.statusTagBase,
-                getStatusStyle(poll.status),
+                styles.getStatusStyle(poll.status),
               )}
             >
               {poll.status}
@@ -365,7 +279,7 @@ function PollRow({
               noTooltip={true}
               className={clsx(
                 styles.voteOptionBase,
-                getVoteOptionStyle(v.option),
+                styles.getVoteOptionStyle(v.option),
               )}
             />
           ))}

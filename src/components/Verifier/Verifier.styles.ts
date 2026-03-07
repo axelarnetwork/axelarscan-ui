@@ -75,3 +75,14 @@ export const blockDotNo = 'bg-red-600 dark:bg-red-500' as const;
 export const mainGrid = 'grid gap-y-4 md:grid-cols-3 md:gap-x-4 md:gap-y-0' as const;
 export const mainLeft = 'md:col-span-2' as const;
 export const mainRight = 'flex flex-col gap-y-4' as const;
+
+// Dot style helpers (Signs / Votes)
+export function getSignDotStyle(sign: boolean | undefined): string {
+  if (typeof sign !== 'boolean') return blockDotInactive;
+  return sign ? blockDotActive : blockDotNo;
+}
+
+export function getVoteDotStyle(vote: boolean | undefined): string {
+  if (typeof vote !== 'boolean') return blockDotInactive;
+  return vote ? blockDotActive : blockDotNo;
+}

@@ -1,3 +1,5 @@
+import type { Chain } from '@/types';
+
 export interface SelectOption {
   value?: string;
   title: string;
@@ -47,5 +49,5 @@ export interface PollVote {
 
 export interface PollRowProps {
   poll: AmplifierPollEntry;
-  chains: ReturnType<typeof import('@/hooks/useGlobalData').useChains>;
+  chains: Chain[] | null;
 }

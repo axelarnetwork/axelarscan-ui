@@ -14,11 +14,6 @@ import * as styles from './Verifier.styles';
 
 const SIZE = 200;
 
-function getSignDotStyle(sign: boolean | undefined): string {
-  if (typeof sign !== 'boolean') return styles.blockDotInactive;
-  return sign ? styles.blockDotActive : styles.blockDotNo;
-}
-
 export function Signs({ data }: SignsProps) {
   const chains = useChains();
   const entries = toArray(data) as VerifierSignEntry[];
@@ -56,7 +51,7 @@ export function Signs({ data }: SignsProps) {
           return (
             <Link key={i} href={d.id ? `/amplifier-proof/${d.id}` : `/block/${d.height}`} target="_blank" className={styles.blockLink}>
               <Tooltip content={tooltipContent} className={styles.chainTooltip}>
-                <div className={clsx(styles.blockDot, getSignDotStyle(d.sign))} />
+                <div className={clsx(styles.blockDot, styles.getSignDotStyle(d.sign))} />
               </Tooltip>
             </Link>
           );

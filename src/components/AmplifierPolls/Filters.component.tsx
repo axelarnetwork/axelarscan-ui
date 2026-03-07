@@ -14,10 +14,11 @@ import { DateRangePicker } from '@/components/DateRangePicker';
 import { useChains } from '@/hooks/useGlobalData';
 import { split, toArray } from '@/lib/parser';
 import { getParams, getQueryString, isFiltered } from '@/lib/operator';
-import { equalsIgnoreCase, capitalize, filterSearchInput } from '@/lib/string';
+import { capitalize, filterSearchInput } from '@/lib/string';
 import type { Chain } from '@/types';
 import type { SelectOption, FilterAttribute } from './AmplifierPolls.types';
 import * as styles from './AmplifierPolls.styles';
+import { getSelectedValue, makeIsSelected } from './AmplifierPolls.utils';
 
 const size = 25;
 
@@ -108,26 +109,6 @@ function renderOptionContent(selected: boolean, active: boolean, title: string) 
       )}
     </>
   );
-}
-
-function getSelectedValue(
-  d: FilterAttribute,
-  params: Record<string, unknown>,
-  isSelected: (v: string | undefined) => boolean,
-) {
-  if (d.multiple) {
-    return toArray(d.options).filter((o: SelectOption) => isSelected(o.value));
-  }
-  return toArray(d.options).find((o: SelectOption) => isSelected(o.value));
-}
-
-function makeIsSelected(d: FilterAttribute, params: Record<string, unknown>) {
-  return (v: string | undefined) => {
-    if (d.multiple) {
-      return split(params[d.name] as string).includes(v ?? '');
-    }
-    return v === params[d.name] || equalsIgnoreCase(v, params[d.name] as string);
-  };
 }
 
 function renderSearchableCombobox(

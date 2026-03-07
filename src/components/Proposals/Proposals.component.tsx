@@ -17,13 +17,6 @@ import { TIME_FORMAT } from '@/lib/time';
 import * as styles from './Proposals.styles';
 import type { ProposalDeposit, ProposalListItem } from './Proposals.types';
 
-function getStatusColor(status: string): string {
-  if (['UNSPECIFIED', 'DEPOSIT_PERIOD'].includes(status)) return '';
-  if (['VOTING_PERIOD'].includes(status)) return 'bg-yellow-400 dark:bg-yellow-500';
-  if (['REJECTED', 'FAILED'].includes(status)) return 'bg-red-600 dark:bg-red-500';
-  return 'bg-green-600 dark:bg-green-500';
-}
-
 export function Proposals() {
   const [data, setData] = useState<ProposalListItem[] | null>(null);
 
@@ -126,7 +119,7 @@ export function Proposals() {
                       {d.status && (
                         <div className={styles.statusWrapper}>
                           <Tag
-                            className={clsx('w-fit', getStatusColor(d.status))}
+                            className={clsx('w-fit', styles.getStatusColor(d.status))}
                           >
                             {d.status}
                           </Tag>

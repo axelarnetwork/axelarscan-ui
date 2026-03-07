@@ -15,20 +15,12 @@ import { axelarContracts, getAxelarContractAddresses, getAssetData } from '@/lib
 import { getInputType } from '@/lib/parser';
 import { includesSomePatterns, find } from '@/lib/string';
 import type { AccountProps, AccountData, BalanceEntry, DepositAddressData, TransferData } from './Account.types';
+import { isDepositAddressCandidate } from './Account.utils';
 import { DepositAddress } from './DepositAddress.component';
 import { Info } from './Info.component';
 import { Balances } from './Balances.component';
 import { Delegations } from './Delegations.component';
 import * as styles from './Account.styles';
-
-function isDepositAddressCandidate(address: string, chains: ReturnType<typeof useChains>): boolean {
-  if (!chains) return false;
-  const isLongAddress = address.length >= 65;
-  const isEVM = getInputType(address, chains) === 'evmAddress';
-  if (!isLongAddress && !isEVM) return false;
-
-  return !find(address, _.concat(axelarContracts, getAxelarContractAddresses(chains)));
-}
 
 export function Account({ address }: AccountProps) {
   const router = useRouter();

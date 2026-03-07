@@ -15,17 +15,8 @@ import SpaceIDLogo from '@/images/name-services/spaceid.png';
 
 import type { SpaceIDProfileProps, ENSProfileProps, EVMProfileProps, NameServiceEntry } from './Profile.types';
 import { useNameServicesStore } from './Profile.stores';
+import { setDefaultData } from './Profile.utils';
 import { nameService as styles } from './Profile.styles';
-
-function setDefaultData(addresses: string[], data: Record<string, NameServiceEntry> | null) {
-  let result = { ...data };
-  addresses.forEach(a => {
-    if (!result[a]) {
-      result = { ...result, [a]: {} };
-    }
-  });
-  return result;
-}
 
 function NameServiceImage({ src, fallbackSrc, width, height, onLoad }: {
   src: string;

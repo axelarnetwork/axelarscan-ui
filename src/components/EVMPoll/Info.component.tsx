@@ -22,32 +22,6 @@ import type { Asset, Validator } from '@/types';
 import type { InfoProps, VoteOption, ConfirmationEvent } from './EVMPoll.types';
 import * as styles from './EVMPoll.styles';
 
-function getStatusTagStyle(status: string): string {
-  switch (status) {
-    case 'completed':
-      return styles.statusTagCompleted;
-    case 'confirmed':
-      return styles.statusTagConfirmed;
-    case 'failed':
-      return styles.statusTagFailed;
-    case 'expired':
-      return styles.statusTagExpired;
-    default:
-      return styles.statusTagPending;
-  }
-}
-
-function getVoteOptionStyle(option: string): string {
-  switch (option) {
-    case 'no':
-      return styles.voteOptionNo;
-    case 'yes':
-      return styles.voteOptionYes;
-    default:
-      return styles.voteOptionUnsubmitted;
-  }
-}
-
 interface ConfirmationAssetProps {
   event: ConfirmationEvent;
   chain: string | undefined;
@@ -148,7 +122,7 @@ function ParticipantOption({
       format="0,0"
       suffix={` ${toTitle(optionAbbrev)}${isDisplayPower ? `: ${powerDisplay}` : ''}`}
       noTooltip={true}
-      className={clsx(styles.voteOptionBase, getVoteOptionStyle(option.option))}
+      className={clsx(styles.voteOptionBase, styles.getVoteOptionStyle(option.option))}
     />
   );
 }
@@ -249,7 +223,7 @@ export function Info({ data, id }: InfoProps) {
             <dd className={styles.ddValue}>
               {status && (
                 <Tag
-                  className={clsx(styles.statusTagBase, getStatusTagStyle(status))}
+                  className={clsx(styles.statusTagBase, styles.getStatusTagStyle(status))}
                 >
                   {status}
                 </Tag>

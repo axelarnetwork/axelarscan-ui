@@ -41,3 +41,11 @@ export const depositValue = 'font-medium text-zinc-700 dark:text-zinc-300' as co
 export const statusWrapper = 'flex flex-col items-end gap-y-1' as const;
 export const tallyWrapper = 'flex flex-col items-end gap-y-0.5' as const;
 export const tallyValue = 'font-medium capitalize text-zinc-400 dark:text-zinc-500' as const;
+
+// Status color
+export function getStatusColor(status: string): string {
+  if (['UNSPECIFIED', 'DEPOSIT_PERIOD'].includes(status)) return '';
+  if (['VOTING_PERIOD'].includes(status)) return 'bg-yellow-400 dark:bg-yellow-500';
+  if (['REJECTED', 'FAILED'].includes(status)) return 'bg-red-600 dark:bg-red-500';
+  return 'bg-green-600 dark:bg-green-500';
+}

@@ -44,13 +44,13 @@ import {
   includesSomePatterns,
   ellipse,
 } from '@/lib/string';
-import { isNumber } from '@/lib/number';
 import { timeDiff } from '@/lib/time';
 import customGMPs from '@/data/custom/gmp';
 
 import { Filters } from './Filters.component';
 import type { GMPsProps, GMPRowData } from './GMPs.types';
 import * as styles from './GMPs.styles';
+import { buildGmpHref, getStatusLabel } from './GMPs.utils';
 
 const size = 25;
 
@@ -166,61 +166,6 @@ export const checkNeedMoreGasFromError = (error: Record<string, unknown> | null 
     ['INSUFFICIENT_GAS']
   );
 };
-
-// ─── Href builder (replaces the nested ternary at line 994 of the original) ─
-
-function buildGmpHref(d: GMPRowData): string {
-  if (d.call.parentMessageID) {
-    return `/gmp/${d.call.parentMessageID}`;
-  }
-
-  if (d.message_id) {
-    return `/gmp/${d.message_id}`;
-  }
-
-  const isCosmos = d.call.chain_type === 'cosmos';
-  const txHash = isCosmos && isNumber(d.call.messageIdIndex)
-    ? d.call.axelarTransactionHash
-    : d.call.transactionHash;
-
-  let suffix = '';
-  if (isNumber(d.call.logIndex)) {
-    suffix = `:${d.call.logIndex}`;
-  } else if (isCosmos && isNumber(d.call.messageIdIndex)) {
-    suffix = `-${d.call.messageIdIndex}`;
-  }
-
-  return `/gmp/${txHash}${suffix}`;
-}
-
-// ─── Status tag color helper ────────────────────────────────────────────────
-
-function getStatusTagClass(simplifiedStatus: string): string {
-  switch (simplifiedStatus) {
-    case 'received':
-      return styles.statusReceived;
-    case 'approved':
-      return styles.statusApproved;
-    case 'failed':
-      return styles.statusFailed;
-    default:
-      return styles.statusPending;
-  }
-}
-
-// ─── Status label helper ────────────────────────────────────────────────────
-
-function getStatusLabel(d: GMPRowData): string {
-  if (
-    d.simplified_status === 'received' &&
-    (getEvent(d) === 'ContractCall' ||
-      (getEvent(d) === 'InterchainTransfer' &&
-        isAxelar(d.call.returnValues?.destinationChain)))
-  ) {
-    return 'Executed';
-  }
-  return d.simplified_status;
-}
 
 // ─── Row sub-renderers ──────────────────────────────────────────────────────
 
@@ -500,7 +445,7 @@ function renderStatusCell(d: GMPRowData) {
             <Tag
               className={clsx(
                 styles.statusTagBase,
-                getStatusTagClass(d.simplified_status)
+                styles.getStatusTagClass(d.simplified_status)
               )}
             >
               {getStatusLabel(d)}

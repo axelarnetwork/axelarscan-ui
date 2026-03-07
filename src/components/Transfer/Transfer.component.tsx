@@ -10,23 +10,12 @@ import { searchTransfers } from '@/lib/api/token-transfer';
 import { getParams } from '@/lib/operator';
 import { Info } from './Info.component';
 import { Details } from './Details.component';
+import { isTerminalStatus, makeErrorData } from './Transfer.utils';
 import type { TransferData, TransferProps } from './Transfer.types';
 import * as styles from './Transfer.styles';
 
 // Re-export for external consumers (index.ts)
 export { getStep } from './Transfer.utils';
-
-function isTerminalStatus(status?: string): boolean {
-  return ['received', 'failed'].includes(status ?? '');
-}
-
-function makeErrorData(message: string): TransferData {
-  return {
-    status: 'errorOnGetData',
-    code: 404,
-    message,
-  };
-}
 
 export function Transfer({ tx, lite }: TransferProps) {
   const router = useRouter();

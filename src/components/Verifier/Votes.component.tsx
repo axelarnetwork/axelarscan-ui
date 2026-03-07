@@ -14,11 +14,6 @@ import * as styles from './Verifier.styles';
 
 const SIZE = 200;
 
-function getVoteDotStyle(vote: boolean | undefined): string {
-  if (typeof vote !== 'boolean') return styles.blockDotInactive;
-  return vote ? styles.blockDotActive : styles.blockDotNo;
-}
-
 export function Votes({ data }: VotesProps) {
   const chains = useChains();
   const entries = toArray(data) as VerifierPollEntry[];
@@ -57,7 +52,7 @@ export function Votes({ data }: VotesProps) {
           return (
             <Link key={i} href={d.id ? `/amplifier-poll/${d.id}` : `/block/${d.height}`} target="_blank" className={styles.blockLink}>
               <Tooltip content={tooltipContent} className={styles.chainTooltip}>
-                <div className={clsx(styles.blockDot, getVoteDotStyle(d.vote))} />
+                <div className={clsx(styles.blockDot, styles.getVoteDotStyle(d.vote))} />
               </Tooltip>
             </Link>
           );

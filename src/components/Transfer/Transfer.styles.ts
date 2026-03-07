@@ -88,3 +88,10 @@ export const detailsTagFailed = 'bg-red-600 dark:bg-red-500' as const;
 // ─── Transfer (main) ───────────────────────────────────────────
 export const transferContainer = 'sm:mt-8' as const;
 export const transferContent = 'flex max-w-5xl flex-col gap-y-4' as const;
+
+// ─── Dynamic Status Tag Class ─────────────────────────────────
+export function getStatusTagClass(status: string): string {
+  if (status === 'success') return detailsTagSuccess;
+  if (status === 'failed') return detailsTagFailed;
+  return '';
+}

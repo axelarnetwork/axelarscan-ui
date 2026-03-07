@@ -4,12 +4,8 @@ import clsx from 'clsx';
 import NextImage, { type ImageProps as NextImageProps } from 'next/image';
 import type React from 'react';
 
-import { includesSomePatterns, isString } from '@/lib/string';
 import {
-  darkBackgroundChains,
-  fullWhiteBackgroundChains,
-  imageStyles,
-  whiteBackgroundChains,
+  getChainSpecificClasses,
 } from './Image.styles';
 
 const OPTIMIZER_URL = '';
@@ -75,37 +71,6 @@ export interface ImageProps
   alt?: string;
   /** Additional CSS classes */
   className?: string;
-}
-
-/**
- * Determines additional CSS classes based on the image source path
- * Different chains/services require different styling for their logos
- *
- * @param src - Image source path
- * @returns CSS class string for chain-specific styling
- */
-function getChainSpecificClasses(src: string): string {
-  if (!isString(src)) {
-    return '';
-  }
-
-  // Chains that need full white background (no padding)
-  if (includesSomePatterns(src, fullWhiteBackgroundChains)) {
-    return imageStyles.chains.fullWhiteBackground;
-  }
-
-  // Chains that need white background with small padding
-  if (includesSomePatterns(src, whiteBackgroundChains)) {
-    return imageStyles.chains.whiteBackground;
-  }
-
-  // Chains that need dark background with more padding
-  if (includesSomePatterns(src, darkBackgroundChains)) {
-    return imageStyles.chains.darkBackground;
-  }
-
-  // No special styling needed
-  return '';
 }
 
 export function Image({

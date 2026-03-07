@@ -18,23 +18,7 @@ import type { Validator } from '@/types';
 
 import type { VotesProps, PollVote } from './EVMPoll.types';
 import * as styles from './EVMPoll.styles';
-
-function resolveVoteLabel(vote: boolean | undefined): string {
-  if (vote === true) return 'yes';
-  if (vote === false) return 'no';
-  return 'unsubmitted';
-}
-
-function getVoteOptionStyle(vote: string): string {
-  switch (vote) {
-    case 'no':
-      return styles.voteOptionNo;
-    case 'yes':
-      return styles.voteOptionYes;
-    default:
-      return styles.voteOptionUnsubmitted;
-  }
-}
+import { resolveVoteLabel } from './EVMPoll.utils';
 
 interface VoteRowProps {
   vote: PollVote;
@@ -155,7 +139,7 @@ function VoteRow({
       <td className={styles.tdMiddleRight}>
         <div className={styles.voteWrapper}>
           <Tag
-            className={clsx(styles.statusTagBase, getVoteOptionStyle(voteLabel))}
+            className={clsx(styles.statusTagBase, styles.getVoteStyle(voteLabel))}
           >
             {toTitle(voteLabel)}
           </Tag>

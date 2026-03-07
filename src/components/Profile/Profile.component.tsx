@@ -29,46 +29,13 @@ import broadcasters from '@/data/broadcasters';
 
 import type { ProfileProps } from './Profile.types';
 import { useValidatorImagesStore } from './Profile.stores';
+import { getAddressPagePath, getExplorerUrl } from './Profile.utils';
 import { EVMProfile } from './NameService.component';
 import { profile as styles } from './Profile.styles';
 
 const AXELAR_LOGO = '/logos/accounts/axelarnet.svg';
 const randImage = (i?: number) =>
   `/logos/addresses/${isNumber(i) ? ((i as number) % 8) + 1 : _.random(1, 8)}.png`;
-
-function getAddressPagePath(address: string, prefix: string, isVerifier: boolean | undefined): string {
-  if (!address.startsWith('axelar')) return `/address/${address}`;
-  if (prefix === 'axelarvaloper') return `/validator/${address}`;
-  if (isVerifier) return `/verifier/${address}`;
-  return `/account/${address}`;
-}
-
-function getExplorerUrl(
-  address: string,
-  prefix: string,
-  isVerifier: boolean | undefined,
-  explorer: Record<string, unknown> | undefined,
-  useContractLink: boolean | undefined,
-  customURL: string | undefined
-): string | undefined {
-  if (customURL) return customURL;
-  if (!explorer) return undefined;
-
-  const path =
-    useContractLink &&
-    explorer?.cannot_link_contract_via_address_path &&
-    explorer?.contract_path
-      ? explorer.contract_path as string
-      : explorer?.address_path as string | undefined;
-
-  if (!path) return `${explorer.url}`;
-
-  const resolvedPath = path.replace('{address}', address);
-  const accountSuffix = prefix === 'axelarvaloper' || isVerifier ? '/account' : '';
-  const replacement = prefix === 'axelarvaloper' ? '/validator' : isVerifier ? '/verifier' : '';
-
-  return `${explorer.url}${resolvedPath.replace(accountSuffix, replacement)}`;
-}
 
 export function Profile({
   i,

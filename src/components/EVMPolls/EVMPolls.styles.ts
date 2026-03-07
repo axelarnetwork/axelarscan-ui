@@ -102,3 +102,33 @@ export const voteOptionBase = 'mr-2 rounded-xl px-2.5 py-1 text-xs uppercase' as
 
 // Pagination
 export const paginationWrapper = 'mt-8 flex items-center justify-center' as const;
+
+// --- Dynamic style helpers ---
+
+/** Return the CSS class for a status tag based on the status string. */
+export function getStatusTagStyle(status: string): string {
+  switch (status) {
+    case 'completed':
+      return statusTagCompleted;
+    case 'confirmed':
+      return statusTagConfirmed;
+    case 'failed':
+      return statusTagFailed;
+    case 'expired':
+      return statusTagExpired;
+    default:
+      return statusTagPending;
+  }
+}
+
+/** Return the CSS class for a vote option tag based on option string. */
+export function getVoteOptionStyle(option: string): string {
+  switch (option) {
+    case 'no':
+      return voteOptionNo;
+    case 'yes':
+      return voteOptionYes;
+    default:
+      return voteOptionUnsubmitted;
+  }
+}

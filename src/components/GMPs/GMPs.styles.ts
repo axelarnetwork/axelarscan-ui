@@ -177,3 +177,17 @@ export const hopIndicator =
 // ─── Pagination ─────────────────────────────────────────────────
 export const paginationWrapper =
   'mt-8 flex items-center justify-center' as const;
+
+// ─── Status Tag Helper ──────────────────────────────────────────
+export function getStatusTagClass(simplifiedStatus: string): string {
+  switch (simplifiedStatus) {
+    case 'received':
+      return statusReceived;
+    case 'approved':
+      return statusApproved;
+    case 'failed':
+      return statusFailed;
+    default:
+      return statusPending;
+  }
+}

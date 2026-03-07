@@ -21,7 +21,8 @@
         "@typescript-eslint/no-explicit-any": "warn",
         "@typescript-eslint/no-var-requires": "off",
         "prefer-const": "off",
-        "no-unused-vars": "off"
+        "no-unused-vars": "off",
+        "import/no-duplicates": "error"
       },
       "parserOptions": {
         "ecmaVersion": 2020,

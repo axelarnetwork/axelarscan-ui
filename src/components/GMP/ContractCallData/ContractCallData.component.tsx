@@ -13,24 +13,8 @@ import { getAssetData, getChainData } from '@/lib/config';
 import { toCase } from '@/lib/parser';
 
 import { AssetAddressEntry, AssetDataEntry } from '../GMP.types';
-import { contractCallDataStyles } from './ContractCallData.styles';
+import { contractCallDataStyles, getStatusTagClass } from './ContractCallData.styles';
 import { ContractCallDataProps } from './ContractCallData.types';
-
-const statusColorByState: Record<string, string> = {
-  received: 'bg-green-600 dark:bg-green-500',
-  approved: 'bg-orange-500 dark:bg-orange-600',
-  failed: 'bg-red-600 dark:bg-red-500',
-};
-
-const DEFAULT_STATUS_COLOR = 'bg-yellow-400 dark:bg-yellow-500';
-
-function getStatusTagClass(status?: string): string {
-  if (!status) {
-    return DEFAULT_STATUS_COLOR;
-  }
-
-  return statusColorByState[status] ?? DEFAULT_STATUS_COLOR;
-}
 
 export function ContractCallData({
   data,

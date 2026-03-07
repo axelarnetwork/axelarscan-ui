@@ -16,114 +16,12 @@ import { ExplorerLink } from '@/components/ExplorerLink';
 import { normalizeType } from '@/components/Transfers';
 import { useChains, useAssets } from '@/hooks/useGlobalData';
 import { getChainData, getAssetData } from '@/lib/config';
-import { toCase, split } from '@/lib/parser';
-import { isString, equalsIgnoreCase, ellipse, toTitle } from '@/lib/string';
+import { isString, ellipse, toTitle } from '@/lib/string';
 import { isNumber, formatUnits } from '@/lib/number';
 import { TIME_FORMAT } from '@/lib/time';
-import { getStep } from './Transfer.utils';
+import { getStep, getDepositAddressLabel, resolveSymbolAndImage, resolveStepURL } from './Transfer.utils';
 import type { InfoProps, TransferStep, CompletedStepProps, StepElementProps, PendingStepProps } from './Transfer.types';
 import * as styles from './Transfer.styles';
-
-function getDepositAddressLabel(type?: string): string {
-  if (type === 'send_token') return 'Gateway';
-  if (['wrap', 'unwrap', 'erc20_transfer'].includes(type ?? '')) return 'Contract';
-  return 'Deposit Address';
-}
-
-function resolveSymbolAndImage(
-  symbol: string | undefined,
-  image: string | undefined,
-  type?: string
-): { symbol: string | undefined; image: string | undefined } {
-  if (!symbol || type !== 'wrap') {
-    return { symbol, image };
-  }
-
-  const WRAP_PREFIXES = ['w', 'axl'];
-  const prefixIndex = WRAP_PREFIXES.findIndex(
-    (p: string) =>
-      toCase(symbol, 'lower').startsWith(p) &&
-      !equalsIgnoreCase(p, symbol)
-  );
-
-  if (prefixIndex < 0) {
-    return { symbol, image };
-  }
-
-  const unwrappedSymbol = symbol.substring(WRAP_PREFIXES[prefixIndex].length);
-  let unwrappedImage = image;
-
-  if (unwrappedImage) {
-    unwrappedImage = split(unwrappedImage, { delimiter: '/' })
-      .map((s: string) => {
-        if (s?.includes('.')) {
-          const i = WRAP_PREFIXES.findIndex((p: string) =>
-            toCase(s, 'lower').startsWith(p)
-          );
-          if (i > -1) {
-            s = s.substring(WRAP_PREFIXES[i].length);
-          }
-        }
-        return s;
-      })
-      .join('/');
-
-    unwrappedImage = `${unwrappedImage.startsWith('/') ? '' : '/'}${unwrappedImage}`;
-  }
-
-  return { symbol: unwrappedSymbol, image: unwrappedImage };
-}
-
-function resolveStepURL(
-  step: TransferStep,
-  axelarChainData: ReturnType<typeof getChainData>,
-  destinationChainData: ReturnType<typeof getChainData>
-): string | undefined {
-  const {
-    txhash,
-    poll_id,
-    batch_id,
-    transactionHash,
-    recv_txhash,
-    ack_txhash,
-    failed_txhash,
-    tx_hash_unwrap,
-  } = { ...step.data };
-  const { url, transaction_path } = { ...step.chainData?.explorer };
-
-  if (!url || !transaction_path) return undefined;
-
-  switch (step.id) {
-    case 'link':
-    case 'send':
-    case 'wrap':
-    case 'erc20_transfer':
-    case 'confirm':
-    case 'axelar_transfer':
-      if (txhash) return `${url}${transaction_path.replace('{tx}', txhash)}`;
-      break;
-    case 'vote':
-      if (txhash) return `/tx/${txhash}`;
-      if (poll_id) return `/evm-poll/${poll_id}`;
-      break;
-    case 'command':
-      if (transactionHash) return `${url}${transaction_path.replace('{tx}', transactionHash)}`;
-      if (batch_id && destinationChainData) return `/evm-batch/${destinationChainData.id}/${batch_id}`;
-      break;
-    case 'ibc_send':
-      if (recv_txhash) return `${url}${transaction_path.replace('{tx}', recv_txhash)}`;
-      if (ack_txhash) return `${axelarChainData?.explorer?.url}${axelarChainData?.explorer?.transaction_path?.replace('{tx}', ack_txhash)}`;
-      if (failed_txhash) return `${url}${transaction_path.replace('{tx}', failed_txhash)}`;
-      break;
-    case 'unwrap':
-      if (tx_hash_unwrap) return `${url}${transaction_path.replace('{tx}', tx_hash_unwrap)}`;
-      break;
-    default:
-      break;
-  }
-
-  return undefined;
-}
 
 function StepElement({ step }: StepElementProps) {
   return (

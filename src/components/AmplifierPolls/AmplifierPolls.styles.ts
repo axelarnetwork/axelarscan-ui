@@ -97,3 +97,17 @@ export const voteOptionDefault = 'bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dar
 
 // Pagination
 export const paginationWrapper = 'mt-8 flex items-center justify-center' as const;
+
+// Dynamic style helpers
+export function getStatusStyle(status: string): string {
+  if (status === 'completed') return statusCompleted;
+  if (status === 'failed') return statusFailed;
+  if (status === 'expired') return statusExpired;
+  return statusPending;
+}
+
+export function getVoteOptionStyle(option: string): string {
+  if (option === 'no') return voteOptionNo;
+  if (option === 'yes') return voteOptionYes;
+  return voteOptionDefault;
+}

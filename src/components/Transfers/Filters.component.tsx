@@ -16,7 +16,7 @@ import { LuChevronsUpDown } from 'react-icons/lu';
 import { Button } from '@/components/Button';
 import { DateRangePicker } from '@/components/DateRangePicker';
 import { useChains, useAssets } from '@/hooks/useGlobalData';
-import { toArray } from '@/lib/parser';
+import { toArray, split } from '@/lib/parser';
 import {
   getParams,
   getQueryString,
@@ -27,7 +27,6 @@ import {
   capitalize,
   filterSearchInput,
 } from '@/lib/string';
-import { split } from '@/lib/parser';
 
 import type { FilterAttribute, FilterOption } from './Transfers.types';
 import * as styles from './Transfers.styles';

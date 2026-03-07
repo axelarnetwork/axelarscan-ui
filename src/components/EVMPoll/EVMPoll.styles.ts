@@ -69,3 +69,45 @@ export const voteWrapper = 'flex flex-col items-end' as const;
 // Main component styles
 export const containerClass = 'sm:mt-8' as const;
 export const contentWrapper = 'flex max-w-5xl flex-col gap-y-4 sm:gap-y-6' as const;
+
+// --- Dynamic style helpers ---
+
+/** Return the CSS class for a status tag based on the status string. */
+export function getStatusTagStyle(status: string): string {
+  switch (status) {
+    case 'completed':
+      return statusTagCompleted;
+    case 'confirmed':
+      return statusTagConfirmed;
+    case 'failed':
+      return statusTagFailed;
+    case 'expired':
+      return statusTagExpired;
+    default:
+      return statusTagPending;
+  }
+}
+
+/** Return the CSS class for a vote option tag (used in Info). */
+export function getVoteOptionStyle(option: string): string {
+  switch (option) {
+    case 'no':
+      return voteOptionNo;
+    case 'yes':
+      return voteOptionYes;
+    default:
+      return voteOptionUnsubmitted;
+  }
+}
+
+/** Return the CSS class for a vote label tag (used in Votes). */
+export function getVoteStyle(vote: string): string {
+  switch (vote) {
+    case 'no':
+      return voteOptionNo;
+    case 'yes':
+      return voteOptionYes;
+    default:
+      return voteOptionUnsubmitted;
+  }
+}

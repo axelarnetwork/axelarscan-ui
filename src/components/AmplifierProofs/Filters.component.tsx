@@ -16,13 +16,13 @@ import { useChains } from '@/hooks/useGlobalData';
 import { split, toArray } from '@/lib/parser';
 import { getParams, getQueryString, isFiltered } from '@/lib/operator';
 import {
-  equalsIgnoreCase,
   capitalize,
   filterSearchInput,
 } from '@/lib/string';
 
 import type { FilterOption, FilterAttribute, SelectButtonContentProps, OptionContentProps } from './AmplifierProofs.types';
 import * as styles from './AmplifierProofs.styles';
+import { getSelectedValue } from './AmplifierProofs.utils';
 
 const size = 25;
 
@@ -340,18 +340,6 @@ function OptionContent({ selected, active, title }: OptionContentProps) {
       )}
     </>
   );
-}
-
-function getSelectedValue(attribute: FilterAttribute, params: Record<string, unknown>) {
-  const paramValue = params[attribute.name] as string | undefined;
-  const isSelected = (v: string) =>
-    attribute.multiple
-      ? split(paramValue).includes(v)
-      : v === paramValue || equalsIgnoreCase(v, paramValue);
-  const selectedValue = attribute.multiple
-    ? toArray(attribute.options).filter((o: FilterOption) => isSelected(o.value ?? ''))
-    : toArray(attribute.options).find((o: FilterOption) => isSelected(o.value ?? ''));
-  return selectedValue;
 }
 
 function SearchableSelect({ attribute, params, setParams, searchInput, setSearchInput }: SearchableSelectProps) {
