@@ -1,5 +1,5 @@
 import type { providers } from 'ethers';
-import type { Chain } from '@/types';
+import type { Chain, Asset } from '@/types';
 
 export type ChainType = 'cosmos' | 'evm' | 'vm';
 
@@ -409,4 +409,38 @@ export interface XRPLSignAndSubmitResponse {
   };
   tx_hash?: string;
   error?: unknown;
+}
+
+// Types moved from GMP.hooks.ts
+export type ChainCollection = ChainMetadata[] | null | undefined;
+
+export type AssetCollection = Asset[] | null | undefined;
+
+export interface SearchGMPResult {
+  data?: GMPMessage[];
+}
+
+// Types moved from GMP.utils.ts
+export interface ConfirmResolutionContext {
+  call?: GMPEventLog;
+  confirm?: GMPEventLog;
+  confirmFailed?: GMPEventLog;
+  confirmFailedEvent?: GMPEventLog;
+  approved?: GMPEventLog;
+  executed?: GMPEventLog;
+  isExecuted?: boolean;
+  error?: GMPEventLog | undefined;
+  isInvalidCall?: boolean;
+  gasPaid?: GMPEventLog | string | undefined;
+  gasPaidToCallback?: GMPEventLog | undefined;
+  expressExecuted?: GMPEventLog | undefined;
+}
+
+export interface ExecuteResolutionContext {
+  executed?: GMPEventLog;
+  isExecuted?: boolean;
+  error?: GMPEventLog | undefined;
+  errored: boolean;
+  confirm?: GMPEventLog;
+  call?: GMPEventLog;
 }

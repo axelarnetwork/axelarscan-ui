@@ -8,3 +8,7 @@ export interface InfoProps {
   tx?: string;
   lite?: boolean;
 }
+
+export interface UseInfoStateOptions {
+  initialSeeMore?: boolean;
+}

@@ -17,34 +17,12 @@ import {
   cursorPointerClass,
   tooltipClass,
 } from './Metamask.styles';
-
-interface TokenData {
-  address?: string;
-  tokenAddress?: string;
-  symbol?: string;
-  decimals?: number;
-  image?: string;
-  [key: string]: unknown;
-}
-
-interface ChainIdState {
-  chainId: number | null;
-  setChainId: (data: number | null) => void;
-}
+import type { TokenData, ChainIdState, AddMetamaskProps } from './Metamask.types';
 
 export const useChainIdStore = create<ChainIdState>()(set => ({
   chainId: null,
   setChainId: data => set(state => ({ ...state, chainId: data })),
 }));
-
-interface AddMetamaskProps {
-  chain?: string;
-  asset?: string;
-  type?: string;
-  width?: number;
-  height?: number;
-  noTooltip?: boolean;
-}
 
 export function AddMetamask({
   chain,

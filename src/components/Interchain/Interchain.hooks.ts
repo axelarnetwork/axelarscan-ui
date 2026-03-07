@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import moment from 'moment';
-import { ReadonlyURLSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 
 import {
@@ -26,29 +25,9 @@ import { toArray } from '@/lib/parser';
 import { toBoolean } from '@/lib/string';
 import {
   ChartDataPoint,
-  DynamicInterchainData,
   FilterParams,
 } from './Interchain.types';
-
-interface UseInterchainHooksParams {
-  searchParams: ReadonlyURLSearchParams;
-  params: FilterParams;
-  setParams: (params: FilterParams) => void;
-  types: string[] | string;
-  setTypes: (types: string[] | string) => void;
-  setData: (
-    updater: (prevData: DynamicInterchainData | null) => DynamicInterchainData
-  ) => void;
-  setTimeSpentData: (
-    updater: (prevData: DynamicInterchainData | null) => DynamicInterchainData
-  ) => void;
-  refresh: boolean | null;
-  setRefresh: (refresh: boolean | null) => void;
-  assets: Asset[] | null;
-  stats: Record<string, unknown> | null;
-  itsAssets: Asset[] | null;
-  granularity: 'day' | 'week' | 'month';
-}
+import type { UseInterchainHooksParams } from './Interchain.types';
 
 const INTERCHAIN_METRICS = [
   'GMPStatsByChains',

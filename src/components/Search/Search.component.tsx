@@ -152,40 +152,42 @@ export function Search() {
   const address = getSlug(pathname, 'address');
   const searchable = !searching && !!input && !find(input, [tx as string, address as string]);
 
+  if (!itsAssets) {
+    return null;
+  }
+
   return (
-    itsAssets && (
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className={styles.wrapper}>
-          <input
-            ref={ref}
-            disabled={searching}
-            placeholder="Search by Txhash / Address / Block"
-            value={input}
-            onChange={e =>
-              setInput(split(e.target.value, { delimiter: ' ' }).join(' '))
-            }
-            className={clsx(
-              styles.input,
-              searching ? styles.inputSearching : styles.inputIdle,
-              searching || searchable
-                ? styles.inputPaddingWithIcon
-                : styles.inputPaddingDefault
-            )}
-          />
-          {searchable && (
-            <Button
-              color="blue"
-              onClick={() => onSubmit()}
-              className={styles.searchButton}
-            >
-              <FiSearch />
-            </Button>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div className={styles.wrapper}>
+        <input
+          ref={ref}
+          disabled={searching}
+          placeholder="Search by Txhash / Address / Block"
+          value={input}
+          onChange={e =>
+            setInput(split(e.target.value, { delimiter: ' ' }).join(' '))
+          }
+          className={clsx(
+            styles.input,
+            searching ? styles.inputSearching : styles.inputIdle,
+            searching || searchable
+              ? styles.inputPaddingWithIcon
+              : styles.inputPaddingDefault
           )}
-          {searching && (
-            <Spinner className={styles.spinner} />
-          )}
-        </div>
-      </form>
-    )
+        />
+        {searchable && (
+          <Button
+            color="blue"
+            onClick={() => onSubmit()}
+            className={styles.searchButton}
+          >
+            <FiSearch />
+          </Button>
+        )}
+        {searching && (
+          <Spinner className={styles.spinner} />
+        )}
+      </div>
+    </form>
   );
 }

@@ -13,18 +13,11 @@ import { searchBlocks } from '@/lib/api/validator';
 import { toBoolean, ellipse } from '@/lib/string';
 import { numberFormat } from '@/lib/number';
 import * as styles from './Blocks.styles';
+import type { BlockEntry, BlocksProps } from './Blocks.types';
 
 const SIZE = 250;
 
-interface BlockEntry {
-  height: number;
-  hash?: string;
-  proposer_address?: string;
-  num_txs?: number;
-  time?: string;
-}
-
-export function Blocks({ height = undefined }: { height?: string }) {
+export function Blocks({ height = undefined }: BlocksProps) {
   const [data, setData] = useState<BlockEntry[] | null>(null);
   const [refresh, setRefresh] = useState<boolean | null>(null);
 
@@ -49,11 +42,16 @@ export function Blocks({ height = undefined }: { height?: string }) {
     return () => clearInterval(interval);
   }, []);
 
+  if (!data) {
+    return (
+      <Container className="sm:mt-8">
+        <Spinner />
+      </Container>
+    );
+  }
+
   return (
     <Container className="sm:mt-8">
-      {!data ? (
-        <Spinner />
-      ) : (
         <div>
           <div className="sm:flex-auto">
             <h1 className={styles.pageTitle}>Blocks</h1>
@@ -119,7 +117,6 @@ export function Blocks({ height = undefined }: { height?: string }) {
             </table>
           </div>
         </div>
-      )}
     </Container>
   );
 }

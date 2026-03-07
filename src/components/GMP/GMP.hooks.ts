@@ -23,24 +23,17 @@ import { getParams } from '@/lib/operator';
 import { toArray, toCase } from '@/lib/parser';
 import { equalsIgnoreCase } from '@/lib/string';
 
-import type { Asset } from '@/types';
 import {
   AssetDataEntry,
-  ChainMetadata,
   ChainTimeEstimate,
   GMPMessage,
   GMPSettlementData,
+  ChainCollection,
+  AssetCollection,
+  SearchGMPResult,
 } from './GMP.types';
 import { getDefaultGasLimit, isGMPMessage } from './GMP.utils';
 import { normalizeRecoveryBytes } from './GMP.recovery.utils';
-
-type ChainCollection = ChainMetadata[] | null | undefined;
-
-type AssetCollection = Asset[] | null | undefined;
-
-interface SearchGMPResult {
-  data?: GMPMessage[];
-}
 
 const REFRESH_INTERVAL_MS = 0.5 * 60 * 1000;
 

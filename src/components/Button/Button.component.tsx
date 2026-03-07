@@ -5,19 +5,7 @@ import clsx from 'clsx';
 
 import { toBoolean } from '@/lib/string';
 import { buttonBaseStyles, buttonVariantStyles } from './Button.styles';
-
-interface ButtonProps {
-  variant?: 'solid' | 'outline';
-  color?: string;
-  circle?: string;
-  href?: string;
-  className?: string;
-  children?: React.ReactNode;
-  onClick?: React.MouseEventHandler;
-  disabled?: boolean;
-  type?: 'button' | 'submit' | 'reset';
-  [key: string]: unknown;
-}
+import type { ButtonProps } from './Button.types';
 
 export function Button({ className, ...props }: ButtonProps) {
   props.variant ??= 'solid';

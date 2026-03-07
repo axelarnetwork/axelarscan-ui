@@ -11,6 +11,8 @@ import {
   GMPMessage,
   GMPStep,
   WalletContext,
+  ConfirmResolutionContext,
+  ExecuteResolutionContext,
 } from './GMP.types';
 
 export function isGMPMessage(value: unknown): value is GMPMessage {
@@ -27,21 +29,6 @@ function resolvePayGasTitle(
 
   const recentlySent = timeDiff((call?.block_timestamp ?? 0) * 1000) < 30;
   return recentlySent ? 'Checking Gas Paid' : 'Pay Gas';
-}
-
-interface ConfirmResolutionContext {
-  call?: GMPEventLog;
-  confirm?: GMPEventLog;
-  confirmFailed?: GMPEventLog;
-  confirmFailedEvent?: GMPEventLog;
-  approved?: GMPEventLog;
-  executed?: GMPEventLog;
-  isExecuted?: boolean;
-  error?: GMPEventLog | undefined;
-  isInvalidCall?: boolean;
-  gasPaid?: GMPEventLog | string | undefined;
-  gasPaidToCallback?: GMPEventLog | undefined;
-  expressExecuted?: GMPEventLog | undefined;
 }
 
 function hasSuccessfulConfirmation({
@@ -123,15 +110,6 @@ function resolveApproveTitle(
   );
 
   return canShowApproving ? 'Approving' : 'Approve';
-}
-
-interface ExecuteResolutionContext {
-  executed?: GMPEventLog;
-  isExecuted?: boolean;
-  error?: GMPEventLog | undefined;
-  errored: boolean;
-  confirm?: GMPEventLog;
-  call?: GMPEventLog;
 }
 
 function hasSuccessfulExecution({

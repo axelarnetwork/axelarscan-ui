@@ -1,9 +1,5 @@
 import { responseStyles } from './Response.styles';
-
-interface ResponseData {
-  code?: number | string;
-  message?: string;
-}
+import type { ResponseData } from './Response.types';
 
 export function Response({ data }: { data: ResponseData }) {
   const { code, message } = { ...data };

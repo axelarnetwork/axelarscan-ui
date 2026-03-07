@@ -5,11 +5,7 @@ import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 
 import * as styles from './NavLink.styles';
-
-interface NavLinkProps {
-  href: string;
-  children: React.ReactNode;
-}
+import type { NavLinkProps } from './NavLink.types';
 
 export function NavLink({ href, children }: NavLinkProps) {
   const pathname = usePathname();

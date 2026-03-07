@@ -15,12 +15,7 @@ export const createDayJSFromUnixtime = (unixtime: number | string) =>
 const getUnixtime = (time: { valueOf: () => number } | null | undefined) =>
   time && moment(time.valueOf()).unix();
 
-interface DateRangePickerProps {
-  params?: { fromTime?: number | string; toTime?: number | string };
-  format?: string;
-  onChange: (value: { fromTime: number | undefined; toTime: number | undefined }) => void;
-  className?: string;
-}
+import type { DateRangePickerProps } from './DateRangePicker.types';
 
 export function DateRangePicker({
   params,

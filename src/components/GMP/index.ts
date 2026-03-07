@@ -1,1 +1,1 @@
-export { GMP } from './GMP';
+export { GMP } from './GMP.component';

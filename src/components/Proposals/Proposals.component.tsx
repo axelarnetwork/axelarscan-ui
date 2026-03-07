@@ -15,26 +15,13 @@ import { toTitle } from '@/lib/string';
 import { toNumber } from '@/lib/number';
 import { TIME_FORMAT } from '@/lib/time';
 import * as styles from './Proposals.styles';
+import type { ProposalDeposit, ProposalListItem } from './Proposals.types';
 
-interface ProposalDeposit {
-  amount?: number;
-  symbol?: string;
-}
-
-interface ProposalListItem {
-  proposal_id?: string;
-  type?: string;
-  content?: {
-    title?: string;
-    description?: string;
-    plan?: { name?: string; height?: number };
-  };
-  status?: string;
-  voting_start_time?: string;
-  voting_end_time?: string;
-  total_deposit?: ProposalDeposit[];
-  final_tally_result?: Record<string, number>;
-  [key: string]: unknown;
+function getStatusColor(status: string): string {
+  if (['UNSPECIFIED', 'DEPOSIT_PERIOD'].includes(status)) return '';
+  if (['VOTING_PERIOD'].includes(status)) return 'bg-yellow-400 dark:bg-yellow-500';
+  if (['REJECTED', 'FAILED'].includes(status)) return 'bg-red-600 dark:bg-red-500';
+  return 'bg-green-600 dark:bg-green-500';
 }
 
 export function Proposals() {
@@ -49,11 +36,16 @@ export function Proposals() {
     getData();
   }, []);
 
+  if (!data) {
+    return (
+      <Container className="sm:mt-8">
+        <Spinner />
+      </Container>
+    );
+  }
+
   return (
     <Container className="sm:mt-8">
-      {!data ? (
-        <Spinner />
-      ) : (
         <div>
           <div className={styles.headerWrapper}>
             <div className="sm:flex-auto">
@@ -134,16 +126,7 @@ export function Proposals() {
                       {d.status && (
                         <div className={styles.statusWrapper}>
                           <Tag
-                            className={clsx(
-                              'w-fit',
-                              ['UNSPECIFIED', 'DEPOSIT_PERIOD'].includes(d.status)
-                                ? ''
-                                : ['VOTING_PERIOD'].includes(d.status)
-                                  ? 'bg-yellow-400 dark:bg-yellow-500'
-                                  : ['REJECTED', 'FAILED'].includes(d.status)
-                                    ? 'bg-red-600 dark:bg-red-500'
-                                    : 'bg-green-600 dark:bg-green-500'
-                            )}
+                            className={clsx('w-fit', getStatusColor(d.status))}
                           >
                             {d.status}
                           </Tag>
@@ -172,7 +155,6 @@ export function Proposals() {
             </table>
           </div>
         </div>
-      )}
     </Container>
   );
 }

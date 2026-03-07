@@ -1,10 +1,5 @@
-export {
-  useNameServicesStore,
-  useValidatorImagesStore,
-  SpaceIDProfile,
-  ENSProfile,
-  EVMProfile,
-  Profile,
-  ChainProfile,
-  AssetProfile,
-} from './Profile.component';
+export { useNameServicesStore, useValidatorImagesStore } from './Profile.stores';
+export { SpaceIDProfile, ENSProfile, EVMProfile } from './NameService.component';
+export { Profile } from './Profile.component';
+export { ChainProfile } from './Chain.component';
+export { AssetProfile } from './Asset.component';

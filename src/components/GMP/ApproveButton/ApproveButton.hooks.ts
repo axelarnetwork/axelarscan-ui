@@ -1,37 +1,16 @@
-import { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
-import { useEVMWalletStore } from '@/components/Wallet/EVMWallet';
-import { useCosmosWalletStore } from '@/components/Wallet/CosmosWallet.hooks';
-import type { KeplrSigner } from '@/types/cosmos';
+import { useEVMWalletStore, useCosmosWalletStore } from '@/components/Wallet';
 
 import { isAxelar } from '@/lib/chain';
 import { useGMPRecoveryAPI } from '../GMP.hooks';
-import { GMPMessage, GMPToastState } from '../GMP.types';
+import type { GMPMessage } from '../GMP.types';
 import { executeApprove } from './ApproveButton.utils';
-
-interface UseApproveActionParams {
-  setProcessing: Dispatch<SetStateAction<boolean>>;
-  setResponse: Dispatch<SetStateAction<GMPToastState | null>>;
-  cosmosSigner?: KeplrSigner | null;
-}
-
-interface UseApproveButtonOptions {
-  data: GMPMessage | null;
-  processing: boolean;
-  setProcessing: Dispatch<SetStateAction<boolean>>;
-  setResponse: Dispatch<SetStateAction<GMPToastState | null>>;
-}
-
-interface UseApproveButtonResult {
-  buttonLabel: string;
-  isCosmosWalletConnected: boolean;
-  requiresCosmosWallet: boolean;
-  isEvmWalletConnected: boolean;
-  needsEvmWallet: boolean;
-  targetChain: string | undefined;
-  targetChainType: string | undefined;
-  handleApprove: () => Promise<void>;
-}
+import type {
+  UseApproveActionParams,
+  UseApproveButtonOptions,
+  UseApproveButtonResult,
+} from './ApproveButton.types';
 
 export function useApproveAction({
   setProcessing,

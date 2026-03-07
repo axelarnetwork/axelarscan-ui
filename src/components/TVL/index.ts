@@ -1,1 +1,1 @@
-export { TVL } from './TVL';
+export { TVL } from './TVL.component';

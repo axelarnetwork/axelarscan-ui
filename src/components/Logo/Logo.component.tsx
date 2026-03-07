@@ -5,8 +5,7 @@ import { useTheme } from 'next-themes';
 import clsx from 'clsx';
 
 import * as styles from './Logo.styles';
-
-type LogoProps = React.HTMLAttributes<HTMLDivElement>;
+import type { LogoProps } from './Logo.types';
 
 export function Logo(props: LogoProps) {
   const { resolvedTheme } = useTheme();

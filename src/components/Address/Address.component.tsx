@@ -18,12 +18,9 @@ import {
   tabBaseClass,
   contentWrapperClass,
 } from './Address.styles';
+import type { AddressProps } from './Address.types';
 
 const TABS = ['gmp', 'transfers'] as const;
-
-interface AddressProps {
-  address: string;
-}
 
 export function Address({ address }: AddressProps) {
   const router = useRouter();

@@ -2,24 +2,15 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Fragment, useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { Combobox, Dialog, Listbox, Transition } from '@headlessui/react';
+import { useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import _ from 'lodash';
-import {
-  MdOutlineRefresh,
-  MdOutlineFilterList,
-  MdClose,
-  MdCheck,
-} from 'react-icons/md';
-import { LuChevronsUpDown } from 'react-icons/lu';
+import { MdOutlineRefresh } from 'react-icons/md';
 
 import { Container } from '@/components/Container';
 import { Overlay } from '@/components/Overlay';
 import { Button } from '@/components/Button';
-import { DateRangePicker } from '@/components/DateRangePicker';
 import { Copy } from '@/components/Copy';
 import { Spinner } from '@/components/Spinner';
 import { Tag } from '@/components/Tag';
@@ -52,9 +43,7 @@ import {
 } from '@/lib/parser';
 import {
   getParams,
-  getQueryString,
   generateKeyByParams,
-  isFiltered,
 } from '@/lib/operator';
 import {
   isString,
@@ -67,549 +56,15 @@ import {
   find,
   includesSomePatterns,
   ellipse,
-  filterSearchInput,
 } from '@/lib/string';
 import { isNumber, formatUnits } from '@/lib/number';
 
+import type { TransactionsProps, SearchResults } from './Transactions.types';
+import { PAGE_SIZE, SIZE_PER_PAGE } from './Transactions.types';
+import { Filters } from './Filters.component';
 import * as styles from './Transactions.styles';
 
-const size = 25;
-const sizePerPage = 10;
-
-function Filters({ address }: { address?: string }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [open, setOpen] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [params, setParams] = useState<Record<string, string>>(getParams(searchParams, size) as any);
-  const [searchInput, setSearchInput] = useState<Record<string, string>>({});
-  const [types, setTypes] = useState<string[]>([]);
-  const { handleSubmit } = useForm();
-
-  useEffect(() => {
-    if (params) {
-      setSearchInput({});
-    }
-  }, [params, setSearchInput]);
-
-  useEffect(() => {
-    const getTypes = async () => {
-      const response = await searchTransactions({
-        aggs: { types: { terms: { field: 'types.keyword', size: 1000 } } },
-        size: 0,
-      });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setTypes(toArray(response).map((d: any) => d.key));
-    };
-
-    getTypes();
-  }, []);
-
-  const onSubmit = (e1?: unknown, e2?: unknown, _params?: Record<string, string>) => {
-    if (!_params) {
-      _params = params;
-    }
-
-    if (!_.isEqual(_params, getParams(searchParams, size))) {
-      router.push(`${pathname}${getQueryString(_params)}`);
-      setParams(_params);
-    }
-
-    setOpen(false);
-  };
-
-  const onClose = () => {
-    setOpen(false);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setParams(getParams(searchParams, size) as any);
-  };
-
-  const attributes = toArray([
-    { label: 'Tx Hash', name: 'txHash' },
-    {
-      label: 'Type',
-      name: 'type',
-      type: 'select',
-      options: _.concat(
-        { title: 'Any' } as any,
-        _.orderBy(
-          types.map((d: string) => ({ value: d, title: d })),
-          ['title'],
-          ['asc']
-        )
-      ),
-    },
-    {
-      label: 'Status',
-      name: 'status',
-      type: 'select',
-      options: _.concat(
-        { title: 'Any' } as any,
-        ['success', 'failed'].map((d: string) => ({ value: d, title: capitalize(d) }))
-      ),
-    },
-    !address && { label: 'Address', name: 'address' },
-    { label: 'Time', name: 'time', type: 'datetimeRange' },
-  ]);
-
-  const filtered = isFiltered(params);
-
-  return (
-    <>
-      <Button
-        color="default"
-        circle="true"
-        onClick={() => setOpen(true)}
-        className={clsx(filtered && styles.filterButtonActive)}
-      >
-        <MdOutlineFilterList
-          size={20}
-          className={clsx(filtered && styles.filterIconActive)}
-        />
-      </Button>
-      <Transition.Root show={open} as={Fragment}>
-        <Dialog as="div" onClose={onClose} className={styles.dialogContainer}>
-          <Transition.Child
-            as={Fragment}
-            enter={styles.transitionEnter}
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave={styles.transitionEnter}
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className={styles.dialogBackdrop} />
-          </Transition.Child>
-          <div className={styles.dialogOuterWrapper}>
-            <div className={styles.dialogInnerWrapper}>
-              <div className={styles.dialogPanelContainer}>
-                <Transition.Child
-                  as={Fragment}
-                  enter={styles.transitionEnter}
-                  enterFrom="translate-x-full"
-                  enterTo="translate-x-0"
-                  leave={styles.transitionEnter}
-                  leaveFrom="translate-x-0"
-                  leaveTo="translate-x-full"
-                >
-                  <Dialog.Panel className={styles.dialogPanel}>
-                    <form
-                      onSubmit={handleSubmit(onSubmit)}
-                      className={styles.dialogForm}
-                    >
-                      <div className={styles.dialogScrollArea}>
-                        <div className={styles.dialogHeader}>
-                          <Dialog.Title className={styles.dialogTitle}>
-                            Filter
-                          </Dialog.Title>
-                          <button
-                            type="button"
-                            onClick={() => onClose()}
-                            className={styles.dialogCloseButton}
-                          >
-                            <MdClose size={20} />
-                          </button>
-                        </div>
-                        <div className={styles.dialogBody}>
-                          {attributes.map((d: any, i: number) => (
-                            <div key={i}>
-                              <label
-                                htmlFor={d.name}
-                                className={styles.fieldLabel}
-                              >
-                                {d.label}
-                              </label>
-                              <div className={styles.fieldWrapper}>
-                                {d.type === 'select' ? (
-                                  d.searchable ? (
-                                    <Combobox
-                                      value={
-                                        d.multiple
-                                          ? split(params[d.name])
-                                          : params[d.name]
-                                      }
-                                      onChange={(v: any) =>
-                                        setParams({
-                                          ...params,
-                                          [d.name]: d.multiple
-                                            ? v.join(',')
-                                            : v,
-                                        })
-                                      }
-                                      multiple={d.multiple}
-                                    >
-                                      {({ open }: any) => {
-                                        const isSelected = (v: any) =>
-                                          d.multiple
-                                            ? split(params[d.name]).includes(v)
-                                            : v === params[d.name] ||
-                                              equalsIgnoreCase(
-                                                v,
-                                                params[d.name]
-                                              );
-                                        const selectedValue = d.multiple
-                                          ? toArray(d.options).filter((o: any) =>
-                                              isSelected(o.value)
-                                            )
-                                          : toArray(d.options).find((o: any) =>
-                                              isSelected(o.value)
-                                            );
-
-                                        return (
-                                          <div className={styles.selectRelative}>
-                                            <Combobox.Button className={styles.selectButton}>
-                                              {d.multiple ? (
-                                                <div
-                                                  className={clsx(
-                                                    styles.selectMultipleWrap,
-                                                    selectedValue.length !==
-                                                      0 && styles.selectMultipleWrapActive
-                                                  )}
-                                                >
-                                                  {selectedValue.length ===
-                                                  0 ? (
-                                                    <span className={styles.selectTruncate}>
-                                                      Any
-                                                    </span>
-                                                  ) : (
-                                                    selectedValue.map(
-                                                      (v: any, j: number) => (
-                                                        <div
-                                                          key={j}
-                                                          onClick={() =>
-                                                            setParams({
-                                                              ...params,
-                                                              [d.name]:
-                                                                selectedValue
-                                                                  .filter(
-                                                                    (v: any) =>
-                                                                      v.value !==
-                                                                      v.value
-                                                                  )
-                                                                  .map(
-                                                                    (v: any) => v.value
-                                                                  )
-                                                                  .join(','),
-                                                            })
-                                                          }
-                                                          className={styles.selectMultipleTag}
-                                                        >
-                                                          {v.title}
-                                                        </div>
-                                                      )
-                                                    )
-                                                  )}
-                                                </div>
-                                              ) : (
-                                                <span className={styles.selectTruncate}>
-                                                  {selectedValue?.title}
-                                                </span>
-                                              )}
-                                              <span className={styles.selectChevronWrapper}>
-                                                <LuChevronsUpDown
-                                                  size={20}
-                                                  className={styles.selectChevronIcon}
-                                                />
-                                              </span>
-                                            </Combobox.Button>
-                                            <Transition
-                                              show={open}
-                                              as={Fragment}
-                                              leave={styles.transitionLeave}
-                                              leaveFrom="opacity-100"
-                                              leaveTo="opacity-0"
-                                            >
-                                              <div className={styles.selectSearchWrapper}>
-                                                <Combobox.Input
-                                                  placeholder={`Search ${d.label}`}
-                                                  value={
-                                                    searchInput[d.name] || ''
-                                                  }
-                                                  onChange={(e: any) =>
-                                                    setSearchInput({
-                                                      ...searchInput,
-                                                      [d.name]: e.target.value,
-                                                    })
-                                                  }
-                                                  className={styles.selectSearchInput}
-                                                />
-                                                <Combobox.Options className={styles.selectDropdown}>
-                                                  {toArray(d.options)
-                                                    .filter((o: any) =>
-                                                      filterSearchInput(
-                                                        [o.title, o.value],
-                                                        searchInput[d.name]
-                                                      )
-                                                    )
-                                                    .map((o: any, j: number) => (
-                                                      <Combobox.Option
-                                                        key={j}
-                                                        value={o.value}
-                                                        className={({
-                                                          active,
-                                                        }: any) =>
-                                                          clsx(
-                                                            styles.selectOptionBase,
-                                                            active
-                                                              ? styles.selectOptionActive
-                                                              : styles.selectOptionInactive
-                                                          )
-                                                        }
-                                                      >
-                                                        {({
-                                                          selected,
-                                                          active,
-                                                        }: any) => (
-                                                          <>
-                                                            <span
-                                                              className={clsx(
-                                                                styles.selectTruncate,
-                                                                selected
-                                                                  ? styles.selectOptionTextSelected
-                                                                  : styles.selectOptionTextNormal
-                                                              )}
-                                                            >
-                                                              {o.title}
-                                                            </span>
-                                                            {selected && (
-                                                              <span
-                                                                className={clsx(
-                                                                  styles.selectCheckWrapper,
-                                                                  active
-                                                                    ? styles.selectCheckActive
-                                                                    : styles.selectCheckInactive
-                                                                )}
-                                                              >
-                                                                <MdCheck
-                                                                  size={20}
-                                                                />
-                                                              </span>
-                                                            )}
-                                                          </>
-                                                        )}
-                                                      </Combobox.Option>
-                                                    ))}
-                                                </Combobox.Options>
-                                              </div>
-                                            </Transition>
-                                          </div>
-                                        );
-                                      }}
-                                    </Combobox>
-                                  ) : (
-                                    <Listbox
-                                      value={
-                                        d.multiple
-                                          ? split(params[d.name])
-                                          : params[d.name]
-                                      }
-                                      onChange={(v: any) =>
-                                        setParams({
-                                          ...params,
-                                          [d.name]: d.multiple
-                                            ? v.join(',')
-                                            : v,
-                                        })
-                                      }
-                                      multiple={d.multiple}
-                                    >
-                                      {({ open }: any) => {
-                                        const isSelected = (v: any) =>
-                                          d.multiple
-                                            ? split(params[d.name]).includes(v)
-                                            : v === params[d.name] ||
-                                              equalsIgnoreCase(
-                                                v,
-                                                params[d.name]
-                                              );
-                                        const selectedValue = d.multiple
-                                          ? toArray(d.options).filter((o: any) =>
-                                              isSelected(o.value)
-                                            )
-                                          : toArray(d.options).find((o: any) =>
-                                              isSelected(o.value)
-                                            );
-
-                                        return (
-                                          <div className={styles.selectRelative}>
-                                            <Listbox.Button className={styles.selectButton}>
-                                              {d.multiple ? (
-                                                <div
-                                                  className={clsx(
-                                                    styles.selectMultipleWrap,
-                                                    selectedValue.length !==
-                                                      0 && styles.selectMultipleWrapActive
-                                                  )}
-                                                >
-                                                  {selectedValue.length ===
-                                                  0 ? (
-                                                    <span className={styles.selectTruncate}>
-                                                      Any
-                                                    </span>
-                                                  ) : (
-                                                    selectedValue.map(
-                                                      (v: any, j: number) => (
-                                                        <div
-                                                          key={j}
-                                                          onClick={() =>
-                                                            setParams({
-                                                              ...params,
-                                                              [d.name]:
-                                                                selectedValue
-                                                                  .filter(
-                                                                    (v: any) =>
-                                                                      v.value !==
-                                                                      v.value
-                                                                  )
-                                                                  .map(
-                                                                    (v: any) => v.value
-                                                                  )
-                                                                  .join(','),
-                                                            })
-                                                          }
-                                                          className={styles.selectMultipleTag}
-                                                        >
-                                                          {v.title}
-                                                        </div>
-                                                      )
-                                                    )
-                                                  )}
-                                                </div>
-                                              ) : (
-                                                <span className={styles.selectTruncate}>
-                                                  {selectedValue?.title}
-                                                </span>
-                                              )}
-                                              <span className={styles.selectChevronWrapper}>
-                                                <LuChevronsUpDown
-                                                  size={20}
-                                                  className={styles.selectChevronIcon}
-                                                />
-                                              </span>
-                                            </Listbox.Button>
-                                            <Transition
-                                              show={open}
-                                              as={Fragment}
-                                              leave={styles.transitionLeave}
-                                              leaveFrom="opacity-100"
-                                              leaveTo="opacity-0"
-                                            >
-                                              <Listbox.Options className={styles.selectDropdown}>
-                                                {toArray(d.options).map(
-                                                  (o: any, j: number) => (
-                                                    <Listbox.Option
-                                                      key={j}
-                                                      value={o.value}
-                                                      className={({ active }: any) =>
-                                                        clsx(
-                                                          styles.selectOptionBase,
-                                                          active
-                                                            ? styles.selectOptionActive
-                                                            : styles.selectOptionInactive
-                                                        )
-                                                      }
-                                                    >
-                                                      {({
-                                                        selected,
-                                                        active,
-                                                      }: any) => (
-                                                        <>
-                                                          <span
-                                                            className={clsx(
-                                                              styles.selectTruncate,
-                                                              selected
-                                                                ? styles.selectOptionTextSelected
-                                                                : styles.selectOptionTextNormal
-                                                            )}
-                                                          >
-                                                            {o.title}
-                                                          </span>
-                                                          {selected && (
-                                                            <span
-                                                              className={clsx(
-                                                                styles.selectCheckWrapper,
-                                                                active
-                                                                  ? styles.selectCheckActive
-                                                                  : styles.selectCheckInactive
-                                                              )}
-                                                            >
-                                                              <MdCheck
-                                                                size={20}
-                                                              />
-                                                            </span>
-                                                          )}
-                                                        </>
-                                                      )}
-                                                    </Listbox.Option>
-                                                  )
-                                                )}
-                                              </Listbox.Options>
-                                            </Transition>
-                                          </div>
-                                        );
-                                      }}
-                                    </Listbox>
-                                  )
-                                ) : d.type === 'datetimeRange' ? (
-                                  <DateRangePicker
-                                    params={params}
-                                    onChange={(v: any) =>
-                                      setParams({ ...params, ...v })
-                                    }
-                                  />
-                                ) : (
-                                  <input
-                                    type={d.type || 'text'}
-                                    name={d.name}
-                                    placeholder={d.label}
-                                    value={params[d.name]}
-                                    onChange={(e: any) =>
-                                      setParams({
-                                        ...params,
-                                        [d.name]: e.target.value,
-                                      })
-                                    }
-                                    className={styles.textInput}
-                                  />
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className={styles.filterFooter}>
-                        <button
-                          type="button"
-                          onClick={() => onSubmit(undefined, undefined, {})}
-                          className={styles.resetButton}
-                        >
-                          Reset
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={!filtered}
-                          className={clsx(
-                            styles.submitButtonBase,
-                            filtered
-                              ? styles.submitButtonEnabled
-                              : styles.submitButtonDisabled
-                          )}
-                        >
-                          Submit
-                        </button>
-                      </div>
-                    </form>
-                  </Dialog.Panel>
-                </Transition.Child>
-              </div>
-            </div>
-          </div>
-        </Dialog>
-      </Transition.Root>
-    </>
-  );
-}
+// ─── Exported utility functions ─────────────────────────────────
 
 export const getType = (data: any) => {
   if (!data) return;
@@ -683,7 +138,6 @@ export const getActivities = (data: any, assets: any) => {
         const msgEvents = normalizedEvents.filter(
           (e: any) => getMsgIndexFromEvent(e) === i
         );
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { attributes } = {
           ...(getEventByType(msgEvents, 'send_packet') as any),
         };
@@ -906,9 +360,7 @@ export const getActivities = (data: any, assets: any) => {
             }
 
             if (!symbol) {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const denom = getAttributeValue(e.attributes, 'denom') as any;
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               const amountData = getAttributeValue(e.attributes, 'amount') as any;
 
               if (denom) {
@@ -1049,17 +501,19 @@ export const getRecipient = (data: any, assets: any) => {
   )[0];
 };
 
-export function Transactions({ height = undefined, address = undefined }: { height?: string | number; address?: string }) {
+// ─── Main component ─────────────────────────────────────────────
+
+export function Transactions({ height, address }: TransactionsProps) {
   const searchParams = useSearchParams();
   const [params, setParams] = useState<any>(null);
-  const [searchResults, setSearchResults] = useState<any>(null);
+  const [searchResults, setSearchResults] = useState<SearchResults | null>(null);
   const [refresh, setRefresh] = useState<any>(null);
   const [page, setPage] = useState(1);
   const chains = useChains();
   const assets = useAssets();
 
   useEffect(() => {
-    const _params = getParams(searchParams, size);
+    const _params = getParams(searchParams, PAGE_SIZE);
 
     if (!_.isEqual(_params, params)) {
       setParams(_params);
@@ -1069,114 +523,89 @@ export function Transactions({ height = undefined, address = undefined }: { heig
 
   useEffect(() => {
     const getData = async () => {
-      if (params && toBoolean(refresh) && chains && assets) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const addressType = getInputType(address as any, chains);
+      if (!params || !toBoolean(refresh) || !chains || !assets) return;
 
-        let data: any;
-        let total: any;
+      const addressType = getInputType(address as any, chains);
 
-        if (height) {
-          // query block's transactions via lcd
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const response = await getTransactions({
-            events: `tx.height=${height}`,
-          }) as any;
+      let data: any;
+      let total: any;
+
+      if (height) {
+        const response = await getTransactions({
+          events: `tx.height=${height}`,
+        }) as any;
+
+        if (response) {
+          data = response.data;
+          total = response.total;
+        }
+      } else if (
+        ((address as any)?.length >= 65 || addressType === 'evmAddress') &&
+        !find(
+          address!,
+          _.concat(axelarContracts, getAxelarContractAddresses(chains))
+        )
+      ) {
+        const { deposit_address } = {
+          ...((await searchDepositAddresses({ address })) as any)?.data?.[0],
+        };
+
+        if (deposit_address || addressType === 'evmAddress') {
+          let qAddress = equalsIgnoreCase(address, deposit_address)
+            ? deposit_address
+            : address;
+
+          let response: any;
+
+          switch (addressType) {
+            case 'axelarAddress':
+              response = await getTransactions({
+                events: `message.sender='${qAddress}'`,
+              });
+
+              if (response) {
+                data = response.data;
+              }
+
+              response = await getTransactions({
+                events: `transfer.recipient='${qAddress}'`,
+              });
+
+              if (response) {
+                data = _.concat(toArray(response.data), toArray(data));
+              }
+              break;
+            case 'evmAddress':
+              qAddress = getIcapAddress(qAddress);
+
+              response = await searchTransactions({
+                ...params,
+                address: qAddress,
+                size: PAGE_SIZE,
+              });
+
+              if (response) {
+                data = response.data;
+              }
+              break;
+            default:
+              break;
+          }
+
+          response = await getTransactions({
+            events: `link.depositAddress='${qAddress}'`,
+          });
 
           if (response) {
-            data = response.data;
-            total = response.total;
+            data = _.concat(toArray(response.data), toArray(data));
           }
-        } else if (
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ((address as any)?.length >= 65 || addressType === 'evmAddress') &&
-          !find(
-            address!,
-            _.concat(axelarContracts, getAxelarContractAddresses(chains))
-          )
-        ) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { deposit_address } = {
-            ...((await searchDepositAddresses({ address })) as any)?.data?.[0],
-          };
 
-          if (deposit_address || addressType === 'evmAddress') {
-            let qAddress = equalsIgnoreCase(address, deposit_address)
-              ? deposit_address
-              : address;
-
-            // query address's transactions via lcd
-            let response: any;
-
-            switch (addressType) {
-              case 'axelarAddress':
-                // query message.sender
-                response = await getTransactions({
-                  events: `message.sender='${qAddress}'`,
-                });
-
-                if (response) {
-                  data = response.data;
-                }
-
-                // query transfer.recipient
-                response = await getTransactions({
-                  events: `transfer.recipient='${qAddress}'`,
-                });
-
-                if (response) {
-                  data = _.concat(toArray(response.data), toArray(data));
-                }
-                break;
-              case 'evmAddress':
-                qAddress = getIcapAddress(qAddress);
-
-                // query transactions from indexer
-                response = await searchTransactions({
-                  ...params,
-                  address: qAddress,
-                  size,
-                });
-
-                if (response) {
-                  data = response.data;
-                }
-                break;
-              default:
-                break;
-            }
-
-            // query link.depositAddress
-            response = await getTransactions({
-              events: `link.depositAddress='${qAddress}'`,
-            });
-
-            if (response) {
-              data = _.concat(toArray(response.data), toArray(data));
-            }
-
-            total = data.length;
-          } else {
-            // query transactions from indexer
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const response = await searchTransactions({
-              ...params,
-              address,
-              size,
-            }) as any;
-
-            if (response) {
-              data = response.data;
-              total = response.total;
-            }
-          }
+          total = data.length;
         } else {
-          // query transactions from indexer
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const response = await searchTransactions({
             ...params,
-            address: params.address || address,
-            size,
+            address,
+            size: PAGE_SIZE,
           }) as any;
 
           if (response) {
@@ -1184,25 +613,36 @@ export function Transactions({ height = undefined, address = undefined }: { heig
             total = response.total;
           }
         }
+      } else {
+        const response = await searchTransactions({
+          ...params,
+          address: params.address || address,
+          size: PAGE_SIZE,
+        }) as any;
 
-        setSearchResults({
-          ...(refresh ? undefined : searchResults),
-          [generateKeyByParams(params)]: {
-            data: _.orderBy(
-              _.uniqBy(toArray(data), 'txhash').map((d: any) => ({
-                ...d,
-                type: getType(d),
-                sender: getSender(d, assets),
-                recipient: getRecipient(d, assets),
-              })),
-              ['height', 'timestamp', 'txhash'],
-              ['desc', 'desc', 'asc']
-            ),
-            total,
-          },
-        });
-        setRefresh(false);
+        if (response) {
+          data = response.data;
+          total = response.total;
+        }
       }
+
+      setSearchResults({
+        ...(refresh ? undefined : searchResults),
+        [generateKeyByParams(params)]: {
+          data: _.orderBy(
+            _.uniqBy(toArray(data), 'txhash').map((d: any) => ({
+              ...d,
+              type: getType(d),
+              sender: getSender(d, assets),
+              recipient: getRecipient(d, assets),
+            })),
+            ['height', 'timestamp', 'txhash'],
+            ['desc', 'desc', 'asc']
+          ),
+          total,
+        },
+      });
+      setRefresh(false);
     };
 
     getData();
@@ -1219,208 +659,216 @@ export function Transactions({ height = undefined, address = undefined }: { heig
 
   const { data, total } = { ...searchResults?.[generateKeyByParams(params)] };
 
+  if (!data) {
+    return (
+      <Container
+        className={clsx(
+          height ? styles.containerHeight : address ? styles.containerAddress : styles.containerDefault
+        )}
+      >
+        <Spinner />
+      </Container>
+    );
+  }
+
   return (
     <Container
       className={clsx(
         height ? styles.containerHeight : address ? styles.containerAddress : styles.containerDefault
       )}
     >
-      {!data ? (
-        <Spinner />
-      ) : (
-        <div>
-          <div className={styles.headerRow}>
-            <div className={styles.headerLeft}>
-              <h1 className={styles.headerTitle}>
-                Transactions
-              </h1>
-              {!height && (
-                <p className={styles.headerSubtitle}>
-                  <Number
-                    value={total}
-                    suffix={` result${total > 1 ? 's' : ''}`}
-                  />
-                </p>
-              )}
-            </div>
-            <div className={styles.headerActions}>
-              {!height && <Filters address={address} />}
-              {refresh ? (
-                <Spinner />
-              ) : (
-                <Button
-                  color="default"
-                  circle="true"
-                  onClick={() => setRefresh(true)}
-                >
-                  <MdOutlineRefresh size={20} />
-                </Button>
-              )}
-            </div>
-          </div>
-          {refresh && <Overlay />}
-          <div
-            className={clsx(
-              styles.tableScrollContainer,
-              height || address ? styles.tableScrollContainerNoMargin : styles.tableScrollContainerMargin
+      <div>
+        <div className={styles.headerRow}>
+          <div className={styles.headerLeft}>
+            <h1 className={styles.headerTitle}>
+              Transactions
+            </h1>
+            {!height && (
+              <p className={styles.headerSubtitle}>
+                <Number
+                  value={total}
+                  suffix={` result${(total ?? 0) > 1 ? 's' : ''}`}
+                />
+              </p>
             )}
-          >
-            <table className={styles.table}>
-              <thead className={styles.tableHead}>
-                <tr className={styles.tableHeadRow}>
-                  <th
-                    scope="col"
-                    className={styles.thFirst}
-                  >
-                    Tx Hash
+          </div>
+          <div className={styles.headerActions}>
+            {!height && <Filters address={address} />}
+            {refresh ? (
+              <Spinner />
+            ) : (
+              <Button
+                color="default"
+                circle="true"
+                onClick={() => setRefresh(true)}
+              >
+                <MdOutlineRefresh size={20} />
+              </Button>
+            )}
+          </div>
+        </div>
+        {refresh && <Overlay />}
+        <div
+          className={clsx(
+            styles.tableScrollContainer,
+            height || address ? styles.tableScrollContainerNoMargin : styles.tableScrollContainerMargin
+          )}
+        >
+          <table className={styles.table}>
+            <thead className={styles.tableHead}>
+              <tr className={styles.tableHeadRow}>
+                <th
+                  scope="col"
+                  className={styles.thFirst}
+                >
+                  Tx Hash
+                </th>
+                {!height && (
+                  <th scope="col" className={styles.thDefault}>
+                    Height
                   </th>
+                )}
+                <th scope="col" className={styles.thDefault}>
+                  Type
+                </th>
+                <th scope="col" className={styles.thDefault}>
+                  Status
+                </th>
+                <th scope="col" className={styles.thDefault}>
+                  Sender
+                </th>
+                {!!address && (
+                  <th scope="col" className={styles.thDefault}>
+                    Recipient
+                  </th>
+                )}
+                {!(height || address) && (
+                  <th scope="col" className={styles.thRight}>
+                    Fee
+                  </th>
+                )}
+                <th
+                  scope="col"
+                  className={styles.thLast}
+                >
+                  Time
+                </th>
+              </tr>
+            </thead>
+            <tbody className={styles.tableBody}>
+              {(height
+                ? data.filter(
+                    (d: any, i: number) =>
+                      i >= (page - 1) * SIZE_PER_PAGE && i < page * SIZE_PER_PAGE
+                  )
+                : data
+              ).map((d: any, i: number) => (
+                <tr
+                  key={i}
+                  className={styles.tableRow}
+                >
+                  <td className={styles.tdFirst}>
+                    <div className={styles.cellFlexCol}>
+                      <Copy value={d.txhash}>
+                        <Link
+                          href={`/tx/${d.txhash}`}
+                          target="_blank"
+                          className={styles.txHashLink}
+                        >
+                          {ellipse(d.txhash, 6)}
+                        </Link>
+                      </Copy>
+                    </div>
+                  </td>
                   {!height && (
-                    <th scope="col" className={styles.thDefault}>
-                      Height
-                    </th>
-                  )}
-                  <th scope="col" className={styles.thDefault}>
-                    Type
-                  </th>
-                  <th scope="col" className={styles.thDefault}>
-                    Status
-                  </th>
-                  <th scope="col" className={styles.thDefault}>
-                    Sender
-                  </th>
-                  {!!address && (
-                    <th scope="col" className={styles.thDefault}>
-                      Recipient
-                    </th>
-                  )}
-                  {!(height || address) && (
-                    <th scope="col" className={styles.thRight}>
-                      Fee
-                    </th>
-                  )}
-                  <th
-                    scope="col"
-                    className={styles.thLast}
-                  >
-                    Time
-                  </th>
-                </tr>
-              </thead>
-              <tbody className={styles.tableBody}>
-                {(height
-                  ? data.filter(
-                      (d: any, i: number) =>
-                        i >= (page - 1) * sizePerPage && i < page * sizePerPage
-                    )
-                  : data
-                ).map((d: any, i: number) => (
-                  <tr
-                    key={i}
-                    className={styles.tableRow}
-                  >
-                    <td className={styles.tdFirst}>
-                      <div className={styles.cellFlexCol}>
-                        <Copy value={d.txhash}>
-                          <Link
-                            href={`/tx/${d.txhash}`}
-                            target="_blank"
-                            className={styles.txHashLink}
-                          >
-                            {ellipse(d.txhash, 6)}
-                          </Link>
-                        </Copy>
-                      </div>
-                    </td>
-                    {!height && (
-                      <td className={styles.tdDefault}>
-                        {d.height && (
-                          <Link
-                            href={`/block/${d.height}`}
-                            target="_blank"
-                            className={styles.heightLink}
-                          >
-                            <Number value={d.height} />
-                          </Link>
-                        )}
-                      </td>
-                    )}
                     <td className={styles.tdDefault}>
-                      {d.type && (
-                        <Tag className={styles.typeTag}>
-                          {d.type}
-                        </Tag>
+                      {d.height && (
+                        <Link
+                          href={`/block/${d.height}`}
+                          target="_blank"
+                          className={styles.heightLink}
+                        >
+                          <Number value={d.height} />
+                        </Link>
                       )}
                     </td>
-                    <td className={styles.tdDefault}>
-                      <Tag
-                        className={clsx(
-                          styles.statusTagBase,
-                          d.code
-                            ? styles.statusFailed
-                            : styles.statusSuccess
-                        )}
-                      >
-                        {d.code ? 'Failed' : 'Success'}
+                  )}
+                  <td className={styles.tdDefault}>
+                    {d.type && (
+                      <Tag className={styles.typeTag}>
+                        {d.type}
                       </Tag>
-                    </td>
+                    )}
+                  </td>
+                  <td className={styles.tdDefault}>
+                    <Tag
+                      className={clsx(
+                        styles.statusTagBase,
+                        d.code
+                          ? styles.statusFailed
+                          : styles.statusSuccess
+                      )}
+                    >
+                      {d.code ? 'Failed' : 'Success'}
+                    </Tag>
+                  </td>
+                  <td className={styles.tdDefault}>
+                    <Profile i={i} address={d.sender} />
+                  </td>
+                  {!!address && (
                     <td className={styles.tdDefault}>
-                      <Profile i={i} address={d.sender} />
+                      {!includesSomePatterns(d.type, [
+                        'HeartBeat',
+                        'SubmitSignature',
+                        'SubmitPubKey',
+                      ]) && (
+                        <div className={styles.cellFlexCol}>
+                          {toArray(d.recipient).map((a: any, j: number) => (
+                            <Profile key={j} i={j} address={a} />
+                          ))}
+                        </div>
+                      )}
                     </td>
-                    {!!address && (
-                      <td className={styles.tdDefault}>
-                        {!includesSomePatterns(d.type, [
-                          'HeartBeat',
-                          'SubmitSignature',
-                          'SubmitPubKey',
-                        ]) && (
-                          <div className={styles.cellFlexCol}>
-                            {toArray(d.recipient).map((a: any, j: number) => (
-                              <Profile key={j} i={j} address={a} />
-                            ))}
-                          </div>
-                        )}
-                      </td>
-                    )}
-                    {!(height || address) && (
-                      <td className={styles.tdRight}>
-                        {d.tx?.auth_info?.fee?.amount && (
-                          <Number
-                            value={formatUnits(
-                              d.tx?.auth_info.fee.amount?.[0]?.amount,
-                              6
-                            )}
-                            format="0,0.00000000"
-                            suffix={` ${(getChainData('axelarnet', chains)?.native_token as any)?.symbol}`}
-                            noTooltip={true}
-                            className={styles.feeNumber}
-                          />
-                        )}
-                      </td>
-                    )}
-                    <td className={styles.tdLast}>
-                      <TimeAgo timestamp={d.timestamp} />
+                  )}
+                  {!(height || address) && (
+                    <td className={styles.tdRight}>
+                      {d.tx?.auth_info?.fee?.amount && (
+                        <Number
+                          value={formatUnits(
+                            d.tx?.auth_info.fee.amount?.[0]?.amount,
+                            6
+                          )}
+                          format="0,0.00000000"
+                          suffix={` ${(getChainData('axelarnet', chains)?.native_token as any)?.symbol}`}
+                          noTooltip={true}
+                          className={styles.feeNumber}
+                        />
+                      )}
                     </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {total > (height ? sizePerPage : size) && (
-            <div className={styles.paginationWrapper}>
-              {height ? (
-                <TablePagination
-                  data={data}
-                  value={page}
-                  onChange={(page: any) => setPage(page)}
-                  sizePerPage={sizePerPage}
-                />
-              ) : (
-                <Pagination sizePerPage={size} total={total} />
-              )}
-            </div>
-          )}
+                  )}
+                  <td className={styles.tdLast}>
+                    <TimeAgo timestamp={d.timestamp} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      )}
+        {(total ?? 0) > (height ? SIZE_PER_PAGE : PAGE_SIZE) && (
+          <div className={styles.paginationWrapper}>
+            {height ? (
+              <TablePagination
+                data={data}
+                value={page}
+                onChange={(page: any) => setPage(page)}
+                sizePerPage={SIZE_PER_PAGE}
+              />
+            ) : (
+              <Pagination sizePerPage={PAGE_SIZE} total={total ?? 0} />
+            )}
+          </div>
+        )}
+      </div>
     </Container>
   );
 }

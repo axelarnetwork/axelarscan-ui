@@ -11,10 +11,7 @@ import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 
 import * as styles from './Layout.styles';
-
-interface LayoutProps {
-  children: React.ReactNode;
-}
+import type { LayoutProps } from './Layout.types';
 
 export function Layout({ children }: LayoutProps) {
   const pathname = usePathname();

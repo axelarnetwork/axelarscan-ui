@@ -6,13 +6,7 @@ import {
   extractChartDataPoints,
   getFocusTimeString,
 } from './StatsBarChart.utils';
-
-interface UseChartDataParams {
-  data: unknown;
-  field: string;
-  dateFormat: string;
-  granularity: string;
-}
+import type { UseChartDataParams } from './StatsBarChart.types';
 
 /**
  * Hook to process and manage chart data

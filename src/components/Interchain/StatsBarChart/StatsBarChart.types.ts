@@ -15,3 +15,10 @@ export interface StatsBarChartProps {
   valueFormat?: string;
   valuePrefix?: string;
 }
+
+export interface UseChartDataParams {
+  data: unknown;
+  field: string;
+  dateFormat: string;
+  granularity: string;
+}

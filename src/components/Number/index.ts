@@ -1,1 +1,1 @@
-export { Number } from './Number';
+export { Number } from './Number.component';

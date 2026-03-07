@@ -1,4 +1,5 @@
 // Shared types for Interchain components
+import type { ReadonlyURLSearchParams } from 'next/navigation';
 import type { Chain, Asset } from '@/types';
 
 export interface FilterParams {
@@ -199,6 +200,26 @@ export interface TVLData {
 export interface CustomTooltipProps {
   active?: boolean;
   payload?: Array<{ payload: ChartDataPoint }>;
+}
+
+export interface UseInterchainHooksParams {
+  searchParams: ReadonlyURLSearchParams;
+  params: FilterParams;
+  setParams: (params: FilterParams) => void;
+  types: string[] | string;
+  setTypes: (types: string[] | string) => void;
+  setData: (
+    updater: (prevData: DynamicInterchainData | null) => DynamicInterchainData
+  ) => void;
+  setTimeSpentData: (
+    updater: (prevData: DynamicInterchainData | null) => DynamicInterchainData
+  ) => void;
+  refresh: boolean | null;
+  setRefresh: (refresh: boolean | null) => void;
+  assets: Asset[] | null;
+  stats: Record<string, unknown> | null;
+  itsAssets: Asset[] | null;
+  granularity: 'day' | 'week' | 'month';
 }
 
 // Re-export shared types for backward compatibility

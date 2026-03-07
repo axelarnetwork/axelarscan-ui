@@ -20,7 +20,7 @@ import { XamanWallet } from '@xrpl-wallet-adapter/xaman';
 import { MetaMaskWallet } from '@/lib/wallets/MetaMaskEIP6963Wallet';
 import { useMetaMaskProvider } from '@/lib/wallets/eip6963';
 
-import { Global } from '@/components/Global';
+import { Global } from '@/components/Global.component';
 import WagmiConfigProvider from '@/lib/provider/WagmiConfigProvider';
 import { queryClient, xrplConfig } from '@/lib/provider/wagmi';
 import * as ga from '@/lib/ga';

@@ -1,0 +1,65 @@
+export interface RewardsContractInfo {
+  id: string;
+  title: string;
+  balance?: string | number;
+  epoch_duration?: string | number;
+  rewards_per_epoch?: string | number;
+  last_distribution_epoch?: string | number;
+  address?: string;
+}
+
+export interface RewardsPoolData {
+  balance?: string | number;
+  voting_verifier?: RewardsContractInfo;
+  multisig?: RewardsContractInfo;
+}
+
+export interface Receiver {
+  receiver: string;
+  amount: string | number;
+}
+
+export interface RewardsDistribution {
+  txhash: string;
+  height?: string | number;
+  pool_type?: string;
+  total_receivers?: number;
+  total_amount?: string | number;
+  receivers?: Receiver[];
+  contract_address?: string;
+  multisig_contract_address?: string;
+  created_at?: { ms?: number };
+}
+
+export interface SearchResults {
+  [key: string]: {
+    data: RewardsDistribution[];
+    total: number;
+  };
+}
+
+export interface InfoProps {
+  chain: string;
+  rewardsPool: RewardsPoolData | null;
+  cumulativeRewards: number | null;
+}
+
+export interface AmplifierRewardsProps {
+  chain?: string;
+}
+
+export interface FilterAttribute {
+  label: string;
+  name: string;
+  type?: string;
+  searchable?: boolean;
+  multiple?: boolean;
+  options?: FilterOption[];
+}
+
+export interface FilterOption {
+  value?: string;
+  title: string;
+}
+
+export const PAGE_SIZE = 25;
