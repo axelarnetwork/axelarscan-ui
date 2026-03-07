@@ -1,4 +1,4 @@
-import { useGlobalStore } from '@/components/Global';
+import { useAssets, useChains, useITSAssets } from '@/hooks/useGlobalData';
 import { getAssetData, getITSAssetData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { equalsIgnoreCase } from '@/lib/string';
@@ -19,7 +19,9 @@ import {
 } from './Tops.utils';
 
 export function Tops({ data, types, params }: TopsProps) {
-  const { chains, assets, itsAssets } = useGlobalStore();
+  const chains = useChains();
+  const assets = useAssets();
+  const itsAssets = useITSAssets();
 
   if (!data) return null;
 

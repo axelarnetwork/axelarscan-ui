@@ -3,7 +3,7 @@ import { MdKeyboardArrowRight, MdOutlineTimer } from 'react-icons/md';
 import { RiTimerFlashLine } from 'react-icons/ri';
 
 import { Copy } from '@/components/Copy';
-import { useGlobalStore } from '@/components/Global';
+import { useChains, useAssets } from '@/hooks/useGlobalData';
 import { getEvent } from '@/components/GMPs';
 import { ChainProfile } from '@/components/Profile';
 import { Tag } from '@/components/Tag';
@@ -37,7 +37,8 @@ export function ContractCallData({
   executeData,
   isMultihop,
 }: ContractCallDataProps) {
-  const { chains, assets } = useGlobalStore();
+  const chains = useChains();
+  const assets = useAssets();
 
   if (!data) {
     return null;
@@ -70,8 +71,6 @@ export function ContractCallData({
 
     if (typeof destinationKeyCandidate === 'string') {
       lookupKey = destinationKeyCandidate;
-    } else if (typeof destinationKeyCandidate === 'number') {
-      lookupKey = destinationKeyCandidate.toString();
     }
 
     if (lookupKey) {

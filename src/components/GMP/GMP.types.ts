@@ -1,23 +1,12 @@
 import type { providers } from 'ethers';
+import type { Chain } from '@/types';
 
 export type ChainType = 'cosmos' | 'evm' | 'vm';
 
-export interface ExplorerPaths {
-  url?: string;
-  block_path?: string;
-  transaction_path?: string;
-  [key: string]: string | undefined;
-}
-
-export interface ChainMetadata {
-  id?: string;
-  name?: string;
-  chain_id?: number;
-  chain_name?: string;
-  deprecated?: boolean;
-  explorer?: ExplorerPaths;
-  [key: string]: unknown;
-}
+/**
+ * @deprecated Use Chain from @/types instead. Kept as alias for compatibility.
+ */
+export type ChainMetadata = Chain;
 
 export interface AssetAddressEntry {
   symbol?: string;

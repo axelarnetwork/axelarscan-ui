@@ -3,7 +3,8 @@
 import _ from 'lodash';
 import { usePathname } from 'next/navigation';
 
-import { useGlobalStore } from '@/components/Global';
+import type { Chain } from '@/types';
+import { useAssets, useChains, useITSAssets, useTVL } from '@/hooks/useGlobalData';
 import { Number } from '@/components/Number';
 import { toNumber } from '@/lib/number';
 import { toArray } from '@/lib/parser';
@@ -13,7 +14,10 @@ import { processContracts, processTVLData } from './Summary.utils';
 
 export function Summary({ data, params }: SummaryProps) {
   const pathname = usePathname();
-  const globalStore = useGlobalStore();
+  const chains = useChains();
+  const assets = useAssets();
+  const itsAssets = useITSAssets();
+  const tvl = useTVL();
 
   if (!data) {
     return null;
@@ -28,16 +32,17 @@ export function Summary({ data, params }: SummaryProps) {
 
   const contracts = processContracts(data);
 
-  const chains = params?.contractAddress
+  const filteredChains = params?.contractAddress
     ? _.uniq(contracts.flatMap(d => d.chains))
-    : toArray(globalStore.chains).filter(
+    : (toArray(chains) as Chain[]).filter(
         d => !d.deprecated && (!d.maintainer_id || d.gateway?.address)
       );
 
   const tvlData = processTVLData(
-    toArray(globalStore.tvl?.data),
-    globalStore.assets,
-    globalStore.itsAssets
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    toArray((tvl as any)?.data),
+    assets,
+    itsAssets
   );
 
   return (
@@ -203,7 +208,7 @@ export function Summary({ data, params }: SummaryProps) {
           <dd className={summaryStyles.stat.breakdown.container}>
             <Number
               value={
-                chains.filter(
+                (filteredChains as Chain[]).filter(
                   d => !d.deprecated && (!d.maintainer_id || !d.no_inflation)
                 ).length
               }

@@ -388,7 +388,9 @@ async function handleCosmosAddGas({
       gas: '300000',
       amount: [
         {
-          denom: String(sourceChainData?.native_token?.denom ?? 'uaxl'),
+          denom: String(
+            (sourceChainData as { native_token?: { denom?: string } })?.native_token?.denom ?? 'uaxl'
+          ),
           amount: '30000',
         },
       ],

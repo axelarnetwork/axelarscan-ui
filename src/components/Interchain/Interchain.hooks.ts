@@ -18,6 +18,7 @@ import {
   transfersTopUsers,
   transfersTotalVolume,
 } from '@/lib/api/token-transfer';
+import type { Asset } from '@/types';
 import { ENVIRONMENT, getAssetData, getITSAssetData } from '@/lib/config';
 import { toNumber } from '@/lib/number';
 import { generateKeyByParams, getParams } from '@/lib/operator';
@@ -43,9 +44,9 @@ interface UseInterchainHooksParams {
   ) => void;
   refresh: boolean | null;
   setRefresh: (refresh: boolean | null) => void;
-  assets: unknown;
+  assets: Asset[] | null;
   stats: Record<string, unknown> | null;
-  itsAssets: unknown;
+  itsAssets: Asset[] | null;
   granularity: 'day' | 'week' | 'month';
 }
 
@@ -72,7 +73,7 @@ function checkIfSearchingITSOnTransfers(
   metricName: string,
   types: string[] | string,
   currentParams: FilterParams,
-  itsAssets: unknown
+  itsAssets: Asset[] | null
 ): boolean {
   return (
     types.includes('transfers') &&
@@ -87,7 +88,7 @@ function checkIfSearchingITSOnTransfers(
 function checkIfHasITS(
   types: string[] | string,
   currentParams: FilterParams,
-  assets: unknown
+  assets: Asset[] | null
 ): boolean {
   return (
     types.includes('gmp') &&
@@ -272,13 +273,15 @@ async function processAirdropData(
     return null;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const airdropResponse = await transfersChart({
     ...currentParams,
     chain,
     fromTime: airdropFromTime,
     toTime: airdropToTime,
     granularity,
-  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }) as any;
 
   if (toArray(airdropResponse?.data).length === 0) {
     return null;
@@ -335,10 +338,12 @@ async function fetchTransfersChart(
     return [metricName, false];
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let chartValue = await transfersChart({
     ...currentParams,
     granularity,
-  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  }) as any;
 
   if (!chartValue?.data || granularity !== 'month') {
     return [metricName, chartValue];
@@ -446,8 +451,8 @@ async function fetchMetricData(
   currentParams: FilterParams,
   types: string[] | string,
   stats: Record<string, unknown> | null,
-  assets: unknown,
-  itsAssets: unknown,
+  assets: Asset[] | null,
+  itsAssets: Asset[] | null,
   granularity: 'day' | 'week' | 'month'
 ): Promise<[string, unknown] | [string, unknown][]> {
   const isSearchITSOnTransfers = checkIfSearchingITSOnTransfers(
@@ -554,7 +559,7 @@ export function useInterchainData(params: UseInterchainHooksParams) {
 
       const fetchedData = Object.fromEntries(
         await Promise.all(
-          (toArray(INTERCHAIN_METRICS) as string[]).map(async metricName => {
+          (toArray(INTERCHAIN_METRICS) as unknown as string[]).map(async metricName => {
             const result = await fetchMetricData(
               metricName,
               currentParams,
@@ -576,7 +581,7 @@ export function useInterchainData(params: UseInterchainHooksParams) {
 
       setData(prevData => ({
         ...prevData,
-        [generateKeyByParams(currentParams)]: fetchedData,
+        [generateKeyByParams(currentParams)]: fetchedData as Record<string, unknown>,
       }));
       setRefresh(false);
     };
@@ -622,7 +627,7 @@ export function useInterchainTimeSpent(params: UseInterchainHooksParams) {
 
       setTimeSpentData(prevData => ({
         ...prevData,
-        [generateKeyByParams(currentParams)]: timeSpentData,
+        [generateKeyByParams(currentParams)]: timeSpentData as Record<string, unknown>,
       }));
     };
 

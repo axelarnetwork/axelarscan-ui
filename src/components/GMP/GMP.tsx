@@ -1,6 +1,6 @@
 'use client';
 
-import { useGlobalStore } from '@/components/Global';
+import { useChains, useAssets } from '@/hooks/useGlobalData';
 import { find } from '@/lib/string';
 
 import { Details } from './Details/Details';
@@ -15,7 +15,8 @@ import { GMPContainer } from './GMPContainer';
 import { Info } from './Info/Info';
 
 export function GMP({ tx, lite }: GMPProps) {
-  const { chains, assets } = useGlobalStore();
+  const chains = useChains();
+  const assets = useAssets();
   const { data, refresh } = useGMPMessageData(tx);
   const estimatedTimeSpent = useEstimatedTimeSpent(data);
   const executeData = useExecuteData(data, chains, assets);

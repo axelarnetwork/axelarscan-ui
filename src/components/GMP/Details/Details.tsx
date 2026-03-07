@@ -5,7 +5,7 @@ import React from 'react';
 
 import { Copy } from '@/components/Copy';
 import { ExplorerLink } from '@/components/ExplorerLink';
-import { useGlobalStore } from '@/components/Global';
+import { useChains } from '@/hooks/useGlobalData';
 import { Number as NumberDisplay } from '@/components/Number';
 import { ChainProfile, Profile } from '@/components/Profile';
 import { Tag } from '@/components/Tag';
@@ -35,7 +35,7 @@ const getStepStatusClass = (status?: string): string => {
 };
 
 export function Details({ data }: DetailsProps) {
-  const { chains } = useGlobalStore();
+  const chains = useChains();
 
   const { call, gas_paid, approved, refunded, fees, gas } = { ...data };
 
@@ -208,7 +208,7 @@ export function Details({ data }: DetailsProps) {
                     axelarChainData?.explorer?.url
                   ) {
                     stepTX = axelarTransactionHash;
-                    stepURL = `${axelarChainData.explorer.url}${axelarChainData.explorer.transaction_path.replace('{tx}', axelarTransactionHash)}`;
+                    stepURL = `${axelarChainData.explorer.url}${axelarChainData.explorer.transaction_path!.replace('{tx}', axelarTransactionHash)}`;
                   }
 
                   if (
@@ -223,7 +223,7 @@ export function Details({ data }: DetailsProps) {
                       >
                         <Copy size={16} value={axelarTransactionHash}>
                           <Link
-                            href={`${axelarChainData.explorer.url}${axelarChainData.explorer.transaction_path.replace('{tx}', axelarTransactionHash)}`}
+                            href={`${axelarChainData.explorer.url}${axelarChainData.explorer.transaction_path!.replace('{tx}', axelarTransactionHash)}`}
                             target="_blank"
                             className={detailsStyles.link}
                           >

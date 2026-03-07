@@ -1,5 +1,6 @@
 import _ from 'lodash';
 
+import type { Chain } from '@/types';
 import { getChainData } from '@/lib/config';
 import { toNumber } from '@/lib/number';
 import { toArray } from '@/lib/parser';
@@ -98,7 +99,7 @@ export function processChartData(data: InterchainData): ChartDataPoint[] {
 
 export function groupData(
   data: GroupDataItem[],
-  chains: string[],
+  chains: Chain[] | null,
   by = 'key'
 ): GroupDataItem[] {
   return Object.entries(_.groupBy(toArray(data) as GroupDataItem[], by)).map(
@@ -106,7 +107,7 @@ export function groupData(
       key: (v[0] as GroupDataItem)?.key || k,
       num_txs: _.sumBy(v, 'num_txs'),
       volume: _.sumBy(v, 'volume'),
-      chain: _.orderBy(
+      chain: (_.orderBy(
         toArray(
           _.uniq(
             toArray(
@@ -120,14 +121,14 @@ export function groupData(
         ),
         ['i'],
         ['asc']
-      ).map(d => d.id),
+      ) as Chain[]).map(d => d.id),
     })
   );
 }
 
 export function getChainPairs(
   data: InterchainData,
-  chains: string[]
+  chains: Chain[] | null
 ): GroupDataItem[] {
   const { GMPStatsByChains, transfersStats } = { ...data };
 

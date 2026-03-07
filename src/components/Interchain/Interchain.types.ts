@@ -1,4 +1,5 @@
 // Shared types for Interchain components
+import type { Chain, Asset } from '@/types';
 
 export interface FilterParams {
   from?: number;
@@ -200,22 +201,7 @@ export interface CustomTooltipProps {
   payload?: Array<{ payload: ChartDataPoint }>;
 }
 
-// Data type definitions for config functions
-export interface ChainData {
-  id: string;
-  name: string;
-  deprecated?: boolean;
-  i?: number;
-  [key: string]: unknown;
-}
-
-export interface AssetData {
-  id: string;
-  symbol: string;
-  [key: string]: unknown;
-}
-
-export interface ITSAssetData {
-  symbol: string;
-  [key: string]: unknown;
-}
+// Re-export shared types for backward compatibility
+export type ChainData = Chain;
+export type AssetData = Asset;
+export type ITSAssetData = Asset;

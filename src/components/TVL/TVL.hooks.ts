@@ -4,14 +4,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { getAssetData, getChainData, getITSAssetData } from '@/lib/config';
 import { isNumber, toNumber } from '@/lib/number';
 import { toArray } from '@/lib/parser';
+import type { Chain, Asset } from '@/types';
 import {
-  AssetData,
-  ChainData,
   ChainWithTotalValue,
   ContractData,
   DenomData,
   GlobalStore,
-  ITSAssetData,
   NativeChain,
   ProcessedTVLData,
   RawTVLData,
@@ -23,15 +21,15 @@ import {
  */
 function getAssetDataForTVL(
   rawAsset: RawTVLData,
-  assets: AssetData[],
-  itsAssets: ITSAssetData[]
-): AssetData | undefined {
+  assets: Asset[],
+  itsAssets: Asset[]
+): Asset | undefined {
   const { asset, assetType, total_on_contracts, total_on_tokens, tvl } =
     rawAsset;
 
   // Handle ITS assets
   if (assetType === 'its') {
-    return getITSAssetData(asset, itsAssets) as AssetData | undefined;
+    return getITSAssetData(asset, itsAssets) as Asset | undefined;
   }
 
   // Try to get regular asset data
@@ -51,7 +49,7 @@ function getAssetDataForTVL(
     (tvlData: TVLPerChain) => tvlData.contract_data?.is_custom
   )?.contract_data;
 
-  return { ...customContractData } as AssetData;
+  return { ...customContractData } as Asset;
 }
 
 /**
@@ -59,7 +57,7 @@ function getAssetDataForTVL(
  */
 function resolveAssetPrice(
   rawPrice: number | undefined,
-  assetData: AssetData | undefined
+  assetData: Asset | undefined
 ): number {
   // Use provided price if valid
   if (isNumber(rawPrice)) {
@@ -80,7 +78,7 @@ function resolveAssetPrice(
  */
 function findNativeChain(
   tvl: Record<string, TVLPerChain> | undefined,
-  chains: ChainData[]
+  chains: Chain[]
 ): NativeChain | undefined {
   if (!tvl) {
     return undefined;
@@ -110,7 +108,7 @@ function findNativeChain(
   const nativeChains = nativeChainEntries.map(
     ([chainId, tvlData]: [string, TVLPerChain]): NativeChain => ({
       chain: chainId,
-      chainData: getChainData(chainId, chains) as ChainData,
+      chainData: getChainData(chainId, chains) as Chain,
       ...tvlData,
     })
   );
@@ -213,8 +211,8 @@ function isNotLockUnlockITS(asset: ProcessedTVLData): boolean {
 function calculateAssetValueOnChain(
   asset: ProcessedTVLData,
   chainId: string,
-  assets: AssetData[] | undefined,
-  itsAssets: ITSAssetData[] | undefined
+  assets: Asset[] | undefined,
+  itsAssets: Asset[] | undefined
 ): number {
   const chainTVL = asset.tvl?.[chainId];
   if (!chainTVL) {
@@ -239,7 +237,7 @@ function calculateAssetValueOnChain(
 
   // If no price, try to fetch it
   if (!assetPrice) {
-    const assetData: AssetData | ITSAssetData | undefined =
+    const assetData: Asset | undefined =
       asset.assetType === 'its'
         ? getITSAssetData(asset.asset, itsAssets)
         : getAssetData(asset.asset, assets);
@@ -254,7 +252,7 @@ function calculateAssetValueOnChain(
  * Checks if a chain should be included in the TVL table
  */
 function shouldIncludeChain(
-  chain: ChainData,
+  chain: Chain,
   filteredData: ProcessedTVLData[]
 ): boolean {
   // Exclude chains marked as no_inflation or no_tvl
@@ -279,9 +277,9 @@ function shouldIncludeChain(
 export function useChainsTVL(
   loading: boolean,
   filteredData: ProcessedTVLData[],
-  chains: ChainData[] | undefined,
-  assets: AssetData[] | undefined,
-  itsAssets: ITSAssetData[] | undefined
+  chains: Chain[] | undefined,
+  assets: Asset[] | undefined,
+  itsAssets: Asset[] | undefined
 ): ChainWithTotalValue[] | null {
   return useMemo(() => {
     if (loading || !chains) {
@@ -289,13 +287,13 @@ export function useChainsTVL(
     }
 
     // Filter chains to include
-    const includedChains = chains.filter((chain: ChainData) =>
+    const includedChains = chains.filter((chain: Chain) =>
       shouldIncludeChain(chain, filteredData)
     );
 
     // Calculate total value for each chain
     const chainsWithValues = includedChains.map(
-      (chain: ChainData): ChainWithTotalValue => {
+      (chain: Chain): ChainWithTotalValue => {
         // Calculate total value across all assets on this chain
         const assetsWithValues = filteredData.map((asset: ProcessedTVLData) => {
           const value = calculateAssetValueOnChain(

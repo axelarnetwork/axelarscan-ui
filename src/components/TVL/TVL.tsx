@@ -3,25 +3,29 @@
 import { useState } from 'react';
 
 import { Container } from '@/components/Container';
-import { useGlobalStore } from '@/components/Global';
+import { useChains, useAssets, useITSAssets, useTVL as useTVLStore } from '@/hooks/useGlobalData';
 import { Spinner } from '@/components/Spinner';
 import { toArray } from '@/lib/parser';
 import { AssetRow } from './AssetRow';
 import { useChainsTVL, useTVLData } from './TVL.hooks';
 import { tvlStyles } from './TVL.styles';
-import { AssetData, GlobalStore, ProcessedTVLData } from './TVL.types';
+import { Asset, GlobalStore, ProcessedTVLData } from './TVL.types';
 import { TVLTableHeader } from './TVLTableHeader';
 
 export function TVL() {
   const [includeITS, setIncludeITS] = useState<boolean>(true);
-  const globalStore: GlobalStore = useGlobalStore();
-  const { chains, assets, itsAssets } = globalStore;
+  const chains = useChains();
+  const assets = useAssets();
+  const itsAssets = useITSAssets();
+  const tvl = useTVLStore();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const globalStore: GlobalStore = { chains, assets, itsAssets, tvl: tvl as any };
 
   const processedData = useTVLData(globalStore);
 
   const hasData = processedData && assets;
   const minAssetCount = assets
-    ? assets.filter((asset: AssetData) => !asset.no_tvl).length - 3
+    ? assets.filter((asset: Asset) => !asset.no_tvl).length - 3
     : 0;
   const hasEnoughAssets =
     processedData && processedData.length >= minAssetCount;

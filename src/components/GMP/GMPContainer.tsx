@@ -19,7 +19,7 @@ export function GMPContainer({ data, children }: GMPContainerProps) {
       {!data ? (
         <Spinner />
       ) : data.status === 'errorOnGetData' ? (
-        <Response data={data} />
+        <Response data={data as { code?: number | string; message?: string }} />
       ) : (
         <div className={gmpContainerStyles.content}>{children}</div>
       )}

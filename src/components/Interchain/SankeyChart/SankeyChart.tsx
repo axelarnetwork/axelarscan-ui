@@ -5,7 +5,7 @@ import _ from 'lodash';
 import { useTheme } from 'next-themes';
 import { useCallback } from 'react';
 
-import { useGlobalStore } from '@/components/Global';
+import { useChains } from '@/hooks/useGlobalData';
 import { Number } from '@/components/Number';
 import { Spinner } from '@/components/Spinner';
 import { getChainData } from '@/lib/config';
@@ -36,7 +36,7 @@ export function SankeyChart({
   className = '',
 }: SankeyChartProps) {
   const { resolvedTheme } = useTheme();
-  const { chains } = useGlobalStore();
+  const chains = useChains();
   const { hoveredKey, handleLinkHover, handleMouseLeave } =
     useSankeyChartHover();
 
@@ -162,7 +162,7 @@ export function SankeyChart({
                     },
                   },
                 }}
-                colors={d => d.nodeColor}
+                colors={d => d.nodeColor ?? '#888'}
                 nodeOpacity={1}
                 nodeHoverOpacity={1}
                 nodeHoverOthersOpacity={0.35}

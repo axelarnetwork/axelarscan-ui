@@ -24,7 +24,7 @@ export function GMPTimeSpent({
     <div className={gmpTimeSpentStyles.container}>
       <div className={gmpTimeSpentStyles.info.container}>
         <ChainProfile
-          value={key}
+          value={key as string}
           width={20}
           height={20}
           className="h-5 gap-x-1"

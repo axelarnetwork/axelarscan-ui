@@ -2,7 +2,7 @@ import clsx from 'clsx';
 import moment from 'moment';
 import { RxCaretDown, RxCaretUp } from 'react-icons/rx';
 
-import { useGlobalStore } from '@/components/Global';
+import { useChains } from '@/hooks/useGlobalData';
 import { ContractCallData } from '@/components/GMP/ContractCallData/ContractCallData';
 import { getEvent } from '@/components/GMPs';
 import { AssetProfile, Profile } from '@/components/Profile';
@@ -35,7 +35,7 @@ export function Info({
   lite,
 }: InfoProps) {
   const { seeMore, toggleSeeMore } = useInfoState();
-  const { chains } = useGlobalStore();
+  const chains = useChains();
 
   const {
     call,

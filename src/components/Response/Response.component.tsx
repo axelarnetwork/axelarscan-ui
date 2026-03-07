@@ -1,0 +1,17 @@
+import { responseStyles } from './Response.styles';
+
+interface ResponseData {
+  code?: number | string;
+  message?: string;
+}
+
+export function Response({ data }: { data: ResponseData }) {
+  const { code, message } = { ...data };
+
+  return (
+    <div className={responseStyles.root}>
+      <span className={responseStyles.code}>{code}</span>
+      <span className={responseStyles.message}>{message}</span>
+    </div>
+  );
+}

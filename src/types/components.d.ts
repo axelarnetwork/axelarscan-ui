@@ -124,10 +124,4 @@ declare module '@/components/Tooltip' {
   export function Tooltip(props: TooltipProps): JSX.Element;
 }
 
-declare module '@/components/GMPs' {
-  import type { GMPMessage } from '@/components/GMP/GMP.types';
 
-  export function checkNeedMoreGasFromError(error: unknown): boolean;
-  export function customData<T = GMPMessage | null>(value: unknown): Promise<T>;
-  export function getEvent(data: GMPMessage): string;
-}

@@ -169,6 +169,7 @@ export const getIBCDenomBase64 = <T>(ibcDenom: T): string | T => {
 interface ChainData {
   id: string;
   prefix_address?: string;
+  [key: string]: unknown;
 }
 
 /**
@@ -512,10 +513,12 @@ export const split = (string: unknown, options?: ParserOptions): string[] => {
  * toArray(null) // []
  * ```
  */
-export const toArray = <T = unknown>(
-  x: T | T[],
+export function toArray<T>(x: T | T[] | null | undefined): NonNullable<T>[];
+export function toArray<T>(x: T | T[] | null | undefined, options: ParserOptions): (NonNullable<T> | string)[];
+export function toArray<T>(
+  x: T | T[] | null | undefined,
   options?: ParserOptions
-): (T | string)[] => {
+): (T | string)[] {
   const normalizedOptions = getOptions(options);
   const { toCase: caseFormat, filterBlank } = normalizedOptions;
 
@@ -535,7 +538,7 @@ export const toArray = <T = unknown>(
 
   // For non-array values, use split
   return split(x, options);
-};
+}
 
 interface ErrorData {
   message?: string;

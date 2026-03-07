@@ -4,7 +4,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 import { Container } from '@/components/Container';
-import { useGlobalStore } from '@/components/Global';
+import { useAssets, useITSAssets, useStats } from '@/hooks/useGlobalData';
 import { Overlay } from '@/components/Overlay';
 import { Spinner } from '@/components/Spinner';
 import { generateKeyByParams, getParams } from '@/lib/operator';
@@ -41,8 +41,9 @@ export function Interchain() {
   const [timeSpentData, setTimeSpentData] =
     useState<DynamicInterchainData | null>(null);
   const [refresh, setRefresh] = useState<boolean | null>(null);
-  const globalStore = useGlobalStore();
-  const { assets, stats, itsAssets } = { ...globalStore };
+  const assets = useAssets();
+  const stats = useStats();
+  const itsAssets = useITSAssets();
 
   const { contractMethod, contractAddress, fromTime, toTime } = {
     ...params,

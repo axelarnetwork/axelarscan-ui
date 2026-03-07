@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import { useMemo } from 'react';
 
-import { useGlobalStore } from '@/components/Global';
+import { useChains } from '@/hooks/useGlobalData';
 import { CosmosWallet } from '@/components/Wallet/CosmosWallet';
 import { getChainData } from '@/lib/config';
 
@@ -11,7 +11,7 @@ import { useApproveButton } from './ApproveButton.hooks';
 import { ApproveButtonProps } from './ApproveButton.types';
 
 export function ApproveButton(props: ApproveButtonProps) {
-  const { chains } = useGlobalStore();
+  const chains = useChains();
   const { data, processing, setProcessing, setResponse } = props;
   const axelarChainId = useMemo(() => {
     const chainData = getChainData('axelarnet', chains);

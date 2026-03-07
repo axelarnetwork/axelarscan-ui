@@ -1,3 +1,7 @@
+import type { Chain, Asset } from '@/types';
+
+export type { Chain, Asset };
+
 export interface ContractData {
   is_custom?: boolean;
   token_manager_type?: string;
@@ -28,49 +32,13 @@ export interface TVLPerChain {
   token_manager_type?: string;
 }
 
-export interface AssetData {
-  symbol: string;
-  price?: number;
-  type?: string;
-  no_tvl?: boolean;
-  is_custom?: boolean;
-  image?: string;
-  addresses?: Record<string, unknown>;
-  chains?: Record<string, unknown>;
-}
-
-export interface ITSAssetData {
-  id?: string;
-  symbol: string;
-  price?: number;
-  type?: string;
-  image?: string;
-  addresses?: string[];
-  address?: string;
-}
-
-export interface ChainData {
-  id: string;
-  name: string;
-  image: string;
-  chain_type?: string;
-  chain_id?: string;
-  chain_name?: string;
-  maintainer_id?: string;
-  aliases?: string[];
-  prefix_address?: string;
-  prefix_chain_ids?: string[];
-  no_inflation?: boolean;
-  no_tvl?: boolean;
-}
-
-export interface ChainWithTotalValue extends ChainData {
+export interface ChainWithTotalValue extends Chain {
   total_value: number;
 }
 
 export interface NativeChain {
   chain: string;
-  chainData: ChainData;
+  chainData: Chain;
   url?: string;
   contract_data?: ContractData;
   denom_data?: DenomData;
@@ -91,7 +59,7 @@ export interface RawTVLData {
 export interface ProcessedTVLData extends RawTVLData {
   i: number;
   j: number;
-  assetData?: AssetData;
+  assetData?: Asset;
   value_on_evm: number;
   value_on_cosmos: number;
   value: number;
@@ -99,9 +67,9 @@ export interface ProcessedTVLData extends RawTVLData {
 }
 
 export interface GlobalStore {
-  chains: ChainData[] | null;
-  assets: AssetData[] | null;
-  itsAssets: ITSAssetData[] | null;
+  chains: Chain[] | null;
+  assets: Asset[] | null;
+  itsAssets: Asset[] | null;
   tvl: {
     data: RawTVLData[];
   } | null;

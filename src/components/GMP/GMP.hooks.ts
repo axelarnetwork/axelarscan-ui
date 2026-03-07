@@ -23,6 +23,7 @@ import { getParams } from '@/lib/operator';
 import { toArray, toCase } from '@/lib/parser';
 import { equalsIgnoreCase } from '@/lib/string';
 
+import type { Asset } from '@/types';
 import {
   AssetDataEntry,
   ChainMetadata,
@@ -35,7 +36,7 @@ import { normalizeRecoveryBytes } from './GMP.recovery.utils';
 
 type ChainCollection = ChainMetadata[] | null | undefined;
 
-type AssetCollection = AssetDataEntry[] | null | undefined;
+type AssetCollection = Asset[] | null | undefined;
 
 interface SearchGMPResult {
   data?: GMPMessage[];
@@ -46,7 +47,7 @@ const REFRESH_INTERVAL_MS = 0.5 * 60 * 1000;
 async function parseCustomData(
   value: unknown
 ): Promise<GMPMessage | undefined> {
-  const parsed = await customData(value);
+  const parsed = await customData(value as Record<string, unknown>);
   return isGMPMessage(parsed) ? parsed : undefined;
 }
 
@@ -72,7 +73,8 @@ export function useGMPMessageData(tx?: string): {
       typeof params.commandId === 'string' ? params.commandId : undefined;
 
     if (commandId) {
-      const response = await searchGMP({ commandId });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const response = await searchGMP({ commandId }) as any;
       const parsed = await parseCustomData(response?.data?.[0]);
 
       if (parsed) {
@@ -98,9 +100,11 @@ export function useGMPMessageData(tx?: string): {
       return undefined;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response = await searchGMP(
       tx.includes('-') ? { messageId: tx } : { txHash: tx }
-    );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ) as any;
     const parsedMessage = await parseCustomData(response?.data?.[0]);
 
     const isSecondHopOfInterchainTransfer = (message: GMPMessage): boolean => {
@@ -143,12 +147,14 @@ export function useGMPMessageData(tx?: string): {
 
     if (parsedMessage.callback?.transactionHash) {
       const callbackTxHash = parsedMessage.callback.transactionHash;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data } = {
         ...(await searchGMP({
           txHash: callbackTxHash,
           txIndex: parsedMessage.callback.transactionIndex,
           txLogIndex: parsedMessage.callback.logIndex,
-        })),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        }) as any),
       };
 
       parsedMessage.callbackData = toArray(data).find(callbackEntry =>
@@ -159,10 +165,12 @@ export function useGMPMessageData(tx?: string): {
       );
     } else if (parsedMessage.executed?.transactionHash) {
       const executedTxHash = parsedMessage.executed.transactionHash;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data } = {
         ...(await searchGMP({
           txHash: executedTxHash,
-        })),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        }) as any),
       };
 
       parsedMessage.callbackData = toArray(data).find(callbackEntry =>
@@ -173,7 +181,8 @@ export function useGMPMessageData(tx?: string): {
       );
     } else if (parsedMessage.callback?.messageIdHash) {
       const messageId = `${parsedMessage.callback.messageIdHash}-${parsedMessage.callback.messageIdIndex}`;
-      const { data } = { ...(await searchGMP({ messageId })) };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data } = { ...(await searchGMP({ messageId }) as any) };
 
       parsedMessage.callbackData = toArray(data).find(callbackEntry =>
         equalsIgnoreCase(callbackEntry.call?.returnValues?.messageId, messageId)
@@ -187,10 +196,12 @@ export function useGMPMessageData(tx?: string): {
       parsedMessage.executed.childMessageIDs.length > 0
     ) {
       const childMessageId = parsedMessage.executed.childMessageIDs[0];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data } = {
         ...(await searchGMP({
           messageId: childMessageId,
-        })),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        }) as any),
       };
 
       parsedMessage.callbackData = toArray(data).find(callbackEntry =>
@@ -223,7 +234,8 @@ export function useGMPMessageData(tx?: string): {
           : null;
 
       if (callbackSearchParams) {
-        const { data } = { ...(await searchGMP(callbackSearchParams)) };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data } = { ...(await searchGMP(callbackSearchParams) as any) };
 
         parsedMessage.originData = toArray(data).find(originEntry => {
           const callTransactionHash = parsedMessage.call?.transactionHash;
@@ -273,6 +285,7 @@ export function useGMPMessageData(tx?: string): {
           (typeof totalEvents === 'number' && offset < totalEvents)) &&
         retryCount < 10
       ) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const settlementResponse = {
           ...(await searchGMP({
             event: 'SquidCoralSettlementFilled',
@@ -281,7 +294,8 @@ export function useGMPMessageData(tx?: string): {
             ),
             from: offset,
             size,
-          })),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          }) as any),
         };
 
         if (isNumber(settlementResponse.total)) {
@@ -325,6 +339,7 @@ export function useGMPMessageData(tx?: string): {
           (typeof totalEvents === 'number' && offset < totalEvents)) &&
         retryCount < 10
       ) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const settlementResponse = {
           ...(await searchGMP({
             event: 'SquidCoralSettlementForwarded',
@@ -333,7 +348,8 @@ export function useGMPMessageData(tx?: string): {
             ),
             from: offset,
             size,
-          })),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          }) as any),
         };
 
         if (isNumber(settlementResponse.total)) {

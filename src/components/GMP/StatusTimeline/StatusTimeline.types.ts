@@ -2,7 +2,7 @@ import { ChainTimeEstimate, ChainMetadata, GMPMessage } from '../GMP.types';
 
 export interface StatusTimelineProps {
   timeline: GMPMessage[];
-  chains: ChainMetadata[] | undefined;
+  chains: ChainMetadata[] | null | undefined;
   estimatedTimeSpent?: ChainTimeEstimate | null;
   isMultihop: boolean;
   rootCall: GMPMessage['call'];

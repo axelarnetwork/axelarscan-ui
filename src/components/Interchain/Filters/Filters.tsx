@@ -5,7 +5,7 @@ import { Fragment } from 'react';
 import { MdClose, MdOutlineFilterList } from 'react-icons/md';
 
 import { Button } from '@/components/Button';
-import { useGlobalStore } from '@/components/Global';
+import { useAssets, useChains, useITSAssets } from '@/hooks/useGlobalData';
 import { isFiltered } from '@/lib/operator';
 import { FilterInput } from './FilterInput';
 import { FilterSelectInput } from './FilterSelectInput';
@@ -14,7 +14,9 @@ import { filtersStyles } from './Filters.styles';
 import { getFilterAttributes } from './Filters.utils';
 
 export function Filters() {
-  const { chains, assets, itsAssets } = useGlobalStore();
+  const chains = useChains();
+  const assets = useAssets();
+  const itsAssets = useITSAssets();
   const {
     open,
     setOpen,

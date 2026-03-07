@@ -11,9 +11,9 @@ import {
 
 export function getFilterAttributes(
   params: FilterParams,
-  chains: ChainData[],
-  assets: AssetData[],
-  itsAssets: ITSAssetData[]
+  chains: ChainData[] | null,
+  assets: AssetData[] | null,
+  itsAssets: ITSAssetData[] | null
 ): FilterAttribute[] {
   return [
     {

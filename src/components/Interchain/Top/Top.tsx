@@ -1,4 +1,4 @@
-import { useGlobalStore } from '@/components/Global';
+import { useChains } from '@/hooks/useGlobalData';
 import { Spinner } from '@/components/Spinner';
 import { getChainData } from '@/lib/config';
 import { split, toArray } from '@/lib/parser';
@@ -21,7 +21,7 @@ export function Top({
   prefix = '',
   className,
 }: TopProps) {
-  const { chains } = useGlobalStore();
+  const chains = useChains();
 
   // Handle union type - cast to the appropriate type
   const dataArray = (Array.isArray(data) ? data : toArray(data)) as (

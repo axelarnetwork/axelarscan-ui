@@ -1,0 +1,20 @@
+declare namespace NodeJS {
+  interface ProcessEnv {
+    NEXT_PUBLIC_ENVIRONMENT?: string;
+    NEXT_PUBLIC_APP_URL?: string;
+    NEXT_PUBLIC_STATUS_MESSAGE?: string;
+    NEXT_PUBLIC_AXELARSCAN_API_URL?: string;
+    NEXT_PUBLIC_VALIDATOR_API_URL?: string;
+    NEXT_PUBLIC_TOKEN_TRANSFER_API_URL?: string;
+    NEXT_PUBLIC_GMP_API_URL?: string;
+    NEXT_PUBLIC_RPC_URL?: string;
+    NEXT_PUBLIC_LCD_URL?: string;
+    NEXT_PUBLIC_GTM_ID?: string;
+    NEXT_PUBLIC_GA_TRACKING_ID?: string;
+    NEXT_PUBLIC_INTERCOM_APP_ID?: string;
+    NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID?: string;
+    NEXT_PUBLIC_XAMAN_API_KEY?: string;
+    NEXT_PUBLIC_DEFAULT_TITLE?: string;
+    NEXT_PUBLIC_DEFAULT_DESCRIPTION?: string;
+  }
+}
