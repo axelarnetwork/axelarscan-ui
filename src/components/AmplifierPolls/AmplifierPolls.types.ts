@@ -1,19 +1,5 @@
 import type { Chain } from '@/types';
 
-export interface SelectOption {
-  value?: string;
-  title: string;
-}
-
-export interface FilterAttribute {
-  label: string;
-  name: string;
-  type?: string;
-  multiple?: boolean;
-  searchable?: boolean;
-  options?: SelectOption[];
-}
-
 export interface PollVoteOption {
   option: string;
   value: number;

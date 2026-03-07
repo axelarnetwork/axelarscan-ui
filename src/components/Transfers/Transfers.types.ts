@@ -1,8 +1,5 @@
 import type { Asset } from '@/types';
 
-// Re-export shared filter types used by Transfers.Filters
-export type { FilterOption, FilterAttribute } from '@/types';
-
 export interface TransfersProps {
   address?: string;
 }

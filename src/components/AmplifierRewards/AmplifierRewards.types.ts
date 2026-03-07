@@ -64,18 +64,4 @@ export interface AmplifierRewardsProps {
   chain?: string;
 }
 
-export interface FilterAttribute {
-  label: string;
-  name: string;
-  type?: string;
-  searchable?: boolean;
-  multiple?: boolean;
-  options?: FilterOption[];
-}
-
-export interface FilterOption {
-  value?: string;
-  title: string;
-}
-
 export const PAGE_SIZE = 25;

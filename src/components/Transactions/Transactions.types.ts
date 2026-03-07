@@ -134,20 +134,6 @@ export interface FiltersProps {
   address?: string;
 }
 
-export interface FilterAttribute {
-  label: string;
-  name: string;
-  type?: 'select' | 'datetimeRange' | string;
-  searchable?: boolean;
-  multiple?: boolean;
-  options?: FilterOption[];
-}
-
-export interface FilterOption {
-  title: string;
-  value?: string;
-}
-
 // ─── Transactions ───────────────────────────────────────────────
 export interface TransactionsProps {
   height?: string | number;

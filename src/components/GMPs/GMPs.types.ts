@@ -1,6 +1,3 @@
-// Re-export shared filter types used by GMPs.Filters
-export type { FilterOption, FilterAttribute } from '@/types';
-
 export interface GMPsProps {
   address?: string;
   useAnotherHopChain?: boolean;

@@ -1,8 +1,7 @@
 import _ from 'lodash';
 
-import { toArray, getValuesOfAxelarAddressKey, split } from '@/lib/parser';
-import type { AmplifierPollEntry, PollVote, PollVoteOption, SelectOption, FilterAttribute } from './AmplifierPolls.types';
-import { equalsIgnoreCase } from '@/lib/string';
+import { toArray, getValuesOfAxelarAddressKey } from '@/lib/parser';
+import type { AmplifierPollEntry, PollVote, PollVoteOption } from './AmplifierPolls.types';
 
 export function deriveStatus(
   d: AmplifierPollEntry,
@@ -78,22 +77,3 @@ export function processPollData(
   );
 }
 
-export function getSelectedValue(
-  d: FilterAttribute,
-  params: Record<string, unknown>,
-  isSelected: (v: string | undefined) => boolean,
-) {
-  if (d.multiple) {
-    return toArray(d.options).filter((o: SelectOption) => isSelected(o.value));
-  }
-  return toArray(d.options).find((o: SelectOption) => isSelected(o.value));
-}
-
-export function makeIsSelected(d: FilterAttribute, params: Record<string, unknown>) {
-  return (v: string | undefined) => {
-    if (d.multiple) {
-      return split(params[d.name] as string).includes(v ?? '');
-    }
-    return v === params[d.name] || equalsIgnoreCase(v, params[d.name] as string);
-  };
-}
