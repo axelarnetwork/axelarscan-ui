@@ -3,8 +3,8 @@ import { MdKeyboardArrowRight } from 'react-icons/md';
 import { ExplorerLink } from '@/components/ExplorerLink';
 import { ellipse } from '@/lib/string';
 
-import { infoSettlementStyles } from './InfoSettlement.styles';
-import type { SettlementColumnProps } from './InfoSettlement.types';
+import { settlementStyles } from './Settlement.styles';
+import type { SettlementColumnProps } from './Settlement.types';
 
 export function SettlementColumn({
   title,
@@ -14,10 +14,10 @@ export function SettlementColumn({
   showArrow = true,
 }: SettlementColumnProps) {
   return (
-    <div className={infoSettlementStyles.column}>
-      <div className={infoSettlementStyles.columnContent}>
-        <span className={infoSettlementStyles.columnTitle}>{title}</span>
-        <div className={infoSettlementStyles.links}>
+    <div className={settlementStyles.column}>
+      <div className={settlementStyles.columnContent}>
+        <span className={settlementStyles.columnTitle}>{title}</span>
+        <div className={settlementStyles.links}>
           {primaryLink ? (
             <ExplorerLink
               value={primaryLink.value}

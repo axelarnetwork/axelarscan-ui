@@ -1,10 +1,10 @@
 import { AssetProfile, Profile } from '@/components/Profile';
 import { Tooltip } from '@/components/Tooltip';
-import { InfoSection } from './InfoSection.component';
+import { Section } from './Section.component';
 import { infoStyles } from './Info.styles';
 import type { InfoAssetProps } from './Info.types';
 
-export function InfoAsset({
+export function Asset({
   symbol,
   sourceChain,
   amount,
@@ -12,7 +12,7 @@ export function InfoAsset({
   contractAddress,
 }: InfoAssetProps) {
   return (
-    <InfoSection label="Asset">
+    <Section label="Asset">
       <div className={infoStyles.tokenRow}>
         <AssetProfile
           value={symbol}
@@ -35,6 +35,6 @@ export function InfoAsset({
           </Tooltip>
         )}
       </div>
-    </InfoSection>
+    </Section>
   );
 }

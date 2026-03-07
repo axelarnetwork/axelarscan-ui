@@ -1,12 +1,12 @@
-import { InfoSettlementProps } from './InfoSettlement.types';
-import { infoSettlementStyles } from './InfoSettlement.styles';
+import { SettlementProps } from './Settlement.types';
+import { settlementStyles } from './Settlement.styles';
 import { toArray } from '@/lib/parser';
 
-import { InfoSection } from './InfoSection.component';
+import { Section } from './Section.component';
 import { SettlementColumn } from './SettlementColumn.component';
 import { GMPSettlementData } from '../GMP.types';
 
-export function InfoSettlement({
+export function Settlement({
   data,
   settlementForwardedEvents,
   settlementFilledEvents,
@@ -14,7 +14,7 @@ export function InfoSettlement({
   sourceChain,
   destinationChain,
   executed,
-}: InfoSettlementProps) {
+}: SettlementProps) {
   const settlementForwardedData = toArray(data.settlementForwardedData).filter(
     (entry): entry is GMPSettlementData =>
       typeof entry === 'object' && entry !== null
@@ -53,11 +53,11 @@ export function InfoSettlement({
     : undefined;
 
   return (
-    <InfoSection
+    <Section
       label="Settlement Status"
-      valueClassName={infoSettlementStyles.valueSpacing}
+      valueClassName={settlementStyles.valueSpacing}
     >
-      <div className={infoSettlementStyles.grid}>
+      <div className={settlementStyles.grid}>
         <SettlementColumn
           title="Settlement Forwarded"
           primaryLink={forwardedPrimary}
@@ -82,6 +82,6 @@ export function InfoSettlement({
           showArrow={false}
         />
       </div>
-    </InfoSection>
+    </Section>
   );
 }

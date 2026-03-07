@@ -3,7 +3,7 @@ import clsx from 'clsx';
 
 import { infoStyles } from './Info.styles';
 
-interface InfoSectionProps {
+interface SectionProps {
   label?: ReactNode;
   children: ReactNode;
   wrapperClassName?: string;
@@ -11,13 +11,13 @@ interface InfoSectionProps {
   labelClassName?: string;
 }
 
-export function InfoSection({
+export function Section({
   label,
   children,
   wrapperClassName,
   valueClassName,
   labelClassName,
-}: InfoSectionProps) {
+}: SectionProps) {
   return (
     <div className={clsx(infoStyles.section, wrapperClassName)}>
       {label !== undefined && (

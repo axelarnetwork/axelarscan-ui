@@ -101,7 +101,6 @@ export function Account({ address }: AccountProps) {
         }
       }
 
-      console.log('[data]', accountData);
       setData(accountData);
     };
 

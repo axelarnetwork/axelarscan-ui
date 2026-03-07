@@ -2,8 +2,8 @@ import { Number } from '@/components/Number';
 
 import type { SingleExpressFeeProps } from '../GMP.types';
 import { infoStyles } from './Info.styles';
-import { gasStyles } from './InfoGasMetrics.styles';
-import { InfoSection } from './InfoSection.component';
+import { gasStyles } from './GasMetrics.styles';
+import { Section } from './Section.component';
 import { ExpressFeeBreakdown } from './ExpressFeeBreakdown.component';
 
 export function SingleExpressFee({
@@ -26,7 +26,7 @@ export function SingleExpressFee({
   }
 
   return (
-    <InfoSection label="Express Fee">
+    <Section label="Express Fee">
       <div className={gasStyles.valueColumn}>
         <div className={gasStyles.valueRow}>
           <Number
@@ -47,6 +47,6 @@ export function SingleExpressFee({
           />
         )}
       </div>
-    </InfoSection>
+    </Section>
   );
 }

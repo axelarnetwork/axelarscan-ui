@@ -5,7 +5,7 @@ import { GMPMessage } from '../GMP.types';
 import { infoStyles } from './Info.styles';
 import type { InfoContractCallDetailsProps } from './Info.types';
 
-export function InfoContractCallDetails({
+export function ContractCallDetails({
   data,
   executeData,
   isMultihop,

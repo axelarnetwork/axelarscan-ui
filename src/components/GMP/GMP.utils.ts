@@ -1,13 +1,17 @@
+import _ from 'lodash';
+
+import { searchGMP } from '@/lib/api/gmp';
 import { isAxelar } from '@/lib/chain';
 import { getChainData } from '@/lib/config';
 import { isNumber } from '@/lib/number';
-import { toCase } from '@/lib/parser';
+import { toArray, toCase } from '@/lib/parser';
 import { headString } from '@/lib/string';
 import { timeDiff } from '@/lib/time';
 
 import {
   ChainMetadata,
   GMPEventLog,
+  GMPSettlementData,
   GMPMessage,
   GMPStep,
   WalletContext,
@@ -487,4 +491,52 @@ export function shouldSwitchChain(
         ? evmChainId
         : targetChainId)
   );
+}
+
+export async function fetchSettlementEvents(
+  eventName: 'SquidCoralSettlementFilled' | 'SquidCoralSettlementForwarded',
+  orderHashes: string[]
+): Promise<GMPSettlementData[]> {
+  const size = 10;
+  let retryCount = 0;
+  let offset = 0;
+  let totalEvents: number | undefined;
+  let accumulator: GMPSettlementData[] = [];
+
+  while (
+    (!isNumber(totalEvents) ||
+      (typeof totalEvents === 'number' &&
+        totalEvents > accumulator.length) ||
+      (typeof totalEvents === 'number' && offset < totalEvents)) &&
+    retryCount < 10
+  ) {
+    const response = {
+      ...((await searchGMP({
+        event: eventName,
+        squidCoralOrderHash: orderHashes,
+        from: offset,
+        size,
+      })) as { total?: number; data?: GMPSettlementData[] } | null),
+    };
+
+    if (isNumber(response.total)) {
+      totalEvents = response.total;
+    }
+
+    if (response.data) {
+      const normalized = toArray(response.data).filter(
+        (entry): entry is GMPSettlementData =>
+          typeof entry === 'object' && entry !== null
+      );
+
+      accumulator = _.uniqBy(_.concat(accumulator, normalized), 'id');
+      offset = accumulator.length;
+    } else {
+      break;
+    }
+
+    retryCount++;
+  }
+
+  return accumulator;
 }

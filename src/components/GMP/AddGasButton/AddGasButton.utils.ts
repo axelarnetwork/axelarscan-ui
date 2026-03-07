@@ -3,7 +3,7 @@ import { isAxelar } from '@/lib/chain';
 import { ENVIRONMENT as _ENVIRONMENT, getChainData } from '@/lib/config';
 import { formatUnits, isNumber, parseUnits, toBigNumber } from '@/lib/number';
 import { sleep } from '@/lib/operator';
-import { parseError } from '@/lib/parser';
+import { parseError, resolveErrorMessage } from '@/lib/parser';
 import { headString } from '@/lib/string';
 import type {
   AxelarGMPRecoveryAPI,
@@ -285,15 +285,6 @@ async function handleEvmAddGas({
   getData,
   approve,
 }: EvmHandlerParams): Promise<void> {
-  console.log('[addGas request]', {
-    chain,
-    destinationChain,
-    transactionHash,
-    logIndex,
-    estimatedGasUsed: gasLimit,
-    refundAddress,
-  });
-
   const response = await sdk.addNativeGas(chain, transactionHash, gasLimit, {
     evmWalletDetails: {
       useWindowEthereum: true,
@@ -306,8 +297,6 @@ async function handleEvmAddGas({
     refundAddress: refundAddress ?? undefined,
   });
 
-  console.log('[addGas response]', response);
-
   const { success, error, transaction } = { ...response };
 
   if (success) {
@@ -316,10 +305,7 @@ async function handleEvmAddGas({
 
   setResponse({
     status: success ? 'success' : 'failed',
-    message:
-      parseError(error)?.message ||
-      (typeof error === 'string' ? error : undefined) ||
-      'Pay gas successful',
+    message: resolveErrorMessage(error, 'Pay gas successful'),
     hash: transaction?.transactionHash,
     chain,
   });
@@ -398,15 +384,6 @@ async function handleCosmosAddGas({
     },
   };
 
-  console.log('[addGas request]', {
-    chain,
-    transactionHash,
-    messageId,
-    estimatedGasUsed: gasLimit,
-    token,
-    sendOptions,
-  });
-
   const cosmosParams: CosmosAddGasParams = {
     txHash: transactionHash,
     messageId,
@@ -418,8 +395,6 @@ async function handleCosmosAddGas({
 
   const response = await sdk.addGasToCosmosChain(cosmosParams);
 
-  console.log('[addGas response]', response);
-
   const { success, broadcastResult } = { ...response };
   const cosmosError = (response as { error?: unknown }).error;
 
@@ -427,10 +402,7 @@ async function handleCosmosAddGas({
     await sleep(1000);
   }
 
-  const message =
-    parseError(cosmosError)?.message ??
-    (typeof cosmosError === 'string' ? cosmosError : undefined) ??
-    'Pay gas successful';
+  const message = resolveErrorMessage(cosmosError, 'Pay gas successful');
 
   setResponse({
     status: success ? 'success' : 'failed',
@@ -471,13 +443,6 @@ async function handleSuiAddGas({
   suiSignAndExecuteTransaction,
   setResponse,
 }: SuiHandlerParams): Promise<void> {
-  console.log('[addGas request]', {
-    chain,
-    messageId,
-    gasAddedAmount,
-    refundAddress: suiWalletStore.address,
-  });
-
   if (!suiWalletStore.address) {
     throw new Error('Missing required parameters for Sui gas addition');
   }
@@ -504,8 +469,6 @@ async function handleSuiAddGas({
     },
   });
 
-  console.log('[addGas response]', suiResponse);
-
   const suiEffectsStatus = (
     suiResponse as {
       effects?: { status?: { status?: string; error?: unknown } };
@@ -524,10 +487,7 @@ async function handleSuiAddGas({
       typeof suiEffectsStatus?.status === 'undefined') &&
     !suiError;
   const suiStatus = isSuiSuccess ? 'success' : 'failed';
-  const suiMessage =
-    parseError(suiError)?.message ||
-    (typeof suiError === 'string' ? suiError : undefined) ||
-    'Pay gas successful';
+  const suiMessage = resolveErrorMessage(suiError, 'Pay gas successful');
 
   setResponse({
     status: suiStatus,
@@ -555,13 +515,6 @@ async function handleStellarAddGas({
   sourceChainData,
   setResponse,
 }: StellarHandlerParams): Promise<void> {
-  console.log('[addGas request]', {
-    chain,
-    messageId,
-    gasAddedAmount,
-    refundAddress: stellarWalletStore.address,
-  });
-
   const spenderAddress = stellarWalletStore.address;
 
   if (!spenderAddress) {
@@ -607,11 +560,6 @@ async function handleStellarAddGas({
     return;
   }
 
-  console.log('[stellar sendTransaction]', {
-    ...signedResult,
-    network: stellarWalletStore.network,
-  });
-
   let stellarResponse: StellarSDK.rpc.Api.SendTransactionResponse | undefined;
   let stellarError: string | undefined;
 
@@ -631,15 +579,12 @@ async function handleStellarAddGas({
     stellarError = String(error);
   }
 
-  console.log('[addGas response]', stellarResponse);
-
   setResponse({
     status:
       stellarError || stellarResponse?.status === 'ERROR'
         ? 'failed'
         : 'success',
-    message:
-      parseError(stellarError)?.message || stellarError || 'Pay gas successful',
+    message: resolveErrorMessage(stellarError, 'Pay gas successful'),
     hash: stellarResponse?.hash,
     chain,
   });
@@ -663,13 +608,6 @@ async function handleXrplAddGas({
   xrplSignAndSubmitTransaction,
   setResponse,
 }: XrplHandlerParams): Promise<void> {
-  console.log('[addGas request]', {
-    chain,
-    messageId,
-    gasAddedAmount: formatUnits(gasAddedAmount, decimals),
-    refundAddress: xrplWalletStore.address,
-  });
-
   if (!xrplWalletStore.address) {
     throw new Error('Missing required parameters for XRPL gas addition');
   }
@@ -690,8 +628,6 @@ async function handleXrplAddGas({
     `xrpl:${getXrplNetworkCode()}`
   );
 
-  console.log('[addGas response]', xrplResponse);
-
   const { tx_hash: txHash, tx_json: txJson } = xrplResponse;
   const xrplError = (xrplResponse as { error?: unknown })?.error;
   const transactionMeta =
@@ -703,14 +639,10 @@ async function handleXrplAddGas({
       ? transactionMeta.TransactionResult
       : undefined;
   const status = transactionResult === 'tesSUCCESS' ? 'success' : 'failed';
-  const parsedXrplError = parseError(xrplError)?.message;
-  const errorMessage =
-    typeof xrplError === 'string' ? xrplError : parsedXrplError;
-  const message =
-    errorMessage ||
-    (status === 'success'
-      ? 'Pay gas successful'
-      : transactionResult || 'Pay gas failed');
+  const fallback = status === 'success'
+    ? 'Pay gas successful'
+    : (transactionResult as string) || 'Pay gas failed';
+  const message = resolveErrorMessage(xrplError, fallback);
 
   setResponse({
     status,

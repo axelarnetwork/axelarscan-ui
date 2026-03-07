@@ -2,7 +2,7 @@ import { Number } from '@/components/Number';
 
 import type { BaseFeeEntryProps } from '../GMP.types';
 import { infoStyles } from './Info.styles';
-import { gasStyles } from './InfoGasMetrics.styles';
+import { gasStyles } from './GasMetrics.styles';
 
 export function BaseFeeEntry({
   entryFees,

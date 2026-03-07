@@ -100,7 +100,6 @@ export function AmplifierPoll({ id }: AmplifierPollProps) {
         };
       }
 
-      console.log('[data]', d);
       setData({ ...d } as AmplifierPollData);
     };
 

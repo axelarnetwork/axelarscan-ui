@@ -4,12 +4,12 @@ import { Image } from '@/components/Image';
 import { AssetProfile, Profile } from '@/components/Profile';
 import { Tooltip } from '@/components/Tooltip';
 import { getChainData } from '@/lib/config';
-import { InfoSection } from './InfoSection.component';
-import { InfoTransfersProps } from './InfoTransfers.types';
+import { Section } from './Section.component';
+import { TransfersProps } from './Transfers.types';
 import { infoStyles } from './Info.styles';
-import { infoTransfersStyles } from './InfoTransfers.styles';
+import { transfersStyles } from './Transfers.styles';
 
-export function InfoTransfers({ data, chains }: InfoTransfersProps) {
+export function Transfers({ data, chains }: TransfersProps) {
   if (
     !Array.isArray(data.interchain_transfers) ||
     data.interchain_transfers.length === 0
@@ -18,8 +18,8 @@ export function InfoTransfers({ data, chains }: InfoTransfersProps) {
   }
 
   return (
-    <InfoSection label="Settlement Filled">
-      <div className={infoTransfersStyles.list}>
+    <Section label="Settlement Filled">
+      <div className={transfersStyles.list}>
         {data.interchain_transfers.map((transfer, index) => {
           const destinationChainData = getChainData(
             transfer.destinationChain,
@@ -29,7 +29,7 @@ export function InfoTransfers({ data, chains }: InfoTransfersProps) {
           return (
             <div
               key={`${transfer.destinationChain}-${index}`}
-              className={infoTransfersStyles.row}
+              className={transfersStyles.row}
             >
               <AssetProfile
                 value={transfer.contract_address || transfer.symbol}
@@ -44,7 +44,7 @@ export function InfoTransfers({ data, chains }: InfoTransfersProps) {
               />
               <MdKeyboardArrowRight
                 size={20}
-                className={infoTransfersStyles.arrowIcon}
+                className={transfersStyles.arrowIcon}
               />
               {destinationChainData && transfer.recipient && (
                 <Tooltip
@@ -69,6 +69,6 @@ export function InfoTransfers({ data, chains }: InfoTransfersProps) {
           );
         })}
       </div>
-    </InfoSection>
+    </Section>
   );
 }

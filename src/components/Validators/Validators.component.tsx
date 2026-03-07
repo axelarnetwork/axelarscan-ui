@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { create } from 'zustand';
 import clsx from 'clsx';
 import _ from 'lodash';
 
@@ -18,23 +17,13 @@ import { toArray } from '@/lib/parser';
 import { equalsIgnoreCase, find } from '@/lib/string';
 import { isNumber, toNumber, formatUnits, toFixed } from '@/lib/number';
 import type { Chain, Validator as ValidatorType } from '@/types';
-import type { ValidatorStoreState, ValidatorsProps } from './Validators.types';
+import type { ValidatorsProps } from './Validators.types';
 import { STATUSES } from './Validators.types';
+import { useValidatorStore } from './Validators.stores';
 import { SortHeader } from './SortHeader.component';
 import { ValidatorRow } from './ValidatorRow.component';
 import { ValidatorsHeader } from './ValidatorsHeader.component';
 import * as styles from './Validators.styles';
-
-// ─── Store ─────────────────────────────────────────────────────
-
-export const useValidatorStore = create<ValidatorStoreState>()(set => ({
-  maintainers: null,
-  setMaintainers: (data: Record<string, string[]>) =>
-    set(state => ({
-      ...state,
-      maintainers: { ...state.maintainers, ...data },
-    })),
-}));
 
 // ─── Main Component ────────────────────────────────────────────
 

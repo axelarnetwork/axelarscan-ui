@@ -29,7 +29,9 @@ export const getProvider = (chain: string | undefined, chainsData: Chain[]) => {
         })),
         rpcs.length / 3
       );
-    } catch (error) {}
+    } catch (error) {
+      console.error('[getProvider] Failed to create RPC provider', error);
+    }
   }
 
   return;

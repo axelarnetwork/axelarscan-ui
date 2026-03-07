@@ -17,10 +17,26 @@ export async function apiRequest<T = unknown>(
 
   const response = await fetch(url, {
     method: resolvedMethod,
+    headers:
+      resolvedMethod === 'POST'
+        ? { 'Content-Type': 'application/json' }
+        : undefined,
     body: resolvedMethod === 'GET' ? undefined : JSON.stringify(params),
-  }).catch(() => null);
+  }).catch((error: unknown) => {
+    console.error(`[apiRequest] Network error: ${method}`, error);
+    return null;
+  });
 
-  return response ? ((await response.json()) as T) : null;
+  if (!response) return null;
+
+  if (!response.ok) {
+    console.error(
+      `[apiRequest] ${method} responded ${response.status} ${response.statusText}`
+    );
+    return null;
+  }
+
+  return (await response.json()) as T;
 }
 
 export function createApiClient(baseUrl: string) {

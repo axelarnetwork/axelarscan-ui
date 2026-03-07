@@ -1,6 +1,5 @@
 'use client';
 
-import { Image } from '@/components/Image';
 import {
   useAccount as useXRPLAccount,
   useConnect as useXRPLConnect,
@@ -9,46 +8,16 @@ import {
 } from '@xrpl-wallet-standard/react';
 import clsx from 'clsx';
 import { useEffect } from 'react';
-import { create } from 'zustand';
 import { useMetaMaskProvider } from '@/lib/wallets/eip6963';
 
+import { useXRPLWalletStore } from './XRPLWallet.stores';
+import { WalletButton } from './WalletButton.component';
 import { walletStyles } from './Wallet.styles';
-
-interface XRPLWalletState {
-  address: string | null;
-  setAddress: (address: string | null) => void;
-}
-
-export const useXRPLWalletStore = create<XRPLWalletState>()(set => ({
-  address: null,
-  setAddress: data => set(state => ({ ...state, address: data })),
-}));
 
 interface XRPLWalletProps {
   children?: React.ReactNode;
   className?: string;
 }
-
-interface WalletButtonProps {
-  iconSrc: string;
-  label: string;
-  onClick: () => void;
-  className?: string;
-}
-
-const WalletButton: React.FC<WalletButtonProps> = ({
-  iconSrc,
-  label,
-  onClick,
-  className,
-}) => (
-  <button onClick={onClick} className={clsx('w-fit', className)}>
-    <div className="flex h-6 items-center gap-x-1.5 whitespace-nowrap rounded-xl bg-blue-600 px-2.5 py-1 font-display text-white hover:bg-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600">
-      <Image src={iconSrc} alt={label} width={16} height={16} className="" />
-      {label}
-    </div>
-  </button>
-);
 
 export function XRPLWallet({ children, className }: XRPLWalletProps) {
   const { address, setAddress } = useXRPLWalletStore();

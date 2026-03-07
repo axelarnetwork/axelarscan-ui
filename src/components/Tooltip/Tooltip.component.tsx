@@ -1,16 +1,9 @@
 'use client';
 
 import clsx from 'clsx';
-import type { ReactNode } from 'react';
 
 import { tooltipStyles } from './Tooltip.styles';
-
-export interface TooltipProps {
-  content: ReactNode;
-  className?: string;
-  children: ReactNode;
-  parentClassName?: string;
-}
+import type { TooltipProps } from './Tooltip.types';
 
 export function Tooltip({
   content,
@@ -27,5 +20,3 @@ export function Tooltip({
     </div>
   );
 }
-
-export const TooltipComponent = Tooltip;

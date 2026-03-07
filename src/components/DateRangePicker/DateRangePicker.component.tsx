@@ -5,12 +5,8 @@ import clsx from 'clsx';
 import moment from 'moment';
 import dayjs from 'dayjs';
 
-import { isNumber, toNumber } from '@/lib/number';
-
 import * as styles from './DateRangePicker.styles';
-
-export const createDayJSFromUnixtime = (unixtime: number | string) =>
-  dayjs(isNumber(unixtime) ? toNumber(unixtime) * 1000 : unixtime);
+import { createDayJSFromUnixtime } from './DateRangePicker.utils';
 
 const getUnixtime = (time: { valueOf: () => number } | null | undefined) =>
   time && moment(time.valueOf()).unix();

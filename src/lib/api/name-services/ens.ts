@@ -27,11 +27,18 @@ interface ENSGraphQLResponse {
   data?: { domains?: ENSDomain[] };
 }
 
+const ENS_SUBGRAPH_URL = process.env.NEXT_PUBLIC_ENS_SUBGRAPH_URL;
+
 const request = async (params: { query: string }) => {
-  const response = await fetch(
-    'https://gateway-arbitrum.network.thegraph.com/api/44733860e4dbf89d70eee7c63bc06bf8/subgraphs/id/5XqPmWe6gjyrJtFn9cLy237i4cWw2j9HcUJEXsP5qGtH',
-    { method: 'POST', body: JSON.stringify(params) }
-  ).catch(() => null);
+  if (!ENS_SUBGRAPH_URL) return null;
+  const response = await fetch(ENS_SUBGRAPH_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params),
+  }).catch((error: unknown) => {
+    console.error('[ENS] Subgraph request failed', error);
+    return null;
+  });
   return response && ((await response.json()) as ENSGraphQLResponse);
 };
 
@@ -95,7 +102,10 @@ const getDomains = async (params: {
 const _getReverseRecord = async (address: string) => {
   const response = await fetch(
     `https://ens.fafrd.workers.dev/ens/${address}`
-  ).catch(() => null);
+  ).catch((error: unknown) => {
+    console.error('[ENS] Reverse record lookup failed', error);
+    return null;
+  });
   return response && ((await response.json()) as { reverseRecord?: string });
 };
 

@@ -1,6 +1,6 @@
 import type { GMPTransactionInfo } from '../GMP.types';
 
-export interface InfoHeaderProps {
+export interface HeaderProps {
   call?: GMPTransactionInfo;
   messageId?: string;
   txhash?: string;

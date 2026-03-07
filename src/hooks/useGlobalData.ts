@@ -19,12 +19,11 @@ import {
   fetchConfigurations,
 } from '@/lib/queries/contractQueries';
 import { fetchStats } from '@/lib/queries/statsQueries';
-
-const FIVE_MINUTES = 5 * 60 * 1000;
+import { FIVE_MINUTES_MS } from '@/lib/constants';
 
 const defaultOptions = {
-  staleTime: FIVE_MINUTES,
-  refetchInterval: FIVE_MINUTES,
+  staleTime: FIVE_MINUTES_MS,
+  refetchInterval: FIVE_MINUTES_MS,
   refetchOnWindowFocus: false,
 } as const;
 

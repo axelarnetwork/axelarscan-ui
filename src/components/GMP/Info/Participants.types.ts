@@ -1,6 +1,6 @@
 import type { GMPMessage } from '../GMP.types';
 
-export interface InfoParticipantsProps {
+export interface ParticipantsProps {
   data: GMPMessage;
   sourceChain: string | undefined;
   destinationChain: string | undefined;

@@ -72,7 +72,6 @@ export function Block({ height }: BlockProps) {
         }
       }
 
-      console.log('[data]', responseData);
       setData(responseData);
     };
 

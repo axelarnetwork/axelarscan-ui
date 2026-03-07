@@ -2,6 +2,7 @@ import _ from 'lodash';
 import moment from 'moment';
 import { useEffect } from 'react';
 
+import { FIVE_MINUTES_MS } from '@/lib/constants';
 import {
   GMPChart,
   GMPStatsAVGTimes,
@@ -620,7 +621,7 @@ export function useInterchainAutoRefresh(params: UseInterchainHooksParams) {
   const { setRefresh } = params;
 
   useEffect(() => {
-    const interval = setInterval(() => setRefresh(true), 5 * 60 * 1000);
+    const interval = setInterval(() => setRefresh(true), FIVE_MINUTES_MS);
     return () => clearInterval(interval);
   }, [setRefresh]);
 }

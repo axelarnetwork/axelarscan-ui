@@ -1,6 +1,6 @@
 import type { GMPMessage, GMPSettlementData } from '../GMP.types';
 
-export interface InfoSettlementProps {
+export interface SettlementProps {
   data: GMPMessage;
   settlementForwardedEvents?: GMPMessage['settlement_forwarded_events'];
   settlementFilledEvents?: GMPMessage['settlement_filled_events'];

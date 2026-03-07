@@ -32,7 +32,6 @@ export function Transaction({ tx }: TransactionProps) {
           sender: getSender(responseData, assets),
         };
 
-        console.log('[data]', responseData);
         setData(responseData);
       } else {
         setData({

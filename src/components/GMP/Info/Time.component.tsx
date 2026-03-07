@@ -3,12 +3,12 @@ import { MdOutlineTimer } from 'react-icons/md';
 import { RiTimerFlashLine } from 'react-icons/ri';
 
 import { TimeSpent } from '@/components/Time';
-import { InfoSection } from './InfoSection.component';
-import { InfoTimeProps } from './InfoTime.types';
-import { infoTimeStyles } from './InfoTime.styles';
+import { Section } from './Section.component';
+import { TimeProps } from './Time.types';
+import { timeStyles } from './Time.styles';
 import { timeDiff } from '@/lib/time';
 
-export function InfoTime({
+export function Time({
   isMultihop,
   executedGMPsData,
   timeSpent,
@@ -18,7 +18,7 @@ export function InfoTime({
   confirm,
   approved,
   call,
-}: InfoTimeProps) {
+}: TimeProps) {
   const shouldRenderExpressEstimate =
     fees?.express_supported &&
     !(confirm || approved) &&
@@ -30,9 +30,9 @@ export function InfoTime({
 
   if (isMultihop) {
     return executedGMPsData.length > 0 ? (
-      <InfoSection label="Time Spent">
-        <div className={infoTimeStyles.row}>
-          <div className={infoTimeStyles.valueRow}>
+      <Section label="Time Spent">
+        <div className={timeStyles.row}>
+          <div className={timeStyles.valueRow}>
             <MdOutlineTimer size={20} />
             <TimeSpent
               fromTimestamp={0}
@@ -40,7 +40,7 @@ export function InfoTime({
             />
           </div>
         </div>
-      </InfoSection>
+      </Section>
     ) : null;
   }
 
@@ -54,11 +54,11 @@ export function InfoTime({
     (totalTimeSpent > 0 && status === 'executed')
   ) {
     return (
-      <InfoSection label="Time Spent">
-        <div className={infoTimeStyles.detailColumn}>
+      <Section label="Time Spent">
+        <div className={timeStyles.detailColumn}>
           {expressTimeSpent > 0 &&
             ['express_executed', 'executed'].includes(status || '') && (
-              <div className={infoTimeStyles.expressRow}>
+              <div className={timeStyles.expressRow}>
                 <RiTimerFlashLine size={20} />
                 <TimeSpent
                   fromTimestamp={0}
@@ -67,7 +67,7 @@ export function InfoTime({
               </div>
             )}
           {totalTimeSpent > 0 && status === 'executed' && (
-            <div className={infoTimeStyles.valueRow}>
+            <div className={timeStyles.valueRow}>
               <MdOutlineTimer size={20} />
               <TimeSpent
                 fromTimestamp={0}
@@ -76,7 +76,7 @@ export function InfoTime({
             </div>
           )}
         </div>
-      </InfoSection>
+      </Section>
     );
   }
 
@@ -86,10 +86,10 @@ export function InfoTime({
 
   return (
     <>
-      <InfoSection label="Estimated Time Spent">
-        <div className={infoTimeStyles.detailColumn}>
+      <Section label="Estimated Time Spent">
+        <div className={timeStyles.detailColumn}>
           {shouldRenderExpressEstimate && (
-            <div className={infoTimeStyles.expressRow}>
+            <div className={timeStyles.expressRow}>
               <RiTimerFlashLine size={20} />
               <TimeSpent
                 fromTimestamp={0}
@@ -98,21 +98,21 @@ export function InfoTime({
             </div>
           )}
           {totalEstimate > 0 && (
-            <div className={infoTimeStyles.valueRow}>
+            <div className={timeStyles.valueRow}>
               <MdOutlineTimer size={20} />
               <TimeSpent fromTimestamp={0} toTimestamp={totalEstimate * 1000} />
             </div>
           )}
         </div>
-      </InfoSection>
+      </Section>
       {!['express_executed', 'executed'].includes(status || '') &&
         callBlockTimestamp && (
-          <InfoSection label="Time Spent">
-            <div className={infoTimeStyles.valueRow}>
+          <Section label="Time Spent">
+            <div className={timeStyles.valueRow}>
               <MdOutlineTimer size={20} />
               <TimeSpent fromTimestamp={callBlockTimestamp * 1000} />
             </div>
-          </InfoSection>
+          </Section>
         )}
     </>
   );

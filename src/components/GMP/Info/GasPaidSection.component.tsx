@@ -2,8 +2,8 @@ import { Number } from '@/components/Number';
 
 import type { GasPaidSectionProps } from '../GMP.types';
 import { infoStyles } from './Info.styles';
-import { gasStyles } from './InfoGasMetrics.styles';
-import { InfoSection } from './InfoSection.component';
+import { gasStyles } from './GasMetrics.styles';
+import { Section } from './Section.component';
 
 export function GasPaidSection({
   data,
@@ -26,7 +26,7 @@ export function GasPaidSection({
       : (gasPaidToCallback ?? 0) * (combinedFees?.source_token?.gas_price ?? 0);
 
   return (
-    <InfoSection label="Gas Paid">
+    <Section label="Gas Paid">
       <div className={gasStyles.valueRow}>
         <Number
           value={gasPaidValue}
@@ -37,6 +37,6 @@ export function GasPaidSection({
         />
         {renderUsdValue(gasPaidValue * (sourceToken?.token_price?.usd ?? 0))}
       </div>
-    </InfoSection>
+    </Section>
   );
 }

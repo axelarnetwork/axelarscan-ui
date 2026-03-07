@@ -606,6 +606,14 @@ export const parseError = (error: unknown): ParsedError => {
   return { code, message };
 };
 
+export const resolveErrorMessage = (
+  error: unknown,
+  fallback: string
+): string =>
+  parseError(error)?.message ||
+  (typeof error === 'string' ? error : undefined) ||
+  fallback;
+
 /**
  * Extracts all values from an object where keys start with 'axelar'
  *

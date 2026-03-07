@@ -6,25 +6,15 @@ import {
 } from '@mysten/dapp-kit';
 import clsx from 'clsx';
 import { useEffect } from 'react';
-import { create } from 'zustand';
 
 import '@mysten/dapp-kit/dist/index.css';
 
+import { useSuiWalletStore } from './SuiWallet.stores';
 import { walletStyles } from './Wallet.styles';
 
 interface SuiAccount {
   address?: string;
 }
-
-interface SuiWalletState {
-  address: string | null;
-  setAddress: (address: string | null) => void;
-}
-
-export const useSuiWalletStore = create<SuiWalletState>()(set => ({
-  address: null,
-  setAddress: data => set(state => ({ ...state, address: data })),
-}));
 
 interface SuiWalletProps {
   children?: React.ReactNode;

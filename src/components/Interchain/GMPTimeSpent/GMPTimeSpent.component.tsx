@@ -1,7 +1,7 @@
 import { Number } from '@/components/Number';
 import { ChainProfile } from '@/components/Profile';
 import { TimeSpent } from '@/components/Time';
-import { TooltipComponent } from '@/components/Tooltip';
+import { Tooltip } from '@/components/Tooltip';
 import { gmpTimeSpentStyles } from './GMPTimeSpent.styles';
 import { GMPTimeSpentProps } from './GMPTimeSpent.types';
 import { calculatePoints } from './GMPTimeSpent.utils';
@@ -51,7 +51,7 @@ export function GMPTimeSpent({
                   className={gmpTimeSpentStyles.timeline.points.line}
                   style={{ marginTop: '3px' }}
                 />
-                <TooltipComponent
+                <Tooltip
                   content={
                     <div className="flex flex-col">
                       <span>{d.name}</span>
@@ -71,7 +71,7 @@ export function GMPTimeSpent({
                     name={d.name}
                     noTooltip={true}
                   />
-                </TooltipComponent>
+                </Tooltip>
               </div>
             ))}
           </div>
@@ -83,7 +83,7 @@ export function GMPTimeSpent({
                 style={{ width: `${d.width}%` }}
               >
                 {['express_execute', 'execute'].includes(d.id) ? (
-                  <TooltipComponent
+                  <Tooltip
                     content={d.label || d.name}
                     className="whitespace-nowrap"
                   >
@@ -94,7 +94,7 @@ export function GMPTimeSpent({
                       title=""
                       className={gmpTimeSpentStyles.timeline.labels.timeText}
                     />
-                  </TooltipComponent>
+                  </Tooltip>
                 ) : (
                   <div />
                 )}

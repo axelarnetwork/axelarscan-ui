@@ -5,8 +5,8 @@ import type {
   GMPMessage,
   MultihopExpressFeeProps,
 } from '../GMP.types';
-import { gasStyles } from './InfoGasMetrics.styles';
-import { InfoSection } from './InfoSection.component';
+import { gasStyles } from './GasMetrics.styles';
+import { Section } from './Section.component';
 import { ExpressFeeEntry } from './ExpressFeeEntry.component';
 
 export function MultihopExpressFee({
@@ -37,7 +37,7 @@ export function MultihopExpressFee({
   );
 
   return (
-    <InfoSection label="Express Fee" valueClassName={gasStyles.borderedCard}>
+    <Section label="Express Fee" valueClassName={gasStyles.borderedCard}>
       {entriesWithExpressSupport.map((entry, index) => (
         <ExpressFeeEntry
           key={index}
@@ -48,6 +48,6 @@ export function MultihopExpressFee({
           renderFiPlus={renderFiPlus}
         />
       ))}
-    </InfoSection>
+    </Section>
   );
 }

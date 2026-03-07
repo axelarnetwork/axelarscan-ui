@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { Web3 } from 'web3';
-import { create } from 'zustand';
 import clsx from 'clsx';
 
 import { Image } from '@/components/Image';
@@ -12,6 +11,7 @@ import { getChainData, getAssetData, getITSAssetData } from '@/lib/config';
 import { split } from '@/lib/parser';
 import MetamaskLogo from '@/images/wallets/metamask.png';
 
+import { useChainIdStore } from './Metamask.stores';
 import {
   cursorNotAllowedClass,
   cursorPointerClass,
@@ -19,14 +19,8 @@ import {
 } from './Metamask.styles';
 import type {
   TokenData,
-  ChainIdState,
   AddMetamaskProps,
 } from './Metamask.types';
-
-export const useChainIdStore = create<ChainIdState>()(set => ({
-  chainId: null,
-  setChainId: data => set(state => ({ ...state, chainId: data })),
-}));
 
 export function AddMetamask({
   chain,

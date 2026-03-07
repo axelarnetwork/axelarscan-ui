@@ -1,1 +1,2 @@
-export { Transfers, normalizeType } from './Transfers.component';
+export { Transfers } from './Transfers.component';
+export { normalizeType } from './Transfers.utils';

@@ -1,6 +1,6 @@
 import type { ChainTimeEstimate, GMPMessage } from '../GMP.types';
 
-export interface InfoTimeProps {
+export interface TimeProps {
   isMultihop: boolean;
   executedGMPsData: GMPMessage[];
   timeSpent: GMPMessage['time_spent'];

@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Container } from '@/components/Container';
 import { Spinner } from '@/components/Spinner';
 import { Response } from '@/components/Response';
+import { THIRTY_SECONDS_MS } from '@/lib/constants';
 import { searchTransfers } from '@/lib/api/token-transfer';
 import { getParams } from '@/lib/operator';
 import { Info } from './Info.component';
@@ -44,7 +45,6 @@ export function Transfer({ tx, lite }: TransferProps) {
               setEnded(true);
             }
 
-            console.log('[data]', d);
             setData(d);
           } else {
             setData(makeErrorData(`Transaction: ${tx} not found`));
@@ -72,7 +72,7 @@ export function Transfer({ tx, lite }: TransferProps) {
 
     getData();
 
-    const interval = !ended && setInterval(() => getData(), 0.5 * 60 * 1000);
+    const interval = !ended && setInterval(() => getData(), THIRTY_SECONDS_MS);
     return () => clearInterval(interval as ReturnType<typeof setInterval>);
   }, [tx, router, searchParams, setData, ended, setEnded]);
 

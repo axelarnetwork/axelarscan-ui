@@ -1,4 +1,4 @@
-import { TooltipComponent } from '@/components/Tooltip';
+import { Tooltip } from '@/components/Tooltip';
 import { gmpTimeSpentPointStyles } from './GMPTimeSpentPoint.styles';
 
 interface GMPTimeSpentPointProps {
@@ -24,8 +24,8 @@ export function GMPTimeSpentPoint({
   }
 
   return (
-    <TooltipComponent content={name} className="whitespace-nowrap">
+    <Tooltip content={name} className="whitespace-nowrap">
       {point}
-    </TooltipComponent>
+    </Tooltip>
   );
 }

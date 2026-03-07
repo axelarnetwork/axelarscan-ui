@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 
 import { Container } from '@/components/Container';
 import { Spinner } from '@/components/Spinner';
+import { SIX_SECONDS_MS } from '@/lib/constants';
 import { searchBlocks } from '@/lib/api/validator';
 import { toBoolean } from '@/lib/string';
 import { numberFormat } from '@/lib/number';
@@ -36,7 +37,7 @@ export function Blocks({ height = undefined }: BlocksProps) {
   }, [height, refresh]);
 
   useEffect(() => {
-    const interval = setInterval(() => setRefresh(true), 6 * 1000);
+    const interval = setInterval(() => setRefresh(true), SIX_SECONDS_MS);
     return () => clearInterval(interval);
   }, []);
 

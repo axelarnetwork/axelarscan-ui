@@ -44,7 +44,6 @@ export function EVMBatch({ chain, id }: EVMBatchProps) {
     const getData = async () => {
       const data = (await getBatch(chain, id)) as BatchData | null;
 
-      console.log('[data]', data);
       setData(data);
     };
 

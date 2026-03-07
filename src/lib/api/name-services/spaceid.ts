@@ -35,6 +35,7 @@ const request = async (
 
     return await sid.getName(address);
   } catch (error) {
+    console.error('[SpaceID] Lookup failed', error);
     return;
   }
 };

@@ -18,24 +18,26 @@ import {
 import { isAxelar } from '@/lib/chain';
 import { getProvider } from '@/lib/chain/evm';
 import { ENVIRONMENT, getAssetData, getChainData } from '@/lib/config';
-import { isNumber, toBigNumber, toNumber } from '@/lib/number';
+import { toBigNumber, toNumber } from '@/lib/number';
 import { getParams } from '@/lib/operator';
 import { toArray, toCase } from '@/lib/parser';
+import { THIRTY_SECONDS_MS } from '@/lib/constants';
 import { equalsIgnoreCase } from '@/lib/string';
 
 import {
   AssetDataEntry,
   ChainTimeEstimate,
   GMPMessage,
-  GMPSettlementData,
   ChainCollection,
   AssetCollection,
   SearchGMPResult,
 } from './GMP.types';
-import { getDefaultGasLimit, isGMPMessage } from './GMP.utils';
+import {
+  getDefaultGasLimit,
+  isGMPMessage,
+  fetchSettlementEvents,
+} from './GMP.utils';
 import { normalizeRecoveryBytes } from './GMP.recovery.utils';
-
-const REFRESH_INTERVAL_MS = 0.5 * 60 * 1000;
 
 async function parseCustomData(
   value: unknown
@@ -263,110 +265,25 @@ export function useGMPMessageData(tx?: string): {
     }
 
     if (parsedMessage.settlement_forwarded_events) {
-      const size = 10;
-      let retryCount = 0;
-      let offset = 0;
-      let totalEvents: number | undefined;
-      let filledEventsAccumulator: GMPSettlementData[] = [];
-
-      while (
-        (!isNumber(totalEvents) ||
-          (typeof totalEvents === 'number' &&
-            totalEvents > filledEventsAccumulator.length) ||
-          (typeof totalEvents === 'number' && offset < totalEvents)) &&
-        retryCount < 10
-      ) {
-        const settlementResponse = {
-          ...((await searchGMP({
-            event: 'SquidCoralSettlementFilled',
-            squidCoralOrderHash: parsedMessage.settlement_forwarded_events.map(
-              settlementEvent => settlementEvent.orderHash
-            ),
-            from: offset,
-            size,
-          })) as { total?: number; data?: GMPSettlementData[] } | null),
-        };
-
-        if (isNumber(settlementResponse.total)) {
-          totalEvents = settlementResponse.total;
-        }
-
-        if (settlementResponse.data) {
-          const normalizedResponse = toArray(settlementResponse.data).filter(
-            (entry): entry is GMPSettlementData =>
-              typeof entry === 'object' && entry !== null
-          );
-
-          filledEventsAccumulator = _.uniqBy(
-            _.concat(filledEventsAccumulator, normalizedResponse),
-            'id'
-          );
-          offset = filledEventsAccumulator.length;
-        } else {
-          break;
-        }
-
-        retryCount++;
-      }
-
-      if (filledEventsAccumulator.length > 0) {
-        parsedMessage.settlementFilledData = filledEventsAccumulator;
+      const filledEvents = await fetchSettlementEvents(
+        'SquidCoralSettlementFilled',
+        parsedMessage.settlement_forwarded_events.map(e => e.orderHash).filter((h): h is string => !!h)
+      );
+      if (filledEvents.length > 0) {
+        parsedMessage.settlementFilledData = filledEvents;
       }
     }
 
     if (parsedMessage.settlement_filled_events) {
-      const size = 10;
-      let retryCount = 0;
-      let offset = 0;
-      let totalEvents: number | undefined;
-      let forwardedEventsAccumulator: GMPSettlementData[] = [];
-
-      while (
-        (!isNumber(totalEvents) ||
-          (typeof totalEvents === 'number' &&
-            totalEvents > forwardedEventsAccumulator.length) ||
-          (typeof totalEvents === 'number' && offset < totalEvents)) &&
-        retryCount < 10
-      ) {
-        const settlementResponse = {
-          ...((await searchGMP({
-            event: 'SquidCoralSettlementForwarded',
-            squidCoralOrderHash: parsedMessage.settlement_filled_events.map(
-              settlementEvent => settlementEvent.orderHash
-            ),
-            from: offset,
-            size,
-          })) as { total?: number; data?: GMPSettlementData[] } | null),
-        };
-
-        if (isNumber(settlementResponse.total)) {
-          totalEvents = settlementResponse.total;
-        }
-
-        if (settlementResponse.data) {
-          const normalizedResponse = toArray(settlementResponse.data).filter(
-            (entry): entry is GMPSettlementData =>
-              typeof entry === 'object' && entry !== null
-          );
-
-          forwardedEventsAccumulator = _.uniqBy(
-            _.concat(forwardedEventsAccumulator, normalizedResponse),
-            'id'
-          );
-          offset = forwardedEventsAccumulator.length;
-        } else {
-          break;
-        }
-
-        retryCount++;
-      }
-
-      if (forwardedEventsAccumulator.length > 0) {
-        parsedMessage.settlementForwardedData = forwardedEventsAccumulator;
+      const forwardedEvents = await fetchSettlementEvents(
+        'SquidCoralSettlementForwarded',
+        parsedMessage.settlement_filled_events.map(e => e.orderHash).filter((h): h is string => !!h)
+      );
+      if (forwardedEvents.length > 0) {
+        parsedMessage.settlementForwardedData = forwardedEvents;
       }
     }
 
-    console.log('[data]', parsedMessage);
     setData(parsedMessage);
 
     return parsedMessage;
@@ -381,7 +298,7 @@ export function useGMPMessageData(tx?: string): {
       if (isActive && !ended) {
         intervalRef.current = setInterval(() => {
           void refresh();
-        }, REFRESH_INTERVAL_MS);
+        }, THIRTY_SECONDS_MS);
       }
     };
 

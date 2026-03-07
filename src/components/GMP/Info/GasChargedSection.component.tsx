@@ -5,8 +5,8 @@ import { Tooltip } from '@/components/Tooltip';
 
 import type { GasChargedSectionProps } from '../GMP.types';
 import { infoStyles } from './Info.styles';
-import { gasStyles } from './InfoGasMetrics.styles';
-import { InfoSection } from './InfoSection.component';
+import { gasStyles } from './GasMetrics.styles';
+import { Section } from './Section.component';
 
 export function GasChargedSection({
   gasChargedAmount,
@@ -27,7 +27,7 @@ export function GasChargedSection({
   );
 
   return (
-    <InfoSection label={gasChargedLabel} labelClassName={gasStyles.labelRow}>
+    <Section label={gasChargedLabel} labelClassName={gasStyles.labelRow}>
       <div className={gasStyles.valueRow}>
         <Number
           value={gasChargedAmount}
@@ -40,6 +40,6 @@ export function GasChargedSection({
           gasChargedAmount * (sourceToken?.token_price?.usd ?? 0)
         )}
       </div>
-    </InfoSection>
+    </Section>
   );
 }

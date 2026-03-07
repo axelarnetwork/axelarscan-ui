@@ -1,8 +1,8 @@
 import { toArray } from '@/lib/parser';
 
 import type { GMPFees, GMPMessage, MultihopBaseFeeProps } from '../GMP.types';
-import { gasStyles } from './InfoGasMetrics.styles';
-import { InfoSection } from './InfoSection.component';
+import { gasStyles } from './GasMetrics.styles';
+import { Section } from './Section.component';
 import { BaseFeeEntry } from './BaseFeeEntry.component';
 
 export function MultihopBaseFee({
@@ -27,7 +27,7 @@ export function MultihopBaseFee({
   );
 
   return (
-    <InfoSection label="Base Fee" valueClassName={gasStyles.borderedCard}>
+    <Section label="Base Fee" valueClassName={gasStyles.borderedCard}>
       {entriesWithFees.map((entry, index) => (
         <BaseFeeEntry
           key={index}
@@ -38,6 +38,6 @@ export function MultihopBaseFee({
           renderFiPlus={renderFiPlus}
         />
       ))}
-    </InfoSection>
+    </Section>
   );
 }

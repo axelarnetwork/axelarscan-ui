@@ -2,7 +2,7 @@ import { Number } from '@/components/Number';
 
 import type { ExpressFeeEntryProps } from '../GMP.types';
 import { infoStyles } from './Info.styles';
-import { gasStyles } from './InfoGasMetrics.styles';
+import { gasStyles } from './GasMetrics.styles';
 import { ExpressFeeBreakdown } from './ExpressFeeBreakdown.component';
 
 export function ExpressFeeEntry({

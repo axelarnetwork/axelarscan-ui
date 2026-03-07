@@ -9,16 +9,16 @@ import { toArray } from '@/lib/parser';
 import { GMPEventLog, GMPMessage } from '../GMP.types';
 import { StatusTimeline } from '../StatusTimeline';
 import { infoStyles } from './Info.styles';
-import { InfoAsset } from './InfoAsset.component';
-import { InfoContractCallDetails } from './InfoContractCallDetails.component';
-import { InfoGasMetrics } from './InfoGasMetrics.component';
-import { InfoHeader } from './InfoHeader.component';
-import { InfoParticipants } from './InfoParticipants.component';
-import { InfoPath } from './InfoPath.component';
-import { InfoSection } from './InfoSection.component';
-import { InfoSettlement } from './InfoSettlement.component';
-import { InfoTime } from './InfoTime.component';
-import { InfoTransfers } from './InfoTransfers.component';
+import { Asset } from './Asset.component';
+import { ContractCallDetails } from './ContractCallDetails.component';
+import { GasMetrics } from './GasMetrics.component';
+import { Header } from './Header.component';
+import { Participants } from './Participants.component';
+import { Path } from './Path.component';
+import { Section } from './Section.component';
+import { Settlement } from './Settlement.component';
+import { Time } from './Time.component';
+import { Transfers } from './Transfers.component';
 import { RecoveryButtons } from './RecoveryButtons.component';
 
 import { InfoProps } from './Info.types';
@@ -134,7 +134,7 @@ export function Info({
     <div className={infoStyles.container}>
       <div className={infoStyles.header}>
         <h3 className={infoStyles.headerTitle}>General Message Passing</h3>
-        <InfoHeader
+        <Header
           call={call}
           messageId={messageId}
           txhash={txhash}
@@ -145,10 +145,10 @@ export function Info({
       </div>
       <div className={infoStyles.body}>
         <dl className={infoStyles.list}>
-          <InfoSection label="Method">
+          <Section label="Method">
             <Tag className={infoStyles.tagBase}>{event}</Tag>
-          </InfoSection>
-          <InfoSection label="Status">
+          </Section>
+          <Section label="Status">
             <StatusTimeline
               timeline={timelineItems}
               chains={chains}
@@ -157,20 +157,20 @@ export function Info({
               rootCall={call}
               expressExecuted={express_executed}
             />
-          </InfoSection>
+          </Section>
           <RecoveryButtons
             data={data}
             chains={chains}
             estimatedTimeSpent={estimatedTimeSpent}
             refreshData={refreshData}
           />
-          <InfoPath
+          <Path
             data={data}
             isMultihop={isMultihop}
             sourceChain={sourceChain}
             destinationChain={destinationChain}
           />
-          <InfoSettlement
+          <Settlement
             data={data}
             settlementForwardedEvents={settlement_forwarded_events}
             settlementFilledEvents={settlement_filled_events}
@@ -179,9 +179,9 @@ export function Info({
             destinationChain={destinationChain}
             executed={executed}
           />
-          <InfoTransfers data={data} chains={chains} />
+          <Transfers data={data} chains={chains} />
           {symbol && (
-            <InfoAsset
+            <Asset
               symbol={symbol}
               sourceChain={assetSourceChain}
               amount={assetAmount}
@@ -189,12 +189,12 @@ export function Info({
               contractAddress={tokenContractAddress}
             />
           )}
-          <InfoSection label="Created">
+          <Section label="Created">
             {moment(
               ((data.originData?.call || call)?.block_timestamp ?? 0) * 1000
             ).format('MMM D, YYYY h:mm:ss A z')}
-          </InfoSection>
-          <InfoTime
+          </Section>
+          <Time
             isMultihop={isMultihop}
             executedGMPsData={executedGMPsData}
             timeSpent={time_spent}
@@ -205,7 +205,7 @@ export function Info({
             approved={approved}
             call={call}
           />
-          <InfoParticipants
+          <Participants
             data={data}
             sourceChain={sourceChain}
             destinationChain={destinationChain}
@@ -216,7 +216,7 @@ export function Info({
             showAdditionalDetails={showDetails}
             call={call}
           />
-          <InfoGasMetrics
+          <GasMetrics
             data={data}
             gasData={gasData}
             refundedData={refundedData}
@@ -232,7 +232,7 @@ export function Info({
             isMultihop={isMultihop}
           />
           {showDetails && (
-            <InfoContractCallDetails
+            <ContractCallDetails
               data={data}
               executeData={executeData}
               isMultihop={isMultihop}

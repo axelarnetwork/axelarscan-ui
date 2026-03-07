@@ -31,7 +31,8 @@ export const getKeplrChainData = async (
     // Return whichever request resolves successfully first
     const chainData = await Promise.any(urls.map(url => fetchJson(url)));
     return chainData;
-  } catch {
+  } catch (error) {
+    console.error('[Keplr] Chain data fetch failed', error);
     return null;
   }
 };

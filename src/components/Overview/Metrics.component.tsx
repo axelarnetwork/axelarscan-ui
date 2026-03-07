@@ -11,6 +11,7 @@ import {
   useInflationData,
   useNetworkParameters,
 } from '@/hooks/useGlobalData';
+import { SIX_SECONDS_MS } from '@/lib/constants';
 import { getRPCStatus } from '@/lib/api/validator';
 import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
@@ -42,7 +43,7 @@ export function Metrics() {
 
     getData();
 
-    const interval = setInterval(() => getData(), 6 * 1000);
+    const interval = setInterval(() => getData(), SIX_SECONDS_MS);
     return () => clearInterval(interval);
   }, [setBlockData]);
 

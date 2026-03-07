@@ -71,7 +71,6 @@ export function EVMPoll({ id }: EVMPollProps) {
         url: buildPollUrl(d, eventName, explorerUrl, transaction_path),
       };
 
-      console.log('[data]', d);
       setData({ ...d } as EVMPollData);
     };
 

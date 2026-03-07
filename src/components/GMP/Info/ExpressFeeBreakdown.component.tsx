@@ -2,7 +2,7 @@ import { Number } from '@/components/Number';
 import { isNumber } from '@/lib/number';
 
 import type { ExpressFeeBreakdownProps } from '../GMP.types';
-import { gasStyles } from './InfoGasMetrics.styles';
+import { gasStyles } from './GasMetrics.styles';
 
 export function ExpressFeeBreakdown({
   sourceExpressFee,

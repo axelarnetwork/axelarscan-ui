@@ -99,7 +99,6 @@ export function AmplifierProof({ id }: AmplifierProofProps) {
         };
       }
 
-      console.log('[data]', d);
       setData({ ...d });
     };
 

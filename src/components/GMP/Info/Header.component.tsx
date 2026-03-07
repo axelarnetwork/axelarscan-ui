@@ -4,17 +4,17 @@ import { Copy } from '@/components/Copy';
 import { ExplorerLink } from '@/components/ExplorerLink';
 import { isNumber } from '@/lib/number';
 import { ellipse } from '@/lib/string';
-import { infoHeaderStyles } from './InfoHeader.styles';
-import { InfoHeaderProps } from './InfoHeader.types';
+import { headerStyles } from './Header.styles';
+import { HeaderProps } from './Header.types';
 
-export function InfoHeader({
+export function Header({
   call,
   messageId,
   txhash,
   url,
   transactionPath,
   sourceChain,
-}: InfoHeaderProps) {
+}: HeaderProps) {
   if (!txhash) {
     return null;
   }
@@ -26,14 +26,14 @@ export function InfoHeader({
       : undefined;
 
   return (
-    <div className={infoHeaderStyles.subtitle}>
-      <div className={infoHeaderStyles.row}>
+    <div className={headerStyles.subtitle}>
+      <div className={headerStyles.row}>
         <Copy value={messageId || txhash}>
           {proposalOrTxLink ? (
             <Link
               href={proposalOrTxLink}
               target="_blank"
-              className={infoHeaderStyles.iconButton}
+              className={headerStyles.iconButton}
             >
               {ellipse(messageId || txhash, 12)}
             </Link>

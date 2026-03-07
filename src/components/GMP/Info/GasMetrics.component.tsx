@@ -7,14 +7,14 @@ import { timeDiff } from '@/lib/time';
 
 import type { InfoGasMetricsProps } from '../GMP.types';
 import { infoStyles } from './Info.styles';
-import { gasStyles } from './InfoGasMetrics.styles';
+import { gasStyles } from './GasMetrics.styles';
 import { GasChargedSection } from './GasChargedSection.component';
 import { GasPaidSection } from './GasPaidSection.component';
 import { GasUsedSection } from './GasUsedSection.component';
 import { BaseFeeSection } from './BaseFeeSection.component';
 import { ExpressFeeSection } from './ExpressFeeSection.component';
 
-export function InfoGasMetrics({
+export function GasMetrics({
   data,
   gasData,
   refundedData,

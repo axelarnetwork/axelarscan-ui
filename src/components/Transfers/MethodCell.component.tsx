@@ -6,7 +6,7 @@ import { Number } from '@/components/Number';
 import { isString, toTitle } from '@/lib/string';
 import { isNumber, formatUnits } from '@/lib/number';
 
-import { normalizeType } from './Transfers.component';
+import { normalizeType } from './Transfers.utils';
 import type { TransferMethodCellProps } from './Transfers.types';
 import * as styles from './Transfers.styles';
 

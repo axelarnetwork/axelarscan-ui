@@ -2,12 +2,12 @@ import { PiWarningCircle } from 'react-icons/pi';
 
 import { Profile } from '@/components/Profile';
 import { isAxelar } from '@/lib/chain';
-import { InfoParticipantsProps } from './InfoParticipants.types';
-import { InfoSection } from './InfoSection.component';
-import { infoParticipantsStyles } from './InfoParticipants.styles';
+import { ParticipantsProps } from './Participants.types';
+import { Section } from './Section.component';
+import { participantsStyles } from './Participants.styles';
 import { infoStyles } from './Info.styles';
 
-export function InfoParticipants({
+export function Participants({
   data,
   sourceChain,
   destinationChain,
@@ -17,7 +17,7 @@ export function InfoParticipants({
   lite,
   showAdditionalDetails,
   call,
-}: InfoParticipantsProps) {
+}: ParticipantsProps) {
   const originCall = data.originData?.call;
   const destinationCall = data.callbackData?.call;
   const customValues = data.customValues;
@@ -55,16 +55,16 @@ export function InfoParticipants({
 
   return (
     <>
-      <InfoSection label="Sender">
+      <Section label="Sender">
         {senderProfileAddress ? (
           <Profile address={senderProfileAddress} chain={senderProfileChain} />
         ) : (
           <span className={infoStyles.inlineNumberMuted}>Not available</span>
         )}
-      </InfoSection>
+      </Section>
       {!lite && showAdditionalDetails && (
-        <InfoSection label="Source Address">
-          <div className={infoParticipantsStyles.profileColumn}>
+        <Section label="Source Address">
+          <div className={participantsStyles.profileColumn}>
             {sourceAddressValue ? (
               <Profile
                 address={sourceAddressValue}
@@ -77,16 +77,16 @@ export function InfoParticipants({
             )}
             {(data.originData?.is_invalid_source_address ||
               data.is_invalid_source_address) && (
-              <div className={infoParticipantsStyles.warningRowTall}>
+              <div className={participantsStyles.warningRowTall}>
                 <PiWarningCircle size={20} />
                 <span>Invalid Address</span>
               </div>
             )}
           </div>
-        </InfoSection>
+        </Section>
       )}
-      <InfoSection label="Destination Contract">
-        <div className={infoParticipantsStyles.profileColumn}>
+      <Section label="Destination Contract">
+        <div className={participantsStyles.profileColumn}>
           {destinationContract ? (
             <Profile
               address={destinationContract}
@@ -98,17 +98,17 @@ export function InfoParticipants({
           )}
           {(data.callbackData?.is_invalid_contract_address ||
             data.is_invalid_contract_address) && (
-            <div className={infoParticipantsStyles.warningRowTall}>
+            <div className={participantsStyles.warningRowTall}>
               <PiWarningCircle size={20} />
               <span>Invalid Contract</span>
             </div>
           )}
         </div>
-      </InfoSection>
+      </Section>
       {effectiveRecipientAddress && (
-        <InfoSection label={recipientLabel}>
+        <Section label={recipientLabel}>
           <Profile address={effectiveRecipientAddress} chain={recipientChain} />
-        </InfoSection>
+        </Section>
       )}
     </>
   );

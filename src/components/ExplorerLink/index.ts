@@ -1,1 +1,2 @@
-export { ExplorerLink, buildExplorerURL } from './ExplorerLink.component';
+export { ExplorerLink } from './ExplorerLink.component';
+export { buildExplorerURL } from './ExplorerLink.utils';

@@ -12,6 +12,9 @@ export const getKeybaseUser = async (params?: Record<string, string>) => {
 
   const response = await fetch(
     `https://keybase.io/_/api/1.0/user/lookup.json?${qs.toString()}`
-  ).catch(() => null);
+  ).catch((error: unknown) => {
+    console.error('[Keybase] User lookup failed', error);
+    return null;
+  });
   return response && (await response.json());
 };

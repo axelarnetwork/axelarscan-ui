@@ -124,8 +124,6 @@ export async function executeApprove(
       use_self_signing: useSelfSigning,
     };
 
-    console.log('[manualRelayToDestChain request]', recoveryLogContext);
-
     // Defense-in-depth: UI only renders Connect Cosmos when required, but a
     // disconnect can still race before this async call executes.
     if (!useSelfSigning && requiresCosmosSelfSigning) {
@@ -167,8 +165,6 @@ export async function executeApprove(
       eventIndex,
       options
     );
-
-    console.log('[manualRelayToDestChain response]', response);
 
     const { success, error, confirmTx, signCommandTx, routeMessageTx } =
       response;

@@ -11,6 +11,7 @@ import { Button } from '@/components/Button';
 import { Spinner } from '@/components/Spinner';
 import { Number } from '@/components/Number';
 import { Pagination } from '@/components/Pagination';
+import { THIRTY_SECONDS_MS } from '@/lib/constants';
 import { searchGMP } from '@/lib/api/gmp';
 import { toArray } from '@/lib/parser';
 import { getParams, generateKeyByParams } from '@/lib/operator';
@@ -87,7 +88,7 @@ export function GMPs({
   }, [params, setSearchResults, refresh, setRefresh]);
 
   useEffect(() => {
-    const interval = setInterval(() => setRefresh('true'), 0.5 * 60 * 1000);
+    const interval = setInterval(() => setRefresh('true'), THIRTY_SECONDS_MS);
     return () => clearInterval(interval);
   }, []);
 

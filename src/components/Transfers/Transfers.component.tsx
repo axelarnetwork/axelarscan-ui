@@ -12,6 +12,7 @@ import { Button } from '@/components/Button';
 import { Spinner } from '@/components/Spinner';
 import { Number } from '@/components/Number';
 import { Pagination } from '@/components/Pagination';
+import { THIRTY_SECONDS_MS } from '@/lib/constants';
 import { useAssets } from '@/hooks/useGlobalData';
 import { searchTransfers } from '@/lib/api/token-transfer';
 import { ENVIRONMENT } from '@/lib/config';
@@ -30,11 +31,6 @@ import type {
 import * as styles from './Transfers.styles';
 
 const size = 25;
-
-export const normalizeType = (type: string | undefined) =>
-  ['wrap', 'unwrap', 'erc20_transfer'].includes(type as string)
-    ? 'deposit_service'
-    : type || 'deposit_address';
 
 export function Transfers({ address }: TransfersProps) {
   const searchParams = useSearchParams();
@@ -103,7 +99,7 @@ export function Transfers({ address }: TransfersProps) {
   }, [params, setSearchResults, refresh, setRefresh]);
 
   useEffect(() => {
-    const interval = setInterval(() => setRefresh('true'), 0.5 * 60 * 1000);
+    const interval = setInterval(() => setRefresh('true'), THIRTY_SECONDS_MS);
     return () => clearInterval(interval);
   }, []);
 

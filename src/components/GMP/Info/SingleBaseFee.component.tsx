@@ -2,8 +2,8 @@ import { Number } from '@/components/Number';
 
 import type { SingleBaseFeeProps } from '../GMP.types';
 import { infoStyles } from './Info.styles';
-import { gasStyles } from './InfoGasMetrics.styles';
-import { InfoSection } from './InfoSection.component';
+import { gasStyles } from './GasMetrics.styles';
+import { Section } from './Section.component';
 
 export function SingleBaseFee({
   combinedFees,
@@ -21,7 +21,7 @@ export function SingleBaseFee({
       : 0;
 
   return (
-    <InfoSection label="Base Fee">
+    <Section label="Base Fee">
       <div className={gasStyles.valueColumn}>
         <div className={gasStyles.valueRow}>
           <Number
@@ -68,6 +68,6 @@ export function SingleBaseFee({
           </>
         )}
       </div>
-    </InfoSection>
+    </Section>
   );
 }
