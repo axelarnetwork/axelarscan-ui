@@ -60,6 +60,13 @@ export interface ContractsTableProps {
   multisigProverAddress: string | undefined;
 }
 
+export interface DistributionRowProps {
+  distribution: RewardsDistribution;
+  distributionExpanded: string | null;
+  setDistributionExpanded: (v: string | null) => void;
+  symbol: string | undefined;
+}
+
 export interface AmplifierRewardsProps {
   chain?: string;
 }

@@ -54,3 +54,8 @@ export interface ValidatorListProps {
 export interface BlockProps {
   height: string;
 }
+
+export interface SignerSectionProps {
+  signedValidatorsData: ValidatorSetEntry[];
+  unsignedValidatorsData: ValidatorSetEntry[];
+}

@@ -222,6 +222,12 @@ export interface UseInterchainHooksParams {
   granularity: 'day' | 'week' | 'month';
 }
 
+export interface InterchainOptionContentProps {
+  selected: boolean;
+  active: boolean;
+  title: string;
+}
+
 // Re-export shared types for backward compatibility
 export type ChainData = Chain;
 export type AssetData = Asset;

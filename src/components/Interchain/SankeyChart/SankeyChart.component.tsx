@@ -47,6 +47,29 @@ export function SankeyChart({
   const value = getSankeyChartValue(data, hoveredKey, field, totalValue);
   const keyString = hoveredItem ? hoveredItem.key : undefined;
   const chartData = processSankeyChartData(data, field, topN, chains);
+  const isDark = resolvedTheme === 'dark';
+
+  const sankeyTheme = {
+    tooltip: {
+      container: {
+        background: isDark
+          ? sankeyChartColors.tooltip.background.dark
+          : sankeyChartColors.tooltip.background.light,
+        color: isDark
+          ? sankeyChartColors.tooltip.text.dark
+          : sankeyChartColors.tooltip.text.light,
+        fontSize: 12,
+        fontWeight: 400,
+      },
+    },
+  };
+
+  const sankeyNodes = chartData.length > 0
+    ? _.uniq(chartData.flatMap(d => [d.source, d.target])).map(d => ({
+        id: d,
+        nodeColor: getChainData(d.trim(), chains)?.color,
+      }))
+    : [];
 
   const linkTooltipRenderer = useCallback(
     (d: {
@@ -135,59 +158,33 @@ export function SankeyChart({
           >
             {chartData.length > 0 && (
               <ResponsiveSankey
-                data={{
-                  nodes: _.uniq(
-                    chartData.flatMap(d => [d.source, d.target])
-                  ).map(d => ({
-                    id: d,
-                    nodeColor: getChainData(d.trim(), chains)?.color,
-                  })),
-                  links: chartData,
-                }}
+                data={{ nodes: sankeyNodes, links: chartData }}
                 valueFormat={`>-${valuePrefix},`}
                 margin={{ top: 10, bottom: 10 }}
-                theme={{
-                  tooltip: {
-                    container: {
-                      background:
-                        resolvedTheme === 'dark'
-                          ? sankeyChartColors.tooltip.background.dark
-                          : sankeyChartColors.tooltip.background.light,
-                      color:
-                        resolvedTheme === 'dark'
-                          ? sankeyChartColors.tooltip.text.dark
-                          : sankeyChartColors.tooltip.text.light,
-                      fontSize: 12,
-                      fontWeight: 400,
-                    },
-                  },
-                }}
+                theme={sankeyTheme}
                 colors={d => d.nodeColor ?? '#888'}
                 nodeOpacity={1}
                 nodeHoverOpacity={1}
                 nodeHoverOthersOpacity={0.35}
                 nodeBorderWidth={0}
                 nodeBorderRadius={3}
-                linkOpacity={resolvedTheme === 'dark' ? 0.2 : 0.4}
-                linkHoverOpacity={resolvedTheme === 'dark' ? 0.7 : 0.9}
-                linkHoverOthersOpacity={resolvedTheme === 'dark' ? 0.1 : 0.2}
-                linkBlendMode={resolvedTheme === 'dark' ? 'lighten' : 'darken'}
+                linkOpacity={isDark ? 0.2 : 0.4}
+                linkHoverOpacity={isDark ? 0.7 : 0.9}
+                linkHoverOthersOpacity={isDark ? 0.1 : 0.2}
+                linkBlendMode={isDark ? 'lighten' : 'darken'}
                 enableLinkGradient={true}
                 labelTextColor={
-                  resolvedTheme === 'dark'
+                  isDark
                     ? sankeyChartColors.label.dark
                     : sankeyChartColors.label.light
                 }
-                nodeTooltip={d => {
-                  const { id, formattedValue, nodeColor } = { ...d.node };
-                  return (
-                    <SankeyChartNodeTooltip
-                      id={id}
-                      formattedValue={formattedValue}
-                      nodeColor={nodeColor}
-                    />
-                  );
-                }}
+                nodeTooltip={d => (
+                  <SankeyChartNodeTooltip
+                    id={d.node.id}
+                    formattedValue={d.node.formattedValue}
+                    nodeColor={d.node.nodeColor}
+                  />
+                )}
                 linkTooltip={linkTooltipRenderer}
               />
             )}

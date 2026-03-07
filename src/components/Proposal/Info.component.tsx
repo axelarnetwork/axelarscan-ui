@@ -39,6 +39,16 @@ export function Info({ id, data, end, voteOptions }: InfoProps) {
   const { plan, title, description, changes, contract_calls } = { ...content };
   const { height, info } = { ...plan };
 
+  const tallyItems = end
+    ? Object.entries({ ...final_tally_result })
+        .filter(([_k, v]) => toNumber(v) >= 0)
+        .map(([k, v]) => ({ key: k, value: v, label: toTitle(k) }))
+    : voteOptions.map((d: VoteOptionSummary, i: number) => ({
+        key: String(i),
+        value: d.value,
+        label: toTitle(d.option),
+      }));
+
   return (
     <div className={styles.infoPanel}>
       <div className={styles.infoHeader}>
@@ -163,29 +173,16 @@ export function Info({ id, data, end, voteOptions }: InfoProps) {
             <dt className={styles.dtLabel}>{end ? 'Final Tally' : 'Votes'}</dt>
             <dd className={styles.ddValue}>
               <div className={styles.depositList}>
-                {end
-                  ? Object.entries({ ...final_tally_result })
-                      .filter(([_k, v]) => toNumber(v) >= 0)
-                      .map(([k, v]) => (
-                        <Number
-                          key={k}
-                          value={v}
-                          format="0,0.00a"
-                          prefix={`${toTitle(k)}: `}
-                          noTooltip={true}
-                          className={styles.tallyValue}
-                        />
-                      ))
-                  : voteOptions.map((d: VoteOptionSummary, i: number) => (
-                      <Number
-                        key={i}
-                        value={d.value}
-                        format="0,0.00a"
-                        prefix={`${toTitle(d.option)}: `}
-                        noTooltip={true}
-                        className={styles.tallyValue}
-                      />
-                    ))}
+                {tallyItems.map(item => (
+                  <Number
+                    key={item.key}
+                    value={item.value}
+                    format="0,0.00a"
+                    prefix={`${item.label}: `}
+                    noTooltip={true}
+                    className={styles.tallyValue}
+                  />
+                ))}
               </div>
             </dd>
           </div>

@@ -52,3 +52,25 @@ export interface SankeyTabsProps {
 export interface ConnectedChainsTagProps {
   count: number;
 }
+
+export interface MetricWithTooltipProps {
+  tooltipContent: string;
+  href: string;
+  children: React.ReactNode;
+}
+
+export interface StakedMetricProps {
+  bankSupplyAmount: string;
+  bondedTokens: string;
+}
+
+export interface APRMetricProps {
+  inflation: number;
+  communityTax: number;
+  bankSupplyAmount: string;
+  bondedTokens: string;
+}
+
+export interface InflationMetricProps {
+  inflation: number;
+}

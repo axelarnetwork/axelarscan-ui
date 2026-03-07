@@ -22,3 +22,7 @@ export interface ProposalListItem {
   final_tally_result?: Record<string, number>;
   [key: string]: unknown;
 }
+
+export interface ProposalRowProps {
+  proposal: ProposalListItem;
+}

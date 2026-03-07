@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { create } from 'zustand';
 import clsx from 'clsx';
@@ -26,6 +25,7 @@ import type {
 import { STATUSES } from './Validators.types';
 import { SortHeader } from './SortHeader.component';
 import { ValidatorRow } from './ValidatorRow.component';
+import { ValidatorsHeader } from './ValidatorsHeader.component';
 import * as styles from './Validators.styles';
 
 // ─── Store ─────────────────────────────────────────────────────
@@ -248,57 +248,14 @@ export function Validators({ status }: ValidatorsProps) {
 
   const filteredData = filter(status);
 
+  const filterCounts = Object.fromEntries(
+    STATUSES.map((s) => [s, filter(s).length])
+  );
+
   return (
     <Container className={styles.container}>
       <div>
-        <div className={styles.headerRow}>
-          <div className={styles.headerLeft}>
-            <div className={styles.titleRow}>
-              <h1 className={styles.title}>
-                Validators
-              </h1>
-              <span className={styles.titleSeparator}>|</span>
-              <Link
-                href="/verifiers"
-                className={styles.verifiersLink}
-              >
-                Verifiers
-              </Link>
-            </div>
-            <p className={styles.subtitle}>
-              List of {status || 'active'} validators in Axelar Network with
-              the latest 10K blocks performance.
-              {(!status || status === 'active') && (
-                <>
-                  &nbsp;
-                  <Link
-                    href="https://www.axelar.network/blog/how-to-stake-the-axl-token-on-the-axelar-network"
-                    target="_blank"
-                    aria-label="How to stake AXL"
-                    className={styles.stakeLink}
-                  >
-                    How to stake AXL
-                  </Link>
-                </>
-              )}
-            </p>
-          </div>
-          <nav className={styles.nav}>
-            {STATUSES.map((s, i) => (
-              <Link
-                key={i}
-                href={`/validators${s !== 'active' ? `/${s}` : ''}`}
-                className={
-                  s === (status || 'active')
-                    ? styles.navLinkActive
-                    : styles.navLinkInactive
-                }
-              >
-                {s} ({filter(s).length})
-              </Link>
-            ))}
-          </nav>
-        </div>
+        <ValidatorsHeader status={status} filterCounts={filterCounts} />
         <div className={styles.tableWrapper}>
           <table className={styles.table}>
             <thead className={styles.thead}>

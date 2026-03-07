@@ -12,3 +12,17 @@ export interface InfoProps {
 export interface UseInfoStateOptions {
   initialSeeMore?: boolean;
 }
+
+export interface InfoAssetProps {
+  symbol: string;
+  sourceChain: string | undefined;
+  amount: number | undefined;
+  event: string | undefined;
+  contractAddress: string | undefined;
+}
+
+export interface InfoContractCallDetailsProps {
+  data: import('../GMP.types').GMPMessage;
+  executeData?: string | null;
+  isMultihop: boolean;
+}

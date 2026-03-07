@@ -11,6 +11,7 @@ import {
   FilterAttribute,
   FilterOption,
   FilterParams,
+  InterchainOptionContentProps,
 } from '../Interchain.types';
 import { filterSelectInputStyles } from './FilterSelectInput.styles';
 
@@ -21,6 +22,71 @@ interface FilterSelectInputProps {
   setParams: (params: FilterParams) => void;
   setSearchInput: (input: Record<string, string>) => void;
 }
+
+// ---- Shared small pieces ----
+
+function OptionContent({ selected, active, title }: InterchainOptionContentProps) {
+  return (
+    <>
+      <span className={filterSelectInputStyles.options.optionText(selected)}>
+        {title}
+      </span>
+      {selected && (
+        <span className={filterSelectInputStyles.options.checkIcon(active)}>
+          <MdCheck size={20} />
+        </span>
+      )}
+    </>
+  );
+}
+
+function SelectButtonContent({
+  attribute,
+  selectedArray,
+  selectedSingle,
+  onRemoveItem,
+}: {
+  attribute: FilterAttribute;
+  selectedArray: FilterOption[];
+  selectedSingle: FilterOption | undefined;
+  onRemoveItem: (item: FilterOption) => void;
+}) {
+  if (!attribute.multiple) {
+    return (
+      <span className={filterSelectInputStyles.button.placeholder}>
+        {selectedSingle?.title || 'Any'}
+      </span>
+    );
+  }
+
+  return (
+    <div className={filterSelectInputStyles.button.selectedContainer(selectedArray.length)}>
+      {selectedArray.length === 0 ? (
+        <span className={filterSelectInputStyles.button.placeholder}>Any</span>
+      ) : (
+        selectedArray.map((v: FilterOption, j: number) => (
+          <div
+            key={j}
+            onClick={() => onRemoveItem(v)}
+            className={filterSelectInputStyles.button.selectedItem}
+          >
+            {v?.title}
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
+
+function ChevronIcon() {
+  return (
+    <span className={filterSelectInputStyles.button.icon}>
+      <LuChevronsUpDown size={20} className={filterSelectInputStyles.button.iconSvg} />
+    </span>
+  );
+}
+
+// ---- Main component ----
 
 export function FilterSelectInput({
   attribute,
@@ -40,22 +106,16 @@ export function FilterSelectInput({
   };
 
   const options = toArray(attribute.options) as FilterOption[];
-  const selectedValue = attribute.multiple
-    ? options.filter(o => isSelected(o?.value || ''))
-    : options.find(o => isSelected(o?.value || ''));
-
-  const selectedArray = Array.isArray(selectedValue) ? selectedValue : [];
-  const selectedSingle = !Array.isArray(selectedValue)
-    ? selectedValue
+  const selectedArray = options.filter(o => isSelected(o?.value || ''));
+  const selectedSingle = !attribute.multiple
+    ? options.find(o => isSelected(o?.value || ''))
     : undefined;
 
   const handleChange = (v: string | string[]) => {
     setParams({
       ...params,
       [attribute.name]: attribute.multiple
-        ? Array.isArray(v)
-          ? v.join(',')
-          : v
+        ? Array.isArray(v) ? v.join(',') : v
         : v,
     });
   };
@@ -65,176 +125,149 @@ export function FilterSelectInput({
       .filter(sv => sv?.value !== item?.value)
       .map(sv => sv?.value)
       .join(',');
-    setParams({
-      ...params,
-      [attribute.name]: filtered,
-    });
+    setParams({ ...params, [attribute.name]: filtered });
   };
 
   if (attribute.searchable) {
     return (
-      <Combobox
-        value={
-          attribute.multiple
-            ? split(params[attribute.name])
-            : params[attribute.name]
-        }
+      <SearchableInput
+        attribute={attribute}
+        params={params}
+        searchInput={searchInput}
+        setSearchInput={setSearchInput}
+        selectedArray={selectedArray}
+        selectedSingle={selectedSingle}
+        options={options}
         onChange={handleChange}
-        multiple={attribute.multiple}
-      >
-        {({ open }) => (
-          <div className="relative">
-            <Combobox.Button className={filterSelectInputStyles.button.base}>
-              {attribute.multiple ? (
-                <div
-                  className={filterSelectInputStyles.button.selectedContainer(
-                    selectedArray.length
-                  )}
-                >
-                  {selectedArray.length === 0 ? (
-                    <span
-                      className={filterSelectInputStyles.button.placeholder}
-                    >
-                      Any
-                    </span>
-                  ) : (
-                    selectedArray.map((v: FilterOption, j: number) => (
-                      <div
-                        key={j}
-                        onClick={() => handleRemoveItem(v)}
-                        className={filterSelectInputStyles.button.selectedItem}
-                      >
-                        {v?.title}
-                      </div>
-                    ))
-                  )}
-                </div>
-              ) : (
-                <span className={filterSelectInputStyles.button.placeholder}>
-                  {selectedSingle?.title || 'Any'}
-                </span>
-              )}
-              <span className={filterSelectInputStyles.button.icon}>
-                <LuChevronsUpDown
-                  size={20}
-                  className={filterSelectInputStyles.button.iconSvg}
-                />
-              </span>
-            </Combobox.Button>
-            <Transition
-              show={open}
-              as={Fragment}
-              leave="transition ease-in duration-100"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-            >
-              <div className={filterSelectInputStyles.input.container}>
-                <Combobox.Input
-                  placeholder={`Search ${attribute.label}`}
-                  value={searchInput[attribute.name] || ''}
-                  onChange={e =>
-                    setSearchInput({
-                      ...searchInput,
-                      [attribute.name]: e.target.value,
-                    })
-                  }
-                  className={filterSelectInputStyles.input.field}
-                />
-                <Combobox.Options
-                  className={filterSelectInputStyles.options.container}
-                >
-                  {(toArray(attribute.options) as FilterOption[])
-                    .filter(o =>
-                      filterSearchInput(
-                        [o?.title || '', o?.value || ''],
-                        searchInput[attribute.name]
-                      )
-                    )
-                    .map((o, j) => (
-                      <Combobox.Option
-                        key={j}
-                        value={o?.value || ''}
-                        className={({ active }) =>
-                          filterSelectInputStyles.options.option(active)
-                        }
-                      >
-                        {({ selected, active }) => (
-                          <>
-                            <span
-                              className={filterSelectInputStyles.options.optionText(
-                                selected
-                              )}
-                            >
-                              {o?.title || ''}
-                            </span>
-                            {selected && (
-                              <span
-                                className={filterSelectInputStyles.options.checkIcon(
-                                  active
-                                )}
-                              >
-                                <MdCheck size={20} />
-                              </span>
-                            )}
-                          </>
-                        )}
-                      </Combobox.Option>
-                    ))}
-                </Combobox.Options>
-              </div>
-            </Transition>
-          </div>
-        )}
-      </Combobox>
+        onRemoveItem={handleRemoveItem}
+      />
     );
   }
 
   return (
-    <Listbox
-      value={
-        attribute.multiple
-          ? split(params[attribute.name])
-          : params[attribute.name]
-      }
+    <SimpleInput
+      attribute={attribute}
+      params={params}
+      selectedArray={selectedArray}
+      selectedSingle={selectedSingle}
+      options={options}
       onChange={handleChange}
+      onRemoveItem={handleRemoveItem}
+    />
+  );
+}
+
+// ---- Searchable (Combobox) ----
+
+function SearchableInput({
+  attribute,
+  params,
+  searchInput,
+  setSearchInput,
+  selectedArray,
+  selectedSingle,
+  options,
+  onChange,
+  onRemoveItem,
+}: {
+  attribute: FilterAttribute;
+  params: FilterParams;
+  searchInput: Record<string, string>;
+  setSearchInput: (input: Record<string, string>) => void;
+  selectedArray: FilterOption[];
+  selectedSingle: FilterOption | undefined;
+  options: FilterOption[];
+  onChange: (v: string | string[]) => void;
+  onRemoveItem: (item: FilterOption) => void;
+}) {
+  const filteredOptions = options.filter(o =>
+    filterSearchInput(
+      [o?.title || '', o?.value || ''],
+      searchInput[attribute.name]
+    )
+  );
+
+  return (
+    <Combobox
+      value={attribute.multiple ? split(params[attribute.name]) : params[attribute.name]}
+      onChange={onChange}
+      multiple={attribute.multiple}
+    >
+      {({ open }) => (
+        <div className="relative">
+          <Combobox.Button className={filterSelectInputStyles.button.base}>
+            <SelectButtonContent
+              attribute={attribute}
+              selectedArray={selectedArray}
+              selectedSingle={selectedSingle}
+              onRemoveItem={onRemoveItem}
+            />
+            <ChevronIcon />
+          </Combobox.Button>
+          <Transition show={open} as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
+            <div className={filterSelectInputStyles.input.container}>
+              <Combobox.Input
+                placeholder={`Search ${attribute.label}`}
+                value={searchInput[attribute.name] || ''}
+                onChange={e => setSearchInput({ ...searchInput, [attribute.name]: e.target.value })}
+                className={filterSelectInputStyles.input.field}
+              />
+              <Combobox.Options className={filterSelectInputStyles.options.container}>
+                {filteredOptions.map((o, j) => (
+                  <Combobox.Option
+                    key={j}
+                    value={o?.value || ''}
+                    className={({ active }) => filterSelectInputStyles.options.option(active)}
+                  >
+                    {({ selected, active }) => (
+                      <OptionContent selected={selected} active={active} title={o?.title || ''} />
+                    )}
+                  </Combobox.Option>
+                ))}
+              </Combobox.Options>
+            </div>
+          </Transition>
+        </div>
+      )}
+    </Combobox>
+  );
+}
+
+// ---- Simple (Listbox) ----
+
+function SimpleInput({
+  attribute,
+  params,
+  selectedArray,
+  selectedSingle,
+  options,
+  onChange,
+  onRemoveItem,
+}: {
+  attribute: FilterAttribute;
+  params: FilterParams;
+  selectedArray: FilterOption[];
+  selectedSingle: FilterOption | undefined;
+  options: FilterOption[];
+  onChange: (v: string | string[]) => void;
+  onRemoveItem: (item: FilterOption) => void;
+}) {
+  return (
+    <Listbox
+      value={attribute.multiple ? split(params[attribute.name]) : params[attribute.name]}
+      onChange={onChange}
       multiple={attribute.multiple}
     >
       {({ open }) => (
         <div className="relative">
           <Listbox.Button className={filterSelectInputStyles.button.base}>
-            {attribute.multiple ? (
-              <div
-                className={filterSelectInputStyles.button.selectedContainer(
-                  selectedArray.length
-                )}
-              >
-                {selectedArray.length === 0 ? (
-                  <span className={filterSelectInputStyles.button.placeholder}>
-                    Any
-                  </span>
-                ) : (
-                  selectedArray.map((v: FilterOption, j: number) => (
-                    <div
-                      key={j}
-                      onClick={() => handleRemoveItem(v)}
-                      className={filterSelectInputStyles.button.selectedItem}
-                    >
-                      {v?.title}
-                    </div>
-                  ))
-                )}
-              </div>
-            ) : (
-              <span className={filterSelectInputStyles.button.placeholder}>
-                {selectedSingle?.title || 'Any'}
-              </span>
-            )}
-            <span className={filterSelectInputStyles.button.icon}>
-              <LuChevronsUpDown
-                size={20}
-                className={filterSelectInputStyles.button.iconSvg}
-              />
-            </span>
+            <SelectButtonContent
+              attribute={attribute}
+              selectedArray={selectedArray}
+              selectedSingle={selectedSingle}
+              onRemoveItem={onRemoveItem}
+            />
+            <ChevronIcon />
           </Listbox.Button>
           <Transition
             show={open}
@@ -243,36 +276,15 @@ export function FilterSelectInput({
             leaveFrom={filterSelectInputStyles.transition.leaveFrom}
             leaveTo={filterSelectInputStyles.transition.leaveTo}
           >
-            <Listbox.Options
-              className={filterSelectInputStyles.options.container}
-            >
-              {(toArray(attribute.options) as FilterOption[]).map((o, j) => (
+            <Listbox.Options className={filterSelectInputStyles.options.container}>
+              {options.map((o, j) => (
                 <Listbox.Option
                   key={j}
                   value={o?.value || ''}
-                  className={({ active }) =>
-                    filterSelectInputStyles.options.option(active)
-                  }
+                  className={({ active }) => filterSelectInputStyles.options.option(active)}
                 >
                   {({ selected, active }) => (
-                    <>
-                      <span
-                        className={filterSelectInputStyles.options.optionText(
-                          selected
-                        )}
-                      >
-                        {o?.title || ''}
-                      </span>
-                      {selected && (
-                        <span
-                          className={filterSelectInputStyles.options.checkIcon(
-                            active
-                          )}
-                        >
-                          <MdCheck size={20} />
-                        </span>
-                      )}
-                    </>
+                    <OptionContent selected={selected} active={active} title={o?.title || ''} />
                   )}
                 </Listbox.Option>
               ))}

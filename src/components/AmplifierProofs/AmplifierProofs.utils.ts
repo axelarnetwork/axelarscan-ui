@@ -1,14 +1,11 @@
 import _ from 'lodash';
 
-import { toArray, getValuesOfAxelarAddressKey, split } from '@/lib/parser';
-import { equalsIgnoreCase } from '@/lib/string';
+import { toArray, getValuesOfAxelarAddressKey } from '@/lib/parser';
 import type {
   SignEntry,
   SignOptionEntry,
   AmplifierProofEntry,
   BlockData,
-  FilterOption,
-  FilterAttribute,
 } from './AmplifierProofs.types';
 
 export function buildProofEntry(d: unknown, blockData: BlockData): AmplifierProofEntry {
@@ -67,14 +64,3 @@ export function buildProofEntry(d: unknown, blockData: BlockData): AmplifierProo
   } as AmplifierProofEntry;
 }
 
-export function getSelectedValue(attribute: FilterAttribute, params: Record<string, unknown>) {
-  const paramValue = params[attribute.name] as string | undefined;
-  const isSelected = (v: string) =>
-    attribute.multiple
-      ? split(paramValue).includes(v)
-      : v === paramValue || equalsIgnoreCase(v, paramValue);
-  const selectedValue = attribute.multiple
-    ? toArray(attribute.options).filter((o: FilterOption) => isSelected(o.value ?? ''))
-    : toArray(attribute.options).find((o: FilterOption) => isSelected(o.value ?? ''));
-  return selectedValue;
-}

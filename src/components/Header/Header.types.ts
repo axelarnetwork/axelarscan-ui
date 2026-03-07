@@ -44,3 +44,7 @@ export interface EnvironmentLinkProps {
   href: string;
   children: React.ReactNode;
 }
+
+export interface EnvironmentPopoverProps {
+  environments: EnvironmentItem[];
+}

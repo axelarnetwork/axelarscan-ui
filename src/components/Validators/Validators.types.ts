@@ -36,3 +36,8 @@ export interface SortHeaderProps {
   onSort: (key: string) => void;
   className?: string;
 }
+
+export interface ValidatorsHeaderProps {
+  status: string | undefined;
+  filterCounts: Record<string, number>;
+}

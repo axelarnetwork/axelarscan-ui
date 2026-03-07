@@ -67,6 +67,12 @@ export interface AmplifierPollProps {
   id: string;
 }
 
+export interface VoteRowProps {
+  vote: PollVote;
+  index: number;
+  confirmationTxhash?: string;
+}
+
 /**
  * Maps a vote option string to a sort index.
  * 'yes' = 0, 'no' = 1, everything else = 2.

@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import clsx from 'clsx';
 
 import { Image } from '@/components/Image';
@@ -8,21 +7,17 @@ import { Tooltip } from '@/components/Tooltip';
 import { Tag } from '@/components/Tag';
 import { Number } from '@/components/Number';
 import { Profile } from '@/components/Profile';
-import { TablePagination } from '@/components/Pagination';
 import { useChains, useVerifiersByChain } from '@/hooks/useGlobalData';
 import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { equalsIgnoreCase } from '@/lib/string';
 import { isNumber } from '@/lib/number';
 
-import { RewardRow } from './RewardRow.component';
+import { RewardsTable } from './RewardsTable.component';
 import type { InfoProps, RewardEntry, VerifierChainEntry } from './Verifier.types';
 import * as styles from './Verifier.styles';
 
-const REWARDS_SIZE_PER_PAGE = 10;
-
 export function Info({ data, address, rewards, cumulativeRewards }: InfoProps) {
-  const [rewardsPage, setRewardsPage] = useState(1);
   const chains = useChains();
   const verifiersByChain = useVerifiersByChain();
 
@@ -33,9 +28,6 @@ export function Info({ data, address, rewards, cumulativeRewards }: InfoProps) {
       .find((d: unknown) => equalsIgnoreCase((d as Record<string, unknown>).address as string, address)),
   } as VerifierChainEntry;
   const { symbol } = { ...(getChainData('axelarnet', chains)?.native_token as Record<string, unknown>) } as { symbol?: string };
-
-  const pageStart = (rewardsPage - 1) * REWARDS_SIZE_PER_PAGE;
-  const visibleRewards = rewards?.filter((_d, i) => i >= pageStart && i < pageStart + REWARDS_SIZE_PER_PAGE);
 
   return (
     <div className={styles.infoPanel}>
@@ -122,26 +114,7 @@ export function Info({ data, address, rewards, cumulativeRewards }: InfoProps) {
             <div className={styles.dlRow}>
               <dt className={styles.dlLabel}>Latest Rewards Distribution</dt>
               <dd className={styles.dlValue}>
-                <div className={styles.rewardsWrapper}>
-                  <div className={styles.rewardsTableScroll}>
-                    <table className={styles.rewardsTable}>
-                      <thead className={styles.rewardsTableHead}>
-                        <tr className={styles.rewardsTableHeadRow}>
-                          <th scope="col" className={styles.rewardsThFirst}>Height</th>
-                          <th scope="col" className={styles.rewardsThMiddle}>Chain</th>
-                          <th scope="col" className={styles.rewardsThRight}>Payout</th>
-                          <th scope="col" className={styles.rewardsThLast}>Payout at</th>
-                        </tr>
-                      </thead>
-                      <tbody className={styles.rewardsTableBody}>
-                        {visibleRewards?.map((d, i) => <RewardRow key={i} entry={d} />)}
-                      </tbody>
-                    </table>
-                  </div>
-                  {rewards.length > REWARDS_SIZE_PER_PAGE && (
-                    <TablePagination data={rewards} value={rewardsPage} onChange={(page: number) => setRewardsPage(page)} sizePerPage={REWARDS_SIZE_PER_PAGE} />
-                  )}
-                </div>
+                <RewardsTable rewards={rewards} />
               </dd>
             </div>
           )}

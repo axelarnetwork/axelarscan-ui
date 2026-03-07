@@ -1,21 +1,15 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import _ from 'lodash';
 import { MdOutlineRefresh } from 'react-icons/md';
-import { LuChevronUp, LuChevronDown } from 'react-icons/lu';
 
 import { Container } from '@/components/Container';
 import { Overlay } from '@/components/Overlay';
 import { Button } from '@/components/Button';
-import { Copy } from '@/components/Copy';
 import { Spinner } from '@/components/Spinner';
-import { Tag } from '@/components/Tag';
 import { Number } from '@/components/Number';
-import { Profile } from '@/components/Profile';
-import { TimeAgo } from '@/components/Time';
 import { Pagination } from '@/components/Pagination';
 import type { Chain } from '@/types';
 import { useChains } from '@/hooks/useGlobalData';
@@ -23,19 +17,19 @@ import { searchRewardsDistribution, getRewardsPool } from '@/lib/api/validator';
 import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { getParams, generateKeyByParams } from '@/lib/operator';
-import { equalsIgnoreCase, toBoolean, ellipse, toTitle } from '@/lib/string';
+import { equalsIgnoreCase, toBoolean } from '@/lib/string';
 import { isNumber } from '@/lib/number';
 
 import type {
   RewardsDistribution,
   RewardsPoolData,
   SearchResults,
-  Receiver,
   AmplifierRewardsProps,
 } from './AmplifierRewards.types';
 import { PAGE_SIZE } from './AmplifierRewards.types';
 import { Info } from './Info.component';
 import { Filters } from './Filters.component';
+import { DistributionRow } from './DistributionRow.component';
 import * as styles from './AmplifierRewards.styles';
 
 export function AmplifierRewards({ chain }: AmplifierRewardsProps) {
@@ -132,6 +126,7 @@ export function AmplifierRewards({ chain }: AmplifierRewardsProps) {
 
   const resultKey = params ? generateKeyByParams(params) : '';
   const { data, total } = { ...searchResults?.[resultKey] };
+  const symbol = (getChainData('axelarnet', chains)?.native_token as { symbol?: string } | undefined)?.symbol;
 
   if (!data) {
     return (
@@ -191,134 +186,23 @@ export function AmplifierRewards({ chain }: AmplifierRewardsProps) {
             <table className={styles.table}>
               <thead className={styles.thead}>
                 <tr className={styles.theadRow}>
-                  <th
-                    scope="col"
-                    className={styles.thFirst}
-                  >
-                    Height
-                  </th>
-                  <th
-                    scope="col"
-                    className={styles.thTxHash}
-                  >
-                    Tx Hash
-                  </th>
-                  <th scope="col" className={styles.thMiddle}>
-                    Pool
-                  </th>
-                  <th scope="col" className={styles.thMiddle}>
-                    Recipients
-                  </th>
-                  <th scope="col" className={styles.thPayoutRight}>
-                    Payout
-                  </th>
-                  <th
-                    scope="col"
-                    className={styles.thLast}
-                  >
-                    Payout at
-                  </th>
+                  <th scope="col" className={styles.thFirst}>Height</th>
+                  <th scope="col" className={styles.thTxHash}>Tx Hash</th>
+                  <th scope="col" className={styles.thMiddle}>Pool</th>
+                  <th scope="col" className={styles.thMiddle}>Recipients</th>
+                  <th scope="col" className={styles.thPayoutRight}>Payout</th>
+                  <th scope="col" className={styles.thLast}>Payout at</th>
                 </tr>
               </thead>
               <tbody className={styles.tbody}>
                 {data.map((d: RewardsDistribution) => (
-                  <tr
+                  <DistributionRow
                     key={d.txhash}
-                    className={styles.tr}
-                  >
-                    <td className={styles.tdFirst}>
-                      {d.height && (
-                        <Link
-                          href={`/block/${d.height}`}
-                          target="_blank"
-                          className={styles.blockLink}
-                        >
-                          <Number value={d.height} />
-                        </Link>
-                      )}
-                    </td>
-                    <td className={styles.tdMiddle}>
-                      <Copy value={d.txhash}>
-                        <Link
-                          href={`/tx/${d.txhash}`}
-                          target="_blank"
-                          className={styles.txLink}
-                        >
-                          {ellipse(d.txhash)}
-                        </Link>
-                      </Copy>
-                    </td>
-                    <td className={styles.tdMiddle}>
-                      <Tag className={styles.poolTag}>
-                        {toTitle(d.pool_type)}
-                      </Tag>
-                    </td>
-                    <td className={styles.tdMiddle}>
-                      <div className={styles.recipientsWrapper}>
-                        <div
-                          onClick={() =>
-                            setDistributionExpanded(
-                              equalsIgnoreCase(d.txhash, distributionExpanded)
-                                ? null
-                                : d.txhash
-                            )
-                          }
-                          className={styles.recipientToggle}
-                        >
-                          <Number
-                            value={d.total_receivers}
-                            format="0,0"
-                            suffix=" Verifiers"
-                            noTooltip={true}
-                            className={styles.recipientCount}
-                          />
-                          {equalsIgnoreCase(
-                            d.txhash,
-                            distributionExpanded
-                          ) ? (
-                            <LuChevronUp size={18} />
-                          ) : (
-                            <LuChevronDown size={18} />
-                          )}
-                        </div>
-                        {equalsIgnoreCase(d.txhash, distributionExpanded) && (
-                          <div className={styles.recipientGrid}>
-                            {toArray(d.receivers).map((r: Receiver, i: number) => (
-                              <div
-                                key={i}
-                                className={styles.recipientRow}
-                              >
-                                <Profile
-                                  address={r.receiver}
-                                  width={18}
-                                  height={18}
-                                  className={styles.recipientProfileClass}
-                                />
-                                <Number
-                                  value={r.amount}
-                                  noTooltip={true}
-                                  className={styles.recipientAmount}
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td className={styles.tdMiddle}>
-                      <div className={styles.payoutWrapper}>
-                        <Number
-                          value={d.total_amount}
-                          suffix={` ${(getChainData('axelarnet', chains)?.native_token as { symbol?: string } | undefined)?.symbol}`}
-                          noTooltip={true}
-                          className={styles.payoutAmount}
-                        />
-                      </div>
-                    </td>
-                    <td className={styles.tdLast}>
-                      <TimeAgo timestamp={d.created_at?.ms} />
-                    </td>
-                  </tr>
+                    distribution={d}
+                    distributionExpanded={distributionExpanded}
+                    setDistributionExpanded={setDistributionExpanded}
+                    symbol={symbol}
+                  />
                 ))}
               </tbody>
             </table>

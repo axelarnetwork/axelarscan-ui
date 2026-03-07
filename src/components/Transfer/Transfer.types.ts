@@ -68,6 +68,21 @@ export interface DetailsProps {
   data: TransferData;
 }
 
+export interface DetailsRowProps {
+  step: TransferStep;
+  stepTX: string | undefined;
+  stepURL: string | undefined;
+  stepMoreInfos: React.ReactNode[];
+  axelarChainData: ReturnType<typeof import('@/lib/config').getChainData>;
+}
+
+export interface StatusStepsProps {
+  steps: TransferStep[];
+  axelarChainData: ReturnType<typeof import('@/lib/config').getChainData>;
+  destinationChainData: ReturnType<typeof import('@/lib/config').getChainData>;
+  insufficientFee?: boolean;
+}
+
 export interface TransferProps {
   tx?: string;
   lite?: boolean;

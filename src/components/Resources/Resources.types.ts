@@ -23,6 +23,28 @@ export interface AssetProps {
   onFocus: (id: string) => void;
 }
 
+export interface ChainIconProps {
+  chainId: string | undefined;
+  nativeChain: string | undefined;
+  isSelected: boolean;
+  onClick: () => void;
+  chains: import('@/types').Chain[] | null;
+}
+
+export interface FocusedChainDetailProps {
+  chain: string;
+  chainType: string | undefined;
+  asset: string | undefined;
+  assetType: string | undefined;
+  address: string | undefined;
+  ibcDenom: string | undefined;
+  tokenSymbol: string | undefined;
+  symbol: string | undefined;
+  explorerUrl: string | undefined;
+  contractPath: string | undefined;
+  assetPath: string | undefined;
+}
+
 export interface ResourcesProps {
   resource?: string;
 }

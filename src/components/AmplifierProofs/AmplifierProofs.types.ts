@@ -1,19 +1,5 @@
 import type { Chain } from '@/types';
 
-export interface FilterOption {
-  value?: string;
-  title: string;
-}
-
-export interface FilterAttribute {
-  label: string;
-  name: string;
-  type?: string;
-  searchable?: boolean;
-  multiple?: boolean;
-  options?: FilterOption[];
-}
-
 export interface SignEntry {
   signer?: string;
   sign?: boolean;
@@ -104,26 +90,3 @@ export interface ParticipationsCellProps {
   proof: AmplifierProofEntry;
 }
 
-export interface SelectButtonContentProps {
-  attribute: FilterAttribute;
-  selectedValue: FilterOption | FilterOption[] | undefined;
-  params: Record<string, unknown>;
-  setParams: (params: Record<string, unknown>) => void;
-}
-
-export interface OptionContentProps {
-  selected: boolean;
-  active: boolean;
-  title: string;
-}
-
-export interface SelectFieldProps {
-  attribute: FilterAttribute;
-  params: Record<string, unknown>;
-  setParams: (params: Record<string, unknown>) => void;
-}
-
-export interface SearchableSelectProps extends SelectFieldProps {
-  searchInput: Record<string, string>;
-  setSearchInput: (input: Record<string, string>) => void;
-}

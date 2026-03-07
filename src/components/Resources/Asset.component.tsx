@@ -1,20 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import clsx from 'clsx';
 import _ from 'lodash';
 
 import { Image } from '@/components/Image';
 import { Tooltip } from '@/components/Tooltip';
 import { Tag } from '@/components/Tag';
-import { AddMetamask } from '@/components/Metamask';
-import { ValueBox } from '@/components/ValueBox';
 import { useChains } from '@/hooks/useGlobalData';
 import { getChainData } from '@/lib/config';
-import { getIBCDenomBase64, toArray } from '@/lib/parser';
+import { toArray } from '@/lib/parser';
 import { ellipse } from '@/lib/string';
 import type { AssetProps, AssetAddressEntry, NormalizedAssetAddress } from './Resources.types';
 import * as styles from './Resources.styles';
+import { ChainIcon } from './ChainIcon.component';
+import { FocusedChainDetail } from './FocusedChainDetail.component';
 
 const NUM_CHAINS_TRUNCATE = 6;
 
@@ -23,7 +22,6 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
   const [chainSelected, setChainSelected] = useState<string | null>(null);
   const chains = useChains();
 
-  // asset
   const { type, denom, native_chain, symbol, addresses: rawAddresses } = { ...data };
   const asset = type === 'its' ? data.id : denom;
 
@@ -44,15 +42,14 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
     'chain'
   ).map((d: NormalizedAssetAddress) => ({ ...d, address: d.address || d.tokenAddress }));
 
-  // chain
+  const isFocused = focusID === asset;
   const {
     id: chain,
     explorer,
     chain_type,
-  } = { ...(focusID === asset && getChainData(chainSelected, chains)) };
+  } = { ...(isFocused && getChainData(chainSelected, chains)) };
   const { url, contract_path, asset_path } = { ...explorer };
 
-  // asset data of focused chain
   const {
     address,
     ibc_denom,
@@ -64,6 +61,26 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
       setSeeMore(false);
     }
   }, [data, focusID, asset, type, denom]);
+
+  const visibleChains = _.slice(
+    chainAddresses,
+    0,
+    isFocused && seeMore ? chainAddresses.length : NUM_CHAINS_TRUNCATE
+  );
+
+  const handleChainClick = (chainId: string | undefined) => {
+    setChainSelected(chainId === chainSelected ? null : chainId ?? null);
+    if (onFocus && asset) {
+      onFocus(asset);
+    }
+  };
+
+  const handleSeeMoreClick = () => {
+    setSeeMore(!seeMore);
+    if (onFocus && asset) {
+      onFocus(asset);
+    }
+  };
 
   return (
     <li>
@@ -109,60 +126,19 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
               {type === 'its' ? 'Interchain' : 'Gateway'} Tokens
             </span>
             <div className={styles.tokensIconRow}>
-              {_.slice(
-                chainAddresses,
-                0,
-                focusID === asset && seeMore
-                  ? chainAddresses.length
-                  : NUM_CHAINS_TRUNCATE
-              ).map(({ chain: chainId }: NormalizedAssetAddress, i: number) => {
-                const { name, image } = { ...getChainData(chainId, chains) };
-
-                return (
-                  <div key={i} className={styles.chainIconWrapper}>
-                    <Tooltip
-                      content={`${name}${chainId === native_chain ? ' (Native Chain)' : ''}`}
-                      className={styles.chainIconTooltip}
-                    >
-                      <button
-                        onClick={() => {
-                          setChainSelected(
-                            chainId === chainSelected ? null : chainId ?? null
-                          );
-
-                          if (onFocus && asset) {
-                            onFocus(asset);
-                          }
-                        }}
-                      >
-                        <Image
-                          src={image}
-                          alt=""
-                          width={24}
-                          height={24}
-                          className={clsx(
-                            'rounded-full',
-                            focusID === asset && chainId === chainSelected
-                              ? styles.chainIconSelected
-                              : chainId === native_chain
-                                ? styles.chainIconNative
-                                : ''
-                          )}
-                        />
-                      </button>
-                    </Tooltip>
-                  </div>
-                );
-              })}
+              {visibleChains.map(({ chain: chainId }: NormalizedAssetAddress, i: number) => (
+                <ChainIcon
+                  key={i}
+                  chainId={chainId}
+                  nativeChain={native_chain}
+                  isSelected={isFocused && chainId === chainSelected}
+                  onClick={() => handleChainClick(chainId)}
+                  chains={chains}
+                />
+              ))}
               {chainAddresses.length > NUM_CHAINS_TRUNCATE && (
                 <button
-                  onClick={() => {
-                    setSeeMore(!seeMore);
-
-                    if (onFocus && asset) {
-                      onFocus(asset);
-                    }
-                  }}
+                  onClick={handleSeeMoreClick}
                   className={styles.seeMoreButton}
                 >
                   {seeMore
@@ -173,49 +149,19 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
             </div>
           </div>
           {chain && (
-            <div className={styles.focusedChainSection}>
-              <div className={styles.focusedChainHeader}>
-                <Tag className={styles.focusedChainTag}>{chain}</Tag>
-                {chain_type === 'evm' && (
-                  <AddMetamask chain={chain} asset={asset} type={type} />
-                )}
-              </div>
-              {address && (
-                <ValueBox
-                  title="Token Contract"
-                  value={address}
-                  url={
-                    url &&
-                    `${url}${contract_path?.replace('{address}', address)}`
-                  }
-                />
-              )}
-              {ibc_denom && (
-                <ValueBox
-                  title="IBC Denom"
-                  value={ibc_denom}
-                  url={
-                    url &&
-                    `${url}${asset_path?.replace('{ibc_denom}', getIBCDenomBase64(ibc_denom))}`
-                  }
-                  prefix="ibc/"
-                />
-              )}
-              {(tokenSymbol || symbol) && (
-                <ValueBox
-                  title="Symbol"
-                  value={(tokenSymbol || symbol)!}
-                  url={
-                    url &&
-                    (address
-                      ? `${url}${contract_path?.replace('{address}', address)}`
-                      : ibc_denom
-                        ? `${url}${asset_path?.replace('{ibc_denom}', getIBCDenomBase64(ibc_denom))}`
-                        : undefined)
-                  }
-                />
-              )}
-            </div>
+            <FocusedChainDetail
+              chain={chain}
+              chainType={chain_type}
+              asset={asset}
+              assetType={type}
+              address={address}
+              ibcDenom={ibc_denom}
+              tokenSymbol={tokenSymbol}
+              symbol={symbol}
+              explorerUrl={url}
+              contractPath={contract_path}
+              assetPath={asset_path}
+            />
           )}
         </div>
       </div>

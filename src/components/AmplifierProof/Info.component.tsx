@@ -8,20 +8,23 @@ import { Copy } from '@/components/Copy';
 import { Tag } from '@/components/Tag';
 import { Number } from '@/components/Number';
 import { ChainProfile } from '@/components/Profile';
-import { ExplorerLink } from '@/components/ExplorerLink';
 import { useChains } from '@/hooks/useGlobalData';
 import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
-import {
-  headString,
-  ellipse,
-  toTitle,
-  removeHexPrefix,
-} from '@/lib/string';
+import { ellipse, toTitle } from '@/lib/string';
 import { TIME_FORMAT } from '@/lib/time';
 
-import type { InfoProps, MessageId, SignOption } from './AmplifierProof.types';
+import type { InfoProps, SignOption } from './AmplifierProof.types';
 import * as styles from './AmplifierProof.styles';
+import { MessageList } from './MessageList.component';
+import { TxHashRow } from './TxHashRow.component';
+
+function getStatusStyle(status: string): string {
+  if (status === 'completed') return styles.statusTagCompleted;
+  if (status === 'failed') return styles.statusTagFailed;
+  if (status === 'expired') return styles.statusTagExpired;
+  return styles.statusTagPending;
+}
 
 export function Info({ data, id }: InfoProps) {
   const chains = useChains();
@@ -30,7 +33,6 @@ export function Info({ data, id }: InfoProps) {
     session_id,
     multisig_prover_contract_address,
     multisig_contract_address,
-    message_ids,
     status,
     height,
     initiated_txhash,
@@ -49,6 +51,7 @@ export function Info({ data, id }: InfoProps) {
   const { url, transaction_path } = {
     ...getChainData(chain, chains)?.explorer,
   };
+  const showUpdated = updated_at?.ms && created_at?.ms && updated_at.ms > created_at.ms;
 
   return (
     <div className={styles.infoPanel}>
@@ -64,18 +67,14 @@ export function Info({ data, id }: InfoProps) {
       <div className={styles.infoBorderTop}>
         <dl className={styles.dlDivider}>
           <div className={styles.dlRow}>
-            <dt className={styles.dtLabel}>
-              Chain
-            </dt>
+            <dt className={styles.dtLabel}>Chain</dt>
             <dd className={styles.ddValue}>
               <ChainProfile value={chain} />
             </dd>
           </div>
           {multisig_prover_contract_address && (
             <div className={styles.dlRow}>
-              <dt className={styles.dtLabel}>
-                Multisig Prover Contract
-              </dt>
+              <dt className={styles.dtLabel}>Multisig Prover Contract</dt>
               <dd className={styles.ddValue}>
                 <Copy value={multisig_prover_contract_address}>
                   {ellipse(multisig_prover_contract_address)}
@@ -85,9 +84,7 @@ export function Info({ data, id }: InfoProps) {
           )}
           {multisig_contract_address && (
             <div className={styles.dlRow}>
-              <dt className={styles.dtLabel}>
-                Multisig Contract
-              </dt>
+              <dt className={styles.dtLabel}>Multisig Contract</dt>
               <dd className={styles.ddValue}>
                 <Copy value={multisig_contract_address}>
                   {ellipse(multisig_contract_address)}
@@ -96,84 +93,23 @@ export function Info({ data, id }: InfoProps) {
             </div>
           )}
           <div className={styles.dlRow}>
-            <dt className={styles.dtLabel}>
-              Messages
-            </dt>
+            <dt className={styles.dtLabel}>Messages</dt>
             <dd className={styles.ddValue}>
-              <div className={styles.messageList}>
-                {(toArray(
-                  message_ids || {
-                    message_id: data?.message_id,
-                    source_chain: data?.source_chain,
-                  }
-                ) as MessageId[]).map((m: MessageId, i: number) => {
-                  if (!m.message_id) {
-                    m.message_id = m.id;
-                  }
-
-                  if (!m.source_chain) {
-                    m.source_chain = m.chain;
-                  }
-
-                  const { url, transaction_path } = {
-                    ...getChainData(m.source_chain, chains)?.explorer,
-                  };
-
-                  return (
-                    m.message_id && (
-                      <div key={i} className={styles.messageRow}>
-                        <ChainProfile value={m.source_chain} />
-                        <div className={styles.messageIdRow}>
-                          <Copy value={removeHexPrefix(m.message_id)}>
-                            <Link
-                              href={`${url}${transaction_path?.replace('{tx}', headString(removeHexPrefix(m.message_id)) ?? '')}`}
-                              target="_blank"
-                              className={styles.messageIdLink}
-                            >
-                              {ellipse(
-                                removeHexPrefix(m.message_id)
-                              ).toUpperCase()}
-                            </Link>
-                          </Copy>
-                          <ExplorerLink
-                            value={headString(removeHexPrefix(m.message_id))}
-                            chain={m.source_chain}
-                          />
-                        </div>
-                      </div>
-                    )
-                  );
-                })}
-              </div>
+              <MessageList data={data} chains={chains} />
             </dd>
           </div>
           <div className={styles.dlRow}>
-            <dt className={styles.dtLabel}>
-              Status
-            </dt>
+            <dt className={styles.dtLabel}>Status</dt>
             <dd className={styles.ddValue}>
               {status && (
-                <Tag
-                  className={clsx(
-                    styles.statusTagBase,
-                    ['completed'].includes(status)
-                      ? styles.statusTagCompleted
-                      : ['failed'].includes(status)
-                        ? styles.statusTagFailed
-                        : ['expired'].includes(status)
-                          ? styles.statusTagExpired
-                          : styles.statusTagPending
-                  )}
-                >
+                <Tag className={clsx(styles.statusTagBase, getStatusStyle(status))}>
                   {status}
                 </Tag>
               )}
             </dd>
           </div>
           <div className={styles.dlRow}>
-            <dt className={styles.dtLabel}>
-              Height
-            </dt>
+            <dt className={styles.dtLabel}>Height</dt>
             <dd className={styles.ddValue}>
               {height && (
                 <Link
@@ -187,74 +123,24 @@ export function Info({ data, id }: InfoProps) {
             </dd>
           </div>
           {gateway_txhash && (
-            <div className={styles.dlRow}>
-              <dt className={styles.dtLabel}>
-                Gateway Tx Hash
-              </dt>
-              <dd className={styles.ddValue}>
-                <Link
-                  href={`${url}${transaction_path?.replace('{tx}', gateway_txhash)}`}
-                  target="_blank"
-                  className={styles.blockLink}
-                >
-                  {ellipse(gateway_txhash)}
-                </Link>
-              </dd>
-            </div>
+            <TxHashRow
+              label="Gateway Tx Hash"
+              txhash={gateway_txhash}
+              external={{ url, transaction_path }}
+            />
           )}
           {initiated_txhash && (
-            <div className={styles.dlRow}>
-              <dt className={styles.dtLabel}>
-                Initiated Tx Hash
-              </dt>
-              <dd className={styles.ddValue}>
-                <Link
-                  href={`/tx/${initiated_txhash}`}
-                  target="_blank"
-                  className={styles.blockLink}
-                >
-                  {ellipse(initiated_txhash)}
-                </Link>
-              </dd>
-            </div>
+            <TxHashRow label="Initiated Tx Hash" txhash={initiated_txhash} />
           )}
           {confirmation_txhash && confirmation_txhash !== completed_txhash && (
-            <div className={styles.dlRow}>
-              <dt className={styles.dtLabel}>
-                Confirmation Tx Hash
-              </dt>
-              <dd className={styles.ddValue}>
-                <Link
-                  href={`/tx/${confirmation_txhash}`}
-                  target="_blank"
-                  className={styles.blockLink}
-                >
-                  {ellipse(confirmation_txhash)}
-                </Link>
-              </dd>
-            </div>
+            <TxHashRow label="Confirmation Tx Hash" txhash={confirmation_txhash} />
           )}
           {completed_txhash && (
-            <div className={styles.dlRow}>
-              <dt className={styles.dtLabel}>
-                Proof Completed Tx Hash
-              </dt>
-              <dd className={styles.ddValue}>
-                <Link
-                  href={`/tx/${completed_txhash}`}
-                  target="_blank"
-                  className={styles.blockLink}
-                >
-                  {ellipse(completed_txhash)}
-                </Link>
-              </dd>
-            </div>
+            <TxHashRow label="Proof Completed Tx Hash" txhash={completed_txhash} />
           )}
           {completed_height && (
             <div className={styles.dlRow}>
-              <dt className={styles.dtLabel}>
-                Completed Height
-              </dt>
+              <dt className={styles.dtLabel}>Completed Height</dt>
               <dd className={styles.ddValue}>
                 <Link
                   href={`/block/${completed_height}`}
@@ -267,9 +153,7 @@ export function Info({ data, id }: InfoProps) {
             </div>
           )}
           <div className={styles.dlRow}>
-            <dt className={styles.dtLabel}>
-              Expires Height
-            </dt>
+            <dt className={styles.dtLabel}>Expires Height</dt>
             <dd className={styles.ddValue}>
               {expired_height && (
                 <Link
@@ -283,18 +167,14 @@ export function Info({ data, id }: InfoProps) {
             </dd>
           </div>
           <div className={styles.dlRow}>
-            <dt className={styles.dtLabel}>
-              Created
-            </dt>
+            <dt className={styles.dtLabel}>Created</dt>
             <dd className={styles.ddValue}>
               {created_at?.ms && moment(created_at.ms).format(TIME_FORMAT)}
             </dd>
           </div>
-          {updated_at?.ms && created_at?.ms && updated_at.ms > created_at.ms && (
+          {showUpdated && (
             <div className={styles.dlRow}>
-              <dt className={styles.dtLabel}>
-                Updated
-              </dt>
+              <dt className={styles.dtLabel}>Updated</dt>
               <dd className={styles.ddValue}>
                 {moment(updated_at!.ms).format(TIME_FORMAT)}
               </dd>

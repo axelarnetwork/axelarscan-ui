@@ -4,13 +4,16 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { MdLocalGasStation } from 'react-icons/md';
 
-import { Tooltip } from '@/components/Tooltip';
 import { Number } from '@/components/Number';
 import { useChains, useValidators, useInflationData, useNetworkParameters } from '@/hooks/useGlobalData';
 import { getRPCStatus } from '@/lib/api/validator';
 import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
-import { isNumber, formatUnits } from '@/lib/number';
+import { isNumber } from '@/lib/number';
+import { MetricWithTooltip } from './MetricWithTooltip.component';
+import { StakedMetric } from './StakedMetric.component';
+import { APRMetric } from './APRMetric.component';
+import { InflationMetric } from './InflationMetric.component';
 import * as styles from './Overview.styles';
 
 export function Metrics() {
@@ -45,6 +48,15 @@ export function Metrics() {
   const { symbol } = {
     ...(getChainData('axelarnet', chains)?.native_token as { symbol?: string } | undefined),
   };
+
+  const governanceHref = 'https://axelar.network/blog/axelar-governance-explained';
+
+  const hasBankAndStaking =
+    !!networkParameters?.bankSupply?.amount &&
+    !!networkParameters.stakingPool?.bonded_tokens;
+
+  const hasInflation =
+    !!inflationData && inflationData.inflation != null && inflationData.inflation > 0;
 
   return (
     <div className={styles.metricsWrapper}>
@@ -100,220 +112,85 @@ export function Metrics() {
             <div className={styles.metricLabel}>
               Threshold:
             </div>
-            <Link
-              href="https://axelar.network/blog/axelar-governance-explained"
-              target="_blank"
-              className={styles.metricLink}
+            <MetricWithTooltip
+              tooltipContent="Threshold number of quadratic voting power required to onboard a new EVM chain"
+              href={governanceHref}
             >
-              <div className={styles.tooltipDesktopOnly}>
-                <Tooltip
-                  content="Threshold number of quadratic voting power required to onboard a new EVM chain"
-                  className={styles.tooltipWhitespace}
-                >
-                  <Number
-                    value={60}
-                    prefix=">"
-                    suffix="%"
-                    className={styles.metricValue}
-                  />
-                </Tooltip>
-              </div>
-              <div className={styles.mobileOnly}>
-                <div className={styles.mobileInner}>
-                  <Number
-                    value={60}
-                    prefix=">"
-                    suffix="%"
-                    className={styles.metricValue}
-                  />
-                </div>
-              </div>
-            </Link>
+              <Number
+                value={60}
+                prefix=">"
+                suffix="%"
+                className={styles.metricValue}
+              />
+            </MetricWithTooltip>
           </div>
           <div className={styles.metricRow}>
             <div className={styles.metricLabel}>
               Rewards:
             </div>
-            <Link
-              href="https://axelar.network/blog/axelar-governance-explained"
-              target="_blank"
-              className={styles.metricLink}
+            <MetricWithTooltip
+              tooltipContent="Base inflation rate + Additional chain rewards"
+              href={governanceHref}
             >
-              <div className={styles.tooltipDesktopOnly}>
-                <Tooltip
-                  content="Base inflation rate + Additional chain rewards"
-                  className={styles.tooltipWhitespace}
-                >
-                  <Number
-                    value={evmRewardPercent}
-                    prefix="1% base + "
-                    suffix="% / EVM chain"
-                    className={styles.metricValue}
-                  />
-                </Tooltip>
-              </div>
-              <div className={styles.mobileOnly}>
-                <div className={styles.mobileInner}>
-                  <Number
-                    value={evmRewardPercent}
-                    prefix="1% base + "
-                    suffix="% / EVM chain"
-                    className={styles.metricValue}
-                  />
-                </div>
-              </div>
-            </Link>
+              <Number
+                value={evmRewardPercent}
+                prefix="1% base + "
+                suffix="% / EVM chain"
+                className={styles.metricValue}
+              />
+            </MetricWithTooltip>
           </div>
           <div className={styles.metricRow}>
             <div className={styles.gasLabelWrapper}>
               <MdLocalGasStation size={16} />
               <span>Unit:</span>
             </div>
-            <Link
-              href="https://axelar.network/blog/axelar-governance-explained"
-              target="_blank"
-              className={styles.metricLink}
+            <MetricWithTooltip
+              tooltipContent="AXL gas fees per transaction"
+              href={governanceHref}
             >
-              <div className={styles.tooltipDesktopOnly}>
-                <Tooltip
-                  content="AXL gas fees per transaction"
-                  className={styles.tooltipWhitespace}
-                >
-                  <Number
-                    value={0.007}
-                    suffix=" uaxl"
-                    className={styles.metricValue}
-                  />
-                </Tooltip>
-              </div>
-              <div className={styles.mobileOnly}>
-                <div className={styles.mobileInner}>
-                  <Number
-                    value={0.007}
-                    suffix=" uaxl"
-                    className={styles.metricValue}
-                  />
-                </div>
-              </div>
-            </Link>
+              <Number
+                value={0.007}
+                suffix=" uaxl"
+                className={styles.metricValue}
+              />
+            </MetricWithTooltip>
           </div>
           <div className={styles.metricRow}>
             <div className={styles.gasLabelWrapper}>
               <MdLocalGasStation size={16} />
               <span className={styles.metricLabelWhitespace}>Per Transfer:</span>
             </div>
-            <Link
-              href="https://axelar.network/blog/axelar-governance-explained"
-              target="_blank"
-              className={styles.metricLink}
+            <MetricWithTooltip
+              tooltipContent="AXL gas fees per transaction"
+              href={governanceHref}
             >
-              <div className={styles.tooltipDesktopOnly}>
-                <Tooltip
-                  content="AXL gas fees per transaction"
-                  className={styles.tooltipWhitespace}
-                >
-                  <Number
-                    value={0.0014}
-                    suffix={` ${symbol}`}
-                    className={styles.metricValue}
-                  />
-                </Tooltip>
-              </div>
-              <div className={styles.mobileOnly}>
-                <div className={styles.mobileInner}>
-                  <Number
-                    value={0.0014}
-                    suffix={` ${symbol}`}
-                    className={styles.metricValue}
-                  />
-                </div>
-              </div>
-            </Link>
+              <Number
+                value={0.0014}
+                suffix={` ${symbol}`}
+                className={styles.metricValue}
+              />
+            </MetricWithTooltip>
           </div>
         </div>
         <span className={styles.separator}>|</span>
-        {networkParameters?.bankSupply?.amount &&
-          networkParameters.stakingPool?.bonded_tokens && (
-            <div className={styles.metricRow}>
-              <div className={styles.metricLabel}>
-                Staked:
-              </div>
-              <Link
-                href="/validators"
-                target="_blank"
-                className={styles.metricLink}
-              >
-                <Number
-                  value={formatUnits(
-                    networkParameters.stakingPool.bonded_tokens,
-                    6
-                  )}
-                  format="0,0a"
-                  noTooltip={true}
-                  className={styles.metricValue}
-                />
-                <Number
-                  value={formatUnits(networkParameters.bankSupply.amount, 6)}
-                  format="0,0.00a"
-                  prefix="/ "
-                  noTooltip={true}
-                  className={styles.stakedValueExtra}
-                />
-              </Link>
-            </div>
-          )}
-        {inflationData && inflationData.inflation != null && inflationData.inflation > 0 && (
+        {hasBankAndStaking && (
+          <StakedMetric
+            bankSupplyAmount={networkParameters!.bankSupply!.amount as string}
+            bondedTokens={networkParameters!.stakingPool!.bonded_tokens as string}
+          />
+        )}
+        {hasInflation && (
           <>
-            {networkParameters?.bankSupply?.amount &&
-              networkParameters.stakingPool?.bonded_tokens && (
-                <div className={styles.metricRow}>
-                  <div className={styles.metricLabel}>
-                    APR:
-                  </div>
-                  <Link
-                    href="https://wallet.keplr.app/chains/axelar"
-                    target="_blank"
-                    className={styles.metricLink}
-                  >
-                    <Number
-                      value={
-                        (inflationData!.inflation! *
-                          100 *
-                          (formatUnits(
-                            networkParameters.bankSupply!.amount,
-                            6
-                          ) as number) *
-                          (1 - inflationData!.communityTax!) *
-                          (1 - 0.05)) /
-                        (formatUnits(
-                          networkParameters.stakingPool!.bonded_tokens,
-                          6
-                        ) as number)
-                      }
-                      suffix="%"
-                      noTooltip={true}
-                      className={styles.metricValue}
-                    />
-                  </Link>
-                </div>
-              )}
-            <div className={styles.metricRow}>
-              <div className={styles.metricLabel}>
-                Inflation:
-              </div>
-              <Link
-                href="/validators"
-                target="_blank"
-                className={styles.metricLink}
-              >
-                <Number
-                  value={inflationData.inflation * 100}
-                  suffix="%"
-                  noTooltip={true}
-                  className={styles.metricValue}
-                />
-              </Link>
-            </div>
+            {hasBankAndStaking && (
+              <APRMetric
+                inflation={inflationData!.inflation!}
+                communityTax={inflationData!.communityTax!}
+                bankSupplyAmount={networkParameters!.bankSupply!.amount as string}
+                bondedTokens={networkParameters!.stakingPool!.bonded_tokens as string}
+              />
+            )}
+            <InflationMetric inflation={inflationData!.inflation!} />
           </>
         )}
       </div>

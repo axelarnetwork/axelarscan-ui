@@ -1,11 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import _ from 'lodash';
 import moment from 'moment';
 import { MdArrowBackIosNew, MdArrowForwardIos } from 'react-icons/md';
-import { RxCaretDown, RxCaretUp } from 'react-icons/rx';
 
 import { Copy } from '@/components/Copy';
 import { Tooltip } from '@/components/Tooltip';
@@ -16,12 +13,10 @@ import { isNumber, toNumber, numberFormat } from '@/lib/number';
 import { TIME_FORMAT } from '@/lib/time';
 import { toArray } from '@/lib/parser';
 import type { InfoProps, ValidatorSetEntry } from './Block.types';
-import { ValidatorList } from './ValidatorList.component';
+import { SignerSection } from './SignerSection.component';
 import * as styles from './Block.styles';
 
 export function Info({ data, height, validatorSets }: InfoProps) {
-  const [signedCollpased, setSignedCollpased] = useState(true);
-
   const { hash } = { ...data.block_id };
   const { proposer_address, time } = { ...data.block?.header };
   const { txs } = { ...data.block?.data };
@@ -97,44 +92,10 @@ export function Info({ data, height, validatorSets }: InfoProps) {
             <div className={styles.dlRow}>
               <dt className={styles.dtLabel}>Signer / Absent</dt>
               <dd className={styles.ddValue}>
-                <div className={styles.signerSection}>
-                  <button
-                    onClick={() => setSignedCollpased(!signedCollpased)}
-                    className={styles.signerToggle}
-                  >
-                    <Number
-                      value={
-                        (_.sumBy(signedValidatorsData, 'tokens') * 100) /
-                        _.sumBy(
-                          _.concat(signedValidatorsData, unsignedValidatorsData),
-                          'tokens'
-                        )
-                      }
-                      prefix={`${signedValidatorsData.length} (`}
-                      suffix="%)"
-                      noTooltip={true}
-                    />
-                    <span>/</span>
-                    <Number value={unsignedValidatorsData.length} format="0,0" />
-                    <div className={styles.caretWrapper}>
-                      {signedCollpased ? <RxCaretDown size={18} /> : <RxCaretUp size={18} />}
-                    </div>
-                  </button>
-                  {!signedCollpased && (
-                    <div className={styles.signerSection}>
-                      <div className={styles.signerSubsection}>
-                        <span className={styles.signerLabel}>Signed by</span>
-                        <ValidatorList validators={signedValidatorsData} />
-                      </div>
-                      {unsignedValidatorsData.length > 0 && (
-                        <div className={styles.signerSubsection}>
-                          <span className={styles.signerLabel}>Missing</span>
-                          <ValidatorList validators={unsignedValidatorsData} />
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                <SignerSection
+                  signedValidatorsData={signedValidatorsData}
+                  unsignedValidatorsData={unsignedValidatorsData}
+                />
               </dd>
             </div>
           )}

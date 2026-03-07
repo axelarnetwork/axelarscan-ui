@@ -1,9 +1,8 @@
 'use client';
 
-import { Fragment, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Popover, Transition } from '@headlessui/react';
 import clsx from 'clsx';
 
 import { Container } from '@/components/Container';
@@ -16,8 +15,8 @@ import { ENVIRONMENT } from '@/lib/config';
 import type { NavigationItem, EnvironmentItem } from './Header.types';
 import { MobileNavigation } from './MobileNavigation.component';
 import { DesktopNavItem } from './DesktopNav.component';
-import { EnvironmentLink } from './EnvironmentLink.component';
-import { header, environmentPopover } from './Header.styles';
+import { EnvironmentPopover } from './EnvironmentPopover.component';
+import { header } from './Header.styles';
 
 const NAVIGATIONS: NavigationItem[] = [
   {
@@ -62,7 +61,6 @@ const ENVIRONMENTS: EnvironmentItem[] = [
 export function Header() {
   const pathname = usePathname();
   const [popoverOpen, setPopoverOpen] = useState<number | null>(null);
-  const [popoverEnvironmentOpen, setPopoverEnvironmentOpen] = useState(false);
   const tvl = useTVL();
 
   const hasTVL = pathname === '/tvl' && !!tvl;
@@ -92,35 +90,7 @@ export function Header() {
               <Search />
             </div>
             <div className={header.environmentWrapper}>
-              <Popover
-                onMouseEnter={() => setPopoverEnvironmentOpen(true)}
-                onMouseLeave={() => setPopoverEnvironmentOpen(false)}
-                className={environmentPopover.wrapper}
-              >
-                <Popover.Button className={environmentPopover.button}>
-                  <span>{ENVIRONMENT}</span>
-                </Popover.Button>
-                <Transition
-                  show={popoverEnvironmentOpen}
-                  as={Fragment}
-                  enter="transition ease-out duration-200"
-                  enterFrom="opacity-0 translate-y-1"
-                  enterTo="opacity-100 translate-y-0"
-                  leave="transition ease-in duration-150"
-                  leaveFrom="opacity-100 translate-y-0"
-                  leaveTo="opacity-0 translate-y-1"
-                >
-                  <Popover.Panel className={environmentPopover.panel}>
-                    <div className={environmentPopover.panelInner}>
-                      {ENVIRONMENTS.map((d, i) => (
-                        <EnvironmentLink key={i} {...d}>
-                          {d.name}
-                        </EnvironmentLink>
-                      ))}
-                    </div>
-                  </Popover.Panel>
-                </Transition>
-              </Popover>
+              <EnvironmentPopover environments={ENVIRONMENTS} />
             </div>
             <ThemeToggle />
             <div className={header.mobileNavWrapper}>

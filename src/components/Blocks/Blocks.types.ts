@@ -9,3 +9,8 @@ export interface BlockEntry {
 export interface BlocksProps {
   height?: string;
 }
+
+export interface BlockRowProps {
+  block: BlockEntry;
+  index: number;
+}

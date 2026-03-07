@@ -70,10 +70,28 @@ export interface InfoProps {
   id: string;
 }
 
+export interface MessageListProps {
+  data: AmplifierProofData;
+  chains: import('@/types').Chain[] | null;
+}
+
+export interface TxHashRowProps {
+  label: string;
+  txhash: string;
+  /** If true, link to external explorer URL instead of internal /tx/ path */
+  external?: { url: string | undefined; transaction_path: string | undefined };
+}
+
 export interface SignsProps {
   data: AmplifierProofData;
 }
 
 export interface AmplifierProofProps {
   id: string;
+}
+
+export interface SignRowProps {
+  sign: ProofSign;
+  index: number;
+  confirmationTxhash?: string;
 }

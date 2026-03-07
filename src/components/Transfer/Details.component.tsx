@@ -1,17 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import clsx from 'clsx';
 
 import { Copy } from '@/components/Copy';
-import { Tag } from '@/components/Tag';
-import { Number } from '@/components/Number';
-import { TimeAgo } from '@/components/Time';
-import { ExplorerLink } from '@/components/ExplorerLink';
 import { useChains } from '@/hooks/useGlobalData';
 import { getChainData } from '@/lib/config';
-import { ellipse } from '@/lib/string';
-import { getStep, resolveBlockURL } from './Transfer.utils';
+import { getStep } from './Transfer.utils';
+import { DetailsRow } from './DetailsRow.component';
 import type { DetailsProps, TransferStep } from './Transfer.types';
 import * as styles from './Transfer.styles';
 
@@ -251,95 +246,21 @@ export function Details({ data }: DetailsProps) {
         </thead>
         <tbody className={styles.detailsTbody}>
           {visibleSteps.map((d: TransferStep, i: number) => {
-            const stepData = d.data;
-            const height = stepData?.height;
-            const blockNumber = stepData?.blockNumber;
-            const block_timestamp = stepData?.block_timestamp;
-            const received_at = stepData?.received_at;
-            const created_at = stepData?.created_at;
-            const { url, block_path } = { ...d.chainData?.explorer };
-
             const { stepTX, stepURL, stepMoreInfos } = resolveStepTxInfo(
               d,
               axelarChainData,
               destinationChainData
             );
 
-            const blockValue = height ?? blockNumber;
-
             return (
-              <tr
+              <DetailsRow
                 key={i}
-                className={styles.detailsTr}
-              >
-                <td className={styles.detailsTdStep}>
-                  <span className={styles.detailsTdStepText}>
-                    {d.title}
-                  </span>
-                </td>
-                <td className={styles.detailsTdDefault}>
-                  <div className={styles.detailsTxFlexCol}>
-                    {stepTX && (
-                      <div className={styles.detailsTxRow}>
-                        <Copy value={stepTX}>
-                          <Link
-                            href={stepURL!}
-                            target="_blank"
-                            className={styles.detailsTxLink}
-                          >
-                            {ellipse(stepTX)}
-                          </Link>
-                        </Copy>
-                        <ExplorerLink
-                          value={stepTX}
-                          chain={d.chainData?.id}
-                          customURL={stepURL}
-                        />
-                      </div>
-                    )}
-                    {stepMoreInfos.length > 0 && (
-                      <div className={styles.detailsMoreInfos}>
-                        {stepMoreInfos}
-                      </div>
-                    )}
-                  </div>
-                </td>
-                <td className={styles.detailsTdDefault}>
-                  {blockValue &&
-                    (url && block_path ? (
-                      <Link
-                        href={resolveBlockURL(d, blockValue, axelarChainData)}
-                        target="_blank"
-                        className={styles.detailsTxLink}
-                      >
-                        <Number value={blockValue} />
-                      </Link>
-                    ) : (
-                      <Number value={blockValue} />
-                    ))}
-                </td>
-                <td className={styles.detailsTdDefault}>
-                  {d.status && (
-                    <Tag
-                      className={clsx(
-                        styles.tagFitCapitalize,
-                        styles.getStatusTagClass(d.status)
-                      )}
-                    >
-                      {d.status}
-                    </Tag>
-                  )}
-                </td>
-                <td className={styles.detailsTdTime}>
-                  <TimeAgo
-                    timestamp={
-                      (block_timestamp && block_timestamp * 1000) ||
-                      received_at?.ms ||
-                      created_at?.ms
-                    }
-                  />
-                </td>
-              </tr>
+                step={d}
+                stepTX={stepTX}
+                stepURL={stepURL}
+                stepMoreInfos={stepMoreInfos}
+                axelarChainData={axelarChainData}
+              />
             );
           })}
         </tbody>

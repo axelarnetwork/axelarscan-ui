@@ -75,3 +75,7 @@ export interface RewardRowProps {
 export interface VerifierProps {
   address: string;
 }
+
+export interface RewardsTableProps {
+  rewards: RewardEntry[];
+}

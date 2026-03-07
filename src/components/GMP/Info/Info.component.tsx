@@ -1,18 +1,16 @@
-import clsx from 'clsx';
 import moment from 'moment';
 import { RxCaretDown, RxCaretUp } from 'react-icons/rx';
 
 import { useChains } from '@/hooks/useGlobalData';
-import { ContractCallData } from '../ContractCallData';
 import { getEvent } from '@/components/GMPs';
-import { AssetProfile, Profile } from '@/components/Profile';
 import { Tag } from '@/components/Tag';
-import { Tooltip } from '@/components/Tooltip';
 import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { GMPEventLog, GMPMessage } from '../GMP.types';
 import { StatusTimeline } from '../StatusTimeline';
 import { infoStyles } from './Info.styles';
+import { InfoAsset } from './InfoAsset.component';
+import { InfoContractCallDetails } from './InfoContractCallDetails.component';
 import { InfoGasMetrics } from './InfoGasMetrics.component';
 import { InfoHeader } from './InfoHeader.component';
 import { InfoParticipants } from './InfoParticipants.component';
@@ -116,6 +114,21 @@ export function Info({
   );
   const showDetails = !lite && seeMore;
 
+  const event = getEvent(data);
+  const assetSourceChain = data.originData?.call?.chain ?? sourceChain;
+  const assetAmount = (data.originData?.amount ?? data.amount) as number | undefined;
+  const tokenContractAddress =
+    (data.originData?.interchain_transfer?.contract_address ||
+      interchain_transfer?.contract_address) as string | undefined;
+
+  const timelineItems = toArray([
+    data.originData,
+    data,
+    data.callbackData,
+  ]).filter(
+    (d): d is GMPMessage => d !== undefined && typeof d === 'object'
+  );
+
   return (
     <div className={infoStyles.container}>
       <div className={infoStyles.header}>
@@ -131,32 +144,19 @@ export function Info({
       </div>
       <div className={infoStyles.body}>
         <dl className={infoStyles.list}>
-          <div className={infoStyles.section}>
-            <dt className={infoStyles.label}>Method</dt>
-            <dd className={infoStyles.value}>
-              <Tag className={infoStyles.tagBase}>{getEvent(data)}</Tag>
-            </dd>
-          </div>
-          <div className={infoStyles.section}>
-            <dt className={infoStyles.label}>Status</dt>
-            <dd className={infoStyles.value}>
-              <StatusTimeline
-                timeline={toArray([
-                  data.originData,
-                  data,
-                  data.callbackData,
-                ]).filter(
-                  (d): d is GMPMessage =>
-                    d !== undefined && typeof d === 'object'
-                )}
-                chains={chains}
-                estimatedTimeSpent={estimatedTimeSpent}
-                isMultihop={isMultihop}
-                rootCall={call}
-                expressExecuted={express_executed}
-              />
-            </dd>
-          </div>
+          <InfoSection label="Method">
+            <Tag className={infoStyles.tagBase}>{event}</Tag>
+          </InfoSection>
+          <InfoSection label="Status">
+            <StatusTimeline
+              timeline={timelineItems}
+              chains={chains}
+              estimatedTimeSpent={estimatedTimeSpent}
+              isMultihop={isMultihop}
+              rootCall={call}
+              expressExecuted={express_executed}
+            />
+          </InfoSection>
           <RecoveryButtons
             data={data}
             chains={chains}
@@ -180,44 +180,13 @@ export function Info({
           />
           <InfoTransfers data={data} chains={chains} />
           {symbol && (
-            <InfoSection label="Asset">
-              <div className={infoStyles.tokenRow}>
-                <AssetProfile
-                  value={symbol}
-                  chain={data.originData?.call?.chain ?? sourceChain}
-                  amount={
-                    (data.originData?.amount ?? data.amount) as
-                      | number
-                      | undefined
-                  }
-                  ITSPossible={true}
-                  onlyITS={!getEvent(data)?.includes('ContractCall')}
-                  width={16}
-                  height={16}
-                  className={infoStyles.assetChip}
-                  titleClassName="text-xs"
-                />
-                {!!(
-                  data.originData?.interchain_transfer?.contract_address ||
-                  interchain_transfer?.contract_address
-                ) && (
-                  <Tooltip
-                    content="Token Address"
-                    className={infoStyles.tooltip}
-                  >
-                    <Profile
-                      address={
-                        (data.originData?.interchain_transfer
-                          ?.contract_address ||
-                          interchain_transfer?.contract_address) as string
-                      }
-                      chain={data.originData?.call?.chain ?? sourceChain}
-                      noResolveName={true}
-                    />
-                  </Tooltip>
-                )}
-              </div>
-            </InfoSection>
+            <InfoAsset
+              symbol={symbol}
+              sourceChain={assetSourceChain}
+              amount={assetAmount}
+              event={event}
+              contractAddress={tokenContractAddress}
+            />
           )}
           <InfoSection label="Created">
             {moment(
@@ -262,28 +231,11 @@ export function Info({
             isMultihop={isMultihop}
           />
           {showDetails && (
-            <div
-              className={clsx(
-                infoStyles.detailsGrid,
-                data.callbackData && infoStyles.detailsGridTwoCols
-              )}
-            >
-              {[data, data.callbackData]
-                .filter(
-                  (d): d is GMPMessage =>
-                    d !== undefined && typeof d === 'object'
-                )
-                .map((d, i) => (
-                  <ContractCallData
-                    key={i}
-                    data={d}
-                    executeData={
-                      i === 0 && executeData ? executeData : undefined
-                    }
-                    isMultihop={isMultihop}
-                  />
-                ))}
-            </div>
+            <InfoContractCallDetails
+              data={data}
+              executeData={executeData}
+              isMultihop={isMultihop}
+            />
           )}
         </dl>
       </div>

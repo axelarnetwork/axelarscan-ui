@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import clsx from 'clsx';
 import moment from 'moment';
-import { PiWarningCircle } from 'react-icons/pi';
 
 import { Image } from '@/components/Image';
 import { Copy } from '@/components/Copy';
@@ -18,11 +17,10 @@ import { getChainData, getAssetData } from '@/lib/config';
 import { isString, ellipse, toTitle } from '@/lib/string';
 import { isNumber, formatUnits } from '@/lib/number';
 import { TIME_FORMAT } from '@/lib/time';
-import { getStep, getDepositAddressLabel, resolveSymbolAndImage, resolveStepURL } from './Transfer.utils';
-import type { InfoProps, TransferStep } from './Transfer.types';
+import { getStep, getDepositAddressLabel, resolveSymbolAndImage } from './Transfer.utils';
+import { StatusSteps } from './StatusSteps.component';
+import type { InfoProps } from './Transfer.types';
 import * as styles from './Transfer.styles';
-import { PendingStep } from './PendingStep.component';
-import { CompletedStep } from './CompletedStep.component';
 
 export function Info({ data, tx }: InfoProps) {
   const chains = useChains();
@@ -140,40 +138,12 @@ export function Info({ data, tx }: InfoProps) {
               Status
             </dt>
             <dd className={styles.infoDd}>
-              <div className={styles.statusFlexCol}>
-                <nav
-                  aria-label="Progress"
-                  className={styles.statusNav}
-                >
-                  <ol role="list" className={styles.statusOl}>
-                    {steps.map((d: TransferStep, i: number) => {
-                      const stepURL = resolveStepURL(d, axelarChainData, destinationChainData);
-
-                      return (
-                        <li
-                          key={d.id}
-                          className={clsx(
-                            styles.stepLiBase,
-                            i !== steps.length - 1 ? styles.stepLiNotLast : ''
-                          )}
-                        >
-                          {d.status === 'pending' ? (
-                            <PendingStep step={d} prevStatus={steps[i - 1]?.status} />
-                          ) : (
-                            <CompletedStep step={d} stepURL={stepURL} />
-                          )}
-                        </li>
-                      );
-                    })}
-                  </ol>
-                </nav>
-                {!!send?.insufficient_fee && (
-                  <div className={styles.insufficientFeeRow}>
-                    <PiWarningCircle size={16} />
-                    <span className={styles.insufficientFeeText}>Insufficient Fee</span>
-                  </div>
-                )}
-              </div>
+              <StatusSteps
+                steps={steps}
+                axelarChainData={axelarChainData}
+                destinationChainData={destinationChainData}
+                insufficientFee={!!send?.insufficient_fee}
+              />
             </dd>
           </div>
           <div className={styles.infoRow}>

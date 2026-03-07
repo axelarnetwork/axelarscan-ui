@@ -1,25 +1,21 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Fragment, useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { Dialog, Transition } from '@headlessui/react';
+import { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import _ from 'lodash';
-import { MdOutlineFilterList, MdClose } from 'react-icons/md';
+import { MdOutlineFilterList } from 'react-icons/md';
 
 import { Button } from '@/components/Button';
-import { DateRangePicker } from '@/components/DateRangePicker';
+import { FilterDialog } from '@/components/FilterSelect';
+import type { FilterAttribute } from '@/components/FilterSelect';
 import type { Chain } from '@/types';
 import { useChains } from '@/hooks/useGlobalData';
 import { toArray } from '@/lib/parser';
 import { getParams, getQueryString, isFiltered } from '@/lib/operator';
 import { capitalize } from '@/lib/string';
 
-import type { FilterAttribute } from './AmplifierProofs.types';
 import * as styles from './AmplifierProofs.styles';
-import { SearchableSelect } from './SearchableSelect.component';
-import { SimpleSelect } from './SimpleSelect.component';
 
 const size = 25;
 
@@ -30,7 +26,6 @@ export function Filters() {
   const [open, setOpen] = useState(false);
   const [params, setParams] = useState<Record<string, unknown>>(getParams(searchParams, size));
   const [searchInput, setSearchInput] = useState<Record<string, string>>({});
-  const { handleSubmit } = useForm();
   const chains = useChains();
 
   useEffect(() => {
@@ -126,131 +121,18 @@ export function Filters() {
           className={clsx(filtered && styles.filterIconFiltered)}
         />
       </Button>
-      <Transition.Root show={open} as={Fragment}>
-        <Dialog as="div" onClose={onClose} className={styles.filterDialogRoot}>
-          <Transition.Child
-            as={Fragment}
-            enter="transform transition ease-in-out duration-500 sm:duration-700"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="transform transition ease-in-out duration-500 sm:duration-700"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className={styles.filterBackdrop} />
-          </Transition.Child>
-          <div className={styles.filterOverflowOuter}>
-            <div className={styles.filterOverflowInner}>
-              <div className={styles.filterPanelPositioner}>
-                <Transition.Child
-                  as={Fragment}
-                  enter="transform transition ease-in-out duration-500 sm:duration-700"
-                  enterFrom="translate-x-full"
-                  enterTo="translate-x-0"
-                  leave="transform transition ease-in-out duration-500 sm:duration-700"
-                  leaveFrom="translate-x-0"
-                  leaveTo="translate-x-full"
-                >
-                  <Dialog.Panel className={styles.filterPanel}>
-                    <form
-                      onSubmit={handleSubmit(onSubmit)}
-                      className={styles.filterForm}
-                    >
-                      <div className={styles.filterFormScrollArea}>
-                        <div className={styles.filterHeader}>
-                          <Dialog.Title className={styles.filterHeaderTitle}>
-                            Filter
-                          </Dialog.Title>
-                          <button
-                            type="button"
-                            onClick={() => onClose()}
-                            className={styles.filterCloseBtn}
-                          >
-                            <MdClose size={20} />
-                          </button>
-                        </div>
-                        <div className={styles.filterAttributesList}>
-                          {attributes.map((d, i) => (
-                            <div key={i}>
-                              <label
-                                htmlFor={d.name}
-                                className={styles.filterLabel}
-                              >
-                                {d.label}
-                              </label>
-                              <div className={styles.filterFieldWrapper}>
-                                {d.type === 'select' ? (
-                                  d.searchable ? (
-                                    <SearchableSelect
-                                      attribute={d}
-                                      params={params}
-                                      setParams={setParams}
-                                      searchInput={searchInput}
-                                      setSearchInput={setSearchInput}
-                                    />
-                                  ) : (
-                                    <SimpleSelect
-                                      attribute={d}
-                                      params={params}
-                                      setParams={setParams}
-                                    />
-                                  )
-                                ) : d.type === 'datetimeRange' ? (
-                                  <DateRangePicker
-                                    params={params}
-                                    onChange={(v: { fromTime: number | undefined; toTime: number | undefined }) =>
-                                      setParams({ ...params, ...v })
-                                    }
-                                  />
-                                ) : (
-                                  <input
-                                    type={d.type || 'text'}
-                                    name={d.name}
-                                    placeholder={d.label}
-                                    value={(params[d.name] as string) ?? ''}
-                                    onChange={(e) =>
-                                      setParams({
-                                        ...params,
-                                        [d.name]: e.target.value,
-                                      })
-                                    }
-                                    className={styles.textInput}
-                                  />
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      <div className={styles.filterFooter}>
-                        <button
-                          type="button"
-                          onClick={() => onSubmit(undefined, undefined, {})}
-                          className={styles.resetBtn}
-                        >
-                          Reset
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={!filtered}
-                          className={clsx(
-                            styles.submitBtnBase,
-                            filtered
-                              ? styles.submitBtnEnabled
-                              : styles.submitBtnDisabled
-                          )}
-                        >
-                          Submit
-                        </button>
-                      </div>
-                    </form>
-                  </Dialog.Panel>
-                </Transition.Child>
-              </div>
-            </div>
-          </div>
-        </Dialog>
-      </Transition.Root>
+      <FilterDialog
+        open={open}
+        onClose={onClose}
+        onSubmit={() => onSubmit()}
+        onReset={() => onSubmit(undefined, undefined, {})}
+        filtered={filtered}
+        attributes={attributes}
+        params={params}
+        setParams={setParams}
+        searchInput={searchInput}
+        setSearchInput={setSearchInput}
+      />
     </>
   );
 }
