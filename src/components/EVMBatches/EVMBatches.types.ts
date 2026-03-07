@@ -1,3 +1,5 @@
+import type { Chain, Asset } from '@/types';
+
 /** Aggregation bucket returned by the searchBatches aggs query */
 export interface AggBucket {
   key: string;
@@ -50,6 +52,21 @@ export interface BatchSearchResponse {
 
 /** Cached search results keyed by serialized params */
 export type SearchResultsMap = Record<string, BatchSearchResponse>;
+
+export interface BatchRowProps {
+  batch: BatchRecord;
+  chains: Chain[] | null;
+  assets: Asset[] | null;
+}
+
+export interface CommandItemProps {
+  command: BatchCommand;
+  batch: BatchRecord;
+  chains: Chain[] | null;
+  assets: Asset[] | null;
+  explorerUrl?: string;
+  transactionPath?: string;
+}
 
 /** Number of results per page */
 export const PAGE_SIZE = 25;

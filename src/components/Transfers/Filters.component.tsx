@@ -16,6 +16,7 @@ import { LuChevronsUpDown } from 'react-icons/lu';
 import { Button } from '@/components/Button';
 import { DateRangePicker } from '@/components/DateRangePicker';
 import { useChains, useAssets } from '@/hooks/useGlobalData';
+import type { Chain, Asset } from '@/types';
 import { toArray, split } from '@/lib/parser';
 import {
   getParams,
@@ -72,14 +73,11 @@ export function Filters() {
     setParams(getParams(searchParams, size));
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chainOptions = _.orderBy(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    toArray(chains).map((d: any, i: number) => ({ ...d, i })),
+    toArray(chains).map((d: Chain, i: number) => ({ ...d, i })),
     ['deprecated', 'name', 'i'],
     ['desc', 'asc', 'asc'],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ).map((d: any) => ({
+  ).map((d: Chain & { i: number }) => ({
     value: d.id,
     title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}`,
   }));
@@ -117,8 +115,7 @@ export function Filters() {
       multiple: true,
       options: _.orderBy(
         _.uniqBy(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          toArray(assets).map((d: any) => ({ value: d.id, title: d.symbol })),
+          toArray(assets).map((d: Asset) => ({ value: d.id, title: d.symbol ?? d.id })),
           'value',
         ),
         ['title'],
@@ -247,8 +244,7 @@ export function Filters() {
                                       }
                                       multiple={d.multiple}
                                     >
-                                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                                      {({ open }: any) => {
+                                      {({ open }: { open: boolean }) => {
                                         const isSelected = (v: string | undefined) =>
                                           d.multiple
                                             ? split(params[d.name] as string).includes(v as string)
@@ -425,8 +421,7 @@ export function Filters() {
                                       }
                                       multiple={d.multiple}
                                     >
-                                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                                      {({ open }: any) => {
+                                      {({ open }: { open: boolean }) => {
                                         const isSelected = (v: string | undefined) =>
                                           d.multiple
                                             ? split(params[d.name] as string).includes(v as string)

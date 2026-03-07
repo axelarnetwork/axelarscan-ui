@@ -1,3 +1,7 @@
+export interface ProposalsApiResponse {
+  data?: ProposalListItem[];
+}
+
 export interface ProposalDeposit {
   amount?: number;
   symbol?: string;

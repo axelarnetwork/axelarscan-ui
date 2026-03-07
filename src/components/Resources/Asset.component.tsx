@@ -13,7 +13,7 @@ import { useChains } from '@/hooks/useGlobalData';
 import { getChainData } from '@/lib/config';
 import { getIBCDenomBase64, toArray } from '@/lib/parser';
 import { ellipse } from '@/lib/string';
-import type { AssetProps } from './Resources.types';
+import type { AssetProps, AssetAddressEntry, NormalizedAssetAddress } from './Resources.types';
 import * as styles from './Resources.styles';
 
 const NUM_CHAINS_TRUNCATE = 6;
@@ -24,28 +24,25 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
   const chains = useChains();
 
   // asset
-  const { type, denom, native_chain, symbol } = { ...data };
-  let { addresses } = { ...data };
+  const { type, denom, native_chain, symbol, addresses: rawAddresses } = { ...data };
   const asset = type === 'its' ? data.id : denom;
 
-  addresses = _.uniqBy(
+  const chainAddresses: NormalizedAssetAddress[] = _.uniqBy(
     toArray(
       _.concat(
         {
           chain: native_chain,
           ...(type === 'its'
-            ? data.chains?.[native_chain]
-            : addresses?.[native_chain]),
+            ? data.chains?.[native_chain!]
+            : rawAddresses?.[native_chain!]),
         },
-        Object.entries({ ...(type === 'its' ? data.chains : addresses) }).map(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ([k, v]: [string, any]) => ({ chain: k, ...v })
+        Object.entries({ ...(type === 'its' ? data.chains : rawAddresses) }).map(
+          ([k, v]) => ({ chain: k, ...(v as AssetAddressEntry) })
         )
       )
     ),
     'chain'
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ).map((d: any) => ({ ...d, address: d.address || d.tokenAddress }));
+  ).map((d: NormalizedAssetAddress) => ({ ...d, address: d.address || d.tokenAddress }));
 
   // chain
   const {
@@ -60,8 +57,7 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
     address,
     ibc_denom,
     symbol: tokenSymbol,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } = { ...addresses.find((d: any) => d.chain === chain) };
+  } = { ...chainAddresses.find((d: NormalizedAssetAddress) => d.chain === chain) };
 
   useEffect(() => {
     if (focusID !== asset) {
@@ -101,7 +97,7 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
         </div>
         <div className={styles.assetNameRow}>
           <span className={styles.assetName}>{data.name}</span>
-          {data.decimals > 0 && (
+          {(data.decimals ?? 0) > 0 && (
             <span className={styles.assetDecimals}>
               Decimals: {data.decimals}
             </span>
@@ -114,13 +110,12 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
             </span>
             <div className={styles.tokensIconRow}>
               {_.slice(
-                addresses,
+                chainAddresses,
                 0,
                 focusID === asset && seeMore
-                  ? addresses.length
+                  ? chainAddresses.length
                   : NUM_CHAINS_TRUNCATE
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              ).map(({ chain: chainId }: any, i: number) => {
+              ).map(({ chain: chainId }: NormalizedAssetAddress, i: number) => {
                 const { name, image } = { ...getChainData(chainId, chains) };
 
                 return (
@@ -132,10 +127,10 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
                       <button
                         onClick={() => {
                           setChainSelected(
-                            chainId === chainSelected ? null : chainId
+                            chainId === chainSelected ? null : chainId ?? null
                           );
 
-                          if (onFocus) {
+                          if (onFocus && asset) {
                             onFocus(asset);
                           }
                         }}
@@ -159,12 +154,12 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
                   </div>
                 );
               })}
-              {addresses.length > NUM_CHAINS_TRUNCATE && (
+              {chainAddresses.length > NUM_CHAINS_TRUNCATE && (
                 <button
                   onClick={() => {
                     setSeeMore(!seeMore);
 
-                    if (onFocus) {
+                    if (onFocus && asset) {
                       onFocus(asset);
                     }
                   }}
@@ -172,7 +167,7 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
                 >
                   {seeMore
                     ? 'See Less'
-                    : `+${addresses.length - NUM_CHAINS_TRUNCATE} More`}
+                    : `+${chainAddresses.length - NUM_CHAINS_TRUNCATE} More`}
                 </button>
               )}
             </div>
@@ -209,7 +204,7 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
               {(tokenSymbol || symbol) && (
                 <ValueBox
                   title="Symbol"
-                  value={tokenSymbol || symbol}
+                  value={(tokenSymbol || symbol)!}
                   url={
                     url &&
                     (address

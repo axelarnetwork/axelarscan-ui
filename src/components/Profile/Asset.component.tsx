@@ -7,6 +7,7 @@ import { Image } from '@/components/Image';
 import { Number } from '@/components/Number';
 import { useChains, useAssets, useITSAssets } from '@/hooks/useGlobalData';
 import { getChainData, getAssetData, getITSAssetData } from '@/lib/config';
+import type { Asset } from '@/types';
 import { ellipse } from '@/lib/string';
 import { isNumber } from '@/lib/number';
 import type { AssetProfileProps } from './Profile.types';
@@ -34,11 +35,10 @@ export function AssetProfile({
 
   if (!value) return null;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const assetData: any =
+  const assetData =
     (!onlyITS && getAssetData(addressOrDenom || value, assets)) ||
     (ITSPossible && getITSAssetData(addressOrDenom || value, itsAssets)) ||
-    customAssetData;
+    (customAssetData as Asset | undefined);
 
   const { addresses } = { ...assetData };
   let { symbol, image } = { ...assetData };

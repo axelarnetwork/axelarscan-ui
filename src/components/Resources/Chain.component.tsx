@@ -14,16 +14,24 @@ import { toArray } from '@/lib/parser';
 import type { ChainProps } from './Resources.types';
 import * as styles from './Resources.styles';
 
+interface ContractsData {
+  gateway_contracts?: Record<string, { address?: string; [key: string]: unknown }>;
+  gas_service_contracts?: Record<string, { address?: string; [key: string]: unknown }>;
+  interchain_token_service_contract?: {
+    addresses?: string[];
+    [key: string]: string | string[] | undefined;
+  };
+  [key: string]: unknown;
+}
+
 export function Chain({ data }: ChainProps) {
   const contracts = useContracts();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const {
     gateway_contracts,
     gas_service_contracts,
     interchain_token_service_contract,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } = { ...(contracts as any) };
+  } = { ...(contracts as ContractsData | null) };
 
   const {
     id,
@@ -43,11 +51,12 @@ export function Chain({ data }: ChainProps) {
   const gatewayAddress =
     data?.gateway?.address || gateway_contracts?.[id]?.address;
   const gasServiceAddress = gas_service_contracts?.[id]?.address;
-  const itsAddress =
-    chain_type === 'evm' &&
-    (id in { ...interchain_token_service_contract }
-      ? interchain_token_service_contract[id]
-      : interchain_token_service_contract?.addresses?.[0]);
+  const itsAddress: string | undefined =
+    chain_type === 'evm'
+      ? (id && interchain_token_service_contract && id in interchain_token_service_contract
+          ? String(interchain_token_service_contract[id] ?? '')
+          : interchain_token_service_contract?.addresses?.[0]) || undefined
+      : undefined;
 
   const multisigProverAddress = data?.multisig_prover?.address;
   const votingVerifierAddress = data?.voting_verifier?.address;

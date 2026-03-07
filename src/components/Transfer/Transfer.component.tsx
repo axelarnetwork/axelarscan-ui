@@ -29,8 +29,7 @@ export function Transfer({ tx, lite }: TransferProps) {
 
       if (tx) {
         if (!ended) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { data } = { ...(await searchTransfers({ txHash: tx })) as any } as { data?: TransferData[] };
+          const { data } = { ...(await searchTransfers({ txHash: tx })) as { data?: TransferData[] } };
           const d = data?.[0];
 
           if (d) {
@@ -45,8 +44,7 @@ export function Transfer({ tx, lite }: TransferProps) {
           }
         }
       } else if (transferId) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data } = { ...(await searchTransfers({ transferId })) as any } as { data?: TransferData[] };
+        const { data } = { ...(await searchTransfers({ transferId })) as { data?: TransferData[] } };
         const d = data?.[0];
 
         if (d) {

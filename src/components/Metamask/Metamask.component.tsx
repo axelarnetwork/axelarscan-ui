@@ -102,8 +102,7 @@ export function AddMetamask({
     if (!web3 && window.ethereum) {
       setWeb3(new Web3(window.ethereum));
     } else if (web3?.currentProvider) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (web3.currentProvider as any)._handleChainChanged = (e: { chainId: string }) => {
+      (web3.currentProvider as Web3['currentProvider'] & { _handleChainChanged: (e: { chainId: string }) => void })._handleChainChanged = (e: { chainId: string }) => {
         try {
           setChainId(Web3.utils.hexToNumber(e.chainId) as number);
         } catch (error) {}
@@ -161,8 +160,7 @@ export function AddMetamask({
           : cursorPointerClass
       )}
     >
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      <Image src={MetamaskLogo as any} alt="" width={width} height={height} />
+      <Image src={(MetamaskLogo as { src: string }).src} alt="" width={width} height={height} />
     </button>
   );
 

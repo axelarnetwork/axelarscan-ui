@@ -26,8 +26,6 @@ export function AssetRow({ data, chainsTVL }: AssetRowProps) {
             customAssetData={data.assetData}
             ITSPossible={data.assetType === 'its'}
             titleClassName={assetRowStyles.assetProfile.titleClass}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            {...({} as any)}
           />
           <ITSBadge data={data} />
         </div>
@@ -37,8 +35,6 @@ export function AssetRow({ data, chainsTVL }: AssetRowProps) {
       <td className={assetRowStyles.cell.standard}>
         <ChainProfile
           value={data.nativeChain?.chainData?.id}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          {...({} as any)}
         />
       </td>
 

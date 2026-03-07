@@ -127,11 +127,9 @@ function renderSearchableCombobox(
           [d.name]: d.multiple ? (v as string[]).join(',') : v,
         })
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      multiple={d.multiple as any}
+      multiple={d.multiple as boolean | undefined}
     >
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      {(({ open: isOpen }: any) => {
+      {(({ open: isOpen }: { open: boolean }) => {
         const isSelected = makeIsSelected(d, params);
         const selectedValue = getSelectedValue(d, params, isSelected);
 
@@ -161,20 +159,17 @@ function renderSearchableCombobox(
                 />
                 <Combobox.Options className={styles.selectOptions}>
                   {toArray(d.options)
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    .filter((o: any) =>
+                    .filter((o: SelectOption) =>
                       filterSearchInput(
-                        [o.title, o.value],
+                        [o.title, o.value].filter((s): s is string => s !== undefined),
                         searchInput[d.name] || '',
                       ),
                     )
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    .map((o: any, j: number) => (
+                    .map((o: SelectOption, j: number) => (
                       <Combobox.Option
                         key={j}
                         value={o.value}
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        className={({ active }: any) =>
+                        className={({ active }: { active: boolean }) =>
                           clsx(
                             styles.selectOptionBase,
                             active
@@ -183,8 +178,7 @@ function renderSearchableCombobox(
                           )
                         }
                       >
-                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                        {({ selected, active }: any) =>
+                        {({ selected, active }: { selected: boolean; active: boolean }) =>
                           renderOptionContent(selected, active, o.title)
                         }
                       </Combobox.Option>
@@ -194,8 +188,7 @@ function renderSearchableCombobox(
             </Transition>
           </div>
         );
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      }) as any}
+      }) as (props: { open: boolean }) => React.ReactElement}
     </Combobox>
   );
 }
@@ -214,11 +207,9 @@ function renderListbox(
           [d.name]: d.multiple ? (v as string[]).join(',') : v,
         })
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      multiple={d.multiple as any}
+      multiple={d.multiple as boolean | undefined}
     >
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      {(({ open: isOpen }: any) => {
+      {(({ open: isOpen }: { open: boolean }) => {
         const isSelected = makeIsSelected(d, params);
         const selectedValue = getSelectedValue(d, params, isSelected);
 
@@ -248,8 +239,7 @@ function renderListbox(
                       )
                     }
                   >
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    {({ selected, active }: any) =>
+                    {({ selected, active }: { selected: boolean; active: boolean }) =>
                       renderOptionContent(selected, active, o.title)
                     }
                   </Listbox.Option>
@@ -258,8 +248,7 @@ function renderListbox(
             </Transition>
           </div>
         );
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      }) as any}
+      }) as (props: { open: boolean }) => React.ReactElement}
     </Listbox>
   );
 }

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -25,7 +24,7 @@ import {
   filterSearchInput,
 } from '@/lib/string';
 
-import type { FiltersProps } from './Transactions.types';
+import type { FiltersProps, FilterAttribute, FilterOption, TypesAggregationBucket } from './Transactions.types';
 import { PAGE_SIZE } from './Transactions.types';
 import * as styles from './Transactions.styles';
 
@@ -34,7 +33,7 @@ export function Filters({ address }: FiltersProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
-  const [params, setParams] = useState<Record<string, string>>(getParams(searchParams, PAGE_SIZE) as any);
+  const [params, setParams] = useState<Record<string, string>>(getParams(searchParams, PAGE_SIZE) as Record<string, string>);
   const [searchInput, setSearchInput] = useState<Record<string, string>>({});
   const [types, setTypes] = useState<string[]>([]);
   const { handleSubmit } = useForm();
@@ -51,7 +50,7 @@ export function Filters({ address }: FiltersProps) {
         aggs: { types: { terms: { field: 'types.keyword', size: 1000 } } },
         size: 0,
       });
-      setTypes(toArray(response).map((d: any) => d.key));
+      setTypes(toArray<TypesAggregationBucket>(response as TypesAggregationBucket[] | null).map((d) => d.key));
     };
 
     getTypes();
@@ -72,17 +71,17 @@ export function Filters({ address }: FiltersProps) {
 
   const onClose = () => {
     setOpen(false);
-    setParams(getParams(searchParams, PAGE_SIZE) as any);
+    setParams(getParams(searchParams, PAGE_SIZE) as Record<string, string>);
   };
 
-  const attributes = toArray([
+  const attributes: FilterAttribute[] = [
     { label: 'Tx Hash', name: 'txHash' },
     {
       label: 'Type',
       name: 'type',
       type: 'select',
       options: _.concat(
-        { title: 'Any' } as any,
+        [{ title: 'Any' } as FilterOption],
         _.orderBy(
           types.map((d: string) => ({ value: d, title: d })),
           ['title'],
@@ -95,13 +94,13 @@ export function Filters({ address }: FiltersProps) {
       name: 'status',
       type: 'select',
       options: _.concat(
-        { title: 'Any' } as any,
+        [{ title: 'Any' } as FilterOption],
         ['success', 'failed'].map((d: string) => ({ value: d, title: capitalize(d) }))
       ),
     },
-    !address && { label: 'Address', name: 'address' },
+    ...(!address ? [{ label: 'Address', name: 'address' }] : []),
     { label: 'Time', name: 'time', type: 'datetimeRange' },
-  ]);
+  ];
 
   const filtered = isFiltered(params);
 
@@ -162,7 +161,7 @@ export function Filters({ address }: FiltersProps) {
                           </button>
                         </div>
                         <div className={styles.dialogBody}>
-                          {attributes.map((d: any, i: number) => (
+                          {attributes.map((d: FilterAttribute, i: number) => (
                             <div key={i}>
                               <label
                                 htmlFor={d.name}
@@ -179,30 +178,30 @@ export function Filters({ address }: FiltersProps) {
                                           ? split(params[d.name])
                                           : params[d.name]
                                       }
-                                      onChange={(v: any) =>
+                                      onChange={(v: string | string[]) =>
                                         setParams({
                                           ...params,
                                           [d.name]: d.multiple
-                                            ? v.join(',')
-                                            : v,
+                                            ? (v as string[]).join(',')
+                                            : v as string,
                                         })
                                       }
                                       multiple={d.multiple}
                                     >
-                                      {({ open }: any) => {
-                                        const isSelected = (v: any) =>
+                                      {({ open }: { open: boolean }) => {
+                                        const isSelected = (v: string | undefined) =>
                                           d.multiple
-                                            ? split(params[d.name]).includes(v)
+                                            ? split(params[d.name]).includes(v as string)
                                             : v === params[d.name] ||
                                               equalsIgnoreCase(
                                                 v,
                                                 params[d.name]
                                               );
                                         const selectedValue = d.multiple
-                                          ? toArray(d.options).filter((o: any) =>
+                                          ? toArray<FilterOption>(d.options).filter((o) =>
                                               isSelected(o.value)
                                             )
-                                          : toArray(d.options).find((o: any) =>
+                                          : toArray<FilterOption>(d.options).find((o) =>
                                               isSelected(o.value)
                                             );
 
@@ -213,32 +212,32 @@ export function Filters({ address }: FiltersProps) {
                                                 <div
                                                   className={clsx(
                                                     styles.selectMultipleWrap,
-                                                    selectedValue.length !==
+                                                    (selectedValue as FilterOption[]).length !==
                                                       0 && styles.selectMultipleWrapActive
                                                   )}
                                                 >
-                                                  {selectedValue.length ===
+                                                  {(selectedValue as FilterOption[]).length ===
                                                   0 ? (
                                                     <span className={styles.selectTruncate}>
                                                       Any
                                                     </span>
                                                   ) : (
-                                                    selectedValue.map(
-                                                      (v: any, j: number) => (
+                                                    (selectedValue as FilterOption[]).map(
+                                                      (v: FilterOption, j: number) => (
                                                         <div
                                                           key={j}
                                                           onClick={() =>
                                                             setParams({
                                                               ...params,
                                                               [d.name]:
-                                                                selectedValue
+                                                                (selectedValue as FilterOption[])
                                                                   .filter(
-                                                                    (v: any) =>
-                                                                      v.value !==
+                                                                    (sv: FilterOption) =>
+                                                                      sv.value !==
                                                                       v.value
                                                                   )
                                                                   .map(
-                                                                    (v: any) => v.value
+                                                                    (sv: FilterOption) => sv.value
                                                                   )
                                                                   .join(','),
                                                             })
@@ -253,7 +252,7 @@ export function Filters({ address }: FiltersProps) {
                                                 </div>
                                               ) : (
                                                 <span className={styles.selectTruncate}>
-                                                  {selectedValue?.title}
+                                                  {(selectedValue as FilterOption | undefined)?.title}
                                                 </span>
                                               )}
                                               <span className={styles.selectChevronWrapper}>
@@ -276,7 +275,7 @@ export function Filters({ address }: FiltersProps) {
                                                   value={
                                                     searchInput[d.name] || ''
                                                   }
-                                                  onChange={(e: any) =>
+                                                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                                     setSearchInput({
                                                       ...searchInput,
                                                       [d.name]: e.target.value,
@@ -285,20 +284,20 @@ export function Filters({ address }: FiltersProps) {
                                                   className={styles.selectSearchInput}
                                                 />
                                                 <Combobox.Options className={styles.selectDropdown}>
-                                                  {toArray(d.options)
-                                                    .filter((o: any) =>
+                                                  {toArray<FilterOption>(d.options)
+                                                    .filter((o: FilterOption) =>
                                                       filterSearchInput(
-                                                        [o.title, o.value],
+                                                        [o.title, o.value ?? ''],
                                                         searchInput[d.name]
                                                       )
                                                     )
-                                                    .map((o: any, j: number) => (
+                                                    .map((o: FilterOption, j: number) => (
                                                       <Combobox.Option
                                                         key={j}
                                                         value={o.value}
                                                         className={({
                                                           active,
-                                                        }: any) =>
+                                                        }: { active: boolean }) =>
                                                           clsx(
                                                             styles.selectOptionBase,
                                                             active
@@ -310,7 +309,7 @@ export function Filters({ address }: FiltersProps) {
                                                         {({
                                                           selected,
                                                           active,
-                                                        }: any) => (
+                                                        }: { selected: boolean; active: boolean }) => (
                                                           <>
                                                             <span
                                                               className={clsx(
@@ -354,30 +353,30 @@ export function Filters({ address }: FiltersProps) {
                                           ? split(params[d.name])
                                           : params[d.name]
                                       }
-                                      onChange={(v: any) =>
+                                      onChange={(v: string | string[]) =>
                                         setParams({
                                           ...params,
                                           [d.name]: d.multiple
-                                            ? v.join(',')
-                                            : v,
+                                            ? (v as string[]).join(',')
+                                            : v as string,
                                         })
                                       }
                                       multiple={d.multiple}
                                     >
-                                      {({ open }: any) => {
-                                        const isSelected = (v: any) =>
+                                      {({ open }: { open: boolean }) => {
+                                        const isSelected = (v: string | undefined) =>
                                           d.multiple
-                                            ? split(params[d.name]).includes(v)
+                                            ? split(params[d.name]).includes(v as string)
                                             : v === params[d.name] ||
                                               equalsIgnoreCase(
                                                 v,
                                                 params[d.name]
                                               );
                                         const selectedValue = d.multiple
-                                          ? toArray(d.options).filter((o: any) =>
+                                          ? toArray<FilterOption>(d.options).filter((o) =>
                                               isSelected(o.value)
                                             )
-                                          : toArray(d.options).find((o: any) =>
+                                          : toArray<FilterOption>(d.options).find((o) =>
                                               isSelected(o.value)
                                             );
 
@@ -388,32 +387,32 @@ export function Filters({ address }: FiltersProps) {
                                                 <div
                                                   className={clsx(
                                                     styles.selectMultipleWrap,
-                                                    selectedValue.length !==
+                                                    (selectedValue as FilterOption[]).length !==
                                                       0 && styles.selectMultipleWrapActive
                                                   )}
                                                 >
-                                                  {selectedValue.length ===
+                                                  {(selectedValue as FilterOption[]).length ===
                                                   0 ? (
                                                     <span className={styles.selectTruncate}>
                                                       Any
                                                     </span>
                                                   ) : (
-                                                    selectedValue.map(
-                                                      (v: any, j: number) => (
+                                                    (selectedValue as FilterOption[]).map(
+                                                      (v: FilterOption, j: number) => (
                                                         <div
                                                           key={j}
                                                           onClick={() =>
                                                             setParams({
                                                               ...params,
                                                               [d.name]:
-                                                                selectedValue
+                                                                (selectedValue as FilterOption[])
                                                                   .filter(
-                                                                    (v: any) =>
-                                                                      v.value !==
+                                                                    (sv: FilterOption) =>
+                                                                      sv.value !==
                                                                       v.value
                                                                   )
                                                                   .map(
-                                                                    (v: any) => v.value
+                                                                    (sv: FilterOption) => sv.value
                                                                   )
                                                                   .join(','),
                                                             })
@@ -428,7 +427,7 @@ export function Filters({ address }: FiltersProps) {
                                                 </div>
                                               ) : (
                                                 <span className={styles.selectTruncate}>
-                                                  {selectedValue?.title}
+                                                  {(selectedValue as FilterOption | undefined)?.title}
                                                 </span>
                                               )}
                                               <span className={styles.selectChevronWrapper}>
@@ -446,12 +445,12 @@ export function Filters({ address }: FiltersProps) {
                                               leaveTo="opacity-0"
                                             >
                                               <Listbox.Options className={styles.selectDropdown}>
-                                                {toArray(d.options).map(
-                                                  (o: any, j: number) => (
+                                                {toArray<FilterOption>(d.options).map(
+                                                  (o: FilterOption, j: number) => (
                                                     <Listbox.Option
                                                       key={j}
                                                       value={o.value}
-                                                      className={({ active }: any) =>
+                                                      className={({ active }: { active: boolean }) =>
                                                         clsx(
                                                           styles.selectOptionBase,
                                                           active
@@ -463,7 +462,7 @@ export function Filters({ address }: FiltersProps) {
                                                       {({
                                                         selected,
                                                         active,
-                                                      }: any) => (
+                                                      }: { selected: boolean; active: boolean }) => (
                                                         <>
                                                           <span
                                                             className={clsx(
@@ -504,8 +503,8 @@ export function Filters({ address }: FiltersProps) {
                                 ) : d.type === 'datetimeRange' ? (
                                   <DateRangePicker
                                     params={params}
-                                    onChange={(v: any) =>
-                                      setParams({ ...params, ...v })
+                                    onChange={(v: { fromTime: number | undefined; toTime: number | undefined }) =>
+                                      setParams({ ...params, ...Object.fromEntries(Object.entries(v).map(([k, val]) => [k, val !== undefined ? String(val) : ''])) })
                                     }
                                   />
                                 ) : (
@@ -514,7 +513,7 @@ export function Filters({ address }: FiltersProps) {
                                     name={d.name}
                                     placeholder={d.label}
                                     value={params[d.name]}
-                                    onChange={(e: any) =>
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                                       setParams({
                                         ...params,
                                         [d.name]: e.target.value,

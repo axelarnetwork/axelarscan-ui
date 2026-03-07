@@ -41,7 +41,7 @@ import {
 import { isNumber, formatUnits } from '@/lib/number';
 
 import { Filters } from './Filters.component';
-import type { TransfersProps, TransferSearchResults } from './Transfers.types';
+import type { TransfersProps, TransferSearchResults, TransferSearchResult, TransferRowData } from './Transfers.types';
 import * as styles from './Transfers.styles';
 
 const size = 25;
@@ -85,8 +85,7 @@ export function Transfers({ address }: TransfersProps) {
       const _params = _.cloneDeep(params);
       delete _params.sortBy;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const response = await searchTransfers({ ..._params, size, sort }) as any;
+      const response = await searchTransfers({ ..._params, size, sort }) as TransferSearchResult | null;
 
       setSearchResults({
         ...(refresh ? undefined : searchResults),
@@ -118,8 +117,7 @@ export function Transfers({ address }: TransfersProps) {
     return () => clearInterval(interval);
   }, []);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, total } = { ...searchResults?.[generateKeyByParams(params as Record<string, unknown>)] } as any;
+  const { data, total } = { ...searchResults?.[generateKeyByParams(params as Record<string, unknown>)] } as TransferSearchResult;
 
   return (
     <Container className={styles.transfersContainer}>
@@ -142,7 +140,7 @@ export function Transfers({ address }: TransfersProps) {
               <p className={styles.transfersSubtitle}>
                 <Number
                   value={total}
-                  suffix={` result${total > 1 ? 's' : ''}`}
+                  suffix={` result${(total ?? 0) > 1 ? 's' : ''}`}
                 />
               </p>
             </div>
@@ -193,24 +191,20 @@ export function Transfers({ address }: TransfersProps) {
                 </tr>
               </thead>
               <tbody className={styles.tbody}>
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {data.map((d: any) => {
+                {data.map((d: TransferRowData) => {
                   const assetData = getAssetData(d.send.denom, assets);
 
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const { addresses } = { ...assetData } as any;
+                  const { addresses } = { ...assetData };
                   let { symbol, image } = {
                     ...addresses?.[d.send.source_chain],
                   };
 
                   if (!symbol) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    symbol = (assetData as any)?.symbol;
+                    symbol = assetData?.symbol;
                   }
 
                   if (!image) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    image = (assetData as any)?.image;
+                    image = assetData?.image;
                   }
 
                   if (symbol) {
@@ -219,8 +213,8 @@ export function Transfers({ address }: TransfersProps) {
                         const WRAP_PREFIXES = ['w', 'axl'];
                         const i = WRAP_PREFIXES.findIndex(
                           (p: string) =>
-                            toCase(symbol, 'lower').startsWith(p) &&
-                            !equalsIgnoreCase(p, symbol),
+                            toCase(symbol!, 'lower').startsWith(p) &&
+                            !equalsIgnoreCase(p, symbol!),
                         );
 
                         if (i > -1) {
@@ -280,8 +274,7 @@ export function Transfers({ address }: TransfersProps) {
                                     isString(d.send.amount)
                                       ? formatUnits(
                                           d.send.amount,
-                                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                          (assetData as any)?.decimals,
+                                          assetData?.decimals,
                                         )
                                       : d.send.amount
                                   }
@@ -368,13 +361,14 @@ export function Transfers({ address }: TransfersProps) {
                               <span className={styles.insufficientFeeText}>Insufficient Fee</span>
                             </div>
                           )}
-                          {d.time_spent?.total > 0 &&
+                          {(d.time_spent?.total ?? 0) > 0 &&
+                            d.simplified_status &&
                             ['received'].includes(d.simplified_status) && (
                               <div className={styles.timeSpentRow}>
                                 <MdOutlineTimer size={16} />
                                 <TimeSpent
                                   fromTimestamp={0}
-                                  toTimestamp={d.time_spent.total * 1000}
+                                  toTimestamp={d.time_spent!.total! * 1000}
                                   className={styles.timeSpentText}
                                 />
                               </div>
@@ -390,9 +384,9 @@ export function Transfers({ address }: TransfersProps) {
               </tbody>
             </table>
           </div>
-          {total > size && (
+          {(total ?? 0) > size && (
             <div className={styles.paginationWrapper}>
-              <Pagination sizePerPage={size} total={total} />
+              <Pagination sizePerPage={size} total={total ?? 0} />
             </div>
           )}
         </div>

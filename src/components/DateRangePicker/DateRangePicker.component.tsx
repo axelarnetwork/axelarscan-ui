@@ -95,8 +95,7 @@ export function DateRangePicker({
             dayjs().subtract(1, 'years').endOf('year'),
           ],
         },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        { label: 'All Time', value: [] as any },
+        { label: 'All Time', value: [null, null] as [null, null] },
       ]}
       value={
         fromTime && toTime

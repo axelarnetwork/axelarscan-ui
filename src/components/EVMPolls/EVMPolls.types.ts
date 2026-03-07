@@ -1,3 +1,5 @@
+import type { Asset, Chain, Validator } from '@/types';
+
 /** Shape of a single vote extracted from poll data via getValuesOfAxelarAddressKey */
 export interface PollVote {
   voter?: string;
@@ -72,3 +74,11 @@ export interface SearchResultEntry {
 }
 
 export type SearchResults = Record<string, SearchResultEntry>;
+
+/** Props for the PollRow sub-component */
+export interface PollRowProps {
+  poll: ProcessedPoll;
+  chains: Chain[] | null;
+  assets: Asset[] | null;
+  validators: Validator[] | null;
+}

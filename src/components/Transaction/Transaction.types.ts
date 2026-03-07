@@ -1,18 +1,14 @@
-import type { Chain } from '@/types';
+import type { Asset, Chain, Validator } from '@/types';
+import type {
+  TransactionData as BaseTransactionData,
+  TransactionActivity,
+} from '@/components/Transactions/Transactions.types';
 
-export interface TransactionData extends Record<string, unknown> {
-  height?: number;
-  type?: string;
-  code?: number;
+export interface TransactionData extends BaseTransactionData {
   sender?: string;
-  timestamp?: string | number;
   gas_used?: number;
   gas_wanted?: number;
   raw_log?: string;
-  tx?: {
-    auth_info?: { fee?: { amount?: { amount?: string; denom?: string }[] } };
-    body?: { messages?: Record<string, unknown>[]; memo?: string };
-  };
   status?: string;
   message?: string;
 }
@@ -30,23 +26,38 @@ export interface TransactionProps {
   tx: string;
 }
 
+// ─── Activity / Event types ────────────────────────────────────
+
+export interface EventLogAttribute {
+  key: string;
+  value: unknown;
+}
+
+export interface EventLogEvent {
+  type?: string;
+  attributes?: EventLogAttribute[];
+  [key: string]: unknown;
+}
+
+export interface EventLogRecord {
+  log?: string;
+  events?: EventLogEvent[];
+  [key: string]: unknown;
+}
+
 // ─── Sub-component Props ───────────────────────────────────────
 
 export interface ActivityItemProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  activity: Record<string, any>;
+  activity: TransactionActivity;
   index: number;
   data: TransactionData;
   activitiesCount: number;
   chains: Chain[] | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  assets: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  validators: any;
+  assets: Asset[] | null;
+  validators: Validator[] | null;
 }
 
 export interface EventLogEntryProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  entry: Record<string, any>;
+  entry: EventLogRecord;
   index: number;
 }

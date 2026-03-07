@@ -20,7 +20,7 @@ import {
   toTitle,
 } from '@/lib/string';
 import { TIME_FORMAT } from '@/lib/time';
-import type { Chain } from '@/types';
+import type { Chain, Validator } from '@/types';
 import type { ActivityItemProps } from './Transaction.types';
 import { renderEntries } from './Transaction.utils';
 import * as styles from './Transaction.styles';
@@ -41,9 +41,9 @@ export function ActivityItem({
     deposit_address,
     burner_address,
     tx_id,
-    deposit_address_chain,
     symbol,
   } = { ...d };
+  let deposit_address_chain = d.deposit_address_chain as string | undefined;
 
   deposit_address = toHex(deposit_address);
   burner_address = toHex(burner_address);
@@ -51,10 +51,10 @@ export function ActivityItem({
 
   if (!deposit_address_chain && chains) {
     deposit_address_chain =
-      isString(deposit_address) &&
+      (isString(deposit_address) &&
       chains.find((c: Chain) =>
         deposit_address.startsWith(c.prefix_address ?? '')
-      )?.id;
+      )?.id) || undefined;
   }
 
   // chain data
@@ -62,8 +62,7 @@ export function ActivityItem({
   const { url, transaction_path } = { ...chainData?.explorer };
 
   // asset data
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const tokenData: any = chainData
+  const tokenData = chainData
     ? addresses?.[chainData.id]
     : undefined;
 
@@ -83,12 +82,12 @@ export function ActivityItem({
   }
 
   const isValidator = (address: string) =>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    toArray(validators).findIndex((v: any) =>
-      includesSomePatterns(address, [
-        v.operator_address,
-        v.broadcaster_address,
-      ])
+    toArray(validators).findIndex((v: Validator) =>
+      includesSomePatterns(address,
+        [v.operator_address, v.broadcaster_address].filter(
+          (s): s is string => s !== undefined
+        ),
+      )
     ) > -1;
 
   const txElement = (
@@ -139,7 +138,7 @@ export function ActivityItem({
           {(isNumber(d.amount) || symbol) && (
             <div className={styles.assetRow}>
               <Image src={image} alt="" width={20} height={20} />
-              {d.amount > 0 && (
+              {globalThis.Number(d.amount) > 0 && (
                 <Number
                   value={d.amount}
                   format="0,0.000000"
@@ -155,10 +154,10 @@ export function ActivityItem({
         {d.recipient && (
           <div className={styles.activityFieldWrapper}>
             <div className={styles.activityFieldLabel}>
-              {isValidator(d.recipient) ? 'Validator' : 'Recipient'}
+              {isValidator(Array.isArray(d.recipient) ? d.recipient[0] : d.recipient) ? 'Validator' : 'Recipient'}
             </div>
             <Profile
-              address={d.recipient}
+              address={Array.isArray(d.recipient) ? d.recipient[0] : d.recipient}
               width={20}
               height={20}
               className={styles.profileText}
@@ -227,25 +226,25 @@ export function ActivityItem({
             </Copy>
           </div>
         )}
-        {d.poll_id && (
+        {!!d.poll_id && (
           <div className={styles.activityFieldWrapper}>
             <div className={styles.activityFieldLabel}>Poll ID</div>
-            <Copy size={16} value={d.poll_id}>
-              <span className={styles.pollIdText}>{d.poll_id}</span>
+            <Copy size={16} value={d.poll_id as string}>
+              <span className={styles.pollIdText}>{d.poll_id as string}</span>
             </Copy>
           </div>
         )}
-        {d.acknowledgement && (
+        {!!d.acknowledgement && (
           <div className={styles.activityFieldWrapper}>
             <div className={styles.activityFieldLabel}>
               Acknowledgement
             </div>
             <span className={styles.acknowledgementText}>
-              {safeBase64ToString(d.acknowledgement) as string}
+              {safeBase64ToString(d.acknowledgement as string) as string}
             </span>
           </div>
         )}
-        {d.timeout_timestamp > 0 && (
+        {globalThis.Number(d.timeout_timestamp) > 0 && (
           <div className={styles.activityFieldWrapper}>
             <div className={styles.activityFieldLabel}>Timeout</div>
             <span className={styles.timeoutText}>
@@ -257,8 +256,7 @@ export function ActivityItem({
       {toArray(d.events).length > 0 && (
         <div className={styles.eventsWrapper}>
           <span className={styles.eventsTitle}>Vote Events</span>
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          {d.events.map((e: Record<string, any>, j: number) => (
+          {d.events!.map((e: { event: string; [key: string]: string }, j: number) => (
             <div key={j} className={styles.eventCard}>
               {e.event && (
                 <Tag className={styles.eventTag}>
@@ -274,7 +272,7 @@ export function ActivityItem({
           ))}
         </div>
       )}
-      {d.packet && (
+      {!!d.packet && (
         <div className={styles.eventCard}>
           <Tag className={styles.eventTag}>Packet</Tag>
           {renderEntries(

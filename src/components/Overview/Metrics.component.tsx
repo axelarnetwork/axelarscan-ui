@@ -25,8 +25,7 @@ export function Metrics() {
 
   useEffect(() => {
     const getData = async () =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setBlockData(await getRPCStatus({ avg_block_time: true }) as any);
+      setBlockData(await getRPCStatus({ avg_block_time: true }) as { latest_block_height?: number; avg_block_time?: number } | null);
 
     getData();
 

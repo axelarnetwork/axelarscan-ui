@@ -25,8 +25,7 @@ const TABS = ['gmp', 'transfers'] as const;
 export function Address({ address }: AddressProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [params, setParams] = useState<Record<string, any>>(getParams(searchParams));
+  const [params, setParams] = useState<Record<string, unknown>>(getParams(searchParams));
 
   useEffect(() => {
     const params = getParams(searchParams);
@@ -46,7 +45,7 @@ export function Address({ address }: AddressProps) {
     }
   }, [address, router, params]);
 
-  const { transfersType } = { ...params };
+  const transfersType = params.transfersType as string | undefined;
 
   return (
     address &&

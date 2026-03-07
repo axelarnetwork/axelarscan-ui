@@ -14,8 +14,8 @@ import { useChains, useAssets, useITSAssets } from '@/hooks/useGlobalData';
 import { split, toArray } from '@/lib/parser';
 import { getParams, getQueryString } from '@/lib/operator';
 import { equalsIgnoreCase, includesSomePatterns } from '@/lib/string';
-import type { Chain } from '@/types';
-import type { SelectOption, FilterAttribute, ResourcesProps } from './Resources.types';
+import type { Chain, Asset, AssetAddress } from '@/types';
+import type { SelectOption, FilterAttribute, ResourcesProps, ChainResourceData, AssetResourceData } from './Resources.types';
 import { Chain as ChainCard } from './Chain.component';
 import { Asset as AssetCard } from './Asset.component';
 import * as styles from './Resources.styles';
@@ -40,8 +40,7 @@ export function Resources({ resource = undefined }: ResourcesProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [rendered, setRendered] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [params, setParams] = useState<Record<string, string>>(getParams(searchParams) as any);
+  const [params, setParams] = useState<Record<string, string>>(getParams(searchParams) as Record<string, string>);
   const [input, setInput] = useState('');
   const [assetFocusID, setAssetFocusID] = useState<string | null>(null);
   const chains = useChains();
@@ -84,8 +83,7 @@ export function Resources({ resource = undefined }: ResourcesProps) {
   ]);
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const _params = getParams(searchParams) as any;
+    const _params = getParams(searchParams) as Record<string, string>;
 
     if (!_.isEqual(_params, params)) {
       setParams(_params);
@@ -100,8 +98,7 @@ export function Resources({ resource = undefined }: ResourcesProps) {
       options: _.concat(
         { title: 'Any', value: '' } as SelectOption,
         _.orderBy(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (toArray(chains) as any[]).filter(
+          (toArray(chains) as Chain[]).filter(
             (d: Chain) =>
               !d.deprecated && (params.type !== 'its' || d.chain_type === 'evm')
           ),
@@ -122,8 +119,7 @@ export function Resources({ resource = undefined }: ResourcesProps) {
 
     switch (resourceType) {
       case 'chains':
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (toArray(chains) as any[])
+        return (toArray(chains) as Chain[])
           .filter(
             (d: Chain) =>
               (!type || d.chain_type === type) &&
@@ -147,22 +143,18 @@ export function Resources({ resource = undefined }: ResourcesProps) {
           );
       case 'assets':
         return _.concat(
-          toArray((!type || type === 'gateway') ? assets : null)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .filter((d: any) => !chain || d.addresses?.[chain])
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (toArray((!type || type === 'gateway') ? assets : null) as Asset[])
+            .filter((d: Asset) => !chain || d.addresses?.[chain])
             .filter(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (d: any) =>
+              (d: Asset) =>
                 !input ||
                 includesSomePatterns(
                   _.uniq(
                     toArray(
                       _.concat(
-                        ['denom', 'name', 'symbol'].map((f: string) => d[f]),
+                        ['denom', 'name', 'symbol'].map((f: string) => d[f as keyof Asset] as string | undefined),
                         d.denoms,
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        Object.values({ ...d.addresses }).flatMap((a: any) =>
+                        Object.values({ ...d.addresses }).flatMap((a: AssetAddress) =>
                           toArray([
                             !equalsIgnoreCase(input, 'axl') && a.symbol,
                             a.address,
@@ -171,40 +163,35 @@ export function Resources({ resource = undefined }: ResourcesProps) {
                         )
                       ),
                       { toCase: 'lower' }
-                    )
+                    ) as string[]
                   ),
                   words
                 )
             ),
-          toArray((!type || type === 'its') ? itsAssets : null)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .filter((d: any) => !chain || d.chains?.[chain])
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (toArray((!type || type === 'its') ? itsAssets : null) as Asset[])
+            .filter((d: Asset) => !chain || (d as AssetResourceData).chains?.[chain])
             .filter(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (d: any) =>
+              (d: Asset) =>
                 !input ||
                 includesSomePatterns(
                   _.uniq(
                     toArray(
                       _.concat(
-                        ['name', 'symbol'].map((f: string) => d[f]),
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        Object.values({ ...d.chains }).flatMap((a: any) =>
+                        ['name', 'symbol'].map((f: string) => d[f as keyof Asset] as string | undefined),
+                        Object.values({ ...(d as AssetResourceData).chains }).flatMap((a: AssetAddress) =>
                           toArray([
                             !equalsIgnoreCase(input, 'axl') && a.symbol,
-                            a.tokenAddress,
+                            (a as Record<string, unknown>).tokenAddress as string | undefined,
                           ])
                         )
                       ),
                       { toCase: 'lower' }
-                    )
+                    ) as string[]
                   ),
                   words
                 )
             )
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map((d: any) => ({ ...d, type: 'its' }))
+            .map((d: Asset) => ({ ...d, type: 'its' }))
         );
       default:
         return [];
@@ -217,8 +204,7 @@ export function Resources({ resource = undefined }: ResourcesProps) {
     if (resourceType === 'chains') {
       return (
         <ul role="list" className={styles.resourceGrid}>
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          {filtered.map((d: any, i: number) => (
+          {(filtered as ChainResourceData[]).map((d: ChainResourceData, i: number) => (
             <ChainCard key={i} data={d} />
           ))}
         </ul>
@@ -228,8 +214,7 @@ export function Resources({ resource = undefined }: ResourcesProps) {
     if (resourceType === 'assets') {
       return (
         <ul role="list" className={styles.resourceGrid}>
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          {filtered.map((d: any, i: number) => (
+          {(filtered as AssetResourceData[]).map((d: AssetResourceData, i: number) => (
             <AssetCard
               key={i}
               data={d}
@@ -306,8 +291,7 @@ export function Resources({ resource = undefined }: ResourcesProps) {
           </div>
           {attributes.length > 0 && (
             <div className={styles.attributesWrapper}>
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {(attributes as any[]).map((d: FilterAttribute, i: number) => (
+              {(attributes as FilterAttribute[]).map((d: FilterAttribute, i: number) => (
                 <div key={i} className={styles.attributeRow}>
                   <label
                     htmlFor={d.name}
@@ -321,37 +305,31 @@ export function Resources({ resource = undefined }: ResourcesProps) {
                         value={
                           d.multiple ? split(params[d.name]) : params[d.name]
                         }
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        onChange={(v: any) => {
+                        onChange={(v: string | string[]) => {
                           router.push(
-                            `/resources/${resource}${getQueryString({ ...params, [d.name]: d.multiple ? (v as string[]).join(',') : v })}`
+                            `/resources/${resource}${getQueryString({ ...params, [d.name]: d.multiple ? (v as string[]).join(',') : v as string })}`
                           );
                         }}
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        multiple={d.multiple as any}
+                        multiple={d.multiple as true | undefined}
                       >
                         {({ open }) => {
-                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                          const isSelected = (v: any) =>
+                          const isSelected = (v: string | undefined) =>
                             d.multiple
-                              ? split(params[d.name]).includes(v)
+                              ? split(params[d.name]).includes(v ?? '')
                               : v === params[d.name] ||
                                 equalsIgnoreCase(v, params[d.name]);
-                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                          const selectedValue: any = d.multiple
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            ? (toArray(d.options) as any[]).filter((o: SelectOption) =>
+                          const selectedValue: SelectOption[] | SelectOption | undefined = d.multiple
+                            ? (toArray(d.options) as SelectOption[]).filter((o: SelectOption) =>
                                 isSelected(o.value)
                               )
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            : (toArray(d.options) as any[]).find((o: SelectOption) =>
+                            : (toArray(d.options) as SelectOption[]).find((o: SelectOption) =>
                                 isSelected(o.value)
                               );
 
                           return (
                             <div className={styles.selectRelative}>
                               <Listbox.Button className={styles.selectButton}>
-                                {d.multiple ? (
+                                {d.multiple && Array.isArray(selectedValue) ? (
                                   <div
                                     className={clsx(
                                       styles.selectMultiWrap,
@@ -371,7 +349,7 @@ export function Resources({ resource = undefined }: ResourcesProps) {
                                               `/resources/${resource}${getQueryString(
                                                 {
                                                   ...params,
-                                                  [d.name]: selectedValue
+                                                  [d.name]: (selectedValue as SelectOption[])
                                                     .filter(
                                                       (s: SelectOption) => s.value !== v.value
                                                     )
@@ -390,7 +368,7 @@ export function Resources({ resource = undefined }: ResourcesProps) {
                                   </div>
                                 ) : (
                                   <span className={styles.selectTruncate}>
-                                    {selectedValue?.title}
+                                    {!Array.isArray(selectedValue) && selectedValue?.title}
                                   </span>
                                 )}
                                 <span className={styles.selectIconWrapper}>
@@ -408,8 +386,7 @@ export function Resources({ resource = undefined }: ResourcesProps) {
                                 leaveTo="opacity-0"
                               >
                                 <Listbox.Options className={styles.selectOptions}>
-                                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                                  {(toArray(d.options) as any[]).map((o: SelectOption, j: number) => (
+                                  {(toArray(d.options) as SelectOption[]).map((o: SelectOption, j: number) => (
                                     <Listbox.Option
                                       key={j}
                                       value={o.value}

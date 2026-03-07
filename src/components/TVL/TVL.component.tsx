@@ -18,8 +18,7 @@ export function TVL() {
   const assets = useAssets();
   const itsAssets = useITSAssets();
   const tvl = useTVLStore();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const globalStore: GlobalStore = { chains, assets, itsAssets, tvl: tvl as any };
+  const globalStore: GlobalStore = { chains, assets, itsAssets, tvl: tvl as GlobalStore['tvl'] };
 
   const processedData = useTVLData(globalStore);
 

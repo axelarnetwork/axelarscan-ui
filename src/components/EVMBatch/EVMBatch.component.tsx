@@ -36,8 +36,7 @@ export function EVMBatch({ chain, id }: EVMBatchProps) {
 
   useEffect(() => {
     const getData = async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data = await getBatch(chain, id) as any;
+      const data = await getBatch(chain, id) as BatchData | null;
 
       console.log('[data]', data);
       setData(data);

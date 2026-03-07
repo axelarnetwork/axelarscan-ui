@@ -15,15 +15,14 @@ import { toTitle } from '@/lib/string';
 import { toNumber } from '@/lib/number';
 import { TIME_FORMAT } from '@/lib/time';
 import * as styles from './Proposals.styles';
-import type { ProposalDeposit, ProposalListItem } from './Proposals.types';
+import type { ProposalDeposit, ProposalListItem, ProposalsApiResponse } from './Proposals.types';
 
 export function Proposals() {
   const [data, setData] = useState<ProposalListItem[] | null>(null);
 
   useEffect(() => {
     const getData = async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: responseData } = { ...(await getProposals() as any) };
+      const { data: responseData } = { ...(await getProposals() as ProposalsApiResponse | null) };
       setData(toArray(responseData));
     };
     getData();

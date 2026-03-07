@@ -79,9 +79,8 @@ export function AmplifierPolls() {
     getData();
   }, [params, setSearchResults, refresh, setRefresh, blockData, chains]);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, total } = {
-    ...searchResults?.[generateKeyByParams(params as any)],
+    ...searchResults?.[generateKeyByParams(params ?? {})],
   };
 
   if (!data) {

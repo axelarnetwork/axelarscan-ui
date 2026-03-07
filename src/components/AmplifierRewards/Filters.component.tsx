@@ -138,8 +138,7 @@ export function Filters() {
                                           ? split(params[d.name])
                                           : params[d.name]
                                       }
-                                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                      onChange={(v: any) =>
+                                      onChange={(v: string | string[]) =>
                                         setParams({
                                           ...params,
                                           [d.name]: d.multiple
@@ -257,11 +256,9 @@ export function Filters() {
                                                       <Combobox.Option
                                                         key={j}
                                                         value={o.value}
-                                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                                         className={({
                                                           active,
-                                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                                        }: any) =>
+                                                        }: { active: boolean }) =>
                                                           clsx(
                                                             styles.listboxOptionBase,
                                                             active
@@ -270,12 +267,10 @@ export function Filters() {
                                                           )
                                                         }
                                                       >
-                                                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                                         {({
                                                           selected,
                                                           active,
-                                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                                        }: any) => (
+                                                        }: { selected: boolean; active: boolean }) => (
                                                           <>
                                                             <span
                                                               className={clsx(
@@ -319,8 +314,7 @@ export function Filters() {
                                           ? split(params[d.name])
                                           : params[d.name]
                                       }
-                                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                      onChange={(v: any) =>
+                                      onChange={(v: string | string[]) =>
                                         setParams({
                                           ...params,
                                           [d.name]: d.multiple
@@ -418,8 +412,7 @@ export function Filters() {
                                                     <Listbox.Option
                                                       key={j}
                                                       value={o.value}
-                                                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                                      className={({ active }: any) =>
+                                                      className={({ active }: { active: boolean }) =>
                                                         clsx(
                                                           styles.listboxOptionBase,
                                                           active
@@ -428,12 +421,10 @@ export function Filters() {
                                                         )
                                                       }
                                                     >
-                                                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                                                       {({
                                                         selected,
                                                         active,
-                                                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                                      }: any) => (
+                                                      }: { selected: boolean; active: boolean }) => (
                                                         <>
                                                           <span
                                                             className={clsx(

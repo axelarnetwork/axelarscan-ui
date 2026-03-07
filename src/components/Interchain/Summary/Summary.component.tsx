@@ -39,8 +39,7 @@ export function Summary({ data, params }: SummaryProps) {
       );
 
   const tvlData = processTVLData(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    toArray((tvl as any)?.data),
+    toArray((tvl as { data?: unknown[] } | null)?.data),
     assets,
     itsAssets
   );

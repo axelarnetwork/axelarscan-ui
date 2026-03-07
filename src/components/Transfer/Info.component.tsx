@@ -40,32 +40,36 @@ export function Info({ data, tx }: InfoProps) {
     simplified_status,
     time_spent,
   } = { ...data };
-  const txhash = send?.txhash || tx;
+  const txhash = (send?.txhash as string | undefined) || tx;
 
-  const sourceChain = send?.source_chain || link?.source_chain;
-  const destinationChain =
+  const sourceChain = (send?.source_chain || link?.source_chain) as string | undefined;
+  const destinationChain = (
     send?.destination_chain ||
     unwrap?.destination_chain ||
-    link?.destination_chain;
+    link?.destination_chain
+  ) as string | undefined;
 
-  const senderAddress =
+  const senderAddress = (
     wrap?.sender_address ||
     erc20_transfer?.sender_address ||
-    send?.sender_address;
-  const recipientAddress = unwrap?.recipient_address || link?.recipient_address;
-  const depositAddress =
+    send?.sender_address
+  ) as string | undefined;
+  const recipientAddress = (unwrap?.recipient_address || link?.recipient_address) as string | undefined;
+  const depositAddress = (
     wrap?.deposit_address ||
     unwrap?.deposit_address_link ||
     erc20_transfer?.deposit_address ||
     send?.recipient_address ||
-    link?.deposit_address;
+    link?.deposit_address
+  ) as string | undefined;
 
-  const commandID = command?.command_id;
-  const transferID =
+  const commandID = command?.command_id as string | undefined;
+  const transferID = (
     command?.transfer_id ||
     vote?.transfer_id ||
     confirm?.transfer_id ||
-    data.transfer_id;
+    data.transfer_id
+  ) as string | undefined;
 
   const sourceChainData = getChainData(sourceChain, chains);
   const destinationChainData = getChainData(destinationChain, chains);
@@ -78,7 +82,7 @@ export function Info({ data, tx }: InfoProps) {
   const { url, transaction_path } = { ...sourceChainData?.explorer };
 
   // asset data
-  const assetData = getAssetData(send?.denom, assets);
+  const assetData = getAssetData(send?.denom as string | undefined, assets);
 
   const { addresses } = { ...assetData };
   const rawSymbol = (sourceChainData ? addresses?.[sourceChainData.id] : undefined)?.symbol
@@ -162,7 +166,7 @@ export function Info({ data, tx }: InfoProps) {
                     })}
                   </ol>
                 </nav>
-                {send?.insufficient_fee && (
+                {!!send?.insufficient_fee && (
                   <div className={styles.insufficientFeeRow}>
                     <PiWarningCircle size={16} />
                     <span className={styles.insufficientFeeText}>Insufficient Fee</span>
@@ -197,9 +201,9 @@ export function Info({ data, tx }: InfoProps) {
                 {isNumber(send?.amount) && assets ? (
                   <Number
                     value={
-                      isString(send.amount)
-                        ? formatUnits(send.amount as string, assetData?.decimals)
-                        : send.amount as string | number
+                      isString(send!.amount)
+                        ? formatUnits(send!.amount as string, assetData?.decimals)
+                        : send!.amount as string | number
                     }
                     format="0,0.000000"
                     suffix={` ${symbol}`}
@@ -223,9 +227,9 @@ export function Info({ data, tx }: InfoProps) {
                   <Image src={image} alt="" width={24} height={24} />
                   <Number
                     value={
-                      isString(send.fee)
-                        ? formatUnits(send.fee as string, assetData?.decimals)
-                        : send.fee as string | number
+                      isString(send!.fee)
+                        ? formatUnits(send!.fee as string, assetData?.decimals)
+                        : send!.fee as string | number
                     }
                     format="0,0.000000"
                     suffix={` ${symbol}`}
@@ -291,7 +295,7 @@ export function Info({ data, tx }: InfoProps) {
               Created
             </dt>
             <dd className={styles.infoDd}>
-              {moment(send?.created_at?.ms).format(TIME_FORMAT)}
+              {moment((send?.created_at as { ms?: number } | undefined)?.ms).format(TIME_FORMAT)}
             </dd>
           </div>
           {(time_spent?.total ?? 0) > 0 &&

@@ -57,24 +57,22 @@ export function Overview() {
       setData(
         Object.fromEntries(
           await Promise.all(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             metrics.map(
                 d =>
                   new Promise<[string, unknown]>(async resolve => {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const s = stats as any;
+                    const s = stats as Record<string, unknown> | null;
                     switch (d) {
                       case 'GMPStatsByChains':
                         resolve([
                           d,
-                          { ...(s?.[d] || (await GMPStatsByChains())) },
+                          { ...(s?.[d] as Record<string, unknown> || (await GMPStatsByChains())) },
                         ]);
                         break;
                       case 'GMPStatsByContracts':
                         resolve([
                           d,
                           {
-                            ...(s?.[d] || (await GMPStatsByContracts())),
+                            ...(s?.[d] as Record<string, unknown> || (await GMPStatsByContracts())),
                           },
                         ]);
                         break;
@@ -87,7 +85,7 @@ export function Overview() {
                       case 'transfersStats':
                         resolve([
                           d,
-                          { ...(s?.[d] || (await transfersStats())) },
+                          { ...(s?.[d] as Record<string, unknown> || (await transfersStats())) },
                         ]);
                         break;
                       case 'transfersTotalVolume':
@@ -132,13 +130,10 @@ export function Overview() {
                             switch (d) {
                               case 'gmp':
                                 resolve(
-                                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                   (toArray(
                                     data.GMPStatsByChains?.source_chains
-                                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                  ) as any[]).flatMap((s: SourceChainEntry) =>
-                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                    (toArray(s.destination_chains) as any[]).map((dc: DestinationChainEntry) => {
+                                  ) as SourceChainEntry[]).flatMap((s: SourceChainEntry) =>
+                                    (toArray(s.destination_chains) as DestinationChainEntry[]).map((dc: DestinationChainEntry) => {
                                       let sourceChain =
                                         chainIdsLookup[s.key] ||
                                         getChainData(s.key, chains)?.id;
@@ -174,8 +169,7 @@ export function Overview() {
                                 break;
                               case 'transfers':
                                 resolve(
-                                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                  (toArray(data.transfersStats?.data) as any[]).map(
+                                  (toArray(data.transfersStats?.data) as TransferStatsEntry[]).map(
                                     (t: TransferStatsEntry) => {
                                       let sourceChain =
                                         chainIdsLookup[t.source_chain] ||
@@ -362,8 +356,7 @@ export function Overview() {
                             <span>{d}</span>
                           </div>
                         ))}
-                      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                      </div>) as any
+                      </div>)
                     }
                     valuePrefix={sankeyTab === 'transactions' ? '' : '$'}
                     noBorder={true}

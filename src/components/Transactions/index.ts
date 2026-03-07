@@ -1,1 +1,2 @@
-export { Transactions, getType, getActivities, getSender, getRecipient } from './Transactions.component';
+export { Transactions } from './Transactions.component';
+export { getType, getActivities, getSender, getRecipient } from './Transactions.utils';

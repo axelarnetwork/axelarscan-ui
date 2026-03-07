@@ -3,7 +3,7 @@ import _ from 'lodash';
 import { Tag } from '@/components/Tag';
 import { toArray, toHex } from '@/lib/parser';
 import { isString, toTitle } from '@/lib/string';
-import type { EventLogEntryProps } from './Transaction.types';
+import type { EventLogAttribute, EventLogEvent, EventLogEntryProps } from './Transaction.types';
 import { renderEntries } from './Transaction.utils';
 import * as styles from './Transaction.styles';
 
@@ -13,19 +13,14 @@ export function EventLogEntry({ entry: d, index: i }: EventLogEntryProps) {
       {d.log && (
         <span className={styles.eventLogText}>{d.log}</span>
       )}
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      {_.reverse(_.cloneDeep(toArray(d.events) as any[]))
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        .map((e: Record<string, any>) => ({
-          ...e,
-          /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-          attributes: toArray(e.attributes).map((a: any) => [
-            a.key,
-            a.value,
-          ]),
+      {_.reverse(_.cloneDeep(toArray(d.events) as EventLogEvent[]))
+        .map((e: EventLogEvent) => ({
+          type: e.type,
+          attributes: toArray(e.attributes).map(
+            (a: EventLogAttribute): [string, unknown] => [a.key, a.value]
+          ),
         }))
-        /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-        .map((e: any, j: number) => (
+        .map((e: { type?: string; attributes: [string, unknown][] }, j: number) => (
           <div key={j} className={styles.eventCard}>
             {e.type && (
               <Tag className={styles.eventTag}>

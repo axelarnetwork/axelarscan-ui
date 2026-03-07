@@ -17,8 +17,7 @@ export function NameServiceImage({ src, fallbackSrc, width, height, onLoad }: Na
   if (typeof image404 === 'boolean') {
     return (
       <Image
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        src={(image404 ? fallbackSrc : src) as any}
+        src={image404 ? (fallbackSrc as unknown as string) : src}
         alt=""
         width={width}
         height={height}

@@ -88,10 +88,9 @@ export function Info({ id, data, end, voteOptions }: InfoProps) {
               )}
             </>
           )}
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          {(toArray(changes) as any[])
-            .filter((d: { subspace?: string }) => d.subspace)
-            .map((d: { key?: string; value?: string; subspace?: string }, i: number) => (
+          {(toArray(changes) as { key?: string; value?: string; subspace?: string }[])
+            .filter((d) => d.subspace)
+            .map((d, i: number) => (
               <ChangeRow key={i} keyName={d.key} value={d.value} subspace={d.subspace} />
             ))}
           {toArray(contract_calls).length > 0 && (
@@ -145,8 +144,7 @@ export function Info({ id, data, end, voteOptions }: InfoProps) {
             <dt className={styles.dtLabel}>Total Deposit</dt>
             <dd className={styles.ddValue}>
               <div className={styles.depositList}>
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                {(toArray(total_deposit) as any[]).map((d: ProposalDeposit, i: number) => (
+                {(toArray(total_deposit) as ProposalDeposit[]).map((d: ProposalDeposit, i: number) => (
                   <Number
                     key={i}
                     value={d.amount}

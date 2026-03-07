@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { GroupDataItem } from '../Interchain.types';
 
 export interface SankeyChartProps {
@@ -6,7 +7,7 @@ export interface SankeyChartProps {
   topN?: number;
   totalValue?: number;
   field?: string;
-  title?: string;
+  title?: ReactNode;
   description?: string;
   valueFormat?: string;
   valuePrefix?: string;

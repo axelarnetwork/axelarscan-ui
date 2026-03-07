@@ -105,8 +105,7 @@ export function SearchableSelect({ attribute, params, setParams, searchInput, se
           : (params[attribute.name] as string)
       }
       onChange={handleChange}
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      multiple={attribute.multiple as any}
+      multiple={attribute.multiple as boolean | undefined}
     >
       {({ open: isOpen }) => {
         const selectedValue = getSelectedValue(attribute, params);
@@ -194,8 +193,7 @@ export function SimpleSelect({ attribute, params, setParams }: SelectFieldProps)
           : (params[attribute.name] as string)
       }
       onChange={handleChange}
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      multiple={attribute.multiple as any}
+      multiple={attribute.multiple as boolean | undefined}
     >
       {({ open: isOpen }) => {
         const selectedValue = getSelectedValue(attribute, params);

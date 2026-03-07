@@ -27,11 +27,46 @@ import { timeDiff } from '@/lib/time';
 import accounts from '@/data/accounts';
 import broadcasters from '@/data/broadcasters';
 
+import type { Chain } from '@/types';
+
 import type { ProfileProps } from './Profile.types';
 import { useValidatorImagesStore } from './Profile.stores';
 import { getAddressPagePath, getExplorerUrl } from './Profile.utils';
 import { EVMProfile } from './NameService.component';
 import { profile as styles } from './Profile.styles';
+
+interface KeybaseUserResponse {
+  them?: Array<{
+    pictures?: {
+      primary?: { url?: string };
+    };
+  }>;
+}
+
+interface AccountEntry {
+  address: string;
+  name: string;
+  image?: string;
+  chain?: string;
+  environment?: string;
+}
+
+interface ContractsData {
+  interchain_token_service_contract?: {
+    addresses?: string[];
+    [key: string]: unknown;
+  };
+  gateway_contracts?: Record<string, { address?: string; [key: string]: unknown }>;
+  gas_service_contracts?: Record<string, { address?: string; [key: string]: unknown }>;
+  [key: string]: unknown;
+}
+
+interface ConfigurationsData {
+  relayers?: string[];
+  express_relayers?: string[];
+  refunders?: string[];
+  [key: string]: unknown;
+}
 
 const AXELAR_LOGO = '/logos/accounts/axelarnet.svg';
 const randImage = (i?: number) =>
@@ -51,10 +86,8 @@ export function Profile({
   className,
 }: ProfileProps) {
   const chains = useChains();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const contracts: any = useContracts();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const configurations: any = useConfigurations();
+  const contracts = useContracts();
+  const configurations = useConfigurations();
   const validators = useValidators();
   const verifiers = useVerifiers();
   const { validatorImages, setValidatorImages } = useValidatorImagesStore();
@@ -85,8 +118,7 @@ export function Profile({
         value = undefined;
       } else if (identity) {
         const { them } = {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ...(await getKeybaseUser({ key_suffix: identity }) as any),
+          ...(await getKeybaseUser({ key_suffix: identity }) as KeybaseUserResponse | null),
         };
         const { url } = { ...them?.[0]?.pictures?.primary };
         if (url) image = url;
@@ -133,7 +165,7 @@ export function Profile({
     prefix = address.substring(0, address.indexOf('1') + 1);
   }
 
-  const { interchain_token_service_contract, gateway_contracts, gas_service_contracts } = { ...contracts };
+  const { interchain_token_service_contract, gateway_contracts, gas_service_contracts } = { ...(contracts as ContractsData | null) };
 
   const itss = toArray(interchain_token_service_contract?.addresses).map((a: string) => ({
     address: a,
@@ -142,25 +174,24 @@ export function Profile({
   }));
 
   const gateways = Object.entries({ ...gateway_contracts })
-    .filter(([_k, v]) => (v as Record<string, unknown>)?.address)
+    .filter(([_k, v]) => v?.address)
     .map(([k, v]) => ({
-      ...(v as Record<string, unknown>),
+      ...v,
       name: 'Axelar Gateway',
       chain: k,
       image: getChainData(k, chains)?.image || AXELAR_LOGO,
     }));
 
   const gasServices = Object.entries({ ...gas_service_contracts })
-    .filter(([_k, v]) => (v as Record<string, unknown>)?.address)
+    .filter(([_k, v]) => v?.address)
     .map(([k, v]) => ({
-      ...(v as Record<string, unknown>),
+      ...v,
       name: 'Axelar Gas Service',
       chain: k,
       image: getChainData(k, chains)?.image || AXELAR_LOGO,
     }));
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const axelarContractAddresses = toArray(chains).flatMap((d: any) => {
+  const axelarContractAddresses = toArray(chains).flatMap((d: Chain) => {
     const addresses: { address: string; name: string; image: string }[] = [];
     for (const f of axelarContractFields) {
       const contractField = d[f] as { address?: string } | undefined;
@@ -175,7 +206,7 @@ export function Profile({
     return addresses;
   });
 
-  const { relayers, express_relayers, refunders } = { ...configurations };
+  const { relayers, express_relayers, refunders } = { ...(configurations as ConfigurationsData | null) };
   const executorRelayers = _.uniq(
     toArray(_.concat(relayers, refunders, Object.keys({ ...(broadcasters as Record<string, Record<string, unknown>>)[ENVIRONMENT!] })))
   ).map((a) => ({ address: String(a), name: 'Axelar Relayer', image: AXELAR_LOGO }));
@@ -185,18 +216,24 @@ export function Profile({
     image: AXELAR_LOGO,
   }));
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const allAccounts: AccountEntry[] = _.concat(
+    accounts as AccountEntry[],
+    itss,
+    gateways as AccountEntry[],
+    gasServices as AccountEntry[],
+    axelarContractAddresses,
+    executorRelayers,
+    expressRelayers,
+  );
+
   let { name, image } = {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ...(_.concat as any)(accounts, itss, gateways, gasServices, axelarContractAddresses, executorRelayers, expressRelayers).find(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (d: any) =>
-        equalsIgnoreCase(d.address as string, address as string) &&
-        (!d.chain || !chain || equalsIgnoreCase(d.chain as string, chain)) &&
-        (!d.environment || equalsIgnoreCase(d.environment as string, ENVIRONMENT))
+    ...allAccounts.find(
+      (d: AccountEntry) =>
+        equalsIgnoreCase(d.address, address as string) &&
+        (!d.chain || !chain || equalsIgnoreCase(d.chain, chain)) &&
+        (!d.environment || equalsIgnoreCase(d.environment, ENVIRONMENT))
     ),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as Record<string, any>;
+  };
 
   let isValidator: boolean | undefined;
   let isVerifier: boolean | undefined;

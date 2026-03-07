@@ -19,8 +19,7 @@ export function Transaction({ tx }: TransactionProps) {
 
   useEffect(() => {
     const getData = async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { tx_response } = { ...(await getTransaction(tx)) as any };
+      const { tx_response } = { ...(await getTransaction(tx)) as { tx_response?: TransactionData } };
 
       let responseData = tx_response;
 

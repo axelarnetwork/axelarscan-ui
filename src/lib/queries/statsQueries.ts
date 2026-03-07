@@ -72,7 +72,6 @@ const fetchMetric = async (metric: string): Promise<[string, unknown][]> => {
 };
 
 const fetchTransfersChart = async (metric: string): Promise<[string, unknown][]> => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const value = (await transfersChart({ granularity: 'month' })) as Record<string, unknown> | null;
   const values: [string, unknown][] = [[metric, value]];
 
@@ -100,7 +99,6 @@ const fetchTransfersChart = async (metric: string): Promise<[string, unknown][]>
     }
 
     if (environment === ENVIRONMENT) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const response = (await transfersChart({
         chain,
         fromTime,

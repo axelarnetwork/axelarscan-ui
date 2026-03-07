@@ -5,13 +5,50 @@ export interface TransfersProps {
   address?: string;
 }
 
-export interface TransferSearchResults {
-  [key: string]: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data?: TransferRowData[];
-    total?: number;
-  };
+export interface TransferSend {
+  txhash: string;
+  source_chain: string;
+  destination_chain?: string;
+  sender_address?: string;
+  recipient_address?: string;
+  denom: string;
+  amount?: string | number;
+  fee?: number;
+  insufficient_fee?: boolean;
+  created_at?: { ms: number };
+  value?: number;
+  [key: string]: unknown;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type TransferRowData = Record<string, any>;
+export interface TransferLink {
+  recipient_address?: string;
+  deposit_address?: string;
+  destination_chain?: string;
+  [key: string]: unknown;
+}
+
+export interface TransferRowData {
+  send: TransferSend;
+  link?: TransferLink;
+  type?: string;
+  simplified_status?: string;
+  source?: string;
+  destination?: string;
+  wrap?: { sender_address?: string; [key: string]: unknown };
+  unwrap?: { recipient_address?: string; tx_hash_unwrap?: string; [key: string]: unknown };
+  erc20_transfer?: { sender_address?: string; [key: string]: unknown };
+  command?: { transactionHash?: string; [key: string]: unknown };
+  axelar_transfer?: { txhash?: string; [key: string]: unknown };
+  ibc_send?: { recv_txhash?: string; [key: string]: unknown };
+  time_spent?: { total?: number; [key: string]: unknown };
+  [key: string]: unknown;
+}
+
+export interface TransferSearchResult {
+  data?: TransferRowData[];
+  total?: number;
+}
+
+export interface TransferSearchResults {
+  [key: string]: TransferSearchResult;
+}

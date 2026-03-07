@@ -2,6 +2,7 @@
 
 import _ from 'lodash';
 
+import type { Validator } from '@/types';
 import { useValidators } from '@/hooks/useGlobalData';
 import { toArray } from '@/lib/parser';
 
@@ -13,9 +14,8 @@ export function Votes({ data }: { data: VoteEntry[] }) {
   const validators = useValidators();
 
   const totalVotingPower = _.sumBy(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (toArray(validators) as any[]).filter(
-      (d) => !d.jailed && d.status === 'BOND_STATUS_BONDED'
+    (toArray(validators) as Validator[]).filter(
+      (d: Validator) => !d.jailed && d.status === 'BOND_STATUS_BONDED'
     ),
     'tokens'
   );

@@ -7,7 +7,8 @@ import { JSONView } from '@/components/JSONView';
 import { Switch } from '@/components/Switch';
 import { getActivities, getType } from '@/components/Transactions';
 import { toJson } from '@/lib/parser';
-import type { DataProps } from './Transaction.types';
+import type { DataProps, EventLogRecord } from './Transaction.types';
+import type { TransactionActivity } from '@/components/Transactions/Transactions.types';
 import { ActivityItem } from './ActivityItem.component';
 import { EventLogEntry } from './EventLogEntry.component';
 import * as styles from './Transaction.styles';
@@ -92,8 +93,7 @@ export function Data({ data }: DataProps) {
         <div className={styles.sectionWrapper}>
           <span className={styles.sectionTitle}>Activities</span>
           <div className={styles.sectionPanel}>
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {activities.map((d: Record<string, any>, i: number) => (
+            {activities.map((d: TransactionActivity, i: number) => (
               <ActivityItem
                 key={i}
                 activity={d}
@@ -112,10 +112,8 @@ export function Data({ data }: DataProps) {
           <div className={styles.sectionPanel}>
             {!Array.isArray(rawLogParsed)
               ? data.raw_log
-              : /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                (rawLogParsed as Record<string, any>[]).map(
-                  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-                  (d: Record<string, any>, i: number) => (
+              : (rawLogParsed as EventLogRecord[]).map(
+                  (d: EventLogRecord, i: number) => (
                     <EventLogEntry key={i} entry={d} index={i} />
                   )
                 )}

@@ -116,18 +116,15 @@ export function Search() {
 
                 switch (k) {
                   case 'ens':
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    setENS(await getENS(addresses.filter((a: string) => !ens?.[a])) as any);
+                    setENS(await getENS(addresses.filter((a: string) => !ens?.[a])) as Record<string, { name?: string; [key: string]: unknown }>);
                     break;
                   case 'spaceid':
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     setSpaceID(
                       await getSpaceID(
                         addresses.filter((a: string) => !spaceID?.[a]),
                         undefined,
                         chains ?? undefined
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      ) as any
+                      ) as Record<string, { name?: string; [key: string]: unknown }>
                     );
                     break;
                   default:

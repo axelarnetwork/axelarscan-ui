@@ -22,8 +22,7 @@ export function Proposal({ id }: { id: string }) {
   const validators = useValidators();
 
   useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const setValidatorsToVotes = (votes: any) => {
+    const setValidatorsToVotes = (votes: VoteEntry[] | undefined) => {
       if (!validators) {
         return votes as VoteEntry[];
       }
@@ -47,8 +46,7 @@ export function Proposal({ id }: { id: string }) {
 
     const getData = async () => {
       if (validators) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const response = await getProposal({ id }) as any;
+        const response = await getProposal({ id }) as ProposalData | null;
         setData({ ...response, votes: setValidatorsToVotes(response?.votes) });
       }
     };

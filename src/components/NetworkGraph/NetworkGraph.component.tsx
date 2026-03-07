@@ -202,26 +202,22 @@ export function NetworkGraph({ data, hideTable = false, setChainFocus }: Network
       )}
     >
       <div className={styles.graphContainer}>
-        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         <ForceGraph2D
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ref={graphRef as any}
+          ref={graphRef as React.MutableRefObject<ForceGraphMethods | undefined>}
           graphData={{ nodes: nodes!, links: edges! }}
           width={648}
           height={632}
           backgroundColor={resolvedTheme === 'dark' ? '#18181b' : '#ffffff'}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          {...{ showNavInfo: false } as Record<string, any>}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          nodeCanvasObject={nodeCanvasObject as any}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          linkCanvasObject={linkCanvasObject as any}
-          onNodeClick={(node: GraphNode) => {
-            setSelectedNode(node);
+          {...({ showNavInfo: false } as Record<string, boolean>)}
+          nodeCanvasObject={nodeCanvasObject as Parameters<typeof ForceGraph2D>[0]['nodeCanvasObject']}
+          linkCanvasObject={linkCanvasObject as Parameters<typeof ForceGraph2D>[0]['linkCanvasObject']}
+          onNodeClick={(node) => {
+            const graphNode = node as GraphNode;
+            setSelectedNode(graphNode);
             setPage(undefined);
 
             if (setChainFocus) {
-              setChainFocus(node.id);
+              setChainFocus(graphNode.id);
             }
           }}
           onLinkClick={() => {

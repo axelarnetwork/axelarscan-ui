@@ -434,8 +434,7 @@ function renderSearchableSelect(
                       <Combobox.Option
                         key={j}
                         value={o.value}
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        className={({ active }: any) =>
+                        className={({ active }: { active: boolean }) =>
                           clsx(
                             styles.selectOptionBase,
                             active
@@ -444,8 +443,7 @@ function renderSearchableSelect(
                           )
                         }
                       >
-                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                        {({ selected, active }: any) => (
+                        {({ selected, active }: { selected: boolean; active: boolean }) => (
                           <>
                             <span
                               className={clsx(
@@ -505,8 +503,7 @@ function renderListboxSelect(
       }
       multiple={d.multiple}
     >
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      {(({ open }: any) => {
+      {(({ open }: { open: boolean }) => {
         const isSelected = (v: string | undefined) =>
           d.multiple
             ? split(params[d.name] as string).includes(v ?? '')
@@ -536,8 +533,7 @@ function renderListboxSelect(
                   <Listbox.Option
                     key={j}
                     value={o.value}
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    className={({ active }: any) =>
+                    className={({ active }: { active: boolean }) =>
                       clsx(
                         styles.selectOptionBase,
                         active
@@ -546,8 +542,7 @@ function renderListboxSelect(
                       )
                     }
                   >
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                    {({ selected, active }: any) => (
+                    {({ selected, active }: { selected: boolean; active: boolean }) => (
                       <>
                         <span
                           className={clsx(
@@ -579,8 +574,7 @@ function renderListboxSelect(
             </Transition>
           </div>
         );
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      }) as any}
+      }) as (props: { open: boolean }) => React.ReactElement}
     </Listbox>
   );
 }

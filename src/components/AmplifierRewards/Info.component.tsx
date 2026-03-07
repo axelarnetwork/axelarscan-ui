@@ -52,12 +52,10 @@ export function Info({ chain, rewardsPool, cumulativeRewards }: InfoProps) {
       <div className={styles.infoCard}>
         <div className={styles.infoHeaderWrapper}>
           <h3 className={styles.infoHeading}>
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            <Listbox
+              <Listbox
               value={id}
               onChange={(v: string) => router.push(`${pathname.replace(chain, v)}`)}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              {...({ className: styles.listboxWrapper } as any)}
+              {...({ className: styles.listboxWrapper } as Record<string, string>)}
             >
               {({ open }) => {
                 const isSelected = (v: string) => v === id || equalsIgnoreCase(v, chain);
@@ -89,8 +87,7 @@ export function Info({ chain, rewardsPool, cumulativeRewards }: InfoProps) {
                             <Listbox.Option
                               key={j}
                               value={d.id}
-                              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                              className={({ active }: any) =>
+                              className={({ active }: { active: boolean }) =>
                                 clsx(
                                   styles.listboxOptionBase,
                                   active
@@ -99,8 +96,7 @@ export function Info({ chain, rewardsPool, cumulativeRewards }: InfoProps) {
                                 )
                               }
                             >
-                              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                              {({ selected, active }: any) => (
+                              {({ selected, active }: { selected: boolean; active: boolean }) => (
                                 <>
                                   <span
                                     className={clsx(

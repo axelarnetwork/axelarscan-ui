@@ -26,16 +26,15 @@ function resolveStepTxInfo(
   axelarChainData: ReturnType<typeof getChainData>,
   destinationChainData: ReturnType<typeof getChainData>
 ): StepTxInfo {
-  const {
-    txhash,
-    poll_id,
-    batch_id,
-    transactionHash,
-    recv_txhash,
-    ack_txhash,
-    failed_txhash,
-    tx_hash_unwrap,
-  } = { ...step.data };
+  const stepData = step.data;
+  const txhash = stepData?.txhash;
+  const poll_id = stepData?.poll_id;
+  const batch_id = stepData?.batch_id;
+  const transactionHash = stepData?.transactionHash;
+  const recv_txhash = stepData?.recv_txhash;
+  const ack_txhash = stepData?.ack_txhash;
+  const failed_txhash = stepData?.failed_txhash;
+  const tx_hash_unwrap = stepData?.tx_hash_unwrap;
   const { url, transaction_path } = { ...step.chainData?.explorer };
 
   let stepTX: string | undefined;
@@ -209,10 +208,11 @@ export function Details({ data }: DetailsProps) {
 
   const { link, send, unwrap } = { ...data };
 
-  const destinationChain =
+  const destinationChain = (
     send?.destination_chain ||
     unwrap?.destination_chain ||
-    link?.destination_chain;
+    link?.destination_chain
+  ) as string | undefined;
   const destinationChainData = getChainData(destinationChain, chains);
   const axelarChainData = getChainData('axelarnet', chains);
 
@@ -251,13 +251,12 @@ export function Details({ data }: DetailsProps) {
         </thead>
         <tbody className={styles.detailsTbody}>
           {visibleSteps.map((d: TransferStep, i: number) => {
-            const {
-              height,
-              blockNumber,
-              block_timestamp,
-              received_at,
-              created_at,
-            } = { ...d.data };
+            const stepData = d.data;
+            const height = stepData?.height;
+            const blockNumber = stepData?.blockNumber;
+            const block_timestamp = stepData?.block_timestamp;
+            const received_at = stepData?.received_at;
+            const created_at = stepData?.created_at;
             const { url, block_path } = { ...d.chainData?.explorer };
 
             const { stepTX, stepURL, stepMoreInfos } = resolveStepTxInfo(
@@ -266,7 +265,7 @@ export function Details({ data }: DetailsProps) {
               destinationChainData
             );
 
-            const blockValue = height || blockNumber;
+            const blockValue = height ?? blockNumber;
 
             return (
               <tr
@@ -334,7 +333,7 @@ export function Details({ data }: DetailsProps) {
                 <td className={styles.detailsTdTime}>
                   <TimeAgo
                     timestamp={
-                      block_timestamp * 1000 ||
+                      (block_timestamp && block_timestamp * 1000) ||
                       received_at?.ms ||
                       created_at?.ms
                     }

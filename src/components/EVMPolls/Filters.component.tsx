@@ -344,8 +344,12 @@ export function Filters() {
                                                         value={o.value ?? ''}
                                                         className={({
                                                           active,
-                                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                                        }: any) =>
+                                                        }: {
+                                                          active: boolean;
+                                                          focus: boolean;
+                                                          selected: boolean;
+                                                          disabled: boolean;
+                                                        }) =>
                                                           clsx(
                                                             styles.selectOptionBase,
                                                             active
@@ -357,8 +361,12 @@ export function Filters() {
                                                         {({
                                                           selected,
                                                           active,
-                                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                                        }: any) => (
+                                                        }: {
+                                                          active: boolean;
+                                                          focus: boolean;
+                                                          selected: boolean;
+                                                          disabled: boolean;
+                                                        }) => (
                                                           <>
                                                             <span
                                                               className={clsx(
@@ -505,8 +513,13 @@ export function Filters() {
                                                       value={o.value}
                                                       className={({
                                                         active,
-                                                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                                      }: any) =>
+                                                      }: {
+                                                        active: boolean;
+                                                        focus: boolean;
+                                                        selected: boolean;
+                                                        disabled: boolean;
+                                                        selectedOption: boolean;
+                                                      }) =>
                                                         clsx(
                                                           styles.selectOptionBase,
                                                           active
@@ -518,8 +531,13 @@ export function Filters() {
                                                       {({
                                                         selected,
                                                         active,
-                                                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                                      }: any) => (
+                                                      }: {
+                                                        active: boolean;
+                                                        focus: boolean;
+                                                        selected: boolean;
+                                                        disabled: boolean;
+                                                        selectedOption: boolean;
+                                                      }) => (
                                                         <>
                                                           <span
                                                             className={clsx(

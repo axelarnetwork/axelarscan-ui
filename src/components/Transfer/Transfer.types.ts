@@ -1,27 +1,16 @@
 import type { Chain } from '@/types';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface TransferData extends Record<string, any> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  link?: Record<string, any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  send?: Record<string, any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  wrap?: Record<string, any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  unwrap?: Record<string, any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  erc20_transfer?: Record<string, any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  confirm?: Record<string, any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  vote?: Record<string, any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  command?: Record<string, any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ibc_send?: Record<string, any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  axelar_transfer?: Record<string, any>;
+export interface TransferData extends Record<string, unknown> {
+  link?: Record<string, unknown>;
+  send?: Record<string, unknown>;
+  wrap?: Record<string, unknown>;
+  unwrap?: Record<string, unknown>;
+  erc20_transfer?: Record<string, unknown>;
+  confirm?: Record<string, unknown>;
+  vote?: Record<string, unknown>;
+  command?: Record<string, unknown>;
+  ibc_send?: Record<string, unknown>;
+  axelar_transfer?: Record<string, unknown>;
   type?: string;
   transfer_id?: string;
   simplified_status?: string;
@@ -31,12 +20,28 @@ export interface TransferData extends Record<string, any> {
   message?: string;
 }
 
+export interface TransferStepData {
+  txhash?: string;
+  poll_id?: string;
+  batch_id?: string;
+  transactionHash?: string;
+  recv_txhash?: string;
+  ack_txhash?: string;
+  failed_txhash?: string;
+  tx_hash_unwrap?: string;
+  height?: string | number;
+  blockNumber?: string | number;
+  block_timestamp?: number;
+  received_at?: { ms?: number };
+  created_at?: { ms?: number };
+  [key: string]: unknown;
+}
+
 export interface TransferStep {
   id: string;
   title: string;
   status: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  data?: Record<string, any>;
+  data?: TransferStepData;
   chainData?: Chain;
 }
 

@@ -1,3 +1,5 @@
+import type { StaticImageData } from 'next/image';
+
 export interface NameServiceEntry {
   name?: string;
   [key: string]: unknown;
@@ -52,8 +54,7 @@ export interface EVMProfileProps {
 
 export interface NameServiceImageProps {
   src: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  fallbackSrc: any;
+  fallbackSrc: StaticImageData;
   width: number;
   height: number;
   onLoad?: () => void;

@@ -14,6 +14,7 @@ import {
   WalletProvider as SuiWalletProvider,
 } from '@mysten/dapp-kit';
 import { WalletProvider as XRPLWalletProvider } from '@xrpl-wallet-standard/react';
+import type { XRPLWallet } from '@xrpl-wallet-standard/core';
 import { CrossmarkWallet } from '@xrpl-wallet-adapter/crossmark';
 import { WalletConnectWallet as XRPLWalletConnectWallet } from '@xrpl-wallet-adapter/walletconnect';
 import { XamanWallet } from '@xrpl-wallet-adapter/xaman';
@@ -57,8 +58,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
   const [rendered, setRendered] = useState(false);
   const [tagManagerInitiated, setTagManagerInitiated] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [xrplRegisterWallets, setXRPLlRegisterWallets] = useState<any[] | null>(null);
+  const [xrplRegisterWallets, setXRPLlRegisterWallets] = useState<XRPLWallet[] | null>(null);
   const [client] = useState(() => queryClient);
 
   useEffect(() => {
@@ -96,15 +96,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!rendered) return;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const wallets: any[] = [
+    const wallets = [
       new CrossmarkWallet(),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      new XRPLWalletConnectWallet(xrplConfig as any),
+      new XRPLWalletConnectWallet(xrplConfig as ConstructorParameters<typeof XRPLWalletConnectWallet>[0]),
       new XamanWallet(process.env.NEXT_PUBLIC_XAMAN_API_KEY!),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      new MetaMaskWallet(metamaskProvider as any),
-    ];
+      new MetaMaskWallet(metamaskProvider as ConstructorParameters<typeof MetaMaskWallet>[0]),
+    ] as XRPLWallet[];
 
     setXRPLlRegisterWallets(wallets);
   }, [rendered, setXRPLlRegisterWallets, metamaskProvider]);
@@ -120,8 +117,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <Global />
           <WagmiConfigProvider>
             <XRPLWalletProvider
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              registerWallets={xrplRegisterWallets as any}
+              registerWallets={xrplRegisterWallets ?? undefined}
               autoConnect={false}
             >
               <SuiClientProvider

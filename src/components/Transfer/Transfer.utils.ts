@@ -62,11 +62,12 @@ export function getStep(data: TransferData, chains: Chain[] | null | undefined):
     type,
   } = { ...data };
 
-  const sourceChain = send?.source_chain || link?.source_chain;
-  const destinationChain =
+  const sourceChain = (send?.source_chain || link?.source_chain) as string | undefined;
+  const destinationChain = (
     send?.destination_chain ||
     unwrap?.destination_chain ||
-    link?.destination_chain;
+    link?.destination_chain
+  ) as string | undefined;
 
   const sourceChainData = getChainData(sourceChain, chains);
   const destinationChainData = getChainData(destinationChain, chains);
@@ -231,16 +232,15 @@ export function resolveStepURL(
   axelarChainData: ReturnType<typeof getChainData>,
   destinationChainData: ReturnType<typeof getChainData>
 ): string | undefined {
-  const {
-    txhash,
-    poll_id,
-    batch_id,
-    transactionHash,
-    recv_txhash,
-    ack_txhash,
-    failed_txhash,
-    tx_hash_unwrap,
-  } = { ...step.data };
+  const stepData = step.data;
+  const txhash = stepData?.txhash;
+  const poll_id = stepData?.poll_id;
+  const batch_id = stepData?.batch_id;
+  const transactionHash = stepData?.transactionHash;
+  const recv_txhash = stepData?.recv_txhash;
+  const ack_txhash = stepData?.ack_txhash;
+  const failed_txhash = stepData?.failed_txhash;
+  const tx_hash_unwrap = stepData?.tx_hash_unwrap;
   const { url, transaction_path } = { ...step.chainData?.explorer };
 
   if (!url || !transaction_path) return undefined;
@@ -281,7 +281,7 @@ export function resolveStepURL(
 
 export function resolveBlockURL(
   step: TransferStep,
-  blockValue: string,
+  blockValue: string | number,
   axelarChainData: ReturnType<typeof getChainData>
 ): string {
   const baseUrl = step.data?.height && step.id === 'ibc_send'
@@ -291,5 +291,5 @@ export function resolveBlockURL(
     ? axelarChainData?.explorer?.block_path
     : step.chainData?.explorer?.block_path;
 
-  return `${baseUrl}${blockPath?.replace('{block}', blockValue)}`;
+  return `${baseUrl}${blockPath?.replace('{block}', String(blockValue))}`;
 }

@@ -252,15 +252,13 @@ async function processAirdropData(
     return null;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const airdropResponse = await transfersChart({
     ...currentParams,
     chain,
     fromTime: airdropFromTime,
     toTime: airdropToTime,
     granularity,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  }) as any;
+  }) as { data?: ChartDataPoint[] } | null;
 
   if (toArray(airdropResponse?.data).length === 0) {
     return null;
@@ -268,7 +266,7 @@ async function processAirdropData(
 
   // Adjust chart data by subtracting airdrop volumes
   for (const airdropPoint of toArray(
-    airdropResponse.data
+    airdropResponse!.data
   ) as ChartDataPoint[]) {
     if (airdropPoint.timestamp && (airdropPoint.volume || 0) > 0) {
       const matchingIndex = chartValue.data.findIndex(
@@ -317,18 +315,17 @@ async function fetchTransfersChart(
     return [metricName, false];
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let chartValue = await transfersChart({
     ...currentParams,
     granularity,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  }) as any;
+  }) as { data?: ChartDataPoint[] } | null;
 
   if (!chartValue?.data || granularity !== 'month') {
     return [metricName, chartValue];
   }
 
-  const chartValues: [string, unknown][] = [[metricName, chartValue]];
+  const chartValueWithData = chartValue as { data: ChartDataPoint[] };
+  const chartValues: [string, unknown][] = [[metricName, chartValueWithData]];
 
   const airdrops = [
     {
@@ -346,7 +343,7 @@ async function fetchTransfersChart(
       airdrop,
       currentParams,
       granularity,
-      chartValue,
+      chartValueWithData,
       metricName
     );
     if (airdropResult) {
