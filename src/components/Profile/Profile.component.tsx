@@ -32,7 +32,7 @@ import type { Chain } from '@/types';
 import type { ProfileProps } from './Profile.types';
 import { useValidatorImagesStore } from './Profile.stores';
 import { getAddressPagePath, getExplorerUrl } from './Profile.utils';
-import { EVMProfile } from './NameService.component';
+import { EVMProfile } from './EVMProfile.component';
 import { profile as styles } from './Profile.styles';
 
 interface KeybaseUserResponse {

@@ -1,33 +1,11 @@
-import Link from 'next/link';
-import clsx from 'clsx';
-
-import { Tooltip } from '@/components/Tooltip';
 import { Number } from '@/components/Number';
 import { numberFormat } from '@/lib/number';
 import type { UptimeBlock } from '@/types';
 import type { UptimesProps } from './Validator.types';
+import { UptimeBlockDot } from './UptimeBlockDot.component';
 import * as styles from './Validator.styles';
 
 const SIZE = 200;
-
-function UptimeBlockDot({ d }: { d: UptimeBlock }) {
-  return (
-    <Link
-      href={`/block/${d.height}`}
-      target="_blank"
-      className={styles.blockLink}
-    >
-      <Tooltip content={numberFormat(d.height, '0,0')}>
-        <div
-          className={clsx(
-            styles.blockDot,
-            d.status ? styles.blockDotActive : styles.blockDotInactive
-          )}
-        />
-      </Tooltip>
-    </Link>
-  );
-}
 
 export function Uptimes({ data }: UptimesProps) {
   if (!data) {

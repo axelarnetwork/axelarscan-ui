@@ -1,3 +1,5 @@
+import type { Asset } from '@/types';
+
 // Re-export shared filter types used by Transfers.Filters
 export type { FilterOption, FilterAttribute } from '@/types';
 
@@ -51,4 +53,21 @@ export interface TransferSearchResult {
 
 export interface TransferSearchResults {
   [key: string]: TransferSearchResult;
+}
+
+export interface TransferRowProps {
+  d: TransferRowData;
+  assets: Asset[] | null | undefined;
+}
+
+export interface TransferStatusCellProps {
+  d: TransferRowData;
+}
+
+export interface TransferMethodCellProps {
+  d: TransferRowData;
+  symbol: string | undefined;
+  image: string | undefined;
+  assetData: Asset | undefined;
+  assets: Asset[] | null | undefined;
 }

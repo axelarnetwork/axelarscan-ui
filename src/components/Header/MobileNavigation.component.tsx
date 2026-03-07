@@ -3,11 +3,12 @@
 import { Fragment } from 'react';
 import { Popover, Transition } from '@headlessui/react';
 
-import type { NavigationItem } from './Header.types';
-import { MobileNavIcon, NavigationGroup } from './MobileNavHelpers.component';
+import type { MobileNavigationProps } from './Header.types';
+import { MobileNavIcon } from './MobileNavIcon.component';
+import { NavigationGroup } from './NavigationGroup.component';
 import { mobileNavigation } from './Header.styles';
 
-export function MobileNavigation({ navigations }: { navigations: NavigationItem[] }) {
+export function MobileNavigation({ navigations }: MobileNavigationProps) {
   return (
     <Popover>
       <Popover.Button className={mobileNavigation.button} aria-label="Toggle Navigation">

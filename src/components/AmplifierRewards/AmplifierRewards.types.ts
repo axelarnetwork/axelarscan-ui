@@ -44,6 +44,22 @@ export interface InfoProps {
   cumulativeRewards: number | null;
 }
 
+export interface InfoSummaryProps {
+  chain: string;
+  chainId: string | undefined;
+  verifierCount: number;
+  cumulativeRewards: number | null;
+  totalBalance: string | number | undefined;
+  symbol: string | undefined;
+}
+
+export interface ContractsTableProps {
+  contracts: RewardsContractInfo[];
+  symbol: string | undefined;
+  chainName: string | undefined;
+  multisigProverAddress: string | undefined;
+}
+
 export interface AmplifierRewardsProps {
   chain?: string;
 }

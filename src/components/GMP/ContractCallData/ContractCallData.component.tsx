@@ -1,20 +1,28 @@
-import clsx from 'clsx';
-import { MdKeyboardArrowRight, MdOutlineTimer } from 'react-icons/md';
-import { RiTimerFlashLine } from 'react-icons/ri';
+import { MdKeyboardArrowRight } from 'react-icons/md';
 
-import { Copy } from '@/components/Copy';
 import { useChains, useAssets } from '@/hooks/useGlobalData';
-import { getEvent } from '@/components/GMPs';
 import { ChainProfile } from '@/components/Profile';
-import { Tag } from '@/components/Tag';
-import { TimeSpent } from '@/components/Time';
 import { isAxelar } from '@/lib/chain';
 import { getAssetData, getChainData } from '@/lib/config';
 import { toCase } from '@/lib/parser';
 
 import { AssetAddressEntry, AssetDataEntry } from '../GMP.types';
-import { contractCallDataStyles, getStatusTagClass } from './ContractCallData.styles';
+import { contractCallDataStyles } from './ContractCallData.styles';
 import { ContractCallDataProps } from './ContractCallData.types';
+import { DataField } from './DataField.component';
+import { MultihopStatus } from './MultihopStatus.component';
+
+function resolveDestinationAssetConfig(
+  destinationChain: string | undefined,
+  assetAddresses: Record<string, AssetAddressEntry | undefined> | undefined,
+): AssetAddressEntry | undefined {
+  if (!assetAddresses || !destinationChain) return undefined;
+
+  const key = toCase(destinationChain, 'lower');
+  if (typeof key !== 'string') return undefined;
+
+  return assetAddresses[key];
+}
 
 export function ContractCallData({
   data,
@@ -24,11 +32,9 @@ export function ContractCallData({
   const chains = useChains();
   const assets = useAssets();
 
-  if (!data) {
-    return null;
-  }
+  if (!data) return null;
 
-  const { call, approved, time_spent, status } = { ...data };
+  const { call, approved } = data;
 
   const sourceChain =
     approved?.returnValues?.sourceChain ||
@@ -39,6 +45,7 @@ export function ContractCallData({
     call?.returnValues?.destinationChain ||
     getChainData(approved?.chain, chains)?.chain_name ||
     approved?.chain;
+
   const symbol =
     call?.returnValues?.symbol ||
     data.interchain_transfer?.symbol ||
@@ -46,21 +53,12 @@ export function ContractCallData({
     data.interchain_token_deployment_started?.tokenSymbol ||
     data.link_token_started?.symbol ||
     data.token_metadata_registered?.symbol;
+
   const assetEntry = getAssetData(symbol, assets) as AssetDataEntry | undefined;
-  const assetAddresses = assetEntry?.addresses;
-  const destinationKeyCandidate = toCase(destinationChain ?? '', 'lower');
-  let destinationAssetConfig: AssetAddressEntry | undefined;
-  if (assetAddresses) {
-    let lookupKey: string | undefined;
-
-    if (typeof destinationKeyCandidate === 'string') {
-      lookupKey = destinationKeyCandidate;
-    }
-
-    if (lookupKey) {
-      destinationAssetConfig = assetAddresses[lookupKey];
-    }
-  }
+  const destinationAssetConfig = resolveDestinationAssetConfig(
+    destinationChain,
+    assetEntry?.addresses,
+  );
 
   const messageId = data.message_id;
   const commandId = approved?.returnValues?.commandId || data.command_id;
@@ -102,273 +100,51 @@ export function ContractCallData({
             </div>
           </dd>
         </div>
-        {isMultihop && (
-          <>
-            <div className={contractCallDataStyles.section}>
-              <dt className={contractCallDataStyles.label}>Status</dt>
-              <dd className={contractCallDataStyles.value}>
-                <Tag
-                  className={clsx(
-                    contractCallDataStyles.statusTag,
-                    getStatusTagClass(data.simplified_status)
-                  )}
-                >
-                  {data.simplified_status === 'received' &&
-                  (getEvent(data) === 'ContractCall' ||
-                    (getEvent(data) === 'InterchainTransfer' &&
-                      isAxelar(call?.returnValues?.destinationChain)))
-                    ? 'Executed'
-                    : data.simplified_status}
-                </Tag>
-              </dd>
-            </div>
-            {((time_spent?.call_express_executed ?? 0) > 0 &&
-              ['express_executed', 'executed'].includes(status ?? '')) ||
-            ((time_spent?.total ?? 0) > 0 && status === 'executed') ? (
-              <div className={contractCallDataStyles.section}>
-                <dt className={contractCallDataStyles.label}>Time Spent</dt>
-                <dd className={contractCallDataStyles.value}>
-                  <div className={contractCallDataStyles.timeSpentList}>
-                    {time_spent &&
-                      (time_spent.call_express_executed ?? 0) > 0 &&
-                      ['express_executed', 'executed'].includes(
-                        status ?? ''
-                      ) && (
-                        <div
-                          className={contractCallDataStyles.timeSpentExpress}
-                        >
-                          <RiTimerFlashLine size={20} />
-                          <TimeSpent
-                            fromTimestamp={0}
-                            toTimestamp={
-                              (time_spent.call_express_executed ?? 0) * 1000
-                            }
-                          />
-                        </div>
-                      )}
-                    {time_spent &&
-                      (time_spent.total ?? 0) > 0 &&
-                      status === 'executed' && (
-                        <div className={contractCallDataStyles.timeSpentTotal}>
-                          <MdOutlineTimer size={20} />
-                          <TimeSpent
-                            fromTimestamp={0}
-                            toTimestamp={(time_spent.total ?? 0) * 1000}
-                          />
-                        </div>
-                      )}
-                  </div>
-                </dd>
-              </div>
-            ) : null}
-          </>
-        )}
-        {messageId && (
-          <div className={contractCallDataStyles.section}>
-            <dt className={contractCallDataStyles.label}>messageId</dt>
-            <dd className={contractCallDataStyles.value}>
-              <Copy
-                size={16}
-                value={messageId}
-                childrenClassName={contractCallDataStyles.copyWrapper}
-                className={contractCallDataStyles.copyButton}
-              >
-                <span className={contractCallDataStyles.copyText}>
-                  {messageId}
-                </span>
-              </Copy>
-            </dd>
-          </div>
-        )}
-        {commandId && (
-          <div className={contractCallDataStyles.section}>
-            <dt className={contractCallDataStyles.label}>commandId</dt>
-            <dd className={contractCallDataStyles.value}>
-              <Copy
-                size={16}
-                value={commandId}
-                childrenClassName={contractCallDataStyles.copyWrapper}
-                className={contractCallDataStyles.copyButton}
-              >
-                <span className={contractCallDataStyles.copyText}>
-                  {commandId}
-                </span>
-              </Copy>
-            </dd>
-          </div>
-        )}
+        {isMultihop && <MultihopStatus data={data} />}
+        {messageId && <DataField label="messageId" value={messageId} />}
+        {commandId && <DataField label="commandId" value={commandId} />}
         {sourceChain && (
-          <div className={contractCallDataStyles.section}>
-            <dt className={contractCallDataStyles.label}>sourceChain</dt>
-            <dd className={contractCallDataStyles.value}>
-              <Copy
-                size={16}
-                value={sourceChain}
-                childrenClassName={contractCallDataStyles.copyWrapper}
-                className={contractCallDataStyles.copyButton}
-              >
-                <span className={contractCallDataStyles.chainLabel}>
-                  {sourceChain}
-                </span>
-              </Copy>
-            </dd>
-          </div>
+          <DataField
+            label="sourceChain"
+            value={sourceChain}
+            textClassName={contractCallDataStyles.chainLabel}
+          />
         )}
         {destinationChain && (
-          <div className={contractCallDataStyles.section}>
-            <dt className={contractCallDataStyles.label}>destinationChain</dt>
-            <dd className={contractCallDataStyles.value}>
-              <Copy
-                size={16}
-                value={destinationChain}
-                childrenClassName={contractCallDataStyles.copyWrapper}
-                className={contractCallDataStyles.copyButton}
-              >
-                <span className={contractCallDataStyles.chainLabel}>
-                  {destinationChain}
-                </span>
-              </Copy>
-            </dd>
-          </div>
+          <DataField
+            label="destinationChain"
+            value={destinationChain}
+            textClassName={contractCallDataStyles.chainLabel}
+          />
         )}
-        {sourceAddress && (
-          <div className={contractCallDataStyles.section}>
-            <dt className={contractCallDataStyles.label}>sourceAddress</dt>
-            <dd className={contractCallDataStyles.value}>
-              <Copy
-                size={16}
-                value={sourceAddress}
-                childrenClassName={contractCallDataStyles.copyWrapper}
-                className={contractCallDataStyles.copyButton}
-              >
-                <span className={contractCallDataStyles.copyText}>
-                  {sourceAddress}
-                </span>
-              </Copy>
-            </dd>
-          </div>
-        )}
+        {sourceAddress && <DataField label="sourceAddress" value={sourceAddress} />}
         {destinationContractAddress && (
-          <div className={contractCallDataStyles.section}>
-            <dt className={contractCallDataStyles.label}>
-              destinationContractAddress
-            </dt>
-            <dd className={contractCallDataStyles.value}>
-              <Copy
-                size={16}
-                value={destinationContractAddress}
-                childrenClassName={contractCallDataStyles.copyWrapper}
-                className={contractCallDataStyles.copyButton}
-              >
-                <span className={contractCallDataStyles.copyText}>
-                  {destinationContractAddress}
-                </span>
-              </Copy>
-            </dd>
-          </div>
+          <DataField label="destinationContractAddress" value={destinationContractAddress} />
         )}
-        {payloadHash && (
-          <div className={contractCallDataStyles.section}>
-            <dt className={contractCallDataStyles.label}>payloadHash</dt>
-            <dd className={contractCallDataStyles.value}>
-              <Copy
-                size={16}
-                value={payloadHash}
-                childrenClassName={contractCallDataStyles.copyWrapper}
-                className={contractCallDataStyles.copyButton}
-              >
-                <span className={contractCallDataStyles.copyText}>
-                  {payloadHash}
-                </span>
-              </Copy>
-            </dd>
-          </div>
-        )}
-        {payload && (
-          <div className={contractCallDataStyles.section}>
-            <dt className={contractCallDataStyles.label}>payload</dt>
-            <dd className={contractCallDataStyles.value}>
-              <Copy
-                size={16}
-                value={payload}
-                childrenClassName={contractCallDataStyles.copyWrapper}
-                className={contractCallDataStyles.copyButton}
-              >
-                <span className={contractCallDataStyles.copyText}>
-                  {payload}
-                </span>
-              </Copy>
-            </dd>
-          </div>
-        )}
+        {payloadHash && <DataField label="payloadHash" value={payloadHash} />}
+        {payload && <DataField label="payload" value={payload} />}
         {sourceSymbol && (
-          <div className={contractCallDataStyles.section}>
-            <dt className={contractCallDataStyles.label}>sourceSymbol</dt>
-            <dd className={contractCallDataStyles.value}>
-              <Copy
-                size={16}
-                value={sourceSymbol}
-                childrenClassName={contractCallDataStyles.copyWrapper}
-                className={contractCallDataStyles.copyButton}
-              >
-                <span className={contractCallDataStyles.chainLabel}>
-                  {sourceSymbol}
-                </span>
-              </Copy>
-            </dd>
-          </div>
+          <DataField
+            label="sourceSymbol"
+            value={sourceSymbol}
+            textClassName={contractCallDataStyles.chainLabel}
+          />
         )}
         {destinationSymbol && (
-          <div className={contractCallDataStyles.section}>
-            <dt className={contractCallDataStyles.label}>destinationSymbol</dt>
-            <dd className={contractCallDataStyles.value}>
-              <Copy
-                size={16}
-                value={destinationSymbol}
-                childrenClassName={contractCallDataStyles.copyWrapper}
-                className={contractCallDataStyles.copyButton}
-              >
-                <span className={contractCallDataStyles.chainLabel}>
-                  {destinationSymbol}
-                </span>
-              </Copy>
-            </dd>
-          </div>
+          <DataField
+            label="destinationSymbol"
+            value={destinationSymbol}
+            textClassName={contractCallDataStyles.chainLabel}
+          />
         )}
         {amountInUnits && (
-          <div className={contractCallDataStyles.section}>
-            <dt className={contractCallDataStyles.label}>amount</dt>
-            <dd className={contractCallDataStyles.value}>
-              <Copy
-                size={16}
-                value={amountInUnits}
-                childrenClassName={contractCallDataStyles.copyWrapper}
-                className={contractCallDataStyles.copyButton}
-              >
-                <span className={contractCallDataStyles.chainLabel}>
-                  {amountInUnits}
-                </span>
-              </Copy>
-            </dd>
-          </div>
+          <DataField
+            label="amount"
+            value={amountInUnits}
+            textClassName={contractCallDataStyles.chainLabel}
+          />
         )}
-        {executeData && (
-          <div className={contractCallDataStyles.section}>
-            <dt className={contractCallDataStyles.label}>executeData</dt>
-            <dd className={contractCallDataStyles.value}>
-              <Copy
-                size={16}
-                value={executeData}
-                childrenClassName={contractCallDataStyles.copyWrapper}
-                className={contractCallDataStyles.copyButton}
-              >
-                <span className={contractCallDataStyles.copyText}>
-                  {executeData}
-                </span>
-              </Copy>
-            </dd>
-          </div>
-        )}
+        {executeData && <DataField label="executeData" value={executeData} />}
       </dl>
     </div>
   );

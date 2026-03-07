@@ -1,36 +1,36 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
 // @ts-expect-error react-linkify has no type declarations
 import Linkify from 'react-linkify';
 import clsx from 'clsx';
 import _ from 'lodash';
 
-import { Image } from '@/components/Image';
 import { Copy } from '@/components/Copy';
-import { Tooltip } from '@/components/Tooltip';
 import { Tag } from '@/components/Tag';
 import { Number } from '@/components/Number';
 import { Profile } from '@/components/Profile';
-import { TablePagination } from '@/components/Pagination';
-import { useChains, useAssets, useValidators } from '@/hooks/useGlobalData';
-import { getChainData } from '@/lib/config';
+import { useValidators } from '@/hooks/useGlobalData';
 import { toArray } from '@/lib/parser';
 import { ellipse } from '@/lib/string';
-import { isNumber, numberFormat } from '@/lib/number';
-import type { Validator as ValidatorType, Delegation } from '@/types';
+import { isNumber } from '@/lib/number';
+import type { Validator as ValidatorType } from '@/types';
 
-import { AddressRow, DelegationRow } from './InfoHelpers.component';
+import { AddressRow } from './AddressRow.component';
+import { DelegationsTable } from './DelegationsTable.component';
+import { SupportedChains } from './SupportedChains.component';
+import { VotingPowerRow } from './VotingPowerRow.component';
 import type { InfoProps } from './Validator.types';
 import * as styles from './Validator.styles';
 
-const DELEGATIONS_SIZE_PER_PAGE = 10;
+function getStatusStyle(status: string): string {
+  if (status.includes('UN')) {
+    return status.endsWith('ED') ? styles.statusUnbonded : styles.statusUnbonding;
+  }
+  return styles.statusBonded;
+}
 
 export function Info({ data, address, delegations }: InfoProps) {
-  const [delegationsPage, setDelegationsPage] = useState(1);
-  const chains = useChains();
-  const assets = useAssets();
   const validators = useValidators();
 
   const {
@@ -47,14 +47,12 @@ export function Info({ data, address, delegations }: InfoProps) {
   const { details, website } = { ...data?.description };
   const { rate } = { ...data?.commission?.commission_rates };
 
-  const totalVotingPower = _.sumBy(
-    toArray(validators).filter((d: ValidatorType) => d.status === 'BOND_STATUS_BONDED'),
-    'tokens'
+  const bondedValidators = toArray(validators).filter(
+    (d: ValidatorType) => d.status === 'BOND_STATUS_BONDED',
   );
-  const totalQuadraticVotingPower = _.sumBy(
-    toArray(validators).filter((d: ValidatorType) => d.status === 'BOND_STATUS_BONDED'),
-    'quadratic_voting_power'
-  );
+  const totalVotingPower = _.sumBy(bondedValidators, 'tokens');
+  const totalQuadraticVotingPower = _.sumBy(bondedValidators, 'quadratic_voting_power');
+  const isBonded = status === 'BOND_STATUS_BONDED';
 
   return (
     <div className={styles.infoPanel}>
@@ -124,7 +122,7 @@ export function Info({ data, address, delegations }: InfoProps) {
                         'font-medium',
                         broadcasterBalance!.amount! < 5
                           ? styles.balanceLow
-                          : styles.balanceOk
+                          : styles.balanceOk,
                       )}
                     />
                   )}
@@ -136,16 +134,7 @@ export function Info({ data, address, delegations }: InfoProps) {
             <dt className={styles.dlLabel}>Status</dt>
             <dd className={styles.dlValue}>
               {status && (
-                <Tag
-                  className={clsx(
-                    'w-fit',
-                    status.includes('UN')
-                      ? status.endsWith('ED')
-                        ? styles.statusUnbonded
-                        : styles.statusUnbonding
-                      : styles.statusBonded
-                  )}
-                >
+                <Tag className={clsx('w-fit', getStatusStyle(status))}>
                   {status.replace('BOND_STATUS_', '')}
                 </Tag>
               )}
@@ -166,138 +155,25 @@ export function Info({ data, address, delegations }: InfoProps) {
             </div>
           )}
           {isNumber(tokens) && (
-            <div className={styles.dlRow}>
-              <dt className={styles.dlLabel}>
-                {status === 'BOND_STATUS_BONDED' ? 'Consensus Power' : 'Staking'}
-              </dt>
-              <dd className={styles.dlValue}>
-                <div className={styles.votingPowerRow}>
-                  <Number
-                    value={tokens}
-                    format="0,0.0a"
-                    noTooltip={true}
-                    className={styles.votingPowerValue}
-                  />
-                  {status === 'BOND_STATUS_BONDED' && (
-                    <Number
-                      value={((tokens as number) * 100) / totalVotingPower}
-                      format="0,0.0a"
-                      prefix="("
-                      suffix="%)"
-                      noTooltip={true}
-                      className={styles.votingPowerPercent}
-                    />
-                  )}
-                </div>
-              </dd>
-            </div>
+            <VotingPowerRow
+              label={isBonded ? 'Consensus Power' : 'Staking'}
+              value={tokens as number}
+              totalPower={totalVotingPower}
+              showPercent={isBonded}
+            />
           )}
-          {isNumber(quadratic_voting_power) &&
-            status === 'BOND_STATUS_BONDED' && (
-              <div className={styles.dlRow}>
-                <dt className={styles.dlLabel}>Quadratic Power</dt>
-                <dd className={styles.dlValue}>
-                  <div className={styles.votingPowerRow}>
-                    <Number
-                      value={quadratic_voting_power}
-                      format="0,0.0a"
-                      noTooltip={true}
-                      className={styles.votingPowerValue}
-                    />
-                    <Number
-                      value={
-                        ((quadratic_voting_power as number) * 100) /
-                        totalQuadraticVotingPower
-                      }
-                      format="0,0.0a"
-                      prefix="("
-                      suffix="%)"
-                      noTooltip={true}
-                      className={styles.votingPowerPercent}
-                    />
-                  </div>
-                </dd>
-              </div>
-            )}
+          {isNumber(quadratic_voting_power) && isBonded && (
+            <VotingPowerRow
+              label="Quadratic Power"
+              value={quadratic_voting_power as number}
+              totalPower={totalQuadraticVotingPower}
+              showPercent={true}
+            />
+          )}
           {supportedChains && (
-            <div className={styles.dlRow}>
-              <dt className={styles.dlLabel}>EVM Supported</dt>
-              <dd className={styles.dlValue}>
-                <div className={styles.supportedChainsGrid}>
-                  {supportedChains.map((c: string, i: number) => {
-                    const { name, image } = { ...getChainData(c, chains) };
-
-                    return (
-                      <Tooltip
-                        key={i}
-                        content={name}
-                        className={styles.chainTooltip}
-                      >
-                        <Image
-                          src={image}
-                          alt=""
-                          width={20}
-                          height={20}
-                          className={styles.chainImage}
-                        />
-                      </Tooltip>
-                    );
-                  })}
-                </div>
-              </dd>
-            </div>
+            <SupportedChains supportedChains={supportedChains} />
           )}
-          {delegations && (
-            <div className={styles.dlRow}>
-              <dt className={styles.dlLabel}>{`Delegation${delegations.length > 1 ? `s (${numberFormat(delegations.length, '0,0')})` : ''}`}</dt>
-              <dd className={styles.dlValue}>
-                <div className={styles.delegationsWrapper}>
-                  <div className={styles.delegationsTableScroll}>
-                    <table className={styles.delegationsTable}>
-                      <thead className={styles.delegationsTableHead}>
-                        <tr className={styles.delegationsTableHeadRow}>
-                          <th
-                            scope="col"
-                            className={styles.delegationsThFirst}
-                          >
-                            Delegator
-                          </th>
-                          <th scope="col" className={styles.delegationsThMiddle}>
-                            Amount
-                          </th>
-                          <th
-                            scope="col"
-                            className={styles.delegationsThLast}
-                          >
-                            Value
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className={styles.delegationsTableBody}>
-                        {delegations
-                          .filter(
-                            (_d: Delegation, i: number) =>
-                              i >= (delegationsPage - 1) * DELEGATIONS_SIZE_PER_PAGE &&
-                              i < delegationsPage * DELEGATIONS_SIZE_PER_PAGE
-                          )
-                          .map((d: Delegation, i: number) => (
-                            <DelegationRow key={i} d={d} assets={assets} />
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  {delegations.length > DELEGATIONS_SIZE_PER_PAGE && (
-                    <TablePagination
-                      data={delegations}
-                      value={delegationsPage}
-                      onChange={(page: number) => setDelegationsPage(page)}
-                      sizePerPage={DELEGATIONS_SIZE_PER_PAGE}
-                    />
-                  )}
-                </div>
-              </dd>
-            </div>
-          )}
+          {delegations && <DelegationsTable delegations={delegations} />}
         </dl>
       </div>
     </div>

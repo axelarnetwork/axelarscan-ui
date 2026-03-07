@@ -88,6 +88,28 @@ export interface GMPRowProps {
   useAnotherHopChain: boolean;
 }
 
+export interface TxHashCellProps {
+  data: GMPRowData;
+}
+
+export interface MethodCellProps {
+  data: GMPRowData;
+}
+
+export interface SenderCellProps {
+  data: GMPRowData;
+  useAnotherHopChain: boolean;
+}
+
+export interface DestinationCellProps {
+  data: GMPRowData;
+  useAnotherHopChain: boolean;
+}
+
+export interface StatusCellProps {
+  data: GMPRowData;
+}
+
 /** Wider input type for getEvent/getStatusLabel — compatible with both GMPRowData and GMPMessage */
 export interface EventDataInput {
   call?: {

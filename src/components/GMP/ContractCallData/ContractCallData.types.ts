@@ -5,3 +5,7 @@ export interface ContractCallDataProps {
   executeData?: string;
   isMultihop: boolean;
 }
+
+export interface TimeSpentSectionProps {
+  data: GMPMessage;
+}

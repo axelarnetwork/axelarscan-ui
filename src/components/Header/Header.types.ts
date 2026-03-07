@@ -14,6 +14,10 @@ export interface EnvironmentItem {
   href: string;
 }
 
+export interface MobileNavigationProps {
+  navigations: NavigationItem[];
+}
+
 export interface MobileNavLinkProps {
   href: string;
   children: React.ReactNode;

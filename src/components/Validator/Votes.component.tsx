@@ -1,52 +1,16 @@
 'use client';
 
-import Link from 'next/link';
-import clsx from 'clsx';
-
-import { Tooltip } from '@/components/Tooltip';
 import { Number } from '@/components/Number';
 import { useChains } from '@/hooks/useGlobalData';
-import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { numberFormat } from '@/lib/number';
 import type { EVMVote } from '@/types';
 import type { VotesProps } from './Validator.types';
+import { VoteBlockDot } from './VoteBlockDot.component';
 import * as styles from './Validator.styles';
 
 const SIZE = 200;
 const NUM_LATEST_BLOCKS = 10000;
-
-function VoteBlockDot({ d, chains }: { d: EVMVote; chains: import('@/types').Chain[] | null | undefined }) {
-  const { name } = { ...getChainData(d.sender_chain, chains) };
-
-  return (
-    <Link
-      href={d.id ? `/evm-poll/${d.id}` : `/block/${d.height}`}
-      target="_blank"
-      className={styles.blockLink}
-    >
-      <Tooltip
-        content={
-          d.id
-            ? `Poll ID: ${d.id} (${name})`
-            : numberFormat(d.height, '0,0')
-        }
-        className={styles.chainTooltip}
-      >
-        <div
-          className={clsx(
-            styles.blockDot,
-            typeof d.vote === 'boolean'
-              ? d.vote
-                ? styles.blockDotActive
-                : styles.blockDotNo
-              : styles.blockDotInactive
-          )}
-        />
-      </Tooltip>
-    </Link>
-  );
-}
 
 export function Votes({ data }: VotesProps) {
   const chains = useChains();

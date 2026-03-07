@@ -14,10 +14,10 @@ import { toNumber } from '@/lib/number';
 
 import { Info } from './Info.component';
 import { Votes } from './Votes.component';
-import type { ProposalData, VoteEntry } from './Proposal.types';
+import type { ProposalProps, ProposalData, VoteEntry } from './Proposal.types';
 import * as styles from './Proposal.styles';
 
-export function Proposal({ id }: { id: string }) {
+export function Proposal({ id }: ProposalProps) {
   const [data, setData] = useState<ProposalData | null>(null);
   const validators = useValidators();
 

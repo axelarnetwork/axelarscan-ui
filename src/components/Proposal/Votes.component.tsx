@@ -7,10 +7,10 @@ import { useValidators } from '@/hooks/useGlobalData';
 import { toArray } from '@/lib/parser';
 
 import { VoteRow } from './VoteRow.component';
-import type { VoteEntry } from './Proposal.types';
+import type { VotesProps, VoteEntry } from './Proposal.types';
 import * as styles from './Proposal.styles';
 
-export function Votes({ data }: { data: VoteEntry[] }) {
+export function Votes({ data }: VotesProps) {
   const validators = useValidators();
 
   const totalVotingPower = _.sumBy(

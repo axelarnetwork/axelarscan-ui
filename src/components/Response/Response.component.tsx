@@ -1,7 +1,7 @@
 import { responseStyles } from './Response.styles';
-import type { ResponseData } from './Response.types';
+import type { ResponseProps } from './Response.types';
 
-export function Response({ data }: { data: ResponseData }) {
+export function Response({ data }: ResponseProps) {
   const { code, message } = { ...data };
 
   return (

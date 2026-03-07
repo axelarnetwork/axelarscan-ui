@@ -79,3 +79,11 @@ export interface ChainStatsProps {
   signsTotal: number;
   totalProofs: number;
 }
+
+/** Props for the ChainCell sub-component */
+export interface ChainCellProps {
+  chainEntry: Chain | string;
+  votesChains: Record<string, ChainVoteData>;
+  signsChains: Record<string, ChainSignData>;
+  supportedChains: string[];
+}

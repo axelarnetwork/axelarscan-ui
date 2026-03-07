@@ -14,7 +14,10 @@ import { toTitle } from '@/lib/string';
 import { toNumber } from '@/lib/number';
 import { TIME_FORMAT } from '@/lib/time';
 
-import { StatusTag, PlanInfo, ChangeRow, GmpChainIcon } from './InfoHelpers.component';
+import { StatusTag } from './StatusTag.component';
+import { PlanInfo } from './PlanInfo.component';
+import { ChangeRow } from './ChangeRow.component';
+import { GmpChainIcon } from './GmpChainIcon.component';
 import type { InfoProps, ProposalDeposit, VoteOptionSummary } from './Proposal.types';
 import * as styles from './Proposal.styles';
 

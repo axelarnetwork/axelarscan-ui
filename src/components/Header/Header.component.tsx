@@ -15,7 +15,8 @@ import { ENVIRONMENT } from '@/lib/config';
 
 import type { NavigationItem, EnvironmentItem } from './Header.types';
 import { MobileNavigation } from './MobileNavigation.component';
-import { DesktopNavItem, EnvironmentLink } from './DesktopNav.component';
+import { DesktopNavItem } from './DesktopNav.component';
+import { EnvironmentLink } from './EnvironmentLink.component';
 import { header, environmentPopover } from './Header.styles';
 
 const NAVIGATIONS: NavigationItem[] = [

@@ -1,1 +1,2 @@
-export { Pagination, TablePagination } from './Pagination.component';
+export { Pagination } from './Pagination.component';
+export { TablePagination } from './TablePagination.component';

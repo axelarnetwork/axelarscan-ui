@@ -72,3 +72,11 @@ export interface GmpChainIconProps {
   chain?: string;
   chains: Chain[] | null;
 }
+
+export interface ProposalProps {
+  id: string;
+}
+
+export interface VotesProps {
+  data: VoteEntry[];
+}

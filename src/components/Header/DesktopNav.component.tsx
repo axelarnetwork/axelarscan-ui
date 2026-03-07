@@ -8,24 +8,9 @@ import clsx from 'clsx';
 import { FiChevronDown } from 'react-icons/fi';
 
 import { NavLink } from '@/components/NavLink';
-import { ENVIRONMENT } from '@/lib/config';
 
-import type { DesktopNavItemProps, EnvironmentLinkProps } from './Header.types';
-import { desktopPopover, environmentLink } from './Header.styles';
-
-export function EnvironmentLink({ name, href, children }: EnvironmentLinkProps) {
-  return (
-    <Link
-      href={href}
-      className={clsx(
-        environmentLink.base,
-        name === ENVIRONMENT ? environmentLink.active : environmentLink.inactive
-      )}
-    >
-      {children}
-    </Link>
-  );
-}
+import type { DesktopNavItemProps } from './Header.types';
+import { desktopPopover } from './Header.styles';
 
 export function DesktopNavItem({ item, index, popoverOpen, setPopoverOpen }: DesktopNavItemProps) {
   const pathname = usePathname();

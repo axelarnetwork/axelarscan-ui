@@ -32,3 +32,23 @@ export interface DelegationRowProps {
   d: Delegation;
   assets: Asset[] | null | undefined;
 }
+
+export interface VotingPowerRowProps {
+  label: string;
+  value: number;
+  totalPower: number;
+  showPercent: boolean;
+}
+
+export interface VoteBlockDotProps {
+  d: EVMVote;
+  chains: import('@/types').Chain[] | null | undefined;
+}
+
+export interface UptimeBlockDotProps {
+  d: UptimeBlock;
+}
+
+export interface ProposedBlockDotProps {
+  d: ProposedBlock;
+}

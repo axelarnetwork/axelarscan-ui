@@ -21,7 +21,8 @@ import { TIME_FORMAT } from '@/lib/time';
 import { getStep, getDepositAddressLabel, resolveSymbolAndImage, resolveStepURL } from './Transfer.utils';
 import type { InfoProps, TransferStep } from './Transfer.types';
 import * as styles from './Transfer.styles';
-import { PendingStep, CompletedStep } from './Steps.component';
+import { PendingStep } from './PendingStep.component';
+import { CompletedStep } from './CompletedStep.component';
 
 export function Info({ data, tx }: InfoProps) {
   const chains = useChains();

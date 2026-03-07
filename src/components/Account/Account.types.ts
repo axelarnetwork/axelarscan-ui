@@ -72,3 +72,8 @@ export interface DelegationsProps {
 export interface AccountProps {
   address: string;
 }
+
+export interface BalanceRowProps {
+  entry: BalanceEntry;
+  index: number;
+}

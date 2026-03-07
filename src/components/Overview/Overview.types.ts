@@ -36,3 +36,19 @@ export interface OverviewData {
   transfersTotalVolume?: number;
   [key: string]: unknown;
 }
+
+export interface NetworkGraphSectionProps {
+  data: OverviewData;
+  networkGraph: NetworkGraphDataItem[] | null;
+  chainPairs: Record<string, unknown>[];
+  setChainFocus: (chain: string | null) => void;
+}
+
+export interface SankeyTabsProps {
+  currentTab: string;
+  onTabChange: (tab: string) => void;
+}
+
+export interface ConnectedChainsTagProps {
+  count: number;
+}

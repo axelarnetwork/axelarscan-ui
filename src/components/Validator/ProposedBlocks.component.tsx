@@ -1,28 +1,11 @@
-import Link from 'next/link';
-import clsx from 'clsx';
-
-import { Tooltip } from '@/components/Tooltip';
 import { Number } from '@/components/Number';
 import { numberFormat } from '@/lib/number';
 import type { ProposedBlock } from '@/types';
 import type { ProposedBlocksProps } from './Validator.types';
+import { ProposedBlockDot } from './ProposedBlockDot.component';
 import * as styles from './Validator.styles';
 
 const NUM_LATEST_PROPOSED_BLOCKS = 2500;
-
-function ProposedBlockDot({ d }: { d: ProposedBlock }) {
-  return (
-    <Link
-      href={`/block/${d.height}`}
-      target="_blank"
-      className={styles.blockLink}
-    >
-      <Tooltip content={numberFormat(d.height, '0,0')}>
-        <div className={clsx(styles.blockDot, styles.blockDotActive)} />
-      </Tooltip>
-    </Link>
-  );
-}
 
 export function ProposedBlocks({ data }: ProposedBlocksProps) {
   if (!data) {

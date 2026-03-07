@@ -18,7 +18,8 @@ import { capitalize } from '@/lib/string';
 
 import type { FilterAttribute } from './AmplifierProofs.types';
 import * as styles from './AmplifierProofs.styles';
-import { SearchableSelect, SimpleSelect } from './FilterControls.component';
+import { SearchableSelect } from './SearchableSelect.component';
+import { SimpleSelect } from './SimpleSelect.component';
 
 const size = 25;
 

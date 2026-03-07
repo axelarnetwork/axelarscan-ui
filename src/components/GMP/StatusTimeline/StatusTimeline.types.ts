@@ -1,4 +1,4 @@
-import { ChainTimeEstimate, ChainMetadata, GMPMessage } from '../GMP.types';
+import { ChainTimeEstimate, ChainMetadata, GMPMessage, GMPEventLog } from '../GMP.types';
 
 export interface StatusTimelineProps {
   timeline: GMPMessage[];
@@ -7,4 +7,11 @@ export interface StatusTimelineProps {
   isMultihop: boolean;
   rootCall: GMPMessage['call'];
   expressExecuted?: GMPMessage['express_executed'];
+}
+
+export interface ConfirmTimeEstimateProps {
+  id: string;
+  expressExecuted?: GMPEventLog;
+  estimatedTimeSpent?: ChainTimeEstimate | null;
+  rootCall?: { block_timestamp?: number };
 }
