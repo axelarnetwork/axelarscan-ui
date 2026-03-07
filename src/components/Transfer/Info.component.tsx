@@ -21,7 +21,7 @@ import { isString, equalsIgnoreCase, ellipse, toTitle } from '@/lib/string';
 import { isNumber, formatUnits } from '@/lib/number';
 import { TIME_FORMAT } from '@/lib/time';
 import { getStep } from './Transfer.utils';
-import type { InfoProps, TransferStep } from './Transfer.types';
+import type { InfoProps, TransferStep, CompletedStepProps, StepElementProps, PendingStepProps } from './Transfer.types';
 import * as styles from './Transfer.styles';
 
 function getDepositAddressLabel(type?: string): string {
@@ -125,7 +125,7 @@ function resolveStepURL(
   return undefined;
 }
 
-function StepElement({ step }: { step: TransferStep }) {
+function StepElement({ step }: StepElementProps) {
   return (
     <>
       <div
@@ -157,7 +157,7 @@ function StepElement({ step }: { step: TransferStep }) {
   );
 }
 
-function PendingStep({ step, prevStatus }: { step: TransferStep; prevStatus?: string }) {
+function PendingStep({ step, prevStatus }: PendingStepProps) {
   const isPrevPending = prevStatus === 'pending';
 
   return (
@@ -203,10 +203,7 @@ function PendingStep({ step, prevStatus }: { step: TransferStep; prevStatus?: st
 function CompletedStep({
   step,
   stepURL,
-}: {
-  step: TransferStep;
-  stepURL: string | undefined;
-}) {
+}: CompletedStepProps) {
   const element = <StepElement step={step} />;
 
   return (

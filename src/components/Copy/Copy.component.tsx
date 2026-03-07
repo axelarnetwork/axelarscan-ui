@@ -7,6 +7,7 @@ import clsx from 'clsx';
 import { LuClipboard, LuClipboardCheck } from 'react-icons/lu';
 
 import { copyStyles } from './Copy.styles';
+import type { CopyProps } from './Copy.types';
 
 export function Copy({
   size = 18,
@@ -15,14 +16,7 @@ export function Copy({
   children,
   childrenClassName,
   className,
-}: {
-  size?: number;
-  value: string | number | undefined;
-  onCopy?: () => void;
-  children?: React.ReactNode;
-  childrenClassName?: string;
-  className?: string;
-}) {
+}: CopyProps) {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {

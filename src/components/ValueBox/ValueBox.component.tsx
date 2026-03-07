@@ -4,6 +4,7 @@ import { Copy } from '@/components/Copy';
 import { Tooltip } from '@/components/Tooltip';
 import { ellipse } from '@/lib/string';
 import { valueBoxStyles } from './ValueBox.styles';
+import type { ValueBoxProps } from './ValueBox.types';
 
 export function ValueBox({
   title,
@@ -14,16 +15,7 @@ export function ValueBox({
   noEllipse = false,
   noTooltip = true,
   className = valueBoxStyles.container,
-}: {
-  title?: string;
-  value: string;
-  url?: string;
-  prefix?: string;
-  ellipseLength?: number;
-  noEllipse?: boolean;
-  noTooltip?: boolean;
-  className?: string;
-}) {
+}: ValueBoxProps) {
   const displayValue = noEllipse
     ? value
     : ellipse(value, ellipseLength, prefix);

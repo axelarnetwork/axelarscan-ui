@@ -44,3 +44,8 @@ export interface PollVote {
   option?: string;
   [key: string]: unknown;
 }
+
+export interface PollRowProps {
+  poll: AmplifierPollEntry;
+  chains: ReturnType<typeof import('@/hooks/useGlobalData').useChains>;
+}

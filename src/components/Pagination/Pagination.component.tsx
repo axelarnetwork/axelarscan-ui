@@ -12,16 +12,13 @@ import { Button } from '@/components/Button';
 import { Number } from '@/components/Number';
 import { getParams, getQueryString } from '@/lib/operator';
 import { isNumber, toNumber } from '@/lib/number';
+import type { PaginationProps, TablePaginationProps } from './Pagination.types';
 
 export function Pagination({
   maxPage = 5,
   sizePerPage = 25,
   total,
-}: {
-  maxPage?: number;
-  sizePerPage?: number;
-  total: number;
-}) {
+}: PaginationProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -86,13 +83,7 @@ export function TablePagination({
   maxPage = 5,
   sizePerPage = 25,
   onChange,
-}: {
-  data: unknown[];
-  value?: number;
-  maxPage?: number;
-  sizePerPage?: number;
-  onChange?: (page: number) => void;
-}) {
+}: TablePaginationProps) {
   const [page, setPage] = useState(value);
 
   useEffect(() => {

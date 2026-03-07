@@ -3,16 +3,13 @@ import clsx from 'clsx';
 import { Number as NumberDisplay } from '@/components/Number';
 import { isNumber, toNumber } from '@/lib/number';
 import { progressBarStyles } from './ProgressBar.styles';
+import type { ProgressBarProps } from './ProgressBar.types';
 
 export function ProgressBar({
   value: rawValue,
   className,
   valueClassName,
-}: {
-  value: number | string;
-  className?: string;
-  valueClassName?: string;
-}) {
+}: ProgressBarProps) {
   let value = rawValue;
   if (isNumber(value)) {
     value = toNumber(value);

@@ -69,3 +69,16 @@ export interface SearchResult {
   data: AmplifierProofEntry[];
   total: number;
 }
+
+export interface SelectButtonContentProps {
+  attribute: FilterAttribute;
+  selectedValue: FilterOption | FilterOption[] | undefined;
+  params: Record<string, unknown>;
+  setParams: (params: Record<string, unknown>) => void;
+}
+
+export interface OptionContentProps {
+  selected: boolean;
+  active: boolean;
+  title: string;
+}

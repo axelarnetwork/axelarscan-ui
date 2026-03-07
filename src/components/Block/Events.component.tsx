@@ -9,7 +9,7 @@ import { Tag } from '@/components/Tag';
 import { Number } from '@/components/Number';
 import { toArray } from '@/lib/parser';
 import { lastString, toTitle } from '@/lib/string';
-import type { BlockEventsProps, BlockData, BlockEvent } from './Block.types';
+import type { BlockEventsProps, BlockData, BlockEvent, EventDataItemsProps, EventRowProps } from './Block.types';
 import * as styles from './Block.styles';
 
 const BLOCK_EVENT_FIELDS = ['begin_block_events', 'end_block_events'] as const;
@@ -20,12 +20,7 @@ function EventDataItems({
   type,
   seeMoreTypes,
   onToggleSeeMore,
-}: {
-  items: Record<string, unknown>[];
-  type: string;
-  seeMoreTypes: string[];
-  onToggleSeeMore: (type: string) => void;
-}) {
+}: EventDataItemsProps) {
   const isExpanded = seeMoreTypes.includes(type);
   const visibleItems = _.slice(items, 0, isExpanded ? items.length : COLLAPSE_SIZE);
   const showToggle = items.length > COLLAPSE_SIZE || isExpanded;
@@ -59,11 +54,7 @@ function EventRow({
   event,
   seeMoreTypes,
   onToggleSeeMore,
-}: {
-  event: BlockEvent;
-  seeMoreTypes: string[];
-  onToggleSeeMore: (type: string) => void;
-}) {
+}: EventRowProps) {
   return (
     <tr className={styles.eventRow}>
       <td className={styles.eventTypeCell}>

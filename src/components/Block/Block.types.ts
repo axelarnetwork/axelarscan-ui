@@ -34,6 +34,19 @@ export interface BlockEventsProps {
   data: BlockData;
 }
 
+export interface EventDataItemsProps {
+  items: Record<string, unknown>[];
+  type: string;
+  seeMoreTypes: string[];
+  onToggleSeeMore: (type: string) => void;
+}
+
+export interface EventRowProps {
+  event: BlockEvent;
+  seeMoreTypes: string[];
+  onToggleSeeMore: (type: string) => void;
+}
+
 export interface BlockProps {
   height: string;
 }

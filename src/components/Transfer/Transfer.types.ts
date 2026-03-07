@@ -45,6 +45,20 @@ export interface InfoProps {
   tx?: string;
 }
 
+export interface CompletedStepProps {
+  step: TransferStep;
+  stepURL: string | undefined;
+}
+
+export interface StepElementProps {
+  step: TransferStep;
+}
+
+export interface PendingStepProps {
+  step: TransferStep;
+  prevStatus?: string;
+}
+
 export interface DetailsProps {
   data: TransferData;
 }

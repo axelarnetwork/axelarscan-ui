@@ -65,7 +65,7 @@ export interface ProfileProps {
 }
 
 export interface ChainProfileProps {
-  value: string;
+  value?: string;
   width?: number;
   height?: number;
   className?: string;
@@ -73,7 +73,7 @@ export interface ChainProfileProps {
 }
 
 export interface AssetProfileProps {
-  value: string;
+  value?: string;
   chain?: string;
   amount?: number | string;
   addressOrDenom?: string;

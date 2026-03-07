@@ -25,7 +25,7 @@ import { getChainData } from '@/lib/config';
 import { toArray, getValuesOfAxelarAddressKey } from '@/lib/parser';
 import { getParams, generateKeyByParams } from '@/lib/operator';
 import { toBoolean, ellipse, toTitle } from '@/lib/string';
-import type { AmplifierPollEntry, PollVote, PollVoteOption } from './AmplifierPolls.types';
+import type { AmplifierPollEntry, PollVote, PollVoteOption, PollRowProps } from './AmplifierPolls.types';
 import { Filters } from './Filters.component';
 import * as styles from './AmplifierPolls.styles';
 
@@ -264,10 +264,7 @@ export function AmplifierPolls() {
 function PollRow({
   poll,
   chains,
-}: {
-  poll: AmplifierPollEntry;
-  chains: ReturnType<typeof useChains>;
-}) {
+}: PollRowProps) {
   const explorer = {
     ...getChainData(poll.sender_chain, chains)?.explorer,
   };

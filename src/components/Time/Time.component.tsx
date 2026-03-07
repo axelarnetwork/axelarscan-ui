@@ -8,6 +8,7 @@ import { Tooltip } from '@/components/Tooltip';
 import { isNumber } from '@/lib/number';
 import { timeDiff, timeDiffString } from '@/lib/time';
 import { timeStyles } from './Time.styles';
+import type { TimeAgoProps, TimeSpentProps, TimeUntilProps } from './Time.types';
 
 const TIME_FORMAT = 'MMM D, YYYY h:mm:ss A';
 
@@ -17,13 +18,7 @@ export function TimeAgo({
   noTooltip = false,
   title,
   className,
-}: {
-  timestamp: number | string;
-  format?: string;
-  noTooltip?: boolean;
-  title?: string;
-  className?: string;
-}) {
+}: TimeAgoProps) {
   const [trigger, setTrigger] = useState(false);
 
   useEffect(() => {
@@ -31,7 +26,7 @@ export function TimeAgo({
     return () => clearTimeout(timeout);
   }, [trigger, setTrigger]);
 
-  if (!(timestamp || isNumber(timestamp))) return null;
+  if (!timestamp && !isNumber(timestamp)) return null;
 
   const time = moment(timestamp);
   const diff = timeDiff(time);
@@ -67,14 +62,7 @@ export function TimeSpent({
   noTooltip = true,
   title,
   className,
-}: {
-  fromTimestamp: number | string;
-  toTimestamp?: number | string;
-  format?: string;
-  noTooltip?: boolean;
-  title?: string;
-  className?: string;
-}) {
+}: TimeSpentProps) {
   const [trigger, setTrigger] = useState(false);
 
   useEffect(() => {
@@ -122,15 +110,7 @@ export function TimeUntil({
   noTooltip = true,
   title,
   className,
-}: {
-  timestamp: number | string;
-  format?: string;
-  prefix?: React.ReactNode;
-  suffix?: React.ReactNode;
-  noTooltip?: boolean;
-  title?: string;
-  className?: string;
-}) {
+}: TimeUntilProps) {
   const [trigger, setTrigger] = useState(false);
 
   useEffect(() => {

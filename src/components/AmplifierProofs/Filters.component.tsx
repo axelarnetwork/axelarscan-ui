@@ -21,7 +21,7 @@ import {
   filterSearchInput,
 } from '@/lib/string';
 
-import type { FilterOption, FilterAttribute } from './AmplifierProofs.types';
+import type { FilterOption, FilterAttribute, SelectButtonContentProps, OptionContentProps } from './AmplifierProofs.types';
 import * as styles from './AmplifierProofs.styles';
 
 const size = 25;
@@ -276,12 +276,7 @@ function SelectButtonContent({
   selectedValue,
   params,
   setParams,
-}: {
-  attribute: FilterAttribute;
-  selectedValue: FilterOption | FilterOption[] | undefined;
-  params: Record<string, unknown>;
-  setParams: (params: Record<string, unknown>) => void;
-}) {
+}: SelectButtonContentProps) {
   if (!attribute.multiple) {
     return (
       <span className={styles.selectTruncate}>
@@ -322,7 +317,7 @@ function SelectButtonContent({
   );
 }
 
-function OptionContent({ selected, active, title }: { selected: boolean; active: boolean; title: string }) {
+function OptionContent({ selected, active, title }: OptionContentProps) {
   return (
     <>
       <span

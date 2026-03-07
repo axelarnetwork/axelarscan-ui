@@ -6,6 +6,7 @@ import clsx from 'clsx';
 
 import { toJson } from '@/lib/parser';
 import { jsonViewStyles } from './JSONView.styles';
+import type { JSONViewProps } from './JSONView.types';
 
 import 'react18-json-view/src/style.css';
 
@@ -14,12 +15,7 @@ export function JSONView({
   tab = 4,
   useJSONView = true,
   className,
-}: {
-  value: unknown;
-  tab?: number;
-  useJSONView?: boolean;
-  className?: string;
-}) {
+}: JSONViewProps) {
   const { resolvedTheme } = useTheme();
 
   return (

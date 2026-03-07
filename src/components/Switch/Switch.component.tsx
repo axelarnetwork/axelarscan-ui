@@ -5,6 +5,7 @@ import { Switch as HeadlessSwitch } from '@headlessui/react';
 import clsx from 'clsx';
 
 import { switchStyles } from './Switch.styles';
+import type { SwitchProps } from './Switch.types';
 
 export function Switch({
   value,
@@ -15,16 +16,7 @@ export function Switch({
   innerClassName,
   labelClassName,
   titleClassName,
-}: {
-  value: boolean;
-  onChange?: (enabled: boolean) => void;
-  title?: string;
-  groupClassName?: string;
-  outerClassName?: string;
-  innerClassName?: string;
-  labelClassName?: string;
-  titleClassName?: string;
-}) {
+}: SwitchProps) {
   const [enabled, setEnabled] = useState(value);
 
   useEffect(() => {
