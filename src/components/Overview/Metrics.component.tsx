@@ -5,7 +5,12 @@ import { useEffect, useState } from 'react';
 import { MdLocalGasStation } from 'react-icons/md';
 
 import { Number } from '@/components/Number';
-import { useChains, useValidators, useInflationData, useNetworkParameters } from '@/hooks/useGlobalData';
+import {
+  useChains,
+  useValidators,
+  useInflationData,
+  useNetworkParameters,
+} from '@/hooks/useGlobalData';
 import { getRPCStatus } from '@/lib/api/validator';
 import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
@@ -28,7 +33,12 @@ export function Metrics() {
 
   useEffect(() => {
     const getData = async () =>
-      setBlockData(await getRPCStatus({ avg_block_time: true }) as { latest_block_height?: number; avg_block_time?: number } | null);
+      setBlockData(
+        (await getRPCStatus({ avg_block_time: true })) as {
+          latest_block_height?: number;
+          avg_block_time?: number;
+        } | null
+      );
 
     getData();
 
@@ -40,32 +50,36 @@ export function Metrics() {
     return null;
   }
 
-  const externalChainVotingInflationRate = inflationData?.externalChainVotingInflationRate;
+  const externalChainVotingInflationRate =
+    inflationData?.externalChainVotingInflationRate;
   const evmRewardPercent = isNumber(externalChainVotingInflationRate)
     ? externalChainVotingInflationRate * 100
     : 0.2;
 
   const { symbol } = {
-    ...(getChainData('axelarnet', chains)?.native_token as { symbol?: string } | undefined),
+    ...(getChainData('axelarnet', chains)?.native_token as
+      | { symbol?: string }
+      | undefined),
   };
 
-  const governanceHref = 'https://axelar.network/blog/axelar-governance-explained';
+  const governanceHref =
+    'https://axelar.network/blog/axelar-governance-explained';
 
   const hasBankAndStaking =
     !!networkParameters?.bankSupply?.amount &&
     !!networkParameters.stakingPool?.bonded_tokens;
 
   const hasInflation =
-    !!inflationData && inflationData.inflation != null && inflationData.inflation > 0;
+    !!inflationData &&
+    inflationData.inflation != null &&
+    inflationData.inflation > 0;
 
   return (
     <div className={styles.metricsWrapper}>
       <div className={styles.metricsInner}>
         {blockData.latest_block_height && (
           <div className={styles.metricRow}>
-            <div className={styles.metricLabelWhitespace}>
-              Latest Block:
-            </div>
+            <div className={styles.metricLabelWhitespace}>Latest Block:</div>
             <Link
               href={`/block/${blockData.latest_block_height}`}
               target="_blank"
@@ -90,9 +104,7 @@ export function Metrics() {
         <div className={styles.metricItemsGroup}>
           {toArray(validators).length > 0 && (
             <div className={styles.metricRow}>
-              <div className={styles.metricLabel}>
-                Validators:
-              </div>
+              <div className={styles.metricLabel}>Validators:</div>
               <Link
                 href="/validators"
                 target="_blank"
@@ -100,7 +112,7 @@ export function Metrics() {
               >
                 <Number
                   value={
-                    validators!.filter((d) => d.status === 'BOND_STATUS_BONDED')
+                    validators!.filter(d => d.status === 'BOND_STATUS_BONDED')
                       .length
                   }
                   className={styles.metricValue}
@@ -109,9 +121,7 @@ export function Metrics() {
             </div>
           )}
           <div className={styles.metricRow}>
-            <div className={styles.metricLabel}>
-              Threshold:
-            </div>
+            <div className={styles.metricLabel}>Threshold:</div>
             <MetricWithTooltip
               tooltipContent="Threshold number of quadratic voting power required to onboard a new EVM chain"
               href={governanceHref}
@@ -125,9 +135,7 @@ export function Metrics() {
             </MetricWithTooltip>
           </div>
           <div className={styles.metricRow}>
-            <div className={styles.metricLabel}>
-              Rewards:
-            </div>
+            <div className={styles.metricLabel}>Rewards:</div>
             <MetricWithTooltip
               tooltipContent="Base inflation rate + Additional chain rewards"
               href={governanceHref}
@@ -159,7 +167,9 @@ export function Metrics() {
           <div className={styles.metricRow}>
             <div className={styles.gasLabelWrapper}>
               <MdLocalGasStation size={16} />
-              <span className={styles.metricLabelWhitespace}>Per Transfer:</span>
+              <span className={styles.metricLabelWhitespace}>
+                Per Transfer:
+              </span>
             </div>
             <MetricWithTooltip
               tooltipContent="AXL gas fees per transaction"
@@ -177,7 +187,9 @@ export function Metrics() {
         {hasBankAndStaking && (
           <StakedMetric
             bankSupplyAmount={networkParameters!.bankSupply!.amount as string}
-            bondedTokens={networkParameters!.stakingPool!.bonded_tokens as string}
+            bondedTokens={
+              networkParameters!.stakingPool!.bonded_tokens as string
+            }
           />
         )}
         {hasInflation && (
@@ -186,8 +198,12 @@ export function Metrics() {
               <APRMetric
                 inflation={inflationData!.inflation!}
                 communityTax={inflationData!.communityTax!}
-                bankSupplyAmount={networkParameters!.bankSupply!.amount as string}
-                bondedTokens={networkParameters!.stakingPool!.bonded_tokens as string}
+                bankSupplyAmount={
+                  networkParameters!.bankSupply!.amount as string
+                }
+                bondedTokens={
+                  networkParameters!.stakingPool!.bonded_tokens as string
+                }
               />
             )}
             <InflationMetric inflation={inflationData!.inflation!} />

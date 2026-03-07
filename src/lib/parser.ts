@@ -514,7 +514,10 @@ export const split = (string: unknown, options?: ParserOptions): string[] => {
  * ```
  */
 export function toArray<T>(x: T | T[] | null | undefined): NonNullable<T>[];
-export function toArray<T>(x: T | T[] | null | undefined, options: ParserOptions): (NonNullable<T> | string)[];
+export function toArray<T>(
+  x: T | T[] | null | undefined,
+  options: ParserOptions
+): (NonNullable<T> | string)[];
 export function toArray<T>(
   x: T | T[] | null | undefined,
   options?: ParserOptions

@@ -25,7 +25,11 @@ interface FilterSelectInputProps {
 
 // ---- Shared small pieces ----
 
-function OptionContent({ selected, active, title }: InterchainOptionContentProps) {
+function OptionContent({
+  selected,
+  active,
+  title,
+}: InterchainOptionContentProps) {
   return (
     <>
       <span className={filterSelectInputStyles.options.optionText(selected)}>
@@ -60,7 +64,11 @@ function SelectButtonContent({
   }
 
   return (
-    <div className={filterSelectInputStyles.button.selectedContainer(selectedArray.length)}>
+    <div
+      className={filterSelectInputStyles.button.selectedContainer(
+        selectedArray.length
+      )}
+    >
       {selectedArray.length === 0 ? (
         <span className={filterSelectInputStyles.button.placeholder}>Any</span>
       ) : (
@@ -81,7 +89,10 @@ function SelectButtonContent({
 function ChevronIcon() {
   return (
     <span className={filterSelectInputStyles.button.icon}>
-      <LuChevronsUpDown size={20} className={filterSelectInputStyles.button.iconSvg} />
+      <LuChevronsUpDown
+        size={20}
+        className={filterSelectInputStyles.button.iconSvg}
+      />
     </span>
   );
 }
@@ -115,7 +126,9 @@ export function FilterSelectInput({
     setParams({
       ...params,
       [attribute.name]: attribute.multiple
-        ? Array.isArray(v) ? v.join(',') : v
+        ? Array.isArray(v)
+          ? v.join(',')
+          : v
         : v,
     });
   };
@@ -189,7 +202,11 @@ function SearchableInput({
 
   return (
     <Combobox
-      value={attribute.multiple ? split(params[attribute.name]) : params[attribute.name]}
+      value={
+        attribute.multiple
+          ? split(params[attribute.name])
+          : params[attribute.name]
+      }
       onChange={onChange}
       multiple={attribute.multiple}
     >
@@ -204,23 +221,42 @@ function SearchableInput({
             />
             <ChevronIcon />
           </Combobox.Button>
-          <Transition show={open} as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
+          <Transition
+            show={open}
+            as={Fragment}
+            leave="transition ease-in duration-100"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
             <div className={filterSelectInputStyles.input.container}>
               <Combobox.Input
                 placeholder={`Search ${attribute.label}`}
                 value={searchInput[attribute.name] || ''}
-                onChange={e => setSearchInput({ ...searchInput, [attribute.name]: e.target.value })}
+                onChange={e =>
+                  setSearchInput({
+                    ...searchInput,
+                    [attribute.name]: e.target.value,
+                  })
+                }
                 className={filterSelectInputStyles.input.field}
               />
-              <Combobox.Options className={filterSelectInputStyles.options.container}>
+              <Combobox.Options
+                className={filterSelectInputStyles.options.container}
+              >
                 {filteredOptions.map((o, j) => (
                   <Combobox.Option
                     key={j}
                     value={o?.value || ''}
-                    className={({ active }) => filterSelectInputStyles.options.option(active)}
+                    className={({ active }) =>
+                      filterSelectInputStyles.options.option(active)
+                    }
                   >
                     {({ selected, active }) => (
-                      <OptionContent selected={selected} active={active} title={o?.title || ''} />
+                      <OptionContent
+                        selected={selected}
+                        active={active}
+                        title={o?.title || ''}
+                      />
                     )}
                   </Combobox.Option>
                 ))}
@@ -254,7 +290,11 @@ function SimpleInput({
 }) {
   return (
     <Listbox
-      value={attribute.multiple ? split(params[attribute.name]) : params[attribute.name]}
+      value={
+        attribute.multiple
+          ? split(params[attribute.name])
+          : params[attribute.name]
+      }
       onChange={onChange}
       multiple={attribute.multiple}
     >
@@ -276,15 +316,23 @@ function SimpleInput({
             leaveFrom={filterSelectInputStyles.transition.leaveFrom}
             leaveTo={filterSelectInputStyles.transition.leaveTo}
           >
-            <Listbox.Options className={filterSelectInputStyles.options.container}>
+            <Listbox.Options
+              className={filterSelectInputStyles.options.container}
+            >
               {options.map((o, j) => (
                 <Listbox.Option
                   key={j}
                   value={o?.value || ''}
-                  className={({ active }) => filterSelectInputStyles.options.option(active)}
+                  className={({ active }) =>
+                    filterSelectInputStyles.options.option(active)
+                  }
                 >
                   {({ selected, active }) => (
-                    <OptionContent selected={selected} active={active} title={o?.title || ''} />
+                    <OptionContent
+                      selected={selected}
+                      active={active}
+                      title={o?.title || ''}
+                    />
                   )}
                 </Listbox.Option>
               ))}

@@ -9,7 +9,13 @@ import { formatUnits } from '@/lib/number';
 import type { ConfirmationAssetProps } from './EVMPoll.types';
 import * as styles from './EVMPoll.styles';
 
-export function ConfirmationAsset({ event, chain, url, assets, index }: ConfirmationAssetProps) {
+export function ConfirmationAsset({
+  event,
+  chain,
+  url,
+  assets,
+  index,
+}: ConfirmationAssetProps) {
   let { asset, symbol, amount } = { ...event };
 
   const assetObj = toJson(asset) as { denom?: string; amount?: string } | null;

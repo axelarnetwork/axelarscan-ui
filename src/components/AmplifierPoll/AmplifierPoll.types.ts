@@ -98,7 +98,11 @@ export function getVoteLabel(vote: boolean | undefined): string {
  */
 export function getVoteOptionStyle(
   option: string,
-  styles: { voteOptionNo: string; voteOptionYes: string; voteOptionDefault: string },
+  styles: {
+    voteOptionNo: string;
+    voteOptionYes: string;
+    voteOptionDefault: string;
+  }
 ): string {
   if (option === 'no') return styles.voteOptionNo;
   if (option === 'yes') return styles.voteOptionYes;
@@ -115,7 +119,7 @@ export function getStatusStyle(
     statusFailed: string;
     statusExpired: string;
     statusPending: string;
-  },
+  }
 ): string {
   if (status === 'completed') return styles.statusCompleted;
   if (status === 'failed') return styles.statusFailed;
@@ -127,12 +131,16 @@ export function getStatusStyle(
  * Derives a poll status from the poll data fields and current block height.
  */
 export function derivePollStatus(
-  data: Pick<AmplifierPollData, 'success' | 'failed' | 'expired' | 'expired_height'>,
-  latestBlockHeight: number,
+  data: Pick<
+    AmplifierPollData,
+    'success' | 'failed' | 'expired' | 'expired_height'
+  >,
+  latestBlockHeight: number
 ): string {
   if (data.success) return 'completed';
   if (data.failed) return 'failed';
-  if (data.expired || (data.expired_height ?? 0) < latestBlockHeight) return 'expired';
+  if (data.expired || (data.expired_height ?? 0) < latestBlockHeight)
+    return 'expired';
   return 'pending';
 }
 

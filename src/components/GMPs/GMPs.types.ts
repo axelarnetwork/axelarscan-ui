@@ -49,8 +49,14 @@ export interface GMPRowData {
   call: GMPCallData;
   interchain_transfer?: InterchainTransferData;
   interchain_transfers?: InterchainTransferData[];
-  token_manager_deployment_started?: { symbol?: string; [key: string]: unknown };
-  interchain_token_deployment_started?: { tokenSymbol?: string; [key: string]: unknown };
+  token_manager_deployment_started?: {
+    symbol?: string;
+    [key: string]: unknown;
+  };
+  interchain_token_deployment_started?: {
+    tokenSymbol?: string;
+    [key: string]: unknown;
+  };
   link_token_started?: { symbol?: string; [key: string]: unknown };
   token_metadata_registered?: { symbol?: string; [key: string]: unknown };
   settlement_forwarded_events?: unknown;

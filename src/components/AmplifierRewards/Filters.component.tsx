@@ -9,11 +9,7 @@ import { MdOutlineFilterList } from 'react-icons/md';
 import { Button } from '@/components/Button';
 import { FilterDialog } from '@/components/FilterSelect';
 import type { FilterAttribute } from '@/components/FilterSelect';
-import {
-  getParams,
-  getQueryString,
-  isFiltered,
-} from '@/lib/operator';
+import { getParams, getQueryString, isFiltered } from '@/lib/operator';
 
 import { PAGE_SIZE } from './AmplifierRewards.types';
 import * as styles from './AmplifierRewards.styles';
@@ -23,7 +19,9 @@ export function Filters() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
-  const [params, setParams] = useState<Record<string, unknown>>(getParams(searchParams, PAGE_SIZE));
+  const [params, setParams] = useState<Record<string, unknown>>(
+    getParams(searchParams, PAGE_SIZE)
+  );
   const [searchInput, setSearchInput] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -32,7 +30,11 @@ export function Filters() {
     }
   }, [params, setSearchInput]);
 
-  const onSubmit = (_e1?: unknown, _e2?: unknown, _params?: Record<string, unknown>) => {
+  const onSubmit = (
+    _e1?: unknown,
+    _e2?: unknown,
+    _params?: Record<string, unknown>
+  ) => {
     const resolvedParams = _params ?? params;
 
     if (!_.isEqual(resolvedParams, getParams(searchParams, PAGE_SIZE))) {

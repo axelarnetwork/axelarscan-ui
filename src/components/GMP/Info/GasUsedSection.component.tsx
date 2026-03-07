@@ -48,8 +48,7 @@ export function GasUsedSection({
           className={infoStyles.inlineNumber}
         />
         {renderUsdValue(
-          (gasData!.gas_used_amount ?? 0) *
-            (sourceToken?.token_price?.usd ?? 0)
+          (gasData!.gas_used_amount ?? 0) * (sourceToken?.token_price?.usd ?? 0)
         )}
       </div>
     </InfoSection>

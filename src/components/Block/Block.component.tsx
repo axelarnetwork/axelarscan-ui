@@ -20,19 +20,25 @@ const BLOCK_EVENTS = ['begin_block_events', 'end_block_events'];
 
 export function Block({ height }: BlockProps) {
   const [data, setData] = useState<BlockData | null>(null);
-  const [validatorSets, setValidatorSets] = useState<ValidatorSetEntry[] | null>(null);
+  const [validatorSets, setValidatorSets] = useState<
+    ValidatorSetEntry[] | null
+  >(null);
   const validators = useValidators();
 
   useEffect(() => {
     const getData = async () => {
-      const responseData = await getBlock(height) as BlockData | undefined;
+      const responseData = (await getBlock(height)) as BlockData | undefined;
 
       if (!responseData) {
         return;
       }
 
-      const nextBlock = await getBlock(toNumber(height) + 1) as BlockData | undefined;
-      const { round, validators: blockValidators } = { ...nextBlock?.block?.last_commit };
+      const nextBlock = (await getBlock(toNumber(height) + 1)) as
+        | BlockData
+        | undefined;
+      const { round, validators: blockValidators } = {
+        ...nextBlock?.block?.last_commit,
+      };
 
       if (isNumber(round)) {
         responseData.round = round;
@@ -51,7 +57,12 @@ export function Block({ height }: BlockProps) {
             type: k,
             data: (v as Record<string, unknown>[]).map(e =>
               Object.fromEntries(
-                (toArray(e.attributes as unknown[]) as Record<string, unknown>[]).map(a => [
+                (
+                  toArray(e.attributes as unknown[]) as Record<
+                    string,
+                    unknown
+                  >[]
+                ).map(a => [
                   a.key,
                   removeDoubleQuote(toJson(a.value) || toHex(a.value)),
                 ])
@@ -74,12 +85,22 @@ export function Block({ height }: BlockProps) {
         return;
       }
 
-      const validatorSetsResponse = await getValidatorSets(height) as { result?: { validators?: Record<string, unknown>[] } } | undefined;
+      const validatorSetsResponse = (await getValidatorSets(height)) as
+        | { result?: { validators?: Record<string, unknown>[] } }
+        | undefined;
       setValidatorSets(
-        (toArray(validatorSetsResponse?.result?.validators) as Record<string, unknown>[]).map(d => ({
+        (
+          toArray(validatorSetsResponse?.result?.validators) as Record<
+            string,
+            unknown
+          >[]
+        ).map(d => ({
           ...d,
           ...validators.find(v =>
-            equalsIgnoreCase(v.consensus_address, d.address as string | undefined)
+            equalsIgnoreCase(
+              v.consensus_address,
+              d.address as string | undefined
+            )
           ),
         })) as ValidatorSetEntry[]
       );

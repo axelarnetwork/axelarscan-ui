@@ -15,7 +15,11 @@ import { isNumber } from '@/lib/number';
 import { ellipse, toTitle } from '@/lib/string';
 import { TIME_FORMAT } from '@/lib/time';
 import type { InfoProps, VoteOption } from './AmplifierPoll.types';
-import { getStatusStyle, getVoteOptionStyle, getVoteOptionSuffix } from './AmplifierPoll.types';
+import {
+  getStatusStyle,
+  getVoteOptionStyle,
+  getVoteOptionSuffix,
+} from './AmplifierPoll.types';
 import * as styles from './AmplifierPoll.styles';
 
 export function Info({ data, id }: InfoProps) {
@@ -82,7 +86,9 @@ export function Info({ data, id }: InfoProps) {
             <div className={styles.dlRow}>
               <dt className={styles.dtLabel}>Verifier Contract</dt>
               <dd className={styles.ddValue}>
-                <Copy value={contract_address}>{ellipse(contract_address)}</Copy>
+                <Copy value={contract_address}>
+                  {ellipse(contract_address)}
+                </Copy>
               </dd>
             </div>
           )}
@@ -93,7 +99,7 @@ export function Info({ data, id }: InfoProps) {
                 <Tag
                   className={clsx(
                     'w-fit capitalize',
-                    getStatusStyle(status, styles),
+                    getStatusStyle(status, styles)
                   )}
                 >
                   {status}
@@ -105,7 +111,11 @@ export function Info({ data, id }: InfoProps) {
             <dt className={styles.dtLabel}>Height</dt>
             <dd className={styles.ddValue}>
               {height && (
-                <Link href={`/block/${height}`} target="_blank" className={styles.blockLink}>
+                <Link
+                  href={`/block/${height}`}
+                  target="_blank"
+                  className={styles.blockLink}
+                >
                   <Number value={height} />
                 </Link>
               )}
@@ -115,7 +125,11 @@ export function Info({ data, id }: InfoProps) {
             <div className={styles.dlRow}>
               <dt className={styles.dtLabel}>Initiated Tx Hash</dt>
               <dd className={styles.ddValue}>
-                <Link href={`/tx/${initiated_txhash}`} target="_blank" className={styles.blockLink}>
+                <Link
+                  href={`/tx/${initiated_txhash}`}
+                  target="_blank"
+                  className={styles.blockLink}
+                >
                   {ellipse(initiated_txhash)}
                 </Link>
               </dd>
@@ -125,7 +139,11 @@ export function Info({ data, id }: InfoProps) {
             <div className={styles.dlRow}>
               <dt className={styles.dtLabel}>Confirmation Tx Hash</dt>
               <dd className={styles.ddValue}>
-                <Link href={`/tx/${confirmation_txhash}`} target="_blank" className={styles.blockLink}>
+                <Link
+                  href={`/tx/${confirmation_txhash}`}
+                  target="_blank"
+                  className={styles.blockLink}
+                >
                   {ellipse(confirmation_txhash)}
                 </Link>
               </dd>
@@ -135,7 +153,11 @@ export function Info({ data, id }: InfoProps) {
             <div className={styles.dlRow}>
               <dt className={styles.dtLabel}>Poll Completed Tx Hash</dt>
               <dd className={styles.ddValue}>
-                <Link href={`/tx/${completed_txhash}`} target="_blank" className={styles.blockLink}>
+                <Link
+                  href={`/tx/${completed_txhash}`}
+                  target="_blank"
+                  className={styles.blockLink}
+                >
                   {ellipse(completed_txhash)}
                 </Link>
               </dd>
@@ -145,7 +167,11 @@ export function Info({ data, id }: InfoProps) {
             <dt className={styles.dtLabel}>Expires Height</dt>
             <dd className={styles.ddValue}>
               {expired_height && (
-                <Link href={`/block/${expired_height}`} target="_blank" className={styles.blockLink}>
+                <Link
+                  href={`/block/${expired_height}`}
+                  target="_blank"
+                  className={styles.blockLink}
+                >
                   <Number value={expired_height} />
                 </Link>
               )}
@@ -167,7 +193,9 @@ export function Info({ data, id }: InfoProps) {
           )}
           {participants && (
             <div className={styles.dlRow}>
-              <dt className={styles.dtLabel}>{`Participants${participants.length > 1 ? ` (${participants.length})` : ''}`}</dt>
+              <dt
+                className={styles.dtLabel}
+              >{`Participants${participants.length > 1 ? ` (${participants.length})` : ''}`}</dt>
               <dd className={styles.ddValue}>
                 <div className={styles.participantVotes}>
                   {voteOptions!.map((v: VoteOption, i: number) => (
@@ -179,7 +207,7 @@ export function Info({ data, id }: InfoProps) {
                       noTooltip={true}
                       className={clsx(
                         styles.voteOptionTag,
-                        getVoteOptionStyle(v.option, styles),
+                        getVoteOptionStyle(v.option, styles)
                       )}
                     />
                   ))}

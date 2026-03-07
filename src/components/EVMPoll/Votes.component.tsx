@@ -31,7 +31,9 @@ export function Votes({ data }: VotesProps) {
         p =>
           !find(
             p,
-            mappedVotes.map(v => v.validatorData?.operator_address).filter(Boolean) as string[]
+            mappedVotes
+              .map(v => v.validatorData?.operator_address)
+              .filter(Boolean) as string[]
           )
       )
       .map(p => {

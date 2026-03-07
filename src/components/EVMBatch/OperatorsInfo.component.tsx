@@ -21,7 +21,9 @@ export function OperatorsInfo({
       {newWeights && (
         <Number
           value={_.sum(
-            split(newWeights, { delimiter: ';' }).map((w: string) => toNumber(w))
+            split(newWeights, { delimiter: ';' }).map((w: string) =>
+              toNumber(w)
+            )
           )}
           prefix="["
           suffix="]"

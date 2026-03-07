@@ -2,7 +2,10 @@
 
 import clsx from 'clsx';
 
-import type { FilterOption, SelectButtonContentProps } from './FilterSelect.types';
+import type {
+  FilterOption,
+  SelectButtonContentProps,
+} from './FilterSelect.types';
 import * as styles from './FilterSelect.styles';
 
 export function SelectButtonContent({
@@ -29,7 +32,12 @@ export function SelectButtonContent({
   }
 
   return (
-    <div className={clsx(styles.selectMultiWrapBase, styles.selectMultiWrapSelected)}>
+    <div
+      className={clsx(
+        styles.selectMultiWrapBase,
+        styles.selectMultiWrapSelected
+      )}
+    >
       {multiValues.map((v: FilterOption, j: number) => (
         <div
           key={j}

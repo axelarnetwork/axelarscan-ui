@@ -67,7 +67,9 @@ export function useGMPMessageData(tx?: string): {
       typeof params.commandId === 'string' ? params.commandId : undefined;
 
     if (commandId) {
-      const response = await searchGMP({ commandId }) as SearchGMPResult | null;
+      const response = (await searchGMP({
+        commandId,
+      })) as SearchGMPResult | null;
       const parsed = await parseCustomData(response?.data?.[0]);
 
       if (parsed) {
@@ -93,9 +95,9 @@ export function useGMPMessageData(tx?: string): {
       return undefined;
     }
 
-    const response = await searchGMP(
+    const response = (await searchGMP(
       tx.includes('-') ? { messageId: tx } : { txHash: tx }
-    ) as SearchGMPResult | null;
+    )) as SearchGMPResult | null;
     const parsedMessage = await parseCustomData(response?.data?.[0]);
 
     const isSecondHopOfInterchainTransfer = (message: GMPMessage): boolean => {
@@ -139,11 +141,11 @@ export function useGMPMessageData(tx?: string): {
     if (parsedMessage.callback?.transactionHash) {
       const callbackTxHash = parsedMessage.callback.transactionHash;
       const { data } = {
-        ...(await searchGMP({
+        ...((await searchGMP({
           txHash: callbackTxHash,
           txIndex: parsedMessage.callback.transactionIndex,
           txLogIndex: parsedMessage.callback.logIndex,
-        }) as SearchGMPResult | null),
+        })) as SearchGMPResult | null),
       };
 
       parsedMessage.callbackData = toArray(data).find(callbackEntry =>
@@ -155,9 +157,9 @@ export function useGMPMessageData(tx?: string): {
     } else if (parsedMessage.executed?.transactionHash) {
       const executedTxHash = parsedMessage.executed.transactionHash;
       const { data } = {
-        ...(await searchGMP({
+        ...((await searchGMP({
           txHash: executedTxHash,
-        }) as SearchGMPResult | null),
+        })) as SearchGMPResult | null),
       };
 
       parsedMessage.callbackData = toArray(data).find(callbackEntry =>
@@ -168,7 +170,9 @@ export function useGMPMessageData(tx?: string): {
       );
     } else if (parsedMessage.callback?.messageIdHash) {
       const messageId = `${parsedMessage.callback.messageIdHash}-${parsedMessage.callback.messageIdIndex}`;
-      const { data } = { ...(await searchGMP({ messageId }) as SearchGMPResult | null) };
+      const { data } = {
+        ...((await searchGMP({ messageId })) as SearchGMPResult | null),
+      };
 
       parsedMessage.callbackData = toArray(data).find(callbackEntry =>
         equalsIgnoreCase(callbackEntry.call?.returnValues?.messageId, messageId)
@@ -183,9 +187,9 @@ export function useGMPMessageData(tx?: string): {
     ) {
       const childMessageId = parsedMessage.executed.childMessageIDs[0];
       const { data } = {
-        ...(await searchGMP({
+        ...((await searchGMP({
           messageId: childMessageId,
-        }) as SearchGMPResult | null),
+        })) as SearchGMPResult | null),
       };
 
       parsedMessage.callbackData = toArray(data).find(callbackEntry =>
@@ -218,7 +222,11 @@ export function useGMPMessageData(tx?: string): {
           : null;
 
       if (callbackSearchParams) {
-        const { data } = { ...(await searchGMP(callbackSearchParams) as SearchGMPResult | null) };
+        const { data } = {
+          ...((await searchGMP(
+            callbackSearchParams
+          )) as SearchGMPResult | null),
+        };
 
         parsedMessage.originData = toArray(data).find(originEntry => {
           const callTransactionHash = parsedMessage.call?.transactionHash;
@@ -269,14 +277,14 @@ export function useGMPMessageData(tx?: string): {
         retryCount < 10
       ) {
         const settlementResponse = {
-          ...(await searchGMP({
+          ...((await searchGMP({
             event: 'SquidCoralSettlementFilled',
             squidCoralOrderHash: parsedMessage.settlement_forwarded_events.map(
               settlementEvent => settlementEvent.orderHash
             ),
             from: offset,
             size,
-          }) as { total?: number; data?: GMPSettlementData[] } | null),
+          })) as { total?: number; data?: GMPSettlementData[] } | null),
         };
 
         if (isNumber(settlementResponse.total)) {
@@ -321,14 +329,14 @@ export function useGMPMessageData(tx?: string): {
         retryCount < 10
       ) {
         const settlementResponse = {
-          ...(await searchGMP({
+          ...((await searchGMP({
             event: 'SquidCoralSettlementForwarded',
             squidCoralOrderHash: parsedMessage.settlement_filled_events.map(
               settlementEvent => settlementEvent.orderHash
             ),
             from: offset,
             size,
-          }) as { total?: number; data?: GMPSettlementData[] } | null),
+          })) as { total?: number; data?: GMPSettlementData[] } | null),
         };
 
         if (isNumber(settlementResponse.total)) {

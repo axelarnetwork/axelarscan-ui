@@ -12,7 +12,11 @@ interface NetworkGraphTableProps {
   setPage: (page: number | undefined) => void;
 }
 
-export function NetworkGraphTable({ filteredData, page, setPage }: NetworkGraphTableProps) {
+export function NetworkGraphTable({
+  filteredData,
+  page,
+  setPage,
+}: NetworkGraphTableProps) {
   const paginatedData = filteredData.filter(
     (_d: NetworkDataItem, i: number) =>
       i >= ((page ?? 1) - 1) * SIZE_PER_PAGE && i < (page ?? 1) * SIZE_PER_PAGE
@@ -24,10 +28,7 @@ export function NetworkGraphTable({ filteredData, page, setPage }: NetworkGraphT
         <table className={styles.table}>
           <thead className={styles.thead}>
             <tr className={styles.headerRow}>
-              <th
-                scope="col"
-                className={styles.thSource}
-              >
+              <th scope="col" className={styles.thSource}>
                 Source
               </th>
               <th scope="col" className={styles.thDefault}>
@@ -39,20 +40,14 @@ export function NetworkGraphTable({ filteredData, page, setPage }: NetworkGraphT
               <th scope="col" className={styles.thRight}>
                 Volume
               </th>
-              <th
-                scope="col"
-                className={styles.thLast}
-              >
+              <th scope="col" className={styles.thLast}>
                 Volume / TX
               </th>
             </tr>
           </thead>
           <tbody className={styles.tbody}>
             {paginatedData.map((d: NetworkDataItem, i: number) => (
-              <tr
-                key={i}
-                className={styles.bodyRow}
-              >
+              <tr key={i} className={styles.bodyRow}>
                 <td className={styles.tdSource}>
                   <ChainProfile
                     value={d.sourceChain}
@@ -67,10 +62,7 @@ export function NetworkGraphTable({ filteredData, page, setPage }: NetworkGraphT
                 </td>
                 <td className={styles.tdRight}>
                   <div className={styles.cellContent}>
-                    <Number
-                      value={d.num_txs}
-                      className={styles.numberValue}
-                    />
+                    <Number value={d.num_txs} className={styles.numberValue} />
                   </div>
                 </td>
                 <td className={styles.tdRight}>

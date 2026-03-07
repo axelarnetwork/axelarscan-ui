@@ -10,11 +10,24 @@ import { Spinner } from '@/components/Spinner';
 import { Transactions } from '@/components/Transactions';
 import { useChains, useAssets, useValidators } from '@/hooks/useGlobalData';
 import { getAccountAmounts } from '@/lib/api/axelarscan';
-import { searchTransfers, searchDepositAddresses } from '@/lib/api/token-transfer';
-import { axelarContracts, getAxelarContractAddresses, getAssetData } from '@/lib/config';
+import {
+  searchTransfers,
+  searchDepositAddresses,
+} from '@/lib/api/token-transfer';
+import {
+  axelarContracts,
+  getAxelarContractAddresses,
+  getAssetData,
+} from '@/lib/config';
 import { getInputType } from '@/lib/parser';
 import { includesSomePatterns, find } from '@/lib/string';
-import type { AccountProps, AccountData, BalanceEntry, DepositAddressData, TransferData } from './Account.types';
+import type {
+  AccountProps,
+  AccountData,
+  BalanceEntry,
+  DepositAddressData,
+  TransferData,
+} from './Account.types';
 import { isDepositAddressCandidate } from './Account.utils';
 import { DepositAddress } from './DepositAddress.component';
 import { Info } from './Info.component';
@@ -33,9 +46,15 @@ export function Account({ address }: AccountProps) {
     const getData = async () => {
       if (!address) return;
 
-      if (includesSomePatterns(address, ['axelarvaloper', 'axelarvalcons']) && validators) {
+      if (
+        includesSomePatterns(address, ['axelarvaloper', 'axelarvalcons']) &&
+        validators
+      ) {
         const match = validators.find(d =>
-          includesSomePatterns(address, [d.operator_address, d.consensus_address ?? ''])
+          includesSomePatterns(address, [
+            d.operator_address,
+            d.consensus_address ?? '',
+          ])
         );
         if (match) {
           router.push(`/validator/${match.operator_address}`);
@@ -46,7 +65,9 @@ export function Account({ address }: AccountProps) {
       if (!chains || !assets) return;
 
       const isEVMAddress = getInputType(address, chains) === 'evmAddress';
-      const accountData = (isEVMAddress ? {} : await getAccountAmounts({ address })) as AccountData;
+      const accountData = (
+        isEVMAddress ? {} : await getAccountAmounts({ address })
+      ) as AccountData;
       if (!accountData) return;
 
       if (accountData.balances?.data) {
@@ -62,13 +83,17 @@ export function Account({ address }: AccountProps) {
 
       if (isDepositAddressCandidate(address, chains)) {
         const depositAddressData = (
-          await searchDepositAddresses({ address }) as { data?: DepositAddressData[] } | undefined
+          (await searchDepositAddresses({ address })) as
+            | { data?: DepositAddressData[] }
+            | undefined
         )?.data?.[0];
 
         if (depositAddressData) {
           accountData.depositAddressData = depositAddressData;
           const transferData = (
-            await searchTransfers({ depositAddress: address }) as { data?: TransferData[] } | undefined
+            (await searchTransfers({ depositAddress: address })) as
+              | { data?: TransferData[] }
+              | undefined
           )?.data?.[0];
           if (transferData) {
             accountData.transferData = transferData;
@@ -93,13 +118,20 @@ export function Account({ address }: AccountProps) {
     );
   }
 
-  const isDepositAddress = isDepositAddressCandidate(address, chains) || !!data.depositAddressData;
+  const isDepositAddress =
+    isDepositAddressCandidate(address, chains) || !!data.depositAddressData;
   const isAxelarAddress = address.startsWith('axelar1');
   const isShortAxelarAddress = isAxelarAddress && address.length < 65;
-  const isAxelarContract = !!find(address, _.concat(axelarContracts, getAxelarContractAddresses(chains)));
+  const isAxelarContract = !!find(
+    address,
+    _.concat(axelarContracts, getAxelarContractAddresses(chains))
+  );
   const showInfo = isAxelarAddress && !isDepositAddress && isShortAxelarAddress;
-  const showBalances = isAxelarAddress && (isDepositAddress || isAxelarContract || isShortAxelarAddress);
-  const showDelegations = isAxelarAddress && !isDepositAddress && isShortAxelarAddress;
+  const showBalances =
+    isAxelarAddress &&
+    (isDepositAddress || isAxelarContract || isShortAxelarAddress);
+  const showDelegations =
+    isAxelarAddress && !isDepositAddress && isShortAxelarAddress;
 
   return (
     <Container className={clsx('sm:mt-8', 'max-w-full')}>

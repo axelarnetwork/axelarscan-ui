@@ -8,9 +8,12 @@ import type {
   BlockData,
 } from './AmplifierProofs.types';
 
-export function buildProofEntry(d: unknown, blockData: BlockData): AmplifierProofEntry {
+export function buildProofEntry(
+  d: unknown,
+  blockData: BlockData
+): AmplifierProofEntry {
   const rawEntry = d as Record<string, unknown>;
-  const signs = getValuesOfAxelarAddressKey(rawEntry).map((s) => {
+  const signs = getValuesOfAxelarAddressKey(rawEntry).map(s => {
     const entry = s as Record<string, unknown>;
     return {
       ...entry,
@@ -22,14 +25,16 @@ export function buildProofEntry(d: unknown, blockData: BlockData): AmplifierProo
     } as SignEntry;
   });
 
-  const signOptions: SignOptionEntry[] = Object.entries(_.groupBy(signs, 'option'))
+  const signOptions: SignOptionEntry[] = Object.entries(
+    _.groupBy(signs, 'option')
+  )
     .map(([k, v]) => ({
       option: k,
       value: v?.length,
       signers: toArray(v?.map((entry: SignEntry) => entry.signer)) as string[],
     }))
-    .filter((s) => s.value)
-    .map((s) => ({
+    .filter(s => s.value)
+    .map(s => ({
       ...s,
       i: s.option === 'signed' ? 0 : 1,
     }));
@@ -37,7 +42,7 @@ export function buildProofEntry(d: unknown, blockData: BlockData): AmplifierProo
   const participants = rawEntry.participants as string[] | undefined;
   if (
     toArray(participants).length > 0 &&
-    signOptions.findIndex((s) => s.option === 'unsubmitted') < 0 &&
+    signOptions.findIndex(s => s.option === 'unsubmitted') < 0 &&
     _.sumBy(signOptions, 'value') < toArray(participants).length
   ) {
     signOptions.push({
@@ -55,7 +60,8 @@ export function buildProofEntry(d: unknown, blockData: BlockData): AmplifierProo
       : rawEntry.failed
         ? 'failed'
         : rawEntry.expired ||
-            (rawEntry.expired_height as number) < (blockData?.latest_block_height ?? 0)
+            (rawEntry.expired_height as number) <
+              (blockData?.latest_block_height ?? 0)
           ? 'expired'
           : 'pending',
     height: _.minBy(signs, 'height')?.height || rawEntry.height,
@@ -63,4 +69,3 @@ export function buildProofEntry(d: unknown, blockData: BlockData): AmplifierProo
     signOptions: _.orderBy(signOptions, ['i'], ['asc']),
   } as AmplifierProofEntry;
 }
-

@@ -50,12 +50,17 @@ const fetchMetric = async (metric: string): Promise<[string, unknown][]> => {
       return [[metric, await GMPTopUsers({ assetType: 'its', size: 100 })]];
     case 'GMPTopITSUsersByVolume':
       return [
-        [metric, await GMPTopUsers({ assetType: 'its', orderBy: 'volume', size: 100 })],
+        [
+          metric,
+          await GMPTopUsers({ assetType: 'its', orderBy: 'volume', size: 100 }),
+        ],
       ];
     case 'GMPTopITSAssets':
       return [[metric, await GMPTopITSAssets({ size: 100 })]];
     case 'GMPTopITSAssetsByVolume':
-      return [[metric, await GMPTopITSAssets({ orderBy: 'volume', size: 100 })]];
+      return [
+        [metric, await GMPTopITSAssets({ orderBy: 'volume', size: 100 })],
+      ];
     case 'transfersStats':
       return [[metric, await transfersStats()]];
     case 'transfersChart':
@@ -65,14 +70,21 @@ const fetchMetric = async (metric: string): Promise<[string, unknown][]> => {
     case 'transfersTopUsers':
       return [[metric, await transfersTopUsers({ size: 100 })]];
     case 'transfersTopUsersByVolume':
-      return [[metric, await transfersTopUsers({ orderBy: 'volume', size: 100 })]];
+      return [
+        [metric, await transfersTopUsers({ orderBy: 'volume', size: 100 })],
+      ];
     default:
       return [];
   }
 };
 
-const fetchTransfersChart = async (metric: string): Promise<[string, unknown][]> => {
-  const value = (await transfersChart({ granularity: 'month' })) as Record<string, unknown> | null;
+const fetchTransfersChart = async (
+  metric: string
+): Promise<[string, unknown][]> => {
+  const value = (await transfersChart({ granularity: 'month' })) as Record<
+    string,
+    unknown
+  > | null;
   const values: [string, unknown][] = [[metric, value]];
 
   if (!value?.data) return values;
@@ -106,7 +118,9 @@ const fetchTransfersChart = async (metric: string): Promise<[string, unknown][]>
         granularity: 'month',
       })) as Record<string, unknown> | null;
 
-      const responseData = response?.data as Record<string, unknown>[] | undefined;
+      const responseData = response?.data as
+        | Record<string, unknown>[]
+        | undefined;
       const valueData = value!.data as Record<string, unknown>[];
       if (toArray(responseData).length > 0) {
         for (const v of responseData!) {
@@ -114,7 +128,10 @@ const fetchTransfersChart = async (metric: string): Promise<[string, unknown][]>
             const i = valueData.findIndex(
               (d: Record<string, unknown>) => d.timestamp === v.timestamp
             );
-            if (i > -1 && (valueData[i].volume as number) >= (v.volume as number)) {
+            if (
+              i > -1 &&
+              (valueData[i].volume as number) >= (v.volume as number)
+            ) {
               valueData[i] = {
                 ...valueData[i],
                 volume: (valueData[i].volume as number) - (v.volume as number),
@@ -135,5 +152,5 @@ const fetchTransfersChart = async (metric: string): Promise<[string, unknown][]>
 
 export const fetchStats = async (): Promise<Record<string, unknown> | null> => {
   const results = await Promise.all(METRICS.map(fetchMetric));
-  return Object.fromEntries(results.flatMap((d) => d));
+  return Object.fromEntries(results.flatMap(d => d));
 };

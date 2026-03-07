@@ -21,7 +21,9 @@ export function OptionItem({ option }: SelectOptionItemProps) {
           <span
             className={clsx(
               styles.selectTruncate,
-              selected ? styles.selectOptionTextSelected : styles.selectOptionTextNormal
+              selected
+                ? styles.selectOptionTextSelected
+                : styles.selectOptionTextNormal
             )}
           >
             {option.title}

@@ -37,11 +37,17 @@ export function AmplifierRewards({ chain }: AmplifierRewardsProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [params, setParams] = useState<Record<string, unknown> | null>(null);
-  const [searchResults, setSearchResults] = useState<SearchResults | null>(null);
+  const [searchResults, setSearchResults] = useState<SearchResults | null>(
+    null
+  );
   const [refresh, setRefresh] = useState<boolean | null>(null);
-  const [distributionExpanded, setDistributionExpanded] = useState<string | null>(null);
+  const [distributionExpanded, setDistributionExpanded] = useState<
+    string | null
+  >(null);
   const [rewardsPool, setRewardsPool] = useState<RewardsPoolData | null>(null);
-  const [cumulativeRewards, setCumulativeRewards] = useState<number | null>(null);
+  const [cumulativeRewards, setCumulativeRewards] = useState<number | null>(
+    null
+  );
   const chains = useChains();
 
   useEffect(() => {
@@ -69,9 +75,14 @@ export function AmplifierRewards({ chain }: AmplifierRewardsProps) {
 
       const chainDataForSearch = getChainData(chain, chains);
       const voting_verifier = chainDataForSearch?.voting_verifier;
-      const searchResponse = await searchRewardsDistribution({ ...params, chain, size: PAGE_SIZE }) as
-        Record<string, unknown> | null;
-      const data = searchResponse?.data as Record<string, unknown>[] | undefined;
+      const searchResponse = (await searchRewardsDistribution({
+        ...params,
+        chain,
+        size: PAGE_SIZE,
+      })) as Record<string, unknown> | null;
+      const data = searchResponse?.data as
+        | Record<string, unknown>[]
+        | undefined;
       const total = searchResponse?.total as number | undefined;
 
       setSearchResults({
@@ -80,7 +91,9 @@ export function AmplifierRewards({ chain }: AmplifierRewardsProps) {
           data: toArray(data).map((d: Record<string, unknown>) => ({
             ...d,
             pool_type: equalsIgnoreCase(
-              (d.contract_address || d.multisig_contract_address) as string | undefined,
+              (d.contract_address || d.multisig_contract_address) as
+                | string
+                | undefined,
               voting_verifier?.address
             )
               ? 'verification'
@@ -92,20 +105,23 @@ export function AmplifierRewards({ chain }: AmplifierRewardsProps) {
       setRefresh(false);
 
       setDistributionExpanded(null);
-      const poolResponse = await getRewardsPool({ chain }) as
-        Record<string, unknown> | null;
+      const poolResponse = (await getRewardsPool({ chain })) as Record<
+        string,
+        unknown
+      > | null;
       setRewardsPool(
-        ((poolResponse?.data as RewardsPoolData[] | undefined)?.[0]) ?? null
+        (poolResponse?.data as RewardsPoolData[] | undefined)?.[0] ?? null
       );
 
-      const aggsResponse = await searchRewardsDistribution({
+      const aggsResponse = (await searchRewardsDistribution({
         ...params,
         chain,
         aggs: { cumulativeRewards: { sum: { field: 'total_amount' } } },
         size: 0,
-      }) as Record<string, unknown> | null;
+      })) as Record<string, unknown> | null;
       const aggs = aggsResponse?.aggs as
-        { cumulativeRewards?: { value?: number } } | undefined;
+        | { cumulativeRewards?: { value?: number } }
+        | undefined;
 
       if (isNumber(aggs?.cumulativeRewards?.value)) {
         setCumulativeRewards(aggs.cumulativeRewards.value);
@@ -126,7 +142,11 @@ export function AmplifierRewards({ chain }: AmplifierRewardsProps) {
 
   const resultKey = params ? generateKeyByParams(params) : '';
   const { data, total } = { ...searchResults?.[resultKey] };
-  const symbol = (getChainData('axelarnet', chains)?.native_token as { symbol?: string } | undefined)?.symbol;
+  const symbol = (
+    getChainData('axelarnet', chains)?.native_token as
+      | { symbol?: string }
+      | undefined
+  )?.symbol;
 
   if (!data) {
     return (
@@ -142,9 +162,7 @@ export function AmplifierRewards({ chain }: AmplifierRewardsProps) {
         <div className={styles.sectionWrapper}>
           <div className={styles.headerRow}>
             <div className={styles.headerAuto}>
-              <h1 className={styles.pageTitle}>
-                Amplifier Rewards
-              </h1>
+              <h1 className={styles.pageTitle}>Amplifier Rewards</h1>
             </div>
           </div>
           <Info
@@ -186,12 +204,24 @@ export function AmplifierRewards({ chain }: AmplifierRewardsProps) {
             <table className={styles.table}>
               <thead className={styles.thead}>
                 <tr className={styles.theadRow}>
-                  <th scope="col" className={styles.thFirst}>Height</th>
-                  <th scope="col" className={styles.thTxHash}>Tx Hash</th>
-                  <th scope="col" className={styles.thMiddle}>Pool</th>
-                  <th scope="col" className={styles.thMiddle}>Recipients</th>
-                  <th scope="col" className={styles.thPayoutRight}>Payout</th>
-                  <th scope="col" className={styles.thLast}>Payout at</th>
+                  <th scope="col" className={styles.thFirst}>
+                    Height
+                  </th>
+                  <th scope="col" className={styles.thTxHash}>
+                    Tx Hash
+                  </th>
+                  <th scope="col" className={styles.thMiddle}>
+                    Pool
+                  </th>
+                  <th scope="col" className={styles.thMiddle}>
+                    Recipients
+                  </th>
+                  <th scope="col" className={styles.thPayoutRight}>
+                    Payout
+                  </th>
+                  <th scope="col" className={styles.thLast}>
+                    Payout at
+                  </th>
                 </tr>
               </thead>
               <tbody className={styles.tbody}>

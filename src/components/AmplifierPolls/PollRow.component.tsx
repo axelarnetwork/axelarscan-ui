@@ -13,10 +13,7 @@ import { ellipse, toTitle } from '@/lib/string';
 import type { PollVoteOption, PollRowProps } from './AmplifierPolls.types';
 import * as styles from './AmplifierPolls.styles';
 
-export function PollRow({
-  poll,
-  chains,
-}: PollRowProps) {
+export function PollRow({ poll, chains }: PollRowProps) {
   const explorer = {
     ...getChainData(poll.sender_chain, chains)?.explorer,
   };
@@ -44,11 +41,7 @@ export function PollRow({
           {poll.transaction_id && (
             <div className={styles.txRow}>
               <Copy value={poll.transaction_id}>
-                <Link
-                  href={txHref}
-                  target="_blank"
-                  className={styles.pollLink}
-                >
+                <Link href={txHref} target="_blank" className={styles.pollLink}>
                   {ellipse(poll.transaction_id)}
                 </Link>
               </Copy>
@@ -94,7 +87,7 @@ export function PollRow({
             <Tag
               className={clsx(
                 styles.statusTagBase,
-                styles.getStatusStyle(poll.status),
+                styles.getStatusStyle(poll.status)
               )}
             >
               {poll.status}
@@ -117,7 +110,7 @@ export function PollRow({
               noTooltip={true}
               className={clsx(
                 styles.voteOptionBase,
-                styles.getVoteOptionStyle(v.option),
+                styles.getVoteOptionStyle(v.option)
               )}
             />
           ))}

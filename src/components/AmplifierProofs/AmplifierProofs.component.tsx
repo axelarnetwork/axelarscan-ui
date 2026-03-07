@@ -18,10 +18,7 @@ import { toArray } from '@/lib/parser';
 import { getParams, generateKeyByParams } from '@/lib/operator';
 import { toBoolean } from '@/lib/string';
 
-import type {
-  BlockData,
-  SearchResult,
-} from './AmplifierProofs.types';
+import type { BlockData, SearchResult } from './AmplifierProofs.types';
 import { Filters } from './Filters.component';
 import { ProofsTable } from './ProofsTable.component';
 import * as styles from './AmplifierProofs.styles';
@@ -32,7 +29,10 @@ const size = 25;
 export function AmplifierProofs() {
   const searchParams = useSearchParams();
   const [params, setParams] = useState<Record<string, unknown> | null>(null);
-  const [searchResults, setSearchResults] = useState<Record<string, SearchResult> | null>(null);
+  const [searchResults, setSearchResults] = useState<Record<
+    string,
+    SearchResult
+  > | null>(null);
   const [refresh, setRefresh] = useState<boolean | null>(null);
   const [blockData, setBlockData] = useState<BlockData | null>(null);
   const chains = useChains();
@@ -47,7 +47,8 @@ export function AmplifierProofs() {
   }, [searchParams, params, setParams]);
 
   useEffect(() => {
-    const getData = async () => setBlockData(await getRPCStatus() as BlockData);
+    const getData = async () =>
+      setBlockData((await getRPCStatus()) as BlockData);
     getData();
   }, [setBlockData]);
 
@@ -55,8 +56,9 @@ export function AmplifierProofs() {
     const getData = async () => {
       if (!params || !toBoolean(refresh) || !blockData) return;
 
-      const response = await searchAmplifierProofs({ ...params, size }) as
-        Record<string, unknown> | undefined;
+      const response = (await searchAmplifierProofs({ ...params, size })) as
+        | Record<string, unknown>
+        | undefined;
       const { data, total } = {
         ...(response as { data?: unknown[]; total?: number }),
       };
@@ -65,7 +67,7 @@ export function AmplifierProofs() {
         ...(refresh ? undefined : searchResults),
         [generateKeyByParams(params)]: {
           data: _.orderBy(
-            toArray(data).map((d) => buildProofEntry(d, blockData)),
+            toArray(data).map(d => buildProofEntry(d, blockData)),
             ['created_at.ms'],
             ['desc']
           ),
@@ -78,7 +80,9 @@ export function AmplifierProofs() {
     getData();
   }, [params, setSearchResults, refresh, setRefresh, blockData]);
 
-  const { data, total = 0 } = { ...searchResults?.[generateKeyByParams(params!)] };
+  const { data, total = 0 } = {
+    ...searchResults?.[generateKeyByParams(params!)],
+  };
 
   if (!data) {
     return (
@@ -101,10 +105,7 @@ export function AmplifierProofs() {
               <h1 className={styles.proofsTitle}>Amplifier Proofs</h1>
             </div>
             <p className={styles.proofsSubtitle}>
-              <Number
-                value={total}
-                suffix={` result${total > 1 ? 's' : ''}`}
-              />
+              <Number value={total} suffix={` result${total > 1 ? 's' : ''}`} />
             </p>
           </div>
           <div className={styles.proofsActions}>
@@ -133,4 +134,3 @@ export function AmplifierProofs() {
     </Container>
   );
 }
-

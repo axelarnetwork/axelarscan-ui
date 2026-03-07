@@ -1,4 +1,7 @@
-import type { RewardsContractInfo, ContractsTableProps } from './AmplifierRewards.types';
+import type {
+  RewardsContractInfo,
+  ContractsTableProps,
+} from './AmplifierRewards.types';
 import * as styles from './AmplifierRewards.styles';
 import { ContractFieldCell } from './ContractFieldCell.component';
 

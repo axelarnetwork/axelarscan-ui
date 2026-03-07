@@ -26,7 +26,11 @@ export function InfoSummary({
             <div className={styles.infoRow}>
               <dt className={styles.infoDt}>No. Verifiers</dt>
               <dd className={styles.infoDd}>
-                <Number value={verifierCount} format="0,0" className="font-medium" />
+                <Number
+                  value={verifierCount}
+                  format="0,0"
+                  className="font-medium"
+                />
               </dd>
             </div>
             <div className={styles.infoRow}>

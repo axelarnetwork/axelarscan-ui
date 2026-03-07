@@ -18,7 +18,8 @@ export function ResourceNav({
       {RESOURCES.map((d, i) => {
         const countSuffix =
           d === resource &&
-          ((resource === 'chains' && chains) || (resource === 'assets' && assets))
+          ((resource === 'chains' && chains) ||
+            (resource === 'assets' && assets))
             ? ` (${filter(resource, params).length})`
             : '';
 
@@ -31,7 +32,8 @@ export function ResourceNav({
               d === resource ? styles.navLinkActive : styles.navLinkInactive
             )}
           >
-            {d}{countSuffix}
+            {d}
+            {countSuffix}
           </Link>
         );
       })}

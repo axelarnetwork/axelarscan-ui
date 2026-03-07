@@ -17,7 +17,11 @@ import {
   cursorPointerClass,
   tooltipClass,
 } from './Metamask.styles';
-import type { TokenData, ChainIdState, AddMetamaskProps } from './Metamask.types';
+import type {
+  TokenData,
+  ChainIdState,
+  AddMetamaskProps,
+} from './Metamask.types';
 
 export const useChainIdStore = create<ChainIdState>()(set => ({
   chainId: null,
@@ -33,7 +37,10 @@ export function AddMetamask({
   noTooltip = false,
 }: AddMetamaskProps) {
   const [web3, setWeb3] = useState<Web3 | null>(null);
-  const [data, setData] = useState<{ chain_id: number; tokenData: TokenData } | null>(null);
+  const [data, setData] = useState<{
+    chain_id: number;
+    tokenData: TokenData;
+  } | null>(null);
   const { chainId, setChainId } = useChainIdStore();
   const chains = useChains();
   const assets = useAssets();
@@ -102,7 +109,11 @@ export function AddMetamask({
     if (!web3 && window.ethereum) {
       setWeb3(new Web3(window.ethereum));
     } else if (web3?.currentProvider) {
-      (web3.currentProvider as Web3['currentProvider'] & { _handleChainChanged: (e: { chainId: string }) => void })._handleChainChanged = (e: { chainId: string }) => {
+      (
+        web3.currentProvider as Web3['currentProvider'] & {
+          _handleChainChanged: (e: { chainId: string }) => void;
+        }
+      )._handleChainChanged = (e: { chainId: string }) => {
         try {
           setChainId(Web3.utils.hexToNumber(e.chainId) as number);
         } catch (error) {}
@@ -125,15 +136,29 @@ export function AddMetamask({
   // get asset data
   const assetData: Record<string, unknown> | undefined =
     type === 'its'
-      ? getITSAssetData(asset, itsAssets) as Record<string, unknown> | undefined
-      : getAssetData(asset, assets) as Record<string, unknown> | undefined;
-  const { symbol, decimals, image, addresses } = { ...assetData } as { symbol?: string; decimals?: number; image?: string; addresses?: Record<string, unknown> };
+      ? (getITSAssetData(asset, itsAssets) as
+          | Record<string, unknown>
+          | undefined)
+      : (getAssetData(asset, assets) as Record<string, unknown> | undefined);
+  const { symbol, decimals, image, addresses } = { ...assetData } as {
+    symbol?: string;
+    decimals?: number;
+    image?: string;
+    addresses?: Record<string, unknown>;
+  };
 
   const tokenData: TokenData = {
     symbol,
     decimals,
     image,
-    ...(type === 'its' ? (assetData?.chains as Record<string, unknown> | undefined)?.[id!] as Record<string, unknown> : (addresses as Record<string, unknown> | undefined)?.[id!] as Record<string, unknown>),
+    ...(type === 'its'
+      ? ((assetData?.chains as Record<string, unknown> | undefined)?.[
+          id!
+        ] as Record<string, unknown>)
+      : ((addresses as Record<string, unknown> | undefined)?.[id!] as Record<
+          string,
+          unknown
+        >)),
   };
 
   // set address from its asset data
@@ -160,7 +185,12 @@ export function AddMetamask({
           : cursorPointerClass
       )}
     >
-      <Image src={(MetamaskLogo as { src: string }).src} alt="" width={width} height={height} />
+      <Image
+        src={(MetamaskLogo as { src: string }).src}
+        alt=""
+        width={width}
+        height={height}
+      />
     </button>
   );
 

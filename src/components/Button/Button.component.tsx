@@ -28,8 +28,18 @@ export function Button({ className, ...props }: ButtonProps) {
   const { variant: _, color: _c, circle: _ci, ...rest } = props;
 
   if (typeof props.href === 'undefined') {
-    return <button className={className} {...rest as React.ButtonHTMLAttributes<HTMLButtonElement>} />;
+    return (
+      <button
+        className={className}
+        {...(rest as React.ButtonHTMLAttributes<HTMLButtonElement>)}
+      />
+    );
   }
 
-  return <Link className={className} {...rest as React.ComponentProps<typeof Link>} />;
+  return (
+    <Link
+      className={className}
+      {...(rest as React.ComponentProps<typeof Link>)}
+    />
+  );
 }

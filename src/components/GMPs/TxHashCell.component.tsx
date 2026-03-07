@@ -24,10 +24,7 @@ export function TxHashCell({ data: d }: TxHashCellProps) {
           </Link>
         </Copy>
         {!d.call.proposal_id && (
-          <ExplorerLink
-            value={d.call.transactionHash}
-            chain={d.call.chain}
-          />
+          <ExplorerLink value={d.call.transactionHash} chain={d.call.chain} />
         )}
       </div>
     </td>

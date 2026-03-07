@@ -6,7 +6,12 @@ import { includesSomePatterns, toTitle } from '@/lib/string';
 import { isNumber, toNumber } from '@/lib/number';
 import type { Chain } from '@/types';
 
-import type { PollVote, VoteOption, EVMPollRecord, ProcessedPoll } from './EVMPolls.types';
+import type {
+  PollVote,
+  VoteOption,
+  EVMPollRecord,
+  ProcessedPoll,
+} from './EVMPolls.types';
 
 /** Map vote option string to a sort index: yes=0, no=1, unsubmitted=2 */
 export function voteOptionSortIndex(option: string): number {
@@ -43,8 +48,10 @@ export function buildPollUrl(
     return `${explorerUrl}${transactionPath?.replace('{tx}', d.transaction_id || '')}`;
   }
 
-  const isContractCall =
-    includesSomePatterns(eventName, ['contract_call', 'ContractCall']);
+  const isContractCall = includesSomePatterns(eventName, [
+    'contract_call',
+    'ContractCall',
+  ]);
   const isTransfer =
     includesSomePatterns(eventName, ['transfer', 'Transfer']) ||
     !!d.deposit_address;
@@ -65,9 +72,10 @@ export function buildVoteSuffix(
   powerDisplay: string,
   isDisplayPower: boolean
 ): string {
-  const abbrev = option === 'unsubmitted'
-    ? toTitle(option.substring(0, 2))
-    : toTitle(option.substring(0, 1));
+  const abbrev =
+    option === 'unsubmitted'
+      ? toTitle(option.substring(0, 2))
+      : toTitle(option.substring(0, 1));
   const powerSuffix = isDisplayPower ? `: ${powerDisplay}` : '';
   return ` ${abbrev}${powerSuffix}`;
 }
@@ -96,7 +104,7 @@ export function processPolls(
   chains: Chain[] | null
 ): ProcessedPoll[] {
   return toArray(rawData).map((d: EVMPollRecord) => {
-    const votes: PollVote[] = getValuesOfAxelarAddressKey(d).map((v) => {
+    const votes: PollVote[] = getValuesOfAxelarAddressKey(d).map(v => {
       const vote = v as PollVote;
       return {
         ...vote,
@@ -114,8 +122,8 @@ export function processPolls(
         value: v?.length,
         voters: toArray(v?.map((item: PollVote) => item.voter)),
       }))
-      .filter((v) => v.value)
-      .map((v) => ({
+      .filter(v => v.value)
+      .map(v => ({
         ...v,
         i: voteOptionSortIndex(v.option),
       }));
@@ -123,7 +131,7 @@ export function processPolls(
     // add unsubmitted option
     if (
       toArray(d.participants).length > 0 &&
-      voteOptions.findIndex((v) => v.option === 'unsubmitted') < 0 &&
+      voteOptions.findIndex(v => v.option === 'unsubmitted') < 0 &&
       _.sumBy(voteOptions, 'value') < (d.participants as string[]).length
     ) {
       voteOptions.push({
@@ -158,15 +166,9 @@ export function processPolls(
       status: derivePollStatus(d, txhashConfirm),
       height: _.minBy(votes, 'height')?.height || d.height,
       confirmation_txhash: txhashConfirm,
-      votes: _.orderBy(
-        votes,
-        ['height', 'created_at'],
-        ['desc', 'desc']
-      ),
+      votes: _.orderBy(votes, ['height', 'created_at'], ['desc', 'desc']),
       voteOptions: _.orderBy(voteOptions, ['i'], ['asc']),
-      eventName: d.event
-        ? toTitle(eventName, '_', true, true)
-        : eventName,
+      eventName: d.event ? toTitle(eventName, '_', true, true) : eventName,
       url: buildPollUrl(eventName, d, url, transaction_path),
     } as ProcessedPoll;
   });

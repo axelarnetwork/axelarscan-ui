@@ -25,9 +25,7 @@ const request = async (
   const { tld, address } = { ...params };
 
   try {
-    const chain = _.head(
-      Object.entries(TLDS).find(([_k, v]) => tld === v)
-    );
+    const chain = _.head(Object.entries(TLDS).find(([_k, v]) => tld === v));
     const { chain_id } = { ...getChainData(chain, chainsData) };
 
     const sid = new SID({
@@ -86,11 +84,7 @@ export const getSpaceID = async (
     for (const chunk of _.chunk(normalizedAddresses, 50)) {
       for (const address of chunk) {
         const { data } = {
-          ...(await getDomains(
-            { address },
-            chain,
-            chainsData ?? []
-          )),
+          ...(await getDomains({ address }, chain, chainsData ?? [])),
         };
         domainsData = toArray(_.concat(domainsData, data)) as SpaceIDDomain[];
       }

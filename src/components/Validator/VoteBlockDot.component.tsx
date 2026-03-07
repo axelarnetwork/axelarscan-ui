@@ -18,9 +18,7 @@ export function VoteBlockDot({ d, chains }: VoteBlockDotProps) {
     >
       <Tooltip
         content={
-          d.id
-            ? `Poll ID: ${d.id} (${name})`
-            : numberFormat(d.height, '0,0')
+          d.id ? `Poll ID: ${d.id} (${name})` : numberFormat(d.height, '0,0')
         }
         className={styles.chainTooltip}
       >

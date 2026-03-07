@@ -4,7 +4,13 @@ import { useCallback, useMemo } from 'react';
 
 import { getChainData } from '@/lib/config';
 
-import { useCosmosWalletStore, useEVMWalletStore, useStellarWalletStore, useSuiWalletStore, useXRPLWalletStore } from '@/components/Wallet';
+import {
+  useCosmosWalletStore,
+  useEVMWalletStore,
+  useStellarWalletStore,
+  useSuiWalletStore,
+  useXRPLWalletStore,
+} from '@/components/Wallet';
 
 import { useApproveAction } from '../ApproveButton';
 import { useEstimatedGasUsed, useGMPRecoveryAPI } from '../GMP.hooks';

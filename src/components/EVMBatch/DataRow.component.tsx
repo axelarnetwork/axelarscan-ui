@@ -12,9 +12,7 @@ export function DataRow({ label, value }: DataRowProps) {
       <dd className={styles.ddValue}>
         {value && (
           <div className={styles.dataWrapper}>
-            <Tag className={styles.dataTag}>
-              {ellipse(value, 256)}
-            </Tag>
+            <Tag className={styles.dataTag}>{ellipse(value, 256)}</Tag>
             <Copy value={value} className={styles.dataCopy} />
           </div>
         )}

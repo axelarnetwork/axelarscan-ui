@@ -37,12 +37,7 @@ export function ActivityItem({
   const { addresses } = { ...d.asset_data };
   let { image } = { ...d.asset_data };
 
-  let {
-    deposit_address,
-    burner_address,
-    tx_id,
-    symbol,
-  } = { ...d };
+  let { deposit_address, burner_address, tx_id, symbol } = { ...d };
   let deposit_address_chain = d.deposit_address_chain as string | undefined;
 
   deposit_address = toHex(deposit_address);
@@ -52,9 +47,10 @@ export function ActivityItem({
   if (!deposit_address_chain && chains) {
     deposit_address_chain =
       (isString(deposit_address) &&
-      chains.find((c: Chain) =>
-        deposit_address.startsWith(c.prefix_address ?? '')
-      )?.id) || undefined;
+        chains.find((c: Chain) =>
+          deposit_address.startsWith(c.prefix_address ?? '')
+        )?.id) ||
+      undefined;
   }
 
   // chain data
@@ -62,9 +58,7 @@ export function ActivityItem({
   const { url, transaction_path } = { ...chainData?.explorer };
 
   // asset data
-  const tokenData = chainData
-    ? addresses?.[chainData.id]
-    : undefined;
+  const tokenData = chainData ? addresses?.[chainData.id] : undefined;
 
   symbol = tokenData?.symbol || d.asset_data?.symbol || symbol;
   image = tokenData?.image || image;
@@ -83,10 +77,11 @@ export function ActivityItem({
 
   const isValidator = (address: string) =>
     toArray(validators).findIndex((v: Validator) =>
-      includesSomePatterns(address,
+      includesSomePatterns(
+        address,
         [v.operator_address, v.broadcaster_address].filter(
           (s): s is string => s !== undefined
-        ),
+        )
       )
     ) > -1;
 
@@ -119,10 +114,7 @@ export function ActivityItem({
             </div>
           )}
           <Tag className={styles.activityTypeTag}>
-            {toTitle(
-              activitiesCount > 1 ? d.type : data.type,
-              ' '
-            )}
+            {toTitle(activitiesCount > 1 ? d.type : data.type, ' ')}
           </Tag>
           {d.status && (
             <Tag
@@ -145,19 +137,23 @@ export function ActivityItem({
                   className={styles.amountText}
                 />
               )}
-              {symbol && (
-                <span className={styles.symbolText}>{symbol}</span>
-              )}
+              {symbol && <span className={styles.symbolText}>{symbol}</span>}
             </div>
           )}
         </div>
         {d.recipient && (
           <div className={styles.activityFieldWrapper}>
             <div className={styles.activityFieldLabel}>
-              {isValidator(Array.isArray(d.recipient) ? d.recipient[0] : d.recipient) ? 'Validator' : 'Recipient'}
+              {isValidator(
+                Array.isArray(d.recipient) ? d.recipient[0] : d.recipient
+              )
+                ? 'Validator'
+                : 'Recipient'}
             </div>
             <Profile
-              address={Array.isArray(d.recipient) ? d.recipient[0] : d.recipient}
+              address={
+                Array.isArray(d.recipient) ? d.recipient[0] : d.recipient
+              }
               width={20}
               height={20}
               className={styles.profileText}
@@ -177,15 +173,12 @@ export function ActivityItem({
         )}
         {deposit_address && (
           <div className={styles.activityFieldWrapper}>
-            <div className={styles.activityFieldLabel}>
-              Deposit address
-            </div>
+            <div className={styles.activityFieldLabel}>Deposit address</div>
             <Profile
               address={deposit_address}
               chain={deposit_address_chain}
               prefix={
-                getChainData(deposit_address_chain, chains)
-                  ?.prefix_address
+                getChainData(deposit_address_chain, chains)?.prefix_address
               }
               width={20}
               height={20}
@@ -195,9 +188,7 @@ export function ActivityItem({
         )}
         {burner_address && (
           <div className={styles.activityFieldWrapper}>
-            <div className={styles.activityFieldLabel}>
-              Burner address
-            </div>
+            <div className={styles.activityFieldLabel}>Burner address</div>
             <Profile
               address={burner_address}
               chain={d.chain}
@@ -236,9 +227,7 @@ export function ActivityItem({
         )}
         {!!d.acknowledgement && (
           <div className={styles.activityFieldWrapper}>
-            <div className={styles.activityFieldLabel}>
-              Acknowledgement
-            </div>
+            <div className={styles.activityFieldLabel}>Acknowledgement</div>
             <span className={styles.acknowledgementText}>
               {safeBase64ToString(d.acknowledgement as string) as string}
             </span>
@@ -256,20 +245,22 @@ export function ActivityItem({
       {toArray(d.events).length > 0 && (
         <div className={styles.eventsWrapper}>
           <span className={styles.eventsTitle}>Vote Events</span>
-          {d.events!.map((e: { event: string; [key: string]: string }, j: number) => (
-            <div key={j} className={styles.eventCard}>
-              {e.event && (
-                <Tag className={styles.eventTag}>
-                  {toTitle(e.event, '_', true, true)}
-                </Tag>
-              )}
-              {renderEntries(
-                Object.entries(e).filter(
-                  ([k, _v]: [string, unknown]) => !find(k, ['event'])
-                ) as [string, unknown][]
-              )}
-            </div>
-          ))}
+          {d.events!.map(
+            (e: { event: string; [key: string]: string }, j: number) => (
+              <div key={j} className={styles.eventCard}>
+                {e.event && (
+                  <Tag className={styles.eventTag}>
+                    {toTitle(e.event, '_', true, true)}
+                  </Tag>
+                )}
+                {renderEntries(
+                  Object.entries(e).filter(
+                    ([k, _v]: [string, unknown]) => !find(k, ['event'])
+                  ) as [string, unknown][]
+                )}
+              </div>
+            )
+          )}
         </div>
       )}
       {!!d.packet && (

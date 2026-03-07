@@ -16,7 +16,10 @@ interface CustomGMPEntry {
   name: string;
   addresses: string[];
   environment?: string;
-  customize: (eventData: { destinationContractAddress?: string; payload?: string }, _environment: string | undefined) => Promise<Record<string, string>>;
+  customize: (
+    eventData: { destinationContractAddress?: string; payload?: string },
+    _environment: string | undefined
+  ) => Promise<Record<string, string>>;
 }
 
 const customs: CustomGMPEntry[] = [
@@ -32,7 +35,10 @@ const customs: CustomGMPEntry[] = [
       '0xc3468a191fe51815b26535ed1f82c1f79e6ec37d',
       'osmo1zl9ztmwe2wcdvv9std8xn06mdaqaqm789rutmazfh3z869zcax4sv0ctqw',
     ],
-    customize: async (eventData: { destinationContractAddress?: string; payload?: string }, _environment: string | undefined) => {
+    customize: async (
+      eventData: { destinationContractAddress?: string; payload?: string },
+      _environment: string | undefined
+    ) => {
       const { destinationContractAddress, payload } = { ...eventData };
       const customValues: Record<string, string> = {};
 

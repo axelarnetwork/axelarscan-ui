@@ -10,8 +10,7 @@ export const containerHeight = 'mx-0 mt-5 pt-0.5' as const;
 export const containerAddress = 'max-w-full' as const;
 export const containerDefault = 'sm:mt-8' as const;
 
-export const headerRow =
-  'flex items-center justify-between gap-x-4' as const;
+export const headerRow = 'flex items-center justify-between gap-x-4' as const;
 export const headerLeft = 'sm:flex-auto' as const;
 export const headerTitle =
   'text-base font-semibold leading-6 text-zinc-900 dark:text-zinc-100' as const;
@@ -26,8 +25,7 @@ export const tableScrollContainerNoMargin = 'mt-0' as const;
 export const tableScrollContainerMargin = 'mt-4' as const;
 export const table =
   'min-w-full divide-y divide-zinc-200 dark:divide-zinc-700' as const;
-export const tableHead =
-  'sticky top-0 z-10 bg-white dark:bg-zinc-900' as const;
+export const tableHead = 'sticky top-0 z-10 bg-white dark:bg-zinc-900' as const;
 export const tableHeadRow =
   'text-sm font-semibold text-zinc-800 dark:text-zinc-200' as const;
 export const tableBody =

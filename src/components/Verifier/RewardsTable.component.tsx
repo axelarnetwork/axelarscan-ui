@@ -23,10 +23,18 @@ export function RewardsTable({ rewards }: RewardsTableProps) {
         <table className={styles.rewardsTable}>
           <thead className={styles.rewardsTableHead}>
             <tr className={styles.rewardsTableHeadRow}>
-              <th scope="col" className={styles.rewardsThFirst}>Height</th>
-              <th scope="col" className={styles.rewardsThMiddle}>Chain</th>
-              <th scope="col" className={styles.rewardsThRight}>Payout</th>
-              <th scope="col" className={styles.rewardsThLast}>Payout at</th>
+              <th scope="col" className={styles.rewardsThFirst}>
+                Height
+              </th>
+              <th scope="col" className={styles.rewardsThMiddle}>
+                Chain
+              </th>
+              <th scope="col" className={styles.rewardsThRight}>
+                Payout
+              </th>
+              <th scope="col" className={styles.rewardsThLast}>
+                Payout at
+              </th>
             </tr>
           </thead>
           <tbody className={styles.rewardsTableBody}>

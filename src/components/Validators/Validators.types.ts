@@ -1,4 +1,8 @@
-import type { Chain, Validator as ValidatorType, ValidatorsVotesChain } from '@/types';
+import type {
+  Chain,
+  Validator as ValidatorType,
+  ValidatorsVotesChain,
+} from '@/types';
 
 // ─── Constants ─────────────────────────────────────────────────
 export const STATUSES = ['active', 'inactive'] as const;

@@ -12,7 +12,7 @@ interface CrossChainActivityProps {
 export function CrossChainActivity({ data, chains }: CrossChainActivityProps) {
   const activeChainCount = chains
     ? chains.filter(
-        (d) => !d.deprecated && (!d.maintainer_id || d.gateway?.address)
+        d => !d.deprecated && (!d.maintainer_id || d.gateway?.address)
       ).length
     : 0;
 
@@ -20,9 +20,7 @@ export function CrossChainActivity({ data, chains }: CrossChainActivityProps) {
     <div className={styles.sectionWrapper}>
       <div className={styles.sectionHeader}>
         <h2 className={styles.sectionTitle}>Cross-Chain Activity</h2>
-        {chains && (
-          <ConnectedChainsTag count={activeChainCount} />
-        )}
+        {chains && <ConnectedChainsTag count={activeChainCount} />}
       </div>
       <Summary data={data} params={{}} />
     </div>

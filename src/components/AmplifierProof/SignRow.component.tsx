@@ -12,7 +12,11 @@ import { equalsIgnoreCase, ellipse, toTitle } from '@/lib/string';
 import type { SignRowProps } from './AmplifierProof.types';
 import * as styles from './AmplifierProof.styles';
 
-export function SignRow({ sign: d, index: i, confirmationTxhash }: SignRowProps) {
+export function SignRow({
+  sign: d,
+  index: i,
+  confirmationTxhash,
+}: SignRowProps) {
   const sign = d.sign ? 'signed' : 'unsubmitted';
 
   return (

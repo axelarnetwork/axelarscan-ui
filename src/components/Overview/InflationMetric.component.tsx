@@ -7,14 +7,8 @@ import * as styles from './Overview.styles';
 export function InflationMetric({ inflation }: InflationMetricProps) {
   return (
     <div className={styles.metricRow}>
-      <div className={styles.metricLabel}>
-        Inflation:
-      </div>
-      <Link
-        href="/validators"
-        target="_blank"
-        className={styles.metricLink}
-      >
+      <div className={styles.metricLabel}>Inflation:</div>
+      <Link href="/validators" target="_blank" className={styles.metricLink}>
         <Number
           value={inflation * 100}
           suffix="%"

@@ -5,10 +5,7 @@ import { Tag } from '@/components/Tag';
 import type { StatusRowProps } from './EVMBatch.types';
 import * as styles from './EVMBatch.styles';
 
-export function StatusRow({
-  status,
-  executeButton,
-}: StatusRowProps) {
+export function StatusRow({ status, executeButton }: StatusRowProps) {
   if (!status) {
     return (
       <div className={styles.dlRow}>

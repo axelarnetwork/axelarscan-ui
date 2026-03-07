@@ -14,7 +14,10 @@ import { toArray } from '@/lib/parser';
 import { getParams, getQueryString, isFiltered } from '@/lib/operator';
 import { capitalize } from '@/lib/string';
 
-import type { FiltersProps, TypesAggregationBucket } from './Transactions.types';
+import type {
+  FiltersProps,
+  TypesAggregationBucket,
+} from './Transactions.types';
 import { PAGE_SIZE } from './Transactions.types';
 import * as styles from './Transactions.styles';
 
@@ -23,7 +26,9 @@ export function Filters({ address }: FiltersProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
-  const [params, setParams] = useState<Record<string, string>>(getParams(searchParams, PAGE_SIZE) as Record<string, string>);
+  const [params, setParams] = useState<Record<string, string>>(
+    getParams(searchParams, PAGE_SIZE) as Record<string, string>
+  );
   const [searchInput, setSearchInput] = useState<Record<string, string>>({});
   const [types, setTypes] = useState<string[]>([]);
 
@@ -39,13 +44,21 @@ export function Filters({ address }: FiltersProps) {
         aggs: { types: { terms: { field: 'types.keyword', size: 1000 } } },
         size: 0,
       });
-      setTypes(toArray<TypesAggregationBucket>(response as TypesAggregationBucket[] | null).map((d) => d.key));
+      setTypes(
+        toArray<TypesAggregationBucket>(
+          response as TypesAggregationBucket[] | null
+        ).map(d => d.key)
+      );
     };
 
     getTypes();
   }, []);
 
-  const onSubmit = (e1?: unknown, e2?: unknown, _params?: Record<string, string>) => {
+  const onSubmit = (
+    e1?: unknown,
+    e2?: unknown,
+    _params?: Record<string, string>
+  ) => {
     if (!_params) {
       _params = params;
     }
@@ -84,7 +97,10 @@ export function Filters({ address }: FiltersProps) {
       type: 'select',
       options: _.concat(
         [{ title: 'Any' } as FilterOption],
-        ['success', 'failed'].map((d: string) => ({ value: d, title: capitalize(d) }))
+        ['success', 'failed'].map((d: string) => ({
+          value: d,
+          title: capitalize(d),
+        }))
       ),
     },
     ...(!address ? [{ label: 'Address', name: 'address' }] : []),
@@ -114,7 +130,7 @@ export function Filters({ address }: FiltersProps) {
         filtered={filtered}
         attributes={attributes}
         params={params}
-        setParams={(p) => setParams(p as Record<string, string>)}
+        setParams={p => setParams(p as Record<string, string>)}
         searchInput={searchInput}
         setSearchInput={setSearchInput}
       />

@@ -4,25 +4,23 @@ import { STATUSES } from './Validators.types';
 import type { ValidatorsHeaderProps } from './Validators.types';
 import * as styles from './Validators.styles';
 
-export function ValidatorsHeader({ status, filterCounts }: ValidatorsHeaderProps) {
+export function ValidatorsHeader({
+  status,
+  filterCounts,
+}: ValidatorsHeaderProps) {
   return (
     <div className={styles.headerRow}>
       <div className={styles.headerLeft}>
         <div className={styles.titleRow}>
-          <h1 className={styles.title}>
-            Validators
-          </h1>
+          <h1 className={styles.title}>Validators</h1>
           <span className={styles.titleSeparator}>|</span>
-          <Link
-            href="/verifiers"
-            className={styles.verifiersLink}
-          >
+          <Link href="/verifiers" className={styles.verifiersLink}>
             Verifiers
           </Link>
         </div>
         <p className={styles.subtitle}>
-          List of {status || 'active'} validators in Axelar Network with
-          the latest 10K blocks performance.
+          List of {status || 'active'} validators in Axelar Network with the
+          latest 10K blocks performance.
           {(!status || status === 'active') && (
             <>
               &nbsp;

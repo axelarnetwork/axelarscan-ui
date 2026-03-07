@@ -20,7 +20,10 @@ function getVoteStatus(vote: TransferData['vote']): string {
   return vote.success ? 'success' : 'failed';
 }
 
-function getVoteTitle(vote: TransferData['vote'], confirm: TransferData['confirm']): string {
+function getVoteTitle(
+  vote: TransferData['vote'],
+  confirm: TransferData['confirm']
+): string {
   if (!vote) return confirm ? 'Confirming' : 'Confirm';
   return vote.success ? 'Confirmed' : 'Failed to Confirm';
 }
@@ -47,7 +50,10 @@ function getIbcSendStatus(ibc_send: TransferData['ibc_send']): string {
   return 'pending';
 }
 
-export function getStep(data: TransferData, chains: Chain[] | null | undefined): TransferStep[] {
+export function getStep(
+  data: TransferData,
+  chains: Chain[] | null | undefined
+): TransferStep[] {
   const {
     link,
     send,
@@ -62,12 +68,12 @@ export function getStep(data: TransferData, chains: Chain[] | null | undefined):
     type,
   } = { ...data };
 
-  const sourceChain = (send?.source_chain || link?.source_chain) as string | undefined;
-  const destinationChain = (
-    send?.destination_chain ||
+  const sourceChain = (send?.source_chain || link?.source_chain) as
+    | string
+    | undefined;
+  const destinationChain = (send?.destination_chain ||
     unwrap?.destination_chain ||
-    link?.destination_chain
-  ) as string | undefined;
+    link?.destination_chain) as string | undefined;
 
   const sourceChainData = getChainData(sourceChain, chains);
   const destinationChainData = getChainData(destinationChain, chains);
@@ -179,7 +185,8 @@ export function makeErrorData(message: string): TransferData {
 
 export function getDepositAddressLabel(type?: string): string {
   if (type === 'send_token') return 'Gateway';
-  if (['wrap', 'unwrap', 'erc20_transfer'].includes(type ?? '')) return 'Contract';
+  if (['wrap', 'unwrap', 'erc20_transfer'].includes(type ?? ''))
+    return 'Contract';
   return 'Deposit Address';
 }
 
@@ -195,8 +202,7 @@ export function resolveSymbolAndImage(
   const WRAP_PREFIXES = ['w', 'axl'];
   const prefixIndex = WRAP_PREFIXES.findIndex(
     (p: string) =>
-      toCase(symbol, 'lower').startsWith(p) &&
-      !equalsIgnoreCase(p, symbol)
+      toCase(symbol, 'lower').startsWith(p) && !equalsIgnoreCase(p, symbol)
   );
 
   if (prefixIndex < 0) {
@@ -259,16 +265,22 @@ export function resolveStepURL(
       if (poll_id) return `/evm-poll/${poll_id}`;
       break;
     case 'command':
-      if (transactionHash) return `${url}${transaction_path.replace('{tx}', transactionHash)}`;
-      if (batch_id && destinationChainData) return `/evm-batch/${destinationChainData.id}/${batch_id}`;
+      if (transactionHash)
+        return `${url}${transaction_path.replace('{tx}', transactionHash)}`;
+      if (batch_id && destinationChainData)
+        return `/evm-batch/${destinationChainData.id}/${batch_id}`;
       break;
     case 'ibc_send':
-      if (recv_txhash) return `${url}${transaction_path.replace('{tx}', recv_txhash)}`;
-      if (ack_txhash) return `${axelarChainData?.explorer?.url}${axelarChainData?.explorer?.transaction_path?.replace('{tx}', ack_txhash)}`;
-      if (failed_txhash) return `${url}${transaction_path.replace('{tx}', failed_txhash)}`;
+      if (recv_txhash)
+        return `${url}${transaction_path.replace('{tx}', recv_txhash)}`;
+      if (ack_txhash)
+        return `${axelarChainData?.explorer?.url}${axelarChainData?.explorer?.transaction_path?.replace('{tx}', ack_txhash)}`;
+      if (failed_txhash)
+        return `${url}${transaction_path.replace('{tx}', failed_txhash)}`;
       break;
     case 'unwrap':
-      if (tx_hash_unwrap) return `${url}${transaction_path.replace('{tx}', tx_hash_unwrap)}`;
+      if (tx_hash_unwrap)
+        return `${url}${transaction_path.replace('{tx}', tx_hash_unwrap)}`;
       break;
     default:
       break;
@@ -284,12 +296,14 @@ export function resolveBlockURL(
   blockValue: string | number,
   axelarChainData: ReturnType<typeof getChainData>
 ): string {
-  const baseUrl = step.data?.height && step.id === 'ibc_send'
-    ? axelarChainData?.explorer?.url
-    : step.chainData?.explorer?.url;
-  const blockPath = step.data?.height && step.id === 'ibc_send'
-    ? axelarChainData?.explorer?.block_path
-    : step.chainData?.explorer?.block_path;
+  const baseUrl =
+    step.data?.height && step.id === 'ibc_send'
+      ? axelarChainData?.explorer?.url
+      : step.chainData?.explorer?.url;
+  const blockPath =
+    step.data?.height && step.id === 'ibc_send'
+      ? axelarChainData?.explorer?.block_path
+      : step.chainData?.explorer?.block_path;
 
   return `${baseUrl}${blockPath?.replace('{block}', String(blockValue))}`;
 }

@@ -20,9 +20,7 @@ export function Logo(props: LogoProps) {
         unoptimized
         className={styles.image}
       />
-      <span className={styles.label}>
-        Axelarscan
-      </span>
+      <span className={styles.label}>Axelarscan</span>
     </div>
   );
 }

@@ -87,10 +87,7 @@ export function VoteRow({
                 target="_blank"
                 className={styles.statusRow}
               >
-                <IoCheckmarkCircle
-                  size={18}
-                  className={styles.initiatedIcon}
-                />
+                <IoCheckmarkCircle size={18} className={styles.initiatedIcon} />
                 <span className={styles.statusLabel}>Initiated</span>
               </Link>
             )}
@@ -124,7 +121,10 @@ export function VoteRow({
       <td className={styles.tdMiddleRight}>
         <div className={styles.voteWrapper}>
           <Tag
-            className={clsx(styles.statusTagBase, styles.getVoteStyle(voteLabel))}
+            className={clsx(
+              styles.statusTagBase,
+              styles.getVoteStyle(voteLabel)
+            )}
           >
             {toTitle(voteLabel)}
           </Tag>

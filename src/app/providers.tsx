@@ -58,7 +58,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const searchParams = useSearchParams();
   const [rendered, setRendered] = useState(false);
   const [tagManagerInitiated, setTagManagerInitiated] = useState(false);
-  const [xrplRegisterWallets, setXRPLlRegisterWallets] = useState<XRPLWallet[] | null>(null);
+  const [xrplRegisterWallets, setXRPLlRegisterWallets] = useState<
+    XRPLWallet[] | null
+  >(null);
   const [client] = useState(() => queryClient);
 
   useEffect(() => {
@@ -98,9 +100,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
     const wallets = [
       new CrossmarkWallet(),
-      new XRPLWalletConnectWallet(xrplConfig as ConstructorParameters<typeof XRPLWalletConnectWallet>[0]),
+      new XRPLWalletConnectWallet(
+        xrplConfig as ConstructorParameters<typeof XRPLWalletConnectWallet>[0]
+      ),
       new XamanWallet(process.env.NEXT_PUBLIC_XAMAN_API_KEY!),
-      new MetaMaskWallet(metamaskProvider as ConstructorParameters<typeof MetaMaskWallet>[0]),
+      new MetaMaskWallet(
+        metamaskProvider as ConstructorParameters<typeof MetaMaskWallet>[0]
+      ),
     ] as XRPLWallet[];
 
     setXRPLlRegisterWallets(wallets);

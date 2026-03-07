@@ -29,12 +29,17 @@ export function SpaceIDProfile({
   useEffect(() => {
     const getData = async () => {
       if (!address) return;
-      const addresses = toArray(address, { toCase: 'lower' }).filter((a: string) => !spaceID?.[a]);
+      const addresses = toArray(address, { toCase: 'lower' }).filter(
+        (a: string) => !spaceID?.[a]
+      );
       if (addresses.length === 0) return;
 
       let data = setDefaultData(addresses, spaceID);
       setSpaceID({ ...data });
-      data = setDefaultData(addresses, await getSpaceID(addresses) as Record<string, NameServiceEntry> | null);
+      data = setDefaultData(
+        addresses,
+        (await getSpaceID(addresses)) as Record<string, NameServiceEntry> | null
+      );
       setSpaceID({ ...data });
     };
 
@@ -44,17 +49,40 @@ export function SpaceIDProfile({
   const { name } = { ...spaceID?.[toCase(address, 'lower')] };
 
   if (!name) {
-    return <ENSProfile address={address} url={url} width={width} height={height} noCopy={noCopy} className={className} />;
+    return (
+      <ENSProfile
+        address={address}
+        url={url}
+        width={width}
+        height={height}
+        noCopy={noCopy}
+        className={className}
+      />
+    );
   }
 
   const element = (
-    <span title={name} className={clsx(styles.nameText, className)}>{ellipse(name, 16)}</span>
+    <span title={name} className={clsx(styles.nameText, className)}>
+      {ellipse(name, 16)}
+    </span>
   );
 
   return (
     <div className={styles.wrapper}>
-      <NameServiceImage src={SpaceIDLogo as unknown as string} fallbackSrc={SpaceIDLogo} width={width} height={height} />
-      <NameServiceContent url={url} noCopy={noCopy} address={address} width={width} className={className} element={element} />
+      <NameServiceImage
+        src={SpaceIDLogo as unknown as string}
+        fallbackSrc={SpaceIDLogo}
+        width={width}
+        height={height}
+      />
+      <NameServiceContent
+        url={url}
+        noCopy={noCopy}
+        address={address}
+        width={width}
+        className={className}
+        element={element}
+      />
     </div>
   );
 }

@@ -19,9 +19,7 @@ export function CommandRow({
   assets,
 }: CommandRowProps) {
   const idElement = (
-    <span className={styles.commandIdText}>
-      {ellipse(command.id, 6)}
-    </span>
+    <span className={styles.commandIdText}>{ellipse(command.id, 6)}</span>
   );
 
   const typeElement = (
@@ -40,9 +38,10 @@ export function CommandRow({
     </div>
   );
 
-  const txUrl = url && command.transactionHash
-    ? `${url}${transaction_path?.replace('{tx}', command.transactionHash)}`
-    : null;
+  const txUrl =
+    url && command.transactionHash
+      ? `${url}${transaction_path?.replace('{tx}', command.transactionHash)}`
+      : null;
 
   return (
     <tr className={styles.tableRow}>

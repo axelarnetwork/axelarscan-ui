@@ -72,8 +72,7 @@ export const assetInfo = 'flex items-center gap-x-2' as const;
 export const assetNameWrapper = 'flex items-center gap-x-1' as const;
 export const assetName =
   'text-xs font-medium text-zinc-900 dark:text-zinc-100' as const;
-export const assetPrice =
-  'text-xs text-zinc-400 dark:text-zinc-500' as const;
+export const assetPrice = 'text-xs text-zinc-400 dark:text-zinc-500' as const;
 export const balanceValue =
   'text-xs font-semibold text-zinc-900 dark:text-zinc-100' as const;
 export const cellEndAligned = 'flex items-center justify-end' as const;
@@ -87,10 +86,8 @@ export const tabInactive =
   'text-sm capitalize font-medium text-zinc-400 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-300' as const;
 
 // ─── Delegation Row Content ─────────────────────────────────────
-export const delegationValidatorCell =
-  'flex items-center gap-x-1.5' as const;
-export const redelegationArrow =
-  'text-zinc-700 dark:text-zinc-300' as const;
+export const delegationValidatorCell = 'flex items-center gap-x-1.5' as const;
+export const redelegationArrow = 'text-zinc-700 dark:text-zinc-300' as const;
 
 // ─── Pagination ─────────────────────────────────────────────────
 export const paginationWrapper =

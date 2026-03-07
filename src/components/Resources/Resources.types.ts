@@ -100,7 +100,10 @@ export interface FilterSelectProps {
 
 export interface ResourceNavProps {
   resource: string;
-  filter: (resourceType: string, filterParams: Record<string, string>) => unknown[];
+  filter: (
+    resourceType: string,
+    filterParams: Record<string, string>
+  ) => unknown[];
   params: Record<string, string>;
   chains: unknown;
   assets: unknown;
@@ -126,7 +129,10 @@ export interface AttributeFiltersProps {
 
 export interface ResourceListProps {
   resource: string;
-  filter: (resourceType: string, filterParams: Record<string, string>) => unknown[];
+  filter: (
+    resourceType: string,
+    filterParams: Record<string, string>
+  ) => unknown[];
   params: Record<string, string>;
   assetFocusID: string | null;
   setAssetFocusID: (id: string) => void;

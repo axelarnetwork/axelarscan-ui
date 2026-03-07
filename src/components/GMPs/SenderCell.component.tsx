@@ -6,7 +6,8 @@ import type { SenderCellProps } from './GMPs.types';
 import * as styles from './GMPs.styles';
 
 export function SenderCell({ data: d, useAnotherHopChain }: SenderCellProps) {
-  const isHopOrigin = useAnotherHopChain && isAxelar(d.call.chain) && d.origin_chain;
+  const isHopOrigin =
+    useAnotherHopChain && isAxelar(d.call.chain) && d.origin_chain;
 
   return (
     <td className={styles.tdDefault}>
@@ -37,10 +38,7 @@ export function SenderCell({ data: d, useAnotherHopChain }: SenderCellProps) {
           />
         )}
         {!isHopOrigin && (
-          <Profile
-            address={d.call.transaction?.from}
-            chain={d.call.chain}
-          />
+          <Profile address={d.call.transaction?.from} chain={d.call.chain} />
         )}
       </div>
     </td>

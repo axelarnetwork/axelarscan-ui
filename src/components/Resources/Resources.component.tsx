@@ -10,7 +10,12 @@ import { split, toArray } from '@/lib/parser';
 import { getParams, getQueryString } from '@/lib/operator';
 import { equalsIgnoreCase, includesSomePatterns } from '@/lib/string';
 import type { Chain, Asset, AssetAddress } from '@/types';
-import type { SelectOption, FilterAttribute, ResourcesProps, AssetResourceData } from './Resources.types';
+import type {
+  SelectOption,
+  FilterAttribute,
+  ResourcesProps,
+  AssetResourceData,
+} from './Resources.types';
 import { ResourceNav } from './ResourceNav.component';
 import { SearchInput } from './SearchInput.component';
 import { TypeFilters } from './TypeFilters.component';
@@ -25,7 +30,9 @@ export function Resources({ resource = undefined }: ResourcesProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [rendered, setRendered] = useState(false);
-  const [params, setParams] = useState<Record<string, string>>(getParams(searchParams) as Record<string, string>);
+  const [params, setParams] = useState<Record<string, string>>(
+    getParams(searchParams) as Record<string, string>
+  );
   const [input, setInput] = useState('');
   const [assetFocusID, setAssetFocusID] = useState<string | null>(null);
   const chains = useChains();
@@ -97,7 +104,10 @@ export function Resources({ resource = undefined }: ResourcesProps) {
     },
   ]);
 
-  const filter = (resourceType: string, filterParams: Record<string, string>) => {
+  const filter = (
+    resourceType: string,
+    filterParams: Record<string, string>
+  ) => {
     const { type, chain } = { ...filterParams };
 
     const words = split(input, { delimiter: ' ', toCase: 'lower' });
@@ -119,10 +129,20 @@ export function Resources({ resource = undefined }: ResourcesProps) {
   return (
     <Container className={styles.containerWrapper}>
       <div className={styles.topBar}>
-        <ResourceNav resource={resource} filter={filter} params={params} chains={chains} assets={assets} />
+        <ResourceNav
+          resource={resource}
+          filter={filter}
+          params={params}
+          chains={chains}
+          assets={assets}
+        />
         <div className={styles.filterColumn}>
           <SearchInput resource={resource} input={input} setInput={setInput} />
-          <TypeFilters resource={resource} params={params} pathname={pathname} />
+          <TypeFilters
+            resource={resource}
+            params={params}
+            pathname={pathname}
+          />
           {attributes.length > 0 && (
             <AttributeFilters
               attributes={attributes as FilterAttribute[]}
@@ -182,7 +202,9 @@ function filterAssets(
   input: string,
   words: string[]
 ) {
-  const gatewayAssets = (toArray((!type || type === 'gateway') ? assets : null) as Asset[])
+  const gatewayAssets = (
+    toArray(!type || type === 'gateway' ? assets : null) as Asset[]
+  )
     .filter((d: Asset) => !chain || d.addresses?.[chain])
     .filter(
       (d: Asset) =>
@@ -191,7 +213,9 @@ function filterAssets(
           _.uniq(
             toArray(
               _.concat(
-                ['denom', 'name', 'symbol'].map((f: string) => d[f as keyof Asset] as string | undefined),
+                ['denom', 'name', 'symbol'].map(
+                  (f: string) => d[f as keyof Asset] as string | undefined
+                ),
                 d.denoms,
                 Object.values({ ...d.addresses }).flatMap((a: AssetAddress) =>
                   toArray([
@@ -208,7 +232,9 @@ function filterAssets(
         )
     );
 
-  const itsFiltered = (toArray((!type || type === 'its') ? itsAssets : null) as Asset[])
+  const itsFiltered = (
+    toArray(!type || type === 'its' ? itsAssets : null) as Asset[]
+  )
     .filter((d: Asset) => !chain || (d as AssetResourceData).chains?.[chain])
     .filter(
       (d: Asset) =>
@@ -217,12 +243,17 @@ function filterAssets(
           _.uniq(
             toArray(
               _.concat(
-                ['name', 'symbol'].map((f: string) => d[f as keyof Asset] as string | undefined),
-                Object.values({ ...(d as AssetResourceData).chains }).flatMap((a: AssetAddress) =>
-                  toArray([
-                    !equalsIgnoreCase(input, 'axl') && a.symbol,
-                    (a as Record<string, unknown>).tokenAddress as string | undefined,
-                  ])
+                ['name', 'symbol'].map(
+                  (f: string) => d[f as keyof Asset] as string | undefined
+                ),
+                Object.values({ ...(d as AssetResourceData).chains }).flatMap(
+                  (a: AssetAddress) =>
+                    toArray([
+                      !equalsIgnoreCase(input, 'axl') && a.symbol,
+                      (a as Record<string, unknown>).tokenAddress as
+                        | string
+                        | undefined,
+                    ])
                 )
               ),
               { toCase: 'lower' }

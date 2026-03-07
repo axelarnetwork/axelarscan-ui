@@ -13,7 +13,7 @@ export const getSlug = (pathname: string, id = 'tx') => {
   switch (id) {
     case 'tx':
       if (
-        ['/gmp', '/transfer', '/tx', '/transaction'].findIndex((d) =>
+        ['/gmp', '/transfer', '/tx', '/transaction'].findIndex(d =>
           pathname.startsWith(d)
         ) > -1
       ) {
@@ -22,8 +22,8 @@ export const getSlug = (pathname: string, id = 'tx') => {
       break;
     case 'address':
       if (
-        ['/account', '/address', '/validator/', '/verifier/'].findIndex(
-          (d) => pathname.startsWith(d)
+        ['/account', '/address', '/validator/', '/verifier/'].findIndex(d =>
+          pathname.startsWith(d)
         ) > -1
       ) {
         return slug;

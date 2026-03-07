@@ -15,8 +15,14 @@ import type { ChainProps } from './Resources.types';
 import * as styles from './Resources.styles';
 
 interface ContractsData {
-  gateway_contracts?: Record<string, { address?: string; [key: string]: unknown }>;
-  gas_service_contracts?: Record<string, { address?: string; [key: string]: unknown }>;
+  gateway_contracts?: Record<
+    string,
+    { address?: string; [key: string]: unknown }
+  >;
+  gas_service_contracts?: Record<
+    string,
+    { address?: string; [key: string]: unknown }
+  >;
   interchain_token_service_contract?: {
     addresses?: string[];
     [key: string]: string | string[] | undefined;
@@ -53,7 +59,9 @@ export function Chain({ data }: ChainProps) {
   const gasServiceAddress = gas_service_contracts?.[id]?.address;
   const itsAddress: string | undefined =
     chain_type === 'evm'
-      ? (id && interchain_token_service_contract && id in interchain_token_service_contract
+      ? (id &&
+        interchain_token_service_contract &&
+        id in interchain_token_service_contract
           ? String(interchain_token_service_contract[id] ?? '')
           : interchain_token_service_contract?.addresses?.[0]) || undefined
       : undefined;
@@ -83,11 +91,7 @@ export function Chain({ data }: ChainProps) {
               {chain_type === 'evm' && <AddMetamask chain={id} />}
               {url && (
                 <Tooltip content="Explorer">
-                  <a
-                    href={url}
-                    target="_blank"
-                    className={styles.explorerLink}
-                  >
+                  <a href={url} target="_blank" className={styles.explorerLink}>
                     <LuFileSearch2 size={24} />
                   </a>
                 </Tooltip>
@@ -96,7 +100,9 @@ export function Chain({ data }: ChainProps) {
                 <GoDotFill
                   size={18}
                   className={clsx(
-                    deprecated ? styles.statusDotDeprecated : styles.statusDotActive
+                    deprecated
+                      ? styles.statusDotDeprecated
+                      : styles.statusDotActive
                   )}
                 />
               </Tooltip>
@@ -110,11 +116,7 @@ export function Chain({ data }: ChainProps) {
         </div>
         <div className={styles.chainNameRow}>
           <span className={styles.chainName}>{name}</span>
-          {chain_id && (
-            <span className={styles.chainId}>
-              ID: {chain_id}
-            </span>
-          )}
+          {chain_id && <span className={styles.chainId}>ID: {chain_id}</span>}
         </div>
         <div className={styles.valueBoxList}>
           {chain_name && <ValueBox title="Chain Name" value={chain_name} />}

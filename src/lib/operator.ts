@@ -2,7 +2,7 @@ import { find } from '@/lib/string';
 import { toNumber } from '@/lib/number';
 
 export const sleep = (ms = 0) =>
-  new Promise<void>((resolve) => setTimeout(resolve, ms));
+  new Promise<void>(resolve => setTimeout(resolve, ms));
 
 export const getParams = (
   searchParams: URLSearchParams,
@@ -44,5 +44,4 @@ export const generateKeyByParams = (params: Record<string, unknown>) =>
   JSON.stringify(params);
 
 export const isFiltered = (params: Record<string, unknown>) =>
-  Object.keys({ ...params }).filter((k) => !find(k, ['from'])).length >
-  0;
+  Object.keys({ ...params }).filter(k => !find(k, ['from'])).length > 0;

@@ -29,12 +29,17 @@ export function ENSProfile({
   useEffect(() => {
     const getData = async () => {
       if (!address) return;
-      const addresses = toArray(address, { toCase: 'lower' }).filter((a: string) => !ens?.[a]);
+      const addresses = toArray(address, { toCase: 'lower' }).filter(
+        (a: string) => !ens?.[a]
+      );
       if (addresses.length === 0) return;
 
       let data = setDefaultData(addresses, ens);
       setENS({ ...data });
-      data = setDefaultData(addresses, await getENS(addresses) as Record<string, NameServiceEntry> | null);
+      data = setDefaultData(
+        addresses,
+        (await getENS(addresses)) as Record<string, NameServiceEntry> | null
+      );
       setENS({ ...data });
     };
 
@@ -45,15 +50,33 @@ export function ENSProfile({
   const src = `https://metadata.ens.domains/mainnet/avatar/${name}`;
 
   const element = name ? (
-    <span title={name} className={clsx(styles.nameText, className)}>{ellipse(name, 16)}</span>
+    <span title={name} className={clsx(styles.nameText, className)}>
+      {ellipse(name, 16)}
+    </span>
   ) : (
-    <span className={clsx(styles.addressText, className)}>{ellipse(address, 4, '0x')}</span>
+    <span className={clsx(styles.addressText, className)}>
+      {ellipse(address, 4, '0x')}
+    </span>
   );
 
   return (
     <div className={styles.wrapper}>
-      {name && <NameServiceImage src={src} fallbackSrc={ENSLogo} width={width} height={height} />}
-      <NameServiceContent url={url} noCopy={noCopy} address={address} width={width} className={className} element={element} />
+      {name && (
+        <NameServiceImage
+          src={src}
+          fallbackSrc={ENSLogo}
+          width={width}
+          height={height}
+        />
+      )}
+      <NameServiceContent
+        url={url}
+        noCopy={noCopy}
+        address={address}
+        width={width}
+        className={className}
+        element={element}
+      />
     </div>
   );
 }

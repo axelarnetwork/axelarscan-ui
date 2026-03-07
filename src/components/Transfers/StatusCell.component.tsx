@@ -29,7 +29,7 @@ export function StatusCell({ d }: TransferStatusCellProps) {
           <Tag
             className={clsx(
               styles.tagFitCapitalize,
-              getStatusTagStyle(d.simplified_status),
+              getStatusTagStyle(d.simplified_status)
             )}
           >
             {d.simplified_status}
@@ -42,10 +42,7 @@ export function StatusCell({ d }: TransferStatusCellProps) {
                 d.axelar_transfer?.txhash ||
                 d.ibc_send?.recv_txhash
               }
-              chain={
-                d.send.destination_chain ||
-                d.link?.destination_chain
-              }
+              chain={d.send.destination_chain || d.link?.destination_chain}
             />
           )}
         </div>

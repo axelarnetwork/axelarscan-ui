@@ -64,12 +64,13 @@ export function SankeyChart({
     },
   };
 
-  const sankeyNodes = chartData.length > 0
-    ? _.uniq(chartData.flatMap(d => [d.source, d.target])).map(d => ({
-        id: d,
-        nodeColor: getChainData(d.trim(), chains)?.color,
-      }))
-    : [];
+  const sankeyNodes =
+    chartData.length > 0
+      ? _.uniq(chartData.flatMap(d => [d.source, d.target])).map(d => ({
+          id: d,
+          nodeColor: getChainData(d.trim(), chains)?.color,
+        }))
+      : [];
 
   const linkTooltipRenderer = useCallback(
     (d: {

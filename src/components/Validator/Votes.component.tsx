@@ -25,7 +25,9 @@ export function Votes({ data }: VotesProps) {
   const totalN = toArray(data).filter(
     (d: EVMVote) => typeof d.vote === 'boolean' && !d.vote
   ).length;
-  const totalUN = toArray(data).filter((d: EVMVote) => typeof d.vote !== 'boolean').length;
+  const totalUN = toArray(data).filter(
+    (d: EVMVote) => typeof d.vote !== 'boolean'
+  ).length;
   const totalVotes = Object.fromEntries(
     Object.entries({ Y: totalY, N: totalN, UN: totalUN }).filter(
       ([_k, v]) => v || _k === 'Y'
@@ -45,7 +47,8 @@ export function Votes({ data }: VotesProps) {
         <div className={styles.sectionHeaderRight}>
           <Number
             value={
-              (data.filter((d: EVMVote) => typeof d.vote === 'boolean').length * 100) /
+              (data.filter((d: EVMVote) => typeof d.vote === 'boolean').length *
+                100) /
               data.length
             }
             suffix="%"

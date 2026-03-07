@@ -5,13 +5,19 @@ import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/queries/keys';
 import { fetchChains } from '@/lib/queries/chainQueries';
 import { fetchAssets, fetchITSAssets } from '@/lib/queries/assetQueries';
-import { fetchValidators, fetchVerifiers } from '@/lib/queries/validatorQueries';
+import {
+  fetchValidators,
+  fetchVerifiers,
+} from '@/lib/queries/validatorQueries';
 import {
   fetchInflationData,
   fetchNetworkParameters,
   fetchTVL,
 } from '@/lib/queries/networkQueries';
-import { fetchContracts, fetchConfigurations } from '@/lib/queries/contractQueries';
+import {
+  fetchContracts,
+  fetchConfigurations,
+} from '@/lib/queries/contractQueries';
 import { fetchStats } from '@/lib/queries/statsQueries';
 
 const FIVE_MINUTES = 5 * 60 * 1000;

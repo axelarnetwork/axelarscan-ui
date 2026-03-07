@@ -71,7 +71,11 @@ export function Search() {
       // transaction
       else if (['txhash', 'tx'].includes(type)) {
         const gmpTotal = (
-          await searchGMP({ txHash: _input, noRecover: true, size: 0 }) as Record<string, unknown>
+          (await searchGMP({
+            txHash: _input,
+            noRecover: true,
+            size: 0,
+          })) as Record<string, unknown>
         )?.total as number | undefined;
 
         if (gmpTotal && gmpTotal > 0) {
@@ -82,7 +86,11 @@ export function Search() {
           type = 'gmp';
         } else {
           const transfersTotal = (
-            await searchTransfers({ txHash: _input, noRecover: true, size: 0 }) as Record<string, unknown>
+            (await searchTransfers({
+              txHash: _input,
+              noRecover: true,
+              size: 0,
+            })) as Record<string, unknown>
           )?.total as number | undefined;
 
           if (transfersTotal && transfersTotal > 0) {
@@ -116,15 +124,25 @@ export function Search() {
 
                 switch (k) {
                   case 'ens':
-                    setENS(await getENS(addresses.filter((a: string) => !ens?.[a])) as Record<string, { name?: string; [key: string]: unknown }>);
+                    setENS(
+                      (await getENS(
+                        addresses.filter((a: string) => !ens?.[a])
+                      )) as Record<
+                        string,
+                        { name?: string; [key: string]: unknown }
+                      >
+                    );
                     break;
                   case 'spaceid':
                     setSpaceID(
-                      await getSpaceID(
+                      (await getSpaceID(
                         addresses.filter((a: string) => !spaceID?.[a]),
                         undefined,
                         chains ?? undefined
-                      ) as Record<string, { name?: string; [key: string]: unknown }>
+                      )) as Record<
+                        string,
+                        { name?: string; [key: string]: unknown }
+                      >
                     );
                     break;
                   default:
@@ -147,7 +165,8 @@ export function Search() {
 
   const tx = getSlug(pathname, 'tx');
   const address = getSlug(pathname, 'address');
-  const searchable = !searching && !!input && !find(input, [tx as string, address as string]);
+  const searchable =
+    !searching && !!input && !find(input, [tx as string, address as string]);
 
   if (!itsAssets) {
     return null;
@@ -181,9 +200,7 @@ export function Search() {
             <FiSearch />
           </Button>
         )}
-        {searching && (
-          <Spinner className={styles.spinner} />
-        )}
+        {searching && <Spinner className={styles.spinner} />}
       </div>
     </form>
   );

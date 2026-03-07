@@ -3,11 +3,7 @@ import { Number } from '@/components/Number';
 import type { NameInfoProps } from './EVMBatch.types';
 import * as styles from './EVMBatch.styles';
 
-export function NameInfo({
-  name,
-  decimals,
-  cap,
-}: NameInfoProps) {
+export function NameInfo({ name, decimals, cap }: NameInfoProps) {
   return (
     <div className={styles.nameWrapper}>
       <span className={styles.nameText}>{name}</span>

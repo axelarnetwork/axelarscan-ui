@@ -6,10 +6,7 @@ import { ellipse } from '@/lib/string';
 import type { SaltInfoProps } from './EVMBatch.types';
 import * as styles from './EVMBatch.styles';
 
-export function SaltInfo({
-  salt,
-  depositAddress,
-}: SaltInfoProps) {
+export function SaltInfo({ salt, depositAddress }: SaltInfoProps) {
   return (
     <div className={styles.saltWrapper}>
       <span className={styles.saltLabel}>
@@ -27,9 +24,7 @@ export function SaltInfo({
         </Copy>
       ) : (
         <Copy size={16} value={salt}>
-          <span className={styles.saltLabel}>
-            {ellipse(salt, 6, '0x')}
-          </span>
+          <span className={styles.saltLabel}>{ellipse(salt, 6, '0x')}</span>
         </Copy>
       )}
     </div>

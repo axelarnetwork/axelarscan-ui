@@ -42,7 +42,10 @@ export function ParticipantOption({
       format="0,0"
       suffix={` ${toTitle(optionAbbrev)}${isDisplayPower ? `: ${powerDisplay}` : ''}`}
       noTooltip={true}
-      className={clsx(styles.voteOptionBase, styles.getVoteOptionStyle(option.option))}
+      className={clsx(
+        styles.voteOptionBase,
+        styles.getVoteOptionStyle(option.option)
+      )}
     />
   );
 }

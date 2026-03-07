@@ -23,7 +23,10 @@ export function Uptimes({ data }: UptimesProps) {
         </div>
         <div className={styles.sectionHeaderRight}>
           <Number
-            value={(data.filter((d: UptimeBlock) => d.status).length * 100) / data.length}
+            value={
+              (data.filter((d: UptimeBlock) => d.status).length * 100) /
+              data.length
+            }
             suffix="%"
             className={styles.sectionTitle}
           />

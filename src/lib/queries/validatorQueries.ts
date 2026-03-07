@@ -11,12 +11,12 @@ interface VerifiersResponse {
 }
 
 export const fetchValidators = async (): Promise<Validator[] | null> => {
-  const result = await getValidators() as ValidatorsResponse | null;
+  const result = (await getValidators()) as ValidatorsResponse | null;
   return result?.data ?? null;
 };
 
 export const fetchVerifiers = async () => {
-  const result = await getVerifiers() as VerifiersResponse | null;
+  const result = (await getVerifiers()) as VerifiersResponse | null;
   return {
     verifiers: result?.data ?? null,
     verifiersByChain: result?.verifiersByChain ?? null,

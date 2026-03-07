@@ -1,6 +1,10 @@
 import { toArray } from '@/lib/parser';
 
-import type { GMPFees, GMPMessage, MultihopExpressFeeProps } from '../GMP.types';
+import type {
+  GMPFees,
+  GMPMessage,
+  MultihopExpressFeeProps,
+} from '../GMP.types';
 import { gasStyles } from './InfoGasMetrics.styles';
 import { InfoSection } from './InfoSection.component';
 import { ExpressFeeEntry } from './ExpressFeeEntry.component';
@@ -12,8 +16,7 @@ export function MultihopExpressFee({
   renderFiPlus,
 }: MultihopExpressFeeProps) {
   const entries = toArray([data.originData, data, data.callbackData]).filter(
-    (entry): entry is GMPMessage =>
-      typeof entry === 'object' && entry !== null
+    (entry): entry is GMPMessage => typeof entry === 'object' && entry !== null
   );
 
   const hasExpressFee =

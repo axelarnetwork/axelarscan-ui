@@ -4,7 +4,12 @@ import _ from 'lodash';
 import { usePathname } from 'next/navigation';
 
 import type { Chain } from '@/types';
-import { useAssets, useChains, useITSAssets, useTVL } from '@/hooks/useGlobalData';
+import {
+  useAssets,
+  useChains,
+  useITSAssets,
+  useTVL,
+} from '@/hooks/useGlobalData';
 import { Number } from '@/components/Number';
 import { toNumber } from '@/lib/number';
 import { toArray } from '@/lib/parser';

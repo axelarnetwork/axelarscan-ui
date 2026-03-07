@@ -3,11 +3,7 @@ import { split } from '@/lib/parser';
 import type { SearchInputProps } from './Resources.types';
 import * as styles from './Resources.styles';
 
-export function SearchInput({
-  resource,
-  input,
-  setInput,
-}: SearchInputProps) {
+export function SearchInput({ resource, input, setInput }: SearchInputProps) {
   return (
     <input
       placeholder={`Search by ${resource === 'assets' ? 'Denom / Symbol / Address' : 'Chain Name / ID'}`}

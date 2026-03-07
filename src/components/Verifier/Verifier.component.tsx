@@ -37,7 +37,8 @@ export function Verifier({ address }: VerifierProps) {
   const [votes, setVotes] = useState<VerifierPollEntry[] | null>(null);
   const [signs, setSigns] = useState<VerifierSignEntry[] | null>(null);
   const [rewards, setRewards] = useState<RewardEntry[] | null>(null);
-  const [cumulativeRewards, setCumulativeRewards] = useState<CumulativeRewardsData | null>(null);
+  const [cumulativeRewards, setCumulativeRewards] =
+    useState<CumulativeRewardsData | null>(null);
   const _chains = useChains();
   const verifiers = useVerifiers();
 
@@ -45,7 +46,10 @@ export function Verifier({ address }: VerifierProps) {
     if (!address || !verifiers) return;
 
     const found = verifiers.find((d: unknown) =>
-      equalsIgnoreCase((d as Record<string, unknown>).address as string, address)
+      equalsIgnoreCase(
+        (d as Record<string, unknown>).address as string,
+        address
+      )
     );
 
     if (found) {
@@ -67,7 +71,9 @@ export function Verifier({ address }: VerifierProps) {
     const verifierAddress = data.address;
 
     const fetchMetrics = async () => {
-      const { latest_block_height } = { ...(await getRPCStatus() as Record<string, unknown>) } as { latest_block_height?: number };
+      const { latest_block_height } = {
+        ...((await getRPCStatus()) as Record<string, unknown>),
+      } as { latest_block_height?: number };
       if (!latest_block_height) return;
 
       const toBlock = latest_block_height - 1;
@@ -77,29 +83,66 @@ export function Verifier({ address }: VerifierProps) {
         (async () => {
           try {
             if (!verifierAddress) return;
-            const { data } = { ...(await searchAmplifierPolls({ voter: verifierAddress, fromBlock, toBlock, size: SIZE }) as Record<string, unknown>) };
-            setVotes(flattenVerifierEntries(toArray(data), verifierAddress) as VerifierPollEntry[]);
+            const { data } = {
+              ...((await searchAmplifierPolls({
+                voter: verifierAddress,
+                fromBlock,
+                toBlock,
+                size: SIZE,
+              })) as Record<string, unknown>),
+            };
+            setVotes(
+              flattenVerifierEntries(
+                toArray(data),
+                verifierAddress
+              ) as VerifierPollEntry[]
+            );
           } catch {}
         })(),
         (async () => {
           try {
             if (!verifierAddress) return;
-            const { data } = { ...(await searchAmplifierProofs({ signer: verifierAddress, fromBlock, toBlock, size: SIZE }) as Record<string, unknown>) };
-            setSigns(flattenVerifierEntries(toArray(data), verifierAddress) as VerifierSignEntry[]);
+            const { data } = {
+              ...((await searchAmplifierProofs({
+                signer: verifierAddress,
+                fromBlock,
+                toBlock,
+                size: SIZE,
+              })) as Record<string, unknown>),
+            };
+            setSigns(
+              flattenVerifierEntries(
+                toArray(data),
+                verifierAddress
+              ) as VerifierSignEntry[]
+            );
           } catch {}
         })(),
         (async () => {
           try {
             if (!verifierAddress) return;
-            const { data } = { ...(await searchVerifiersRewards({ verifierAddress, fromBlock: 1, size: SIZE }) as Record<string, unknown>) };
+            const { data } = {
+              ...((await searchVerifiersRewards({
+                verifierAddress,
+                fromBlock: 1,
+                size: SIZE,
+              })) as Record<string, unknown>),
+            };
             setRewards(toArray(data));
           } catch {}
         })(),
         (async () => {
           try {
             if (!verifierAddress) return;
-            const { data } = { ...(await getVerifiersRewards({ verifierAddress, fromBlock: 1 }) as Record<string, unknown>) };
-            setCumulativeRewards((data as CumulativeRewardsData[] | undefined)?.[0] ?? null);
+            const { data } = {
+              ...((await getVerifiersRewards({
+                verifierAddress,
+                fromBlock: 1,
+              })) as Record<string, unknown>),
+            };
+            setCumulativeRewards(
+              (data as CumulativeRewardsData[] | undefined)?.[0] ?? null
+            );
           } catch {}
         })(),
       ]);
@@ -128,7 +171,12 @@ export function Verifier({ address }: VerifierProps) {
     <Container className="sm:mt-8">
       <div className={styles.mainGrid}>
         <div className={styles.mainLeft}>
-          <Info data={data} address={address} rewards={rewards} cumulativeRewards={cumulativeRewards} />
+          <Info
+            data={data}
+            address={address}
+            rewards={rewards}
+            cumulativeRewards={cumulativeRewards}
+          />
         </div>
         {!(votes || signs) ? (
           <Spinner />

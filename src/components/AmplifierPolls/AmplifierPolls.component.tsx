@@ -68,7 +68,7 @@ export function AmplifierPolls() {
         [generateKeyByParams(params)]: {
           data: processPollData(
             toArray(data) as AmplifierPollEntry[],
-            blockData.latest_block_height ?? 0,
+            blockData.latest_block_height ?? 0
           ),
           total: total ?? 0,
         },
@@ -166,4 +166,3 @@ export function AmplifierPolls() {
     </Container>
   );
 }
-

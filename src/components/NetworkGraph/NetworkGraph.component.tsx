@@ -22,10 +22,18 @@ import type {
   GraphData,
 } from './NetworkGraph.types';
 import { TIERS, THRESHOLD } from './NetworkGraph.utils';
-import { useImagePreloader, useNodeCanvasObject, useLinkCanvasObject } from './NetworkGraph.hooks';
+import {
+  useImagePreloader,
+  useNodeCanvasObject,
+  useLinkCanvasObject,
+} from './NetworkGraph.hooks';
 import { NetworkGraphTable } from './Table.component';
 
-export function NetworkGraph({ data, hideTable = false, setChainFocus }: NetworkGraphProps) {
+export function NetworkGraph({
+  data,
+  hideTable = false,
+  setChainFocus,
+}: NetworkGraphProps) {
   const graphRef = useRef<ForceGraphMethods>(undefined);
   const [graphData, setGraphData] = useState<GraphData | null>(null);
   const [selectedNode, setSelectedNode] = useState<GraphNode | null>(null);
@@ -48,7 +56,7 @@ export function NetworkGraph({ data, hideTable = false, setChainFocus }: Network
       const _data: NetworkDataItem[] = _.orderBy(
         Object.entries(
           _.groupBy(
-            data.flatMap((d) => {
+            data.flatMap(d => {
               if (find(AXELAR, [d.sourceChain, d.destinationChain])) {
                 return d;
               }
@@ -76,15 +84,15 @@ export function NetworkGraph({ data, hideTable = false, setChainFocus }: Network
 
       // add no traffic pairs
       chains
-        .filter((d) => (!d.maintainer_id || !d.no_inflation) && d.id !== AXELAR)
-        .forEach((d) => {
+        .filter(d => (!d.maintainer_id || !d.no_inflation) && d.id !== AXELAR)
+        .forEach(d => {
           [
             [d.id, AXELAR],
             [AXELAR, d.id],
           ]
             .map(ids => ids.join('_'))
             .forEach((id, i) => {
-              if (_data.findIndex((d) => equalsIgnoreCase(d.id, id)) < 0) {
+              if (_data.findIndex(d => equalsIgnoreCase(d.id, id)) < 0) {
                 _data.push({
                   id,
                   sourceChain: i === 0 ? d.id : AXELAR,
@@ -99,7 +107,7 @@ export function NetworkGraph({ data, hideTable = false, setChainFocus }: Network
       let nodes: GraphNode[] = [];
       const edges: GraphEdge[] = [];
 
-      _data.forEach((d) => {
+      _data.forEach(d => {
         ['source', 'destination'].forEach(s => {
           const id = d[`${s}Chain`] as string;
 
@@ -113,7 +121,7 @@ export function NetworkGraph({ data, hideTable = false, setChainFocus }: Network
                 label: name,
                 color: color ?? '',
                 num_txs: _.sumBy(
-                  _data.filter((d) =>
+                  _data.filter(d =>
                     find(id, [d.sourceChain, d.destinationChain])
                   ),
                   'num_txs'
@@ -126,7 +134,9 @@ export function NetworkGraph({ data, hideTable = false, setChainFocus }: Network
         if (
           ['source', 'destination'].findIndex(
             s =>
-              nodes.findIndex(n => equalsIgnoreCase(n.id, d[`${s}Chain`] as string)) < 0
+              nodes.findIndex(n =>
+                equalsIgnoreCase(n.id, d[`${s}Chain`] as string)
+              ) < 0
           ) < 0
         ) {
           const { color } = { ...getChainData(d.sourceChain, chains) };
@@ -171,7 +181,10 @@ export function NetworkGraph({ data, hideTable = false, setChainFocus }: Network
 
   const { nodes, edges } = { ...graphData };
 
-  const imagesUrl = useMemo(() => (toArray(nodes) as GraphNode[]).map((d: GraphNode) => d.image), [nodes]);
+  const imagesUrl = useMemo(
+    () => (toArray(nodes) as GraphNode[]).map((d: GraphNode) => d.image),
+    [nodes]
+  );
   const images = useImagePreloader(toArray(imagesUrl) as string[]);
   const imagesLoaded =
     chains && Object.keys({ ...images }).length / chains.length >= 0.5;
@@ -203,15 +216,25 @@ export function NetworkGraph({ data, hideTable = false, setChainFocus }: Network
     >
       <div className={styles.graphContainer}>
         <ForceGraph2D
-          ref={graphRef as React.MutableRefObject<ForceGraphMethods | undefined>}
+          ref={
+            graphRef as React.MutableRefObject<ForceGraphMethods | undefined>
+          }
           graphData={{ nodes: nodes!, links: edges! }}
           width={648}
           height={632}
           backgroundColor={resolvedTheme === 'dark' ? '#18181b' : '#ffffff'}
           {...({ showNavInfo: false } as Record<string, boolean>)}
-          nodeCanvasObject={nodeCanvasObject as Parameters<typeof ForceGraph2D>[0]['nodeCanvasObject']}
-          linkCanvasObject={linkCanvasObject as Parameters<typeof ForceGraph2D>[0]['linkCanvasObject']}
-          onNodeClick={(node) => {
+          nodeCanvasObject={
+            nodeCanvasObject as Parameters<
+              typeof ForceGraph2D
+            >[0]['nodeCanvasObject']
+          }
+          linkCanvasObject={
+            linkCanvasObject as Parameters<
+              typeof ForceGraph2D
+            >[0]['linkCanvasObject']
+          }
+          onNodeClick={node => {
             const graphNode = node as GraphNode;
             setSelectedNode(graphNode);
             setPage(undefined);

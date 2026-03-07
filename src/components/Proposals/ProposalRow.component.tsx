@@ -12,8 +12,7 @@ import * as styles from './Proposals.styles';
 import type { ProposalDeposit, ProposalRowProps } from './Proposals.types';
 
 export function ProposalRow({ proposal: d }: ProposalRowProps) {
-  const showTally =
-    d.status && ['PASSED', 'REJECTED'].includes(d.status);
+  const showTally = d.status && ['PASSED', 'REJECTED'].includes(d.status);
   const tallyEntries = Object.entries({ ...d.final_tally_result }).filter(
     ([_k, v]) => toNumber(v) >= 0
   );

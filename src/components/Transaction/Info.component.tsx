@@ -53,9 +53,7 @@ export function Info({ data, tx }: InfoProps) {
           <div className={styles.infoRow}>
             <dt className={styles.infoLabel}>Type</dt>
             <dd className={styles.infoValue}>
-              {type && (
-                <Tag className={styles.typeTag}>{type}</Tag>
-              )}
+              {type && <Tag className={styles.typeTag}>{type}</Tag>}
             </dd>
           </div>
           <div className={styles.infoRow}>

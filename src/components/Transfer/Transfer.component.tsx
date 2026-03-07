@@ -25,11 +25,18 @@ export function Transfer({ tx, lite }: TransferProps) {
 
   useEffect(() => {
     const getData = async () => {
-      const { transferId } = { ...getParams(searchParams) } as Record<string, string>;
+      const { transferId } = { ...getParams(searchParams) } as Record<
+        string,
+        string
+      >;
 
       if (tx) {
         if (!ended) {
-          const { data } = { ...(await searchTransfers({ txHash: tx })) as { data?: TransferData[] } };
+          const { data } = {
+            ...((await searchTransfers({ txHash: tx })) as {
+              data?: TransferData[];
+            }),
+          };
           const d = data?.[0];
 
           if (d) {
@@ -44,7 +51,11 @@ export function Transfer({ tx, lite }: TransferProps) {
           }
         }
       } else if (transferId) {
-        const { data } = { ...(await searchTransfers({ transferId })) as { data?: TransferData[] } };
+        const { data } = {
+          ...((await searchTransfers({ transferId })) as {
+            data?: TransferData[];
+          }),
+        };
         const d = data?.[0];
 
         if (d) {

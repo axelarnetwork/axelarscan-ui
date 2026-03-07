@@ -23,20 +23,12 @@ export function ValueBox({
     <a
       href={url}
       target="_blank"
-      className={clsx(
-        valueBoxStyles.linkText,
-        noEllipse && 'truncate'
-      )}
+      className={clsx(valueBoxStyles.linkText, noEllipse && 'truncate')}
     >
       {displayValue}
     </a>
   ) : (
-    <span
-      className={clsx(
-        valueBoxStyles.plainText,
-        noEllipse && 'truncate'
-      )}
-    >
+    <span className={clsx(valueBoxStyles.plainText, noEllipse && 'truncate')}>
       {displayValue}
     </span>
   );

@@ -11,11 +11,7 @@ import { FilterDialog } from '@/components/FilterSelect';
 import type { FilterAttribute } from '@/components/FilterSelect';
 import { useChains, useAssets, useITSAssets } from '@/hooks/useGlobalData';
 import { toArray } from '@/lib/parser';
-import {
-  getParams,
-  getQueryString,
-  isFiltered,
-} from '@/lib/operator';
+import { getParams, getQueryString, isFiltered } from '@/lib/operator';
 import type { Chain } from '@/types';
 
 import * as styles from './GMPs.styles';
@@ -27,7 +23,9 @@ export function Filters() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
-  const [params, setParams] = useState<Record<string, unknown>>(getParams(searchParams, size));
+  const [params, setParams] = useState<Record<string, unknown>>(
+    getParams(searchParams, size)
+  );
   const [searchInput, setSearchInput] = useState<Record<string, string>>({});
   const chains = useChains();
   const assets = useAssets();
@@ -39,7 +37,11 @@ export function Filters() {
     }
   }, [params, setSearchInput]);
 
-  const onSubmit = (e1?: unknown, e2?: unknown, _params?: Record<string, unknown>) => {
+  const onSubmit = (
+    e1?: unknown,
+    e2?: unknown,
+    _params?: Record<string, unknown>
+  ) => {
     if (!_params) {
       _params = params;
     }
@@ -61,7 +63,7 @@ export function Filters() {
     toArray(chains).map((d: Chain, i: number) => ({ ...d, i })),
     ['deprecated', 'name', 'i'],
     ['desc', 'asc', 'asc']
-  ).map((d) => ({
+  ).map(d => ({
     value: d.id,
     title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}`,
   }));
@@ -113,15 +115,17 @@ export function Filters() {
           toArray(
             _.concat(
               (params.assetType !== 'its' &&
-                toArray(assets).map((d) => ({
+                toArray(assets).map(d => ({
                   value: (d as { id: string }).id,
                   title: `${(d as { symbol?: string }).symbol} (${(d as { id: string }).id})`,
-                }))) || [],
+                }))) ||
+                [],
               (params.assetType !== 'gateway' &&
-                toArray(itsAssets).map((d) => ({
+                toArray(itsAssets).map(d => ({
                   value: (d as { symbol: string }).symbol,
                   title: `${(d as { symbol: string }).symbol} (ITS)`,
-                }))) || []
+                }))) ||
+                []
             )
           ),
           'value'

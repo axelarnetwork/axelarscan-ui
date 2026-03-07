@@ -55,7 +55,8 @@ const ENVIRONMENTS: EnvironmentItem[] = [
   { name: 'stagenet', href: 'https://stagenet.axelarscan.io' },
   { name: 'devnet-amplifier', href: 'https://devnet-amplifier.axelarscan.io' },
 ].filter(
-  d => !['stagenet', 'devnet-amplifier'].includes(d.name) || d.name === ENVIRONMENT
+  d =>
+    !['stagenet', 'devnet-amplifier'].includes(d.name) || d.name === ENVIRONMENT
 );
 
 export function Header() {

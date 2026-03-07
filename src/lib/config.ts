@@ -23,7 +23,9 @@ export const axelarContractFields = [
   'interchain_token_service_hub',
 ];
 
-export const getAxelarContractAddresses = (chainsData: Chain[] | null | undefined) => {
+export const getAxelarContractAddresses = (
+  chainsData: Chain[] | null | undefined
+) => {
   if (!chainsData) return [];
 
   const addresses: string[] = [];
@@ -65,7 +67,7 @@ export const getChainKey = (
         (!exact &&
           _.concat(stringKeys, d.prefix_address, d.prefix_chain_ids)
             .filter((p): p is string => isString(p))
-            .findIndex((p) => chainStr.startsWith(p)) > -1) // check prefix
+            .findIndex(p => chainStr.startsWith(p)) > -1) // check prefix
       );
     })?.id || toCase(chainStr, 'lower')
   );
@@ -90,9 +92,15 @@ export const getAssetData = (
 
   return toArray(assetsData).find(
     (d: Asset) =>
-      find(asset, [d.denom, ...(d.denoms ?? []), d.symbol].filter((s): s is string => !!s)) || // check equals
+      find(
+        asset,
+        [d.denom, ...(d.denoms ?? []), d.symbol].filter((s): s is string => !!s)
+      ) || // check equals
       toArray(Object.values({ ...d.addresses })).findIndex((a: AssetAddress) =>
-        find(asset, [a.address, a.ibc_denom, a.symbol].filter((s): s is string => !!s))
+        find(
+          asset,
+          [a.address, a.ibc_denom, a.symbol].filter((s): s is string => !!s)
+        )
       ) > -1 // check equals to address, denom or symbol of each chain
   );
 };
@@ -105,6 +113,9 @@ export const getITSAssetData = (
 
   // check equals
   return toArray(assetsData).find((d: Asset) =>
-    find(asset, [d.id, d.symbol, d.address].filter((s): s is string => !!s))
+    find(
+      asset,
+      [d.id, d.symbol, d.address].filter((s): s is string => !!s)
+    )
   );
 };

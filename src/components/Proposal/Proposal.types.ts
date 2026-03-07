@@ -31,7 +31,11 @@ export interface ProposalData {
 export interface VoteEntry {
   voter?: string;
   option?: string;
-  validatorData?: { operator_address: string; description?: { moniker?: string }; tokens?: number };
+  validatorData?: {
+    operator_address: string;
+    description?: { moniker?: string };
+    tokens?: number;
+  };
   voting_power?: number;
 }
 

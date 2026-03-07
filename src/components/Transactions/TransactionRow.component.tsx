@@ -15,7 +15,12 @@ import type { TransactionRowProps } from './Transactions.types';
 import type { Chain } from '@/types';
 import * as styles from './Transactions.styles';
 
-export function TransactionRow({ data: d, height, address, chains }: TransactionRowProps) {
+export function TransactionRow({
+  data: d,
+  height,
+  address,
+  chains,
+}: TransactionRowProps) {
   return (
     <tr className={styles.tableRow}>
       <td className={styles.tdFirst}>
@@ -45,19 +50,13 @@ export function TransactionRow({ data: d, height, address, chains }: Transaction
         </td>
       )}
       <td className={styles.tdDefault}>
-        {d.type && (
-          <Tag className={styles.typeTag}>
-            {d.type}
-          </Tag>
-        )}
+        {d.type && <Tag className={styles.typeTag}>{d.type}</Tag>}
       </td>
       <td className={styles.tdDefault}>
         <Tag
           className={clsx(
             styles.statusTagBase,
-            d.code
-              ? styles.statusFailed
-              : styles.statusSuccess
+            d.code ? styles.statusFailed : styles.statusSuccess
           )}
         >
           {d.code ? 'Failed' : 'Success'}
@@ -90,7 +89,7 @@ export function TransactionRow({ data: d, height, address, chains }: Transaction
                 6
               )}
               format="0,0.00000000"
-              suffix={` ${(getChainData('axelarnet', chains) as Chain & { native_token?: { symbol?: string } } | undefined)?.native_token?.symbol}`}
+              suffix={` ${(getChainData('axelarnet', chains) as (Chain & { native_token?: { symbol?: string } }) | undefined)?.native_token?.symbol}`}
               noTooltip={true}
               className={styles.feeNumber}
             />

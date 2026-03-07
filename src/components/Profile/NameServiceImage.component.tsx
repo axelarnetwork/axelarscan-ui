@@ -7,10 +7,18 @@ import { Image } from '@/components/Image';
 import type { NameServiceImageProps } from './Profile.types';
 import { nameService as styles } from './Profile.styles';
 
-export function NameServiceImage({ src, fallbackSrc, width, height, onLoad }: NameServiceImageProps) {
+export function NameServiceImage({
+  src,
+  fallbackSrc,
+  width,
+  height,
+  onLoad,
+}: NameServiceImageProps) {
   const [image404, setImage404] = useState<boolean | null>(null);
-  const sizeClass = width === 24 ? styles.imageSizeDefault : styles.imageSizeSmall;
-  const marginClass = width < 24 ? styles.imageMarginSmall : styles.imageMarginDefault;
+  const sizeClass =
+    width === 24 ? styles.imageSizeDefault : styles.imageSizeSmall;
+  const marginClass =
+    width < 24 ? styles.imageMarginSmall : styles.imageMarginDefault;
 
   if (typeof image404 === 'boolean') {
     return (
@@ -19,7 +27,11 @@ export function NameServiceImage({ src, fallbackSrc, width, height, onLoad }: Na
         alt=""
         width={width}
         height={height}
-        className={clsx(styles.imageRoundedFull, width === 24 && styles.imageSizeDefault, marginClass)}
+        className={clsx(
+          styles.imageRoundedFull,
+          width === 24 && styles.imageSizeDefault,
+          marginClass
+        )}
       />
     );
   }
@@ -28,7 +40,10 @@ export function NameServiceImage({ src, fallbackSrc, width, height, onLoad }: Na
     <img
       src={src}
       alt=""
-      onLoad={() => { setImage404(false); onLoad?.(); }}
+      onLoad={() => {
+        setImage404(false);
+        onLoad?.();
+      }}
       onError={() => setImage404(true)}
       className={clsx(styles.imageRoundedFull, sizeClass, marginClass)}
     />

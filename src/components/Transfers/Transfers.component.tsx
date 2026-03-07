@@ -3,9 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import _ from 'lodash';
-import {
-  MdOutlineRefresh,
-} from 'react-icons/md';
+import { MdOutlineRefresh } from 'react-icons/md';
 import { PiWarningCircle } from 'react-icons/pi';
 
 import { Container } from '@/components/Container';
@@ -17,18 +15,18 @@ import { Pagination } from '@/components/Pagination';
 import { useAssets } from '@/hooks/useGlobalData';
 import { searchTransfers } from '@/lib/api/token-transfer';
 import { ENVIRONMENT } from '@/lib/config';
-import {
-  getParams,
-  generateKeyByParams,
-} from '@/lib/operator';
-import {
-  toBoolean,
-} from '@/lib/string';
+import { getParams, generateKeyByParams } from '@/lib/operator';
+import { toBoolean } from '@/lib/string';
 import { isNumber } from '@/lib/number';
 
 import { Filters } from './Filters.component';
 import { TransferRow } from './TransferRow.component';
-import type { TransfersProps, TransferSearchResults, TransferSearchResult, TransferRowData } from './Transfers.types';
+import type {
+  TransfersProps,
+  TransferSearchResults,
+  TransferSearchResult,
+  TransferRowData,
+} from './Transfers.types';
 import * as styles from './Transfers.styles';
 
 const size = 25;
@@ -41,7 +39,8 @@ export const normalizeType = (type: string | undefined) =>
 export function Transfers({ address }: TransfersProps) {
   const searchParams = useSearchParams();
   const [params, setParams] = useState<Record<string, unknown> | null>(null);
-  const [searchResults, setSearchResults] = useState<TransferSearchResults | null>(null);
+  const [searchResults, setSearchResults] =
+    useState<TransferSearchResults | null>(null);
   const [refresh, setRefresh] = useState<boolean | string | null>(null);
   const assets = useAssets();
 
@@ -72,7 +71,11 @@ export function Transfers({ address }: TransfersProps) {
       const _params = _.cloneDeep(params);
       delete _params.sortBy;
 
-      const response = await searchTransfers({ ..._params, size, sort }) as TransferSearchResult | null;
+      const response = (await searchTransfers({
+        ..._params,
+        size,
+        sort,
+      })) as TransferSearchResult | null;
 
       setSearchResults({
         ...(refresh ? undefined : searchResults),
@@ -92,7 +95,7 @@ export function Transfers({ address }: TransfersProps) {
           !searchResults?.[generateKeyByParams(params)] &&
           ENVIRONMENT === 'mainnet'
           ? true
-          : false,
+          : false
       );
     };
 
@@ -104,13 +107,17 @@ export function Transfers({ address }: TransfersProps) {
     return () => clearInterval(interval);
   }, []);
 
-  const { data, total } = { ...searchResults?.[generateKeyByParams(params as Record<string, unknown>)] } as TransferSearchResult;
+  const { data, total } = {
+    ...searchResults?.[generateKeyByParams(params as Record<string, unknown>)],
+  } as TransferSearchResult;
 
   return (
     <Container className={styles.transfersContainer}>
       <div role="alert" className={styles.deprecationBanner}>
         <PiWarningCircle size={20} aria-hidden="true" />
-        <span className={styles.deprecationBannerText}>Legacy Token Transfers are deprecated.</span>
+        <span className={styles.deprecationBannerText}>
+          Legacy Token Transfers are deprecated.
+        </span>
       </div>
       {!data ? (
         <Spinner />
@@ -146,12 +153,24 @@ export function Transfers({ address }: TransfersProps) {
             <table className={styles.table}>
               <thead className={styles.thead}>
                 <tr className={styles.theadTr}>
-                  <th scope="col" className={styles.thTxHash}>Tx Hash</th>
-                  <th scope="col" className={styles.thDefault}>Method</th>
-                  <th scope="col" className={styles.thDefault}>Source</th>
-                  <th scope="col" className={styles.thDefault}>Destination</th>
-                  <th scope="col" className={styles.thDefault}>Status</th>
-                  <th scope="col" className={styles.thCreatedAt}>Created at</th>
+                  <th scope="col" className={styles.thTxHash}>
+                    Tx Hash
+                  </th>
+                  <th scope="col" className={styles.thDefault}>
+                    Method
+                  </th>
+                  <th scope="col" className={styles.thDefault}>
+                    Source
+                  </th>
+                  <th scope="col" className={styles.thDefault}>
+                    Destination
+                  </th>
+                  <th scope="col" className={styles.thDefault}>
+                    Status
+                  </th>
+                  <th scope="col" className={styles.thCreatedAt}>
+                    Created at
+                  </th>
                 </tr>
               </thead>
               <tbody className={styles.tbody}>

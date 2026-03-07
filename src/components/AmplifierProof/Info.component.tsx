@@ -51,7 +51,8 @@ export function Info({ data, id }: InfoProps) {
   const { url, transaction_path } = {
     ...getChainData(chain, chains)?.explorer,
   };
-  const showUpdated = updated_at?.ms && created_at?.ms && updated_at.ms > created_at.ms;
+  const showUpdated =
+    updated_at?.ms && created_at?.ms && updated_at.ms > created_at.ms;
 
   return (
     <div className={styles.infoPanel}>
@@ -102,7 +103,9 @@ export function Info({ data, id }: InfoProps) {
             <dt className={styles.dtLabel}>Status</dt>
             <dd className={styles.ddValue}>
               {status && (
-                <Tag className={clsx(styles.statusTagBase, getStatusStyle(status))}>
+                <Tag
+                  className={clsx(styles.statusTagBase, getStatusStyle(status))}
+                >
                   {status}
                 </Tag>
               )}
@@ -133,10 +136,16 @@ export function Info({ data, id }: InfoProps) {
             <TxHashRow label="Initiated Tx Hash" txhash={initiated_txhash} />
           )}
           {confirmation_txhash && confirmation_txhash !== completed_txhash && (
-            <TxHashRow label="Confirmation Tx Hash" txhash={confirmation_txhash} />
+            <TxHashRow
+              label="Confirmation Tx Hash"
+              txhash={confirmation_txhash}
+            />
           )}
           {completed_txhash && (
-            <TxHashRow label="Proof Completed Tx Hash" txhash={completed_txhash} />
+            <TxHashRow
+              label="Proof Completed Tx Hash"
+              txhash={completed_txhash}
+            />
           )}
           {completed_height && (
             <div className={styles.dlRow}>
@@ -181,7 +190,9 @@ export function Info({ data, id }: InfoProps) {
             </div>
           )}
           <div className={styles.dlRow}>
-            <dt className={styles.dtLabel}>{`Participants${toArray(participants).length > 1 ? ` (${toArray(participants).length})` : ''}`}</dt>
+            <dt
+              className={styles.dtLabel}
+            >{`Participants${toArray(participants).length > 1 ? ` (${toArray(participants).length})` : ''}`}</dt>
             <dd className={styles.ddValue}>
               {signOptions && (
                 <div className={styles.participantsWrapper}>

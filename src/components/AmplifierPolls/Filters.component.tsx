@@ -25,7 +25,7 @@ export function Filters() {
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const [params, setParams] = useState<Record<string, unknown>>(
-    getParams(searchParams, size),
+    getParams(searchParams, size)
   );
   const [searchInput, setSearchInput] = useState<Record<string, string>>({});
   const chains = useChains();
@@ -33,7 +33,7 @@ export function Filters() {
   const onSubmit = (
     _e1?: unknown,
     _e2?: unknown,
-    _params?: Record<string, unknown>,
+    _params?: Record<string, unknown>
   ) => {
     if (!_params) {
       _params = params;
@@ -63,12 +63,13 @@ export function Filters() {
       options: _.orderBy(
         toArray(chains)
           .filter(
-            (d: Chain) => d.chain_type === 'vm' && (!d.no_inflation || d.deprecated),
+            (d: Chain) =>
+              d.chain_type === 'vm' && (!d.no_inflation || d.deprecated)
           )
           .map((d: Chain, i: number) => ({ ...d, i })),
         ['deprecated', 'name', 'i'],
-        ['desc', 'asc', 'asc'],
-      ).map((d) => ({
+        ['desc', 'asc', 'asc']
+      ).map(d => ({
         value: d.id,
         title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}`,
       })),
@@ -81,10 +82,10 @@ export function Filters() {
       multiple: true,
       options: _.concat(
         { title: 'Any', value: undefined as string | undefined },
-        ['completed', 'failed', 'pending'].map((d) => ({
+        ['completed', 'failed', 'pending'].map(d => ({
           value: d,
           title: capitalize(d),
-        })),
+        }))
       ),
     },
     { label: 'Voter (Verifier Address)', name: 'voter' },
@@ -94,10 +95,10 @@ export function Filters() {
       type: 'select',
       options: _.concat(
         { title: 'Any', value: undefined as string | undefined },
-        ['yes', 'no', 'unsubmitted'].map((d) => ({
+        ['yes', 'no', 'unsubmitted'].map(d => ({
           value: d,
           title: capitalize(d),
-        })),
+        }))
       ),
     },
     { label: 'Time', name: 'time', type: 'datetimeRange' },

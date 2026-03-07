@@ -1,7 +1,12 @@
 import clsx from 'clsx';
 
 import { isString } from '@/lib/string';
-import type { ChainTimeEstimate, GMPEventLog, GMPMessage, GMPStep } from '../GMP.types';
+import type {
+  ChainTimeEstimate,
+  GMPEventLog,
+  GMPMessage,
+  GMPStep,
+} from '../GMP.types';
 import { PendingStep } from './PendingStep.component';
 import { CompletedStep } from './CompletedStep.component';
 import { resolveStepURL } from './StatusTimeline.utils';

@@ -12,15 +12,17 @@ interface CompletedStepProps {
   stepURL: string | undefined;
 }
 
-export function CompletedStep({ id, title, status, stepURL }: CompletedStepProps) {
+export function CompletedStep({
+  id,
+  title,
+  status,
+  stepURL,
+}: CompletedStepProps) {
   const content = <StepContent id={id} title={title} status={status} />;
 
   return (
     <>
-      <div
-        className={statusTimelineStyles.connectorWrapper}
-        aria-hidden="true"
-      >
+      <div className={statusTimelineStyles.connectorWrapper} aria-hidden="true">
         <div
           className={clsx(
             statusTimelineStyles.connectorLineBase,

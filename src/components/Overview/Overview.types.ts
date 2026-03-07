@@ -29,10 +29,17 @@ export interface TransferStatsEntry {
 }
 
 export interface OverviewData {
-  GMPStatsByChains?: { source_chains?: SourceChainEntry[]; [key: string]: unknown };
+  GMPStatsByChains?: {
+    source_chains?: SourceChainEntry[];
+    [key: string]: unknown;
+  };
   GMPStatsByContracts?: Record<string, unknown>;
   GMPTotalVolume?: number;
-  transfersStats?: { data?: TransferStatsEntry[]; total?: number; [key: string]: unknown };
+  transfersStats?: {
+    data?: TransferStatsEntry[];
+    total?: number;
+    [key: string]: unknown;
+  };
   transfersTotalVolume?: number;
   [key: string]: unknown;
 }

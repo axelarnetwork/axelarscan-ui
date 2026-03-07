@@ -42,7 +42,12 @@ export function Layout({ children }: LayoutProps) {
           </motion.header>
         </>
       )}
-      <div className={clsx(styles.contentWrapper, !noFooter && styles.contentWrapperFull)}>
+      <div
+        className={clsx(
+          styles.contentWrapper,
+          !noFooter && styles.contentWrapperFull
+        )}
+      >
         <main className={styles.main}>{children}</main>
         {!noFooter && <Footer />}
       </div>

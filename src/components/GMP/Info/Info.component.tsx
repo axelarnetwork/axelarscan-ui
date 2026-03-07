@@ -116,18 +116,19 @@ export function Info({
 
   const event = getEvent(data);
   const assetSourceChain = data.originData?.call?.chain ?? sourceChain;
-  const assetAmount = (data.originData?.amount ?? data.amount) as number | undefined;
-  const tokenContractAddress =
-    (data.originData?.interchain_transfer?.contract_address ||
-      interchain_transfer?.contract_address) as string | undefined;
+  const assetAmount = (data.originData?.amount ?? data.amount) as
+    | number
+    | undefined;
+  const tokenContractAddress = (data.originData?.interchain_transfer
+    ?.contract_address || interchain_transfer?.contract_address) as
+    | string
+    | undefined;
 
   const timelineItems = toArray([
     data.originData,
     data,
     data.callbackData,
-  ]).filter(
-    (d): d is GMPMessage => d !== undefined && typeof d === 'object'
-  );
+  ]).filter((d): d is GMPMessage => d !== undefined && typeof d === 'object');
 
   return (
     <div className={infoStyles.container}>

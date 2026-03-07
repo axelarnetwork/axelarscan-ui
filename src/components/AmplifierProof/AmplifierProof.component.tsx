@@ -10,7 +10,12 @@ import { getRPCStatus, searchAmplifierProofs } from '@/lib/api/validator';
 import { toArray, getValuesOfAxelarAddressKey } from '@/lib/parser';
 import { headString, lastString } from '@/lib/string';
 
-import type { AmplifierProofProps, AmplifierProofData, RPCStatusData, ProofSign } from './AmplifierProof.types';
+import type {
+  AmplifierProofProps,
+  AmplifierProofData,
+  RPCStatusData,
+  ProofSign,
+} from './AmplifierProof.types';
 import { Info } from './Info.component';
 import { Signs } from './Signs.component';
 import * as styles from './AmplifierProof.styles';
@@ -22,7 +27,8 @@ export function AmplifierProof({ id }: AmplifierProofProps) {
   const verifiers = useVerifiers();
 
   useEffect(() => {
-    const getData = async () => setBlockData(await getRPCStatus() as RPCStatusData);
+    const getData = async () =>
+      setBlockData((await getRPCStatus()) as RPCStatusData);
     getData();
   }, [setBlockData]);
 
@@ -30,17 +36,21 @@ export function AmplifierProof({ id }: AmplifierProofProps) {
     const getData = async () => {
       if (!blockData) return;
 
-      const response = await searchAmplifierProofs({
-          multisigContractAddress: id.includes('_')
-            ? headString(id, '_')
-            : undefined,
-          sessionId: lastString(id, '_'),
-        }) as { data?: AmplifierProofData[] } | undefined;
+      const response = (await searchAmplifierProofs({
+        multisigContractAddress: id.includes('_')
+          ? headString(id, '_')
+          : undefined,
+        sessionId: lastString(id, '_'),
+      })) as { data?: AmplifierProofData[] } | undefined;
 
       let d = response?.data?.[0];
 
       if (d) {
-        const signs = (getValuesOfAxelarAddressKey(d as unknown as Record<string, unknown>) as ProofSign[]).map(s => ({
+        const signs = (
+          getValuesOfAxelarAddressKey(
+            d as unknown as Record<string, unknown>
+          ) as ProofSign[]
+        ).map(s => ({
           ...s,
           option: s.sign ? 'signed' : 'unsubmitted',
         }));
@@ -77,7 +87,10 @@ export function AmplifierProof({ id }: AmplifierProofProps) {
             ? 'completed'
             : d.failed
               ? 'failed'
-              : d.expired || (d.expired_height != null && blockData.latest_block_height != null && d.expired_height < blockData.latest_block_height)
+              : d.expired ||
+                  (d.expired_height != null &&
+                    blockData.latest_block_height != null &&
+                    d.expired_height < blockData.latest_block_height)
                 ? 'expired'
                 : 'pending',
           height: _.minBy(signs, 'height')?.height || d.height,

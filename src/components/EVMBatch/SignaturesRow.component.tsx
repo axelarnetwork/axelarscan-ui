@@ -14,9 +14,7 @@ export function SignaturesRow({ signatures }: SignaturesRowProps) {
         <div className={styles.signaturesGrid}>
           {signatures.map((d: string, i: number) => (
             <Copy key={i} size={14} value={d}>
-              <span className={styles.signatureText}>
-                {ellipse(d, 8)}
-              </span>
+              <span className={styles.signatureText}>{ellipse(d, 8)}</span>
             </Copy>
           ))}
         </div>

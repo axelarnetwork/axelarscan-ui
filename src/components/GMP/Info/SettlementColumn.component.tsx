@@ -30,9 +30,7 @@ export function SettlementColumn({
               const txHash = useExecuted
                 ? entry?.executed?.transactionHash
                 : entry?.call?.transactionHash;
-              const chain = useExecuted
-                ? entry?.executed?.chain
-                : 'axelarnet';
+              const chain = useExecuted ? entry?.executed?.chain : 'axelarnet';
               const customURL =
                 !useExecuted && entry?.message_id
                   ? `/gmp/${entry.message_id}`

@@ -19,9 +19,13 @@ import * as styles from './EVMBatches.styles';
 const NUM_COMMANDS_TRUNCATE = 10;
 
 export function BatchRow({ batch: d, chains, assets }: BatchRowProps) {
-  const { url, transaction_path } = { ...getChainData(d.chain, chains)?.explorer } as Partial<ChainExplorer>;
+  const { url, transaction_path } = {
+    ...getChainData(d.chain, chains)?.explorer,
+  } as Partial<ChainExplorer>;
 
-  const executed = toArray(d.commands).length === toArray(d.commands).filter((c: BatchCommand) => c.executed).length;
+  const executed =
+    toArray(d.commands).length ===
+    toArray(d.commands).filter((c: BatchCommand) => c.executed).length;
   const status = executed
     ? 'executed'
     : toCase(d.status?.replace('BATCHED_COMMANDS_STATUS_', ''), 'lower');
@@ -31,7 +35,11 @@ export function BatchRow({ batch: d, chains, assets }: BatchRowProps) {
       <td className={styles.tdFirst}>
         <div className={styles.batchIdWrapper}>
           <Copy value={d.batch_id}>
-            <Link href={`/evm-batch/${d.chain}/${d.batch_id}`} target="_blank" className={styles.batchLink}>
+            <Link
+              href={`/evm-batch/${d.chain}/${d.batch_id}`}
+              target="_blank"
+              className={styles.batchLink}
+            >
               {ellipse(d.batch_id)}
             </Link>
           </Copy>
@@ -45,12 +53,30 @@ export function BatchRow({ batch: d, chains, assets }: BatchRowProps) {
       </td>
       <td className={styles.tdMiddle}>
         <div className={styles.commandsWrapper}>
-          {_.slice(toArray(d.commands), 0, NUM_COMMANDS_TRUNCATE).map((c: BatchCommand, i: number) => (
-            <CommandItem key={i} command={c} batch={d} chains={chains} assets={assets} explorerUrl={url} transactionPath={transaction_path} />
-          ))}
+          {_.slice(toArray(d.commands), 0, NUM_COMMANDS_TRUNCATE).map(
+            (c: BatchCommand, i: number) => (
+              <CommandItem
+                key={i}
+                command={c}
+                batch={d}
+                chains={chains}
+                assets={assets}
+                explorerUrl={url}
+                transactionPath={transaction_path}
+              />
+            )
+          )}
           {toArray(d.commands).length > NUM_COMMANDS_TRUNCATE && (
-            <Link href={`/evm-batch/${d.chain}/${d.batch_id}`} target="_blank" className={styles.moreCommandsLink}>
-              <Number value={toArray(d.commands).length - NUM_COMMANDS_TRUNCATE} prefix={'and '} suffix={' more'} />
+            <Link
+              href={`/evm-batch/${d.chain}/${d.batch_id}`}
+              target="_blank"
+              className={styles.moreCommandsLink}
+            >
+              <Number
+                value={toArray(d.commands).length - NUM_COMMANDS_TRUNCATE}
+                prefix={'and '}
+                suffix={' more'}
+              />
             </Link>
           )}
         </div>

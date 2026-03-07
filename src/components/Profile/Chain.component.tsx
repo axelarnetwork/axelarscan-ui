@@ -24,7 +24,13 @@ export function ChainProfile({
 
   return (
     <div className={clsx(styles.wrapper, className)}>
-      <Image src={image} alt="" width={width} height={height} className={className} />
+      <Image
+        src={image}
+        alt=""
+        width={width}
+        height={height}
+        className={className}
+      />
       <span className={clsx(styles.title, titleClassName)}>
         {name || capitalize(value)}
       </span>

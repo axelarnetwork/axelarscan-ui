@@ -26,7 +26,9 @@ export function Filters() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
-  const [params, setParams] = useState<Record<string, unknown>>(getParams(searchParams, PAGE_SIZE));
+  const [params, setParams] = useState<Record<string, unknown>>(
+    getParams(searchParams, PAGE_SIZE)
+  );
   const [searchInput, setSearchInput] = useState<Record<string, string>>({});
   const [types, setTypes] = useState<string[]>([]);
   const chains = useChains();
@@ -45,13 +47,17 @@ export function Filters() {
         },
         size: 0,
       });
-      setTypes((toArray(response) as AggBucket[]).map((d) => d.key));
+      setTypes((toArray(response) as AggBucket[]).map(d => d.key));
     };
 
     getTypes();
   }, []);
 
-  const onSubmit = (_e1: unknown, _e2: unknown, _params?: Record<string, unknown>) => {
+  const onSubmit = (
+    _e1: unknown,
+    _e2: unknown,
+    _params?: Record<string, unknown>
+  ) => {
     if (!_params) {
       _params = params;
     }
@@ -81,7 +87,8 @@ export function Filters() {
       options: _.orderBy(
         toArray(chains)
           .filter(
-            (d: Chain) => d.chain_type === 'evm' && (!d.no_inflation || d.deprecated)
+            (d: Chain) =>
+              d.chain_type === 'evm' && (!d.no_inflation || d.deprecated)
           )
           .map((d: Chain, i: number) => ({ ...d, i })),
         ['deprecated', 'name', 'i'],

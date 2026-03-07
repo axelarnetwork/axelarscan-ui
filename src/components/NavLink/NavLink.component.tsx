@@ -15,9 +15,7 @@ export function NavLink({ href, children }: NavLinkProps) {
       href={href}
       className={clsx(
         styles.base,
-        href === pathname
-          ? styles.active
-          : styles.inactive
+        href === pathname ? styles.active : styles.inactive
       )}
     >
       {children}

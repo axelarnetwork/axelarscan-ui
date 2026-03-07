@@ -29,16 +29,31 @@ export function Votes({ data }: VotesProps) {
       <table className={styles.votesTable}>
         <thead className={styles.votesThead}>
           <tr className={styles.votesTheadRow}>
-            <th scope="col" className={styles.votesThFirst}>#</th>
-            <th scope="col" className={styles.votesTh}>Voter</th>
-            <th scope="col" className={styles.votesTh}>Validator</th>
-            <th scope="col" className={styles.votesThRight}>Voting Power</th>
-            <th scope="col" className={styles.votesThLast}>Vote</th>
+            <th scope="col" className={styles.votesThFirst}>
+              #
+            </th>
+            <th scope="col" className={styles.votesTh}>
+              Voter
+            </th>
+            <th scope="col" className={styles.votesTh}>
+              Validator
+            </th>
+            <th scope="col" className={styles.votesThRight}>
+              Voting Power
+            </th>
+            <th scope="col" className={styles.votesThLast}>
+              Vote
+            </th>
           </tr>
         </thead>
         <tbody className={styles.votesTbody}>
           {data.map((d: VoteEntry, i: number) => (
-            <VoteRow key={i} entry={d} index={i} totalVotingPower={totalVotingPower} />
+            <VoteRow
+              key={i}
+              entry={d}
+              index={i}
+              totalVotingPower={totalVotingPower}
+            />
           ))}
         </tbody>
       </table>

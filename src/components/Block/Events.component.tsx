@@ -40,8 +40,12 @@ export function BlockEvents({ data }: BlockEventsProps) {
             <table className={styles.eventTable}>
               <thead className={styles.eventThead}>
                 <tr className={styles.eventTheadRow}>
-                  <th scope="col" className={styles.eventThLeft}>Type</th>
-                  <th scope="col" className={styles.eventThRight}>Data</th>
+                  <th scope="col" className={styles.eventThLeft}>
+                    Type
+                  </th>
+                  <th scope="col" className={styles.eventThRight}>
+                    Data
+                  </th>
                 </tr>
               </thead>
               <tbody className={styles.eventTbody}>

@@ -3,7 +3,12 @@
 import { useState } from 'react';
 
 import { Container } from '@/components/Container';
-import { useChains, useAssets, useITSAssets, useTVL as useTVLStore } from '@/hooks/useGlobalData';
+import {
+  useChains,
+  useAssets,
+  useITSAssets,
+  useTVL as useTVLStore,
+} from '@/hooks/useGlobalData';
 import { Spinner } from '@/components/Spinner';
 import { toArray } from '@/lib/parser';
 import { AssetRow } from './AssetRow.component';
@@ -18,7 +23,12 @@ export function TVL() {
   const assets = useAssets();
   const itsAssets = useITSAssets();
   const tvl = useTVLStore();
-  const globalStore: GlobalStore = { chains, assets, itsAssets, tvl: tvl as GlobalStore['tvl'] };
+  const globalStore: GlobalStore = {
+    chains,
+    assets,
+    itsAssets,
+    tvl: tvl as GlobalStore['tvl'],
+  };
 
   const processedData = useTVLData(globalStore);
 

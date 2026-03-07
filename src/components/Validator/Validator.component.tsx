@@ -10,14 +10,18 @@ import { Response } from '@/components/Response';
 import { useValidatorStore } from '@/components/Validators';
 import { useChains, useValidators } from '@/hooks/useGlobalData';
 import { getBalances } from '@/lib/api/axelarscan';
-import {
-  getRPCStatus,
-  getChainMaintainers,
-} from '@/lib/api/validator';
+import { getRPCStatus, getChainMaintainers } from '@/lib/api/validator';
 import { ENVIRONMENT } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { equalsIgnoreCase, find, includesSomePatterns } from '@/lib/string';
-import type { Chain, Validator as ValidatorType, Delegation, UptimeBlock, ProposedBlock, EVMVote } from '@/types';
+import type {
+  Chain,
+  Validator as ValidatorType,
+  Delegation,
+  UptimeBlock,
+  ProposedBlock,
+  EVMVote,
+} from '@/types';
 
 import type { ValidatorProps } from './Validator.types';
 import { Info } from './Info.component';
@@ -38,7 +42,9 @@ export function Validator({ address }: ValidatorProps) {
   const [data, setData] = useState<ValidatorType | null>(null);
   const [delegations, setDelegations] = useState<Delegation[] | null>(null);
   const [uptimes, setUptimes] = useState<UptimeBlock[] | null>(null);
-  const [proposedBlocks, setProposedBlocks] = useState<ProposedBlock[] | null>(null);
+  const [proposedBlocks, setProposedBlocks] = useState<ProposedBlock[] | null>(
+    null
+  );
   const [votes, setVotes] = useState<EVMVote[] | null>(null);
   const chains = useChains();
   const validators = useValidators();
@@ -48,13 +54,19 @@ export function Validator({ address }: ValidatorProps) {
   useEffect(() => {
     if (!address || !validators) return;
 
-    if (['axelarvalcons', 'axelar1'].findIndex(p => address.startsWith(p)) > -1) {
+    if (
+      ['axelarvalcons', 'axelar1'].findIndex(p => address.startsWith(p)) > -1
+    ) {
       const { operator_address } = {
         ...validators.find((d: ValidatorType) =>
           includesSomePatterns(
-            [d.consensus_address, d.delegator_address, d.broadcaster_address].filter((s): s is string => !!s),
-            address,
-          ),
+            [
+              d.consensus_address,
+              d.delegator_address,
+              d.broadcaster_address,
+            ].filter((s): s is string => !!s),
+            address
+          )
         ),
       };
 
@@ -66,7 +78,9 @@ export function Validator({ address }: ValidatorProps) {
 
     if (address.startsWith('axelarvaloper') && chains) {
       setEVMChains(
-        chains.filter((d: Chain) => d.chain_type === 'evm' && d.gateway?.address),
+        chains.filter(
+          (d: Chain) => d.chain_type === 'evm' && d.gateway?.address
+        )
       );
     }
   }, [address, router, setEVMChains, chains, validators]);
@@ -83,13 +97,16 @@ export function Validator({ address }: ValidatorProps) {
               (d: Chain) =>
                 new Promise<[string, string[]]>(async resolve => {
                   const { maintainers } = {
-                    ...(await getChainMaintainers({ chain: d.id }) as Record<string, unknown>),
+                    ...((await getChainMaintainers({ chain: d.id })) as Record<
+                      string,
+                      unknown
+                    >),
                   };
                   resolve([d.id, toArray(maintainers) as string[]]);
-                }),
-            ),
-          ),
-        ),
+                })
+            )
+          )
+        )
       );
     };
 
@@ -109,7 +126,7 @@ export function Validator({ address }: ValidatorProps) {
       }
 
       const _data = validators.find((d: ValidatorType) =>
-        equalsIgnoreCase(d.operator_address, address),
+        equalsIgnoreCase(d.operator_address, address)
       );
 
       if (!_data) {
@@ -127,12 +144,14 @@ export function Validator({ address }: ValidatorProps) {
       // broadcaster balance
       if (_data.broadcaster_address) {
         const { data: balanceData } = {
-          ...(await getBalances({ address: _data.broadcaster_address }) as Record<string, unknown>),
+          ...((await getBalances({
+            address: _data.broadcaster_address,
+          })) as Record<string, unknown>),
         };
         _data.broadcasterBalance = toArray(balanceData).find(
           (d: Record<string, unknown>) =>
             d.denom ===
-            (ENVIRONMENT === 'devnet-amplifier' ? 'uamplifier' : 'uaxl'),
+            (ENVIRONMENT === 'devnet-amplifier' ? 'uamplifier' : 'uaxl')
         ) as ValidatorType['broadcasterBalance'];
       }
 
@@ -156,7 +175,7 @@ export function Validator({ address }: ValidatorProps) {
 
       const { consensus_address, broadcaster_address } = { ...data };
       const { latest_block_height } = {
-        ...(await getRPCStatus() as Record<string, unknown>),
+        ...((await getRPCStatus()) as Record<string, unknown>),
       } as { latest_block_height?: number };
 
       if (!latest_block_height) return;
@@ -165,7 +184,9 @@ export function Validator({ address }: ValidatorProps) {
         await Promise.all([
           fetchDelegations(address).catch(() => null),
           fetchUptimes(latest_block_height, consensus_address).catch(() => []),
-          fetchProposedBlocks(latest_block_height, consensus_address).catch(() => []),
+          fetchProposedBlocks(latest_block_height, consensus_address).catch(
+            () => []
+          ),
           fetchVotes(latest_block_height, broadcaster_address).catch(() => []),
         ]);
 
@@ -189,7 +210,12 @@ export function Validator({ address }: ValidatorProps) {
   if (data.status === 'errorOnGetData') {
     return (
       <Container className="sm:mt-8">
-        <Response data={{ code: data.code as number | string, message: data.message as string }} />
+        <Response
+          data={{
+            code: data.code as number | string,
+            message: data.message as string,
+          }}
+        />
       </Container>
     );
   }

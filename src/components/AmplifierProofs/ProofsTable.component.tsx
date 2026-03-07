@@ -13,12 +13,24 @@ export function ProofsTable({ data, chains }: ProofsTableProps) {
       <table className={styles.table}>
         <thead className={styles.thead}>
           <tr className={styles.theadTr}>
-            <th scope="col" className={styles.thSessionId}>Session ID</th>
-            <th scope="col" className={styles.thDefault}>Messages</th>
-            <th scope="col" className={styles.thDefault}>Height</th>
-            <th scope="col" className={styles.thDefault}>Status</th>
-            <th scope="col" className={styles.thDefault}>Participations</th>
-            <th scope="col" className={styles.thTime}>Time</th>
+            <th scope="col" className={styles.thSessionId}>
+              Session ID
+            </th>
+            <th scope="col" className={styles.thDefault}>
+              Messages
+            </th>
+            <th scope="col" className={styles.thDefault}>
+              Height
+            </th>
+            <th scope="col" className={styles.thDefault}>
+              Status
+            </th>
+            <th scope="col" className={styles.thDefault}>
+              Participations
+            </th>
+            <th scope="col" className={styles.thTime}>
+              Time
+            </th>
           </tr>
         </thead>
         <tbody className={styles.tbody}>

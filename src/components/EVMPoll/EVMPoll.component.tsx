@@ -15,7 +15,13 @@ import type { EVMPollProps, EVMPollData, PollVote } from './EVMPoll.types';
 import { Info } from './Info.component';
 import { Votes } from './Votes.component';
 import * as styles from './EVMPoll.styles';
-import { voteToOption, resolveStatus, resolveEventName, buildPollUrl, buildVoteOptions } from './EVMPoll.utils';
+import {
+  voteToOption,
+  resolveStatus,
+  resolveEventName,
+  buildPollUrl,
+  buildVoteOptions,
+} from './EVMPoll.utils';
 
 export function EVMPoll({ id }: EVMPollProps) {
   const [data, setData] = useState<EVMPollData | null>(null);
@@ -24,7 +30,9 @@ export function EVMPoll({ id }: EVMPollProps) {
 
   useEffect(() => {
     const getData = async () => {
-      const response = await searchEVMPolls({ pollId: id }) as { data?: EVMPollData[] } | undefined;
+      const response = (await searchEVMPolls({ pollId: id })) as
+        | { data?: EVMPollData[] }
+        | undefined;
 
       let d = response?.data?.[0];
       if (!d) {
@@ -32,7 +40,11 @@ export function EVMPoll({ id }: EVMPollProps) {
         return;
       }
 
-      const votes = (getValuesOfAxelarAddressKey(d as unknown as Record<string, unknown>) as PollVote[]).map(v => ({
+      const votes = (
+        getValuesOfAxelarAddressKey(
+          d as unknown as Record<string, unknown>
+        ) as PollVote[]
+      ).map(v => ({
         ...v,
         option: voteToOption(v.vote),
       }));

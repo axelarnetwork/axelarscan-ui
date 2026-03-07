@@ -61,11 +61,21 @@ export function Blocks({ height = undefined }: BlocksProps) {
           <table className={styles.table}>
             <thead className={styles.thead}>
               <tr className={styles.theadRow}>
-                <th scope="col" className={styles.thFirst}>Height</th>
-                <th scope="col" className={styles.thMiddle}>Hash</th>
-                <th scope="col" className={styles.thMiddle}>Proposer</th>
-                <th scope="col" className={styles.thTxCount}>No. Transactions</th>
-                <th scope="col" className={styles.thLast}>Time</th>
+                <th scope="col" className={styles.thFirst}>
+                  Height
+                </th>
+                <th scope="col" className={styles.thMiddle}>
+                  Hash
+                </th>
+                <th scope="col" className={styles.thMiddle}>
+                  Proposer
+                </th>
+                <th scope="col" className={styles.thTxCount}>
+                  No. Transactions
+                </th>
+                <th scope="col" className={styles.thLast}>
+                  Time
+                </th>
               </tr>
             </thead>
             <tbody className={styles.tbody}>

@@ -42,7 +42,9 @@ function FilterField({
     return (
       <DateRangePicker
         params={params}
-        onChange={(v: Record<string, unknown>) => setParams({ ...params, ...v })}
+        onChange={(v: Record<string, unknown>) =>
+          setParams({ ...params, ...v })
+        }
       />
     );
   }
@@ -53,9 +55,7 @@ function FilterField({
       name={attribute.name}
       placeholder={attribute.label}
       value={(params[attribute.name] as string) ?? ''}
-      onChange={(e) =>
-        setParams({ ...params, [attribute.name]: e.target.value })
-      }
+      onChange={e => setParams({ ...params, [attribute.name]: e.target.value })}
       className={styles.filterInput}
     />
   );
@@ -157,7 +157,7 @@ export function FilterDialog({
                           styles.submitButtonBase,
                           filtered
                             ? styles.submitButtonEnabled
-                            : styles.submitButtonDisabled,
+                            : styles.submitButtonDisabled
                         )}
                       >
                         Submit

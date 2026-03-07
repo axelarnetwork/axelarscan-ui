@@ -1,8 +1,6 @@
 import { createApiClient, ApiParams } from '@/lib/api/client';
 
-const request = createApiClient(
-  process.env.NEXT_PUBLIC_AXELARSCAN_API_URL!
-);
+const request = createApiClient(process.env.NEXT_PUBLIC_AXELARSCAN_API_URL!);
 
 export const getChains = () => request('getChains');
 export const getAssets = () => request('getAssets');

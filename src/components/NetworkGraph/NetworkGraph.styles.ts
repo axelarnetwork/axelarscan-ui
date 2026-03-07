@@ -19,7 +19,8 @@ export const networkGraphStyles = {
   thLast: 'whitespace-nowrap py-3.5 pl-3 pr-4 text-right sm:pr-0',
 
   // Table body
-  tbody: 'divide-y divide-zinc-100 bg-white dark:divide-zinc-800 dark:bg-zinc-900',
+  tbody:
+    'divide-y divide-zinc-100 bg-white dark:divide-zinc-800 dark:bg-zinc-900',
   bodyRow: 'align-top text-sm text-zinc-400 dark:text-zinc-500',
   tdSource: 'py-4 pl-4 pr-3 text-left sm:pl-0',
   tdDefault: 'px-3 py-4 text-left',

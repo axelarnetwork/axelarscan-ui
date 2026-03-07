@@ -6,9 +6,20 @@ import { ChainStats } from './ChainStats.component';
 import type { ChainCellProps } from './Verifiers.types';
 import * as styles from './Verifiers.styles';
 
-export function ChainCell({ chainEntry, votesChains, signsChains, supportedChains }: ChainCellProps) {
-  const { id: chain, name, image } = {
-    ...(isString(chainEntry) ? { id: chainEntry, name: chainEntry } : chainEntry),
+export function ChainCell({
+  chainEntry,
+  votesChains,
+  signsChains,
+  supportedChains,
+}: ChainCellProps) {
+  const {
+    id: chain,
+    name,
+    image,
+  } = {
+    ...(isString(chainEntry)
+      ? { id: chainEntry, name: chainEntry }
+      : chainEntry),
   } as { id: string; name: string; image?: string };
 
   const votes = votesChains[chain];

@@ -19,8 +19,7 @@ export const getProvider = (chain: string | undefined, chainsData: Chain[]) => {
 
   if (rpcs.length > 0 && !deprecated) {
     try {
-      if (rpcs.length === 1)
-        return createRPCProvider(rpcs[0], chain_id);
+      if (rpcs.length === 1) return createRPCProvider(rpcs[0], chain_id);
       return new FallbackProvider(
         rpcs.map((url, i) => ({
           provider: createRPCProvider(url, chain_id),

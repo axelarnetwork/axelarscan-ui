@@ -10,7 +10,10 @@ import type { DelegationRowProps } from './Validator.types';
 import * as styles from './Validator.styles';
 
 export function DelegationRow({ d, assets }: DelegationRowProps) {
-  const { price } = { ...getAssetData(d.denom, assets) } as Record<string, unknown>;
+  const { price } = { ...getAssetData(d.denom, assets) } as Record<
+    string,
+    unknown
+  >;
 
   return (
     <tr className={styles.delegationsRow}>
@@ -27,10 +30,7 @@ export function DelegationRow({ d, assets }: DelegationRowProps) {
       </td>
       <td className={styles.delegationsTdMiddle}>
         <div className={styles.delegationsAmountWrapper}>
-          <Number
-            value={d.amount}
-            className={styles.delegationsAmountValue}
-          />
+          <Number value={d.amount} className={styles.delegationsAmountValue} />
         </div>
       </td>
       <td className={styles.delegationsTdLast}>

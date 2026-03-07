@@ -3,9 +3,7 @@ import {
   HiOutlineArrowRightStartOnRectangle,
   HiOutlineArrowRightEndOnRectangle,
 } from 'react-icons/hi2';
-import {
-  MdOutlineTimer,
-} from 'react-icons/md';
+import { MdOutlineTimer } from 'react-icons/md';
 import { PiWarningCircle } from 'react-icons/pi';
 import { RiTimerFlashLine } from 'react-icons/ri';
 
@@ -21,8 +19,7 @@ import { getStatusLabel } from './GMPs.utils';
 
 export function StatusCell({ data: d }: StatusCellProps) {
   const receivedTransactionHash =
-    d.express_executed?.transactionHash ||
-    d.executed?.transactionHash;
+    d.express_executed?.transactionHash || d.executed?.transactionHash;
   const destChain = d.call.returnValues?.destinationChain;
 
   return (
@@ -39,10 +36,7 @@ export function StatusCell({ data: d }: StatusCellProps) {
               {getStatusLabel(d)}
             </Tag>
             {d.simplified_status === 'received' && (
-              <ExplorerLink
-                value={receivedTransactionHash}
-                chain={destChain}
-              />
+              <ExplorerLink value={receivedTransactionHash} chain={destChain} />
             )}
           </div>
         )}
@@ -51,9 +45,7 @@ export function StatusCell({ data: d }: StatusCellProps) {
             timeDiff(d.call.created_at?.ms) > 300) && (
             <div className={styles.insufficientFeeWrapper}>
               <PiWarningCircle size={16} />
-              <span className={styles.statusSmallText}>
-                Insufficient Fee
-              </span>
+              <span className={styles.statusSmallText}>Insufficient Fee</span>
             </div>
           )}
         {d.is_invalid_gas_paid && (

@@ -54,11 +54,7 @@ export function StepRow({
   const toAddress = computeToAddress(step, stepData, data);
   const gasAmount = computeGasAmount(step, data);
 
-  const {
-    blockNumber,
-    block_timestamp,
-    created_at,
-  } = stepData || {};
+  const { blockNumber, block_timestamp, created_at } = stepData || {};
 
   const proposal_id = stepData?.proposal_id as string | undefined;
   const axelarBlockNumber = stepData?.axelarBlockNumber as
@@ -115,10 +111,7 @@ export function StepRow({
       <td className={detailsStyles.tableCellNarrow}>
         {step.status && (
           <Tag
-            className={clsx(
-              detailsStyles.tag,
-              getStepStatusClass(step.status)
-            )}
+            className={clsx(detailsStyles.tag, getStepStatusClass(step.status))}
           >
             {step.status}
           </Tag>
@@ -126,9 +119,7 @@ export function StepRow({
       </td>
       <GasCell gasAmount={gasAmount} fees={fees} data={data} />
       <td className={detailsStyles.tableCellEnd}>
-        <TimeAgo
-          timestamp={(block_timestamp ?? 0) * 1000 || created_at?.ms}
-        />
+        <TimeAgo timestamp={(block_timestamp ?? 0) * 1000 || created_at?.ms} />
       </td>
     </tr>
   );

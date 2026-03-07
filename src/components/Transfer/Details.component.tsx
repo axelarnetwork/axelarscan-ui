@@ -78,11 +78,7 @@ function resolveStepTxInfo(
 
         if (transactionHash) {
           stepMoreInfos.push(
-            <Copy
-              key={stepMoreInfos.length}
-              size={16}
-              value={batch_id}
-            >
+            <Copy key={stepMoreInfos.length} size={16} value={batch_id}>
               <Link
                 href={`/evm-batch/${destinationChainData.id}/${batch_id}`}
                 target="_blank"
@@ -112,11 +108,7 @@ function resolveStepTxInfo(
 
         if (recv_txhash) {
           stepMoreInfos.push(
-            <Copy
-              key={stepMoreInfos.length}
-              size={16}
-              value={ack_txhash}
-            >
+            <Copy key={stepMoreInfos.length} size={16} value={ack_txhash}>
               <Link
                 href={`${axelarChainData?.explorer?.url}${axelarChainData?.explorer?.transaction_path?.replace('{tx}', ack_txhash)}`}
                 target="_blank"
@@ -140,11 +132,7 @@ function resolveStepTxInfo(
 
         if (recv_txhash && !ack_txhash) {
           stepMoreInfos.push(
-            <Copy
-              key={stepMoreInfos.length}
-              size={16}
-              value={failed_txhash}
-            >
+            <Copy key={stepMoreInfos.length} size={16} value={failed_txhash}>
               <Link
                 href={`${url}${transaction_path.replace('{tx}', failed_txhash)}`}
                 target="_blank"
@@ -168,11 +156,7 @@ function resolveStepTxInfo(
 
         if (recv_txhash || ack_txhash || failed_txhash) {
           stepMoreInfos.push(
-            <Copy
-              key={stepMoreInfos.length}
-              size={16}
-              value={txhash}
-            >
+            <Copy key={stepMoreInfos.length} size={16} value={txhash}>
               <Link
                 href={`${axelarChainData?.explorer?.url}${axelarChainData?.explorer?.transaction_path?.replace('{tx}', txhash)}`}
                 target="_blank"
@@ -203,11 +187,9 @@ export function Details({ data }: DetailsProps) {
 
   const { link, send, unwrap } = { ...data };
 
-  const destinationChain = (
-    send?.destination_chain ||
+  const destinationChain = (send?.destination_chain ||
     unwrap?.destination_chain ||
-    link?.destination_chain
-  ) as string | undefined;
+    link?.destination_chain) as string | undefined;
   const destinationChainData = getChainData(destinationChain, chains);
   const axelarChainData = getChainData('axelarnet', chains);
 
@@ -216,7 +198,8 @@ export function Details({ data }: DetailsProps) {
   if (steps.length === 0) return null;
 
   const visibleSteps = steps.filter(
-    (d: TransferStep) => d.status !== 'pending' || (d.id === 'ibc_send' && d.data)
+    (d: TransferStep) =>
+      d.status !== 'pending' || (d.id === 'ibc_send' && d.data)
   );
 
   return (
@@ -227,10 +210,7 @@ export function Details({ data }: DetailsProps) {
             <th scope="col" className={styles.detailsThStep}>
               Step
             </th>
-            <th
-              scope="col"
-              className={styles.detailsThTxHash}
-            >
+            <th scope="col" className={styles.detailsThTxHash}>
               Tx Hash
             </th>
             <th scope="col" className={styles.detailsThDefault}>

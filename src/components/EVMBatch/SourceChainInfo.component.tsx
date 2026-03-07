@@ -27,16 +27,8 @@ export function SourceChainInfo({
           GMP
         </Link>
       )}
-      <Tooltip
-        content={sourceChainData!.name}
-        className={styles.tooltipNoWrap}
-      >
-        <Image
-          src={sourceChainData!.image}
-          alt=""
-          width={20}
-          height={20}
-        />
+      <Tooltip content={sourceChainData!.name} className={styles.tooltipNoWrap}>
+        <Image src={sourceChainData!.image} alt="" width={20} height={20} />
       </Tooltip>
       {contractAddress && (
         <>

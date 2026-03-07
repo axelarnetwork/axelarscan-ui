@@ -1,15 +1,20 @@
 import _ from 'lodash';
 
 import { toArray, getValuesOfAxelarAddressKey } from '@/lib/parser';
-import type { AmplifierPollEntry, PollVote, PollVoteOption } from './AmplifierPolls.types';
+import type {
+  AmplifierPollEntry,
+  PollVote,
+  PollVoteOption,
+} from './AmplifierPolls.types';
 
 export function deriveStatus(
   d: AmplifierPollEntry,
-  latestBlockHeight: number,
+  latestBlockHeight: number
 ): string {
   if (d.success) return 'completed';
   if (d.failed) return 'failed';
-  if (d.expired || (d.expired_height ?? 0) < latestBlockHeight) return 'expired';
+  if (d.expired || (d.expired_height ?? 0) < latestBlockHeight)
+    return 'expired';
   return 'pending';
 }
 
@@ -21,23 +26,26 @@ export function getVoteOptionSortIndex(option: string): number {
 
 export function buildVoteOptions(
   votes: PollVote[],
-  participants: string[] | undefined,
+  participants: string[] | undefined
 ): PollVoteOption[] {
-  const voteOptions: PollVoteOption[] = Object.entries(_.groupBy(votes, 'option'))
+  const voteOptions: PollVoteOption[] = Object.entries(
+    _.groupBy(votes, 'option')
+  )
     .map(([k, v]) => ({
       option: k,
       value: v?.length,
-      voters: (v?.map((item) => item.voter)).filter(Boolean) as string[],
+      voters: v?.map(item => item.voter).filter(Boolean) as string[],
     }))
-    .filter((v) => v.value)
-    .map((v) => ({
+    .filter(v => v.value)
+    .map(v => ({
       ...v,
       i: getVoteOptionSortIndex(v.option),
     }));
 
   const participantCount = participants?.length ?? 0;
   const hasParticipants = toArray(participants).length > 0;
-  const hasUnsubmitted = voteOptions.findIndex((v) => v.option === 'unsubmitted') >= 0;
+  const hasUnsubmitted =
+    voteOptions.findIndex(v => v.option === 'unsubmitted') >= 0;
   const totalVotes = _.sumBy(voteOptions, 'value');
 
   if (hasParticipants && !hasUnsubmitted && totalVotes < participantCount) {
@@ -52,15 +60,21 @@ export function buildVoteOptions(
 
 export function processPollData(
   data: AmplifierPollEntry[],
-  latestBlockHeight: number,
+  latestBlockHeight: number
 ): AmplifierPollEntry[] {
   return _.orderBy(
-    data.map((d) => {
+    data.map(d => {
       const votes = (
-        getValuesOfAxelarAddressKey(d as unknown as Record<string, unknown>) as PollVote[]
-      ).map((v) => ({
+        getValuesOfAxelarAddressKey(
+          d as unknown as Record<string, unknown>
+        ) as PollVote[]
+      ).map(v => ({
         ...v,
-        option: v.vote ? 'yes' : typeof v.vote === 'boolean' ? 'no' : 'unsubmitted',
+        option: v.vote
+          ? 'yes'
+          : typeof v.vote === 'boolean'
+            ? 'no'
+            : 'unsubmitted',
       }));
 
       return {
@@ -73,7 +87,6 @@ export function processPollData(
       } as AmplifierPollEntry;
     }),
     ['created_at.ms'],
-    ['desc'],
+    ['desc']
   );
 }
-

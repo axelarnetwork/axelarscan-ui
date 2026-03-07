@@ -21,14 +21,15 @@ export function Info({ data, height, validatorSets }: InfoProps) {
   const { proposer_address, time } = { ...data.block?.header };
   const { txs } = { ...data.block?.data };
 
-  const signedValidatorsData = (toArray(validatorSets) as ValidatorSetEntry[]).filter(d =>
-    d.address && find(d.address, data.validators as string[])
-  );
-  const unsignedValidatorsData = (toArray(validatorSets) as ValidatorSetEntry[]).filter(
-    d => !d.address || !find(d.address, data.validators as string[])
-  );
+  const signedValidatorsData = (
+    toArray(validatorSets) as ValidatorSetEntry[]
+  ).filter(d => d.address && find(d.address, data.validators as string[]));
+  const unsignedValidatorsData = (
+    toArray(validatorSets) as ValidatorSetEntry[]
+  ).filter(d => !d.address || !find(d.address, data.validators as string[]));
 
-  const totalValidators = signedValidatorsData.length + unsignedValidatorsData.length;
+  const totalValidators =
+    signedValidatorsData.length + unsignedValidatorsData.length;
   const showSignerSection = validatorSets && totalValidators > 0;
 
   return (

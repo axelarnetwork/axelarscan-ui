@@ -33,9 +33,7 @@ export function AssetRow({ data, chainsTVL }: AssetRowProps) {
 
       {/* Native Chain Column */}
       <td className={assetRowStyles.cell.standard}>
-        <ChainProfile
-          value={data.nativeChain?.chainData?.id}
-        />
+        <ChainProfile value={data.nativeChain?.chainData?.id} />
       </td>
 
       {/* Total Locked Column */}

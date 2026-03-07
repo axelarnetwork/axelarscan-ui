@@ -24,10 +24,7 @@ export function PendingStep({
 }: PendingStepProps) {
   return (
     <>
-      <div
-        className={statusTimelineStyles.connectorWrapper}
-        aria-hidden="true"
-      >
+      <div className={statusTimelineStyles.connectorWrapper} aria-hidden="true">
         <div
           className={clsx(
             statusTimelineStyles.connectorLineBase,
@@ -58,8 +55,7 @@ export function PendingStep({
             hasPreviousStep
               ? statusTimelineStyles.pendingLabelActive
               : statusTimelineStyles.pendingLabelInactive,
-            (title ?? '').length <= 5 &&
-              statusTimelineStyles.shortTitleSpacing
+            (title ?? '').length <= 5 && statusTimelineStyles.shortTitleSpacing
           )}
         >
           {title}

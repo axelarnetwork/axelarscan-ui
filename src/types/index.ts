@@ -1,4 +1,10 @@
-export type { Chain, ChainExplorer, ChainGateway, ChainEndpoints, ChainVotingVerifier } from './chain';
+export type {
+  Chain,
+  ChainExplorer,
+  ChainGateway,
+  ChainEndpoints,
+  ChainVotingVerifier,
+} from './chain';
 export type { Asset, AssetAddress } from './asset';
 export type {
   Validator,

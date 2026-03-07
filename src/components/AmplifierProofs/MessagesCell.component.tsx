@@ -5,11 +5,7 @@ import { ChainProfile } from '@/components/Profile';
 import { ExplorerLink } from '@/components/ExplorerLink';
 import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
-import {
-  headString,
-  ellipse,
-  removeHexPrefix,
-} from '@/lib/string';
+import { headString, ellipse, removeHexPrefix } from '@/lib/string';
 
 import type { MessageEntry, MessagesCellProps } from './AmplifierProofs.types';
 import * as styles from './AmplifierProofs.styles';

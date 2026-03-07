@@ -4,15 +4,9 @@ import { isNumber } from '@/lib/number';
 import type { GasCellProps } from '../GMP.types';
 import { detailsStyles } from './Details.styles';
 
-export function GasCell({
-  gasAmount,
-  fees,
-  data,
-}: GasCellProps) {
+export function GasCell({ gasAmount, fees, data }: GasCellProps) {
   const gasElement =
-    isNumber(gasAmount) &&
-    gasAmount >= 0 &&
-    fees?.source_token?.symbol ? (
+    isNumber(gasAmount) && gasAmount >= 0 && fees?.source_token?.symbol ? (
       <NumberDisplay
         value={gasAmount}
         format="0,0.000000"

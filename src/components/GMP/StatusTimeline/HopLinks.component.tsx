@@ -10,8 +10,14 @@ export function HopLinks({
 }: HopLinksProps) {
   return (
     <>
-      <PrevHopLink sourceChain={sourceChain} parentMessageID={parentMessageID} />
-      <NextHopLinks destinationChain={destinationChain} childMessageIDs={childMessageIDs} />
+      <PrevHopLink
+        sourceChain={sourceChain}
+        parentMessageID={parentMessageID}
+      />
+      <NextHopLinks
+        destinationChain={destinationChain}
+        childMessageIDs={childMessageIDs}
+      />
     </>
   );
 }

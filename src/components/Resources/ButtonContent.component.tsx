@@ -32,7 +32,9 @@ export function ButtonContent({
   }
 
   return (
-    <div className={clsx(styles.selectMultiWrap, styles.selectMultiWrapSelected)}>
+    <div
+      className={clsx(styles.selectMultiWrap, styles.selectMultiWrapSelected)}
+    >
       {selectedValue.map((v: SelectOption, j: number) => (
         <div
           key={j}

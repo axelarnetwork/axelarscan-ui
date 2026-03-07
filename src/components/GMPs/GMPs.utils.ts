@@ -2,7 +2,12 @@ import { isAxelar } from '@/lib/chain';
 import { ENVIRONMENT } from '@/lib/config';
 import { isNumber } from '@/lib/number';
 import { toArray } from '@/lib/parser';
-import { isString, equalsIgnoreCase, capitalize, includesSomePatterns } from '@/lib/string';
+import {
+  isString,
+  equalsIgnoreCase,
+  capitalize,
+  includesSomePatterns,
+} from '@/lib/string';
 import customGMPs from '@/data/custom/gmp';
 
 import type { GMPRowData, EventDataInput } from './GMPs.types';
@@ -54,7 +59,7 @@ export const customData = async (data: GMPRowData) => {
 
   try {
     const customGMP = toArray(customGMPs).find(
-      (d) =>
+      d =>
         toArray(d.addresses as string[]).findIndex((a: string) =>
           equalsIgnoreCase(a, destinationContractAddress as string)
         ) > -1 &&
@@ -63,14 +68,23 @@ export const customData = async (data: GMPRowData) => {
     const { id, name, customize } = { ...customGMP };
 
     if (typeof customize === 'function') {
-      const customValues = await customize(call.returnValues as { destinationContractAddress?: string; payload?: string }, ENVIRONMENT);
+      const customValues = await customize(
+        call.returnValues as {
+          destinationContractAddress?: string;
+          payload?: string;
+        },
+        ENVIRONMENT
+      );
 
       if (
         typeof customValues === 'object' &&
         !Array.isArray(customValues) &&
         Object.keys(customValues).length > 0
       ) {
-        const enriched = customValues as Record<string, string> & { projectId?: string; projectName?: string };
+        const enriched = customValues as Record<string, string> & {
+          projectId?: string;
+          projectName?: string;
+        };
         enriched.projectId = id;
         enriched.projectName = name || capitalize(id);
         data.customValues = enriched;
@@ -98,7 +112,7 @@ export const customData = async (data: GMPRowData) => {
     ) {
       data.customValues = {
         ...data.customValues,
-        recipientAddresses: toArray(interchain_transfers).map((d) => ({
+        recipientAddresses: toArray(interchain_transfers).map(d => ({
           recipientAddress: d.recipient,
           chain: d.destinationChain,
         })),
@@ -137,9 +151,10 @@ export function buildGmpHref(d: GMPRowData): string {
   }
 
   const isCosmos = d.call.chain_type === 'cosmos';
-  const txHash = isCosmos && isNumber(d.call.messageIdIndex)
-    ? d.call.axelarTransactionHash
-    : d.call.transactionHash;
+  const txHash =
+    isCosmos && isNumber(d.call.messageIdIndex)
+      ? d.call.axelarTransactionHash
+      : d.call.transactionHash;
 
   let suffix = '';
   if (isNumber(d.call.logIndex)) {

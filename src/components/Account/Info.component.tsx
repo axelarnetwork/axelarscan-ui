@@ -16,8 +16,15 @@ export function Info({ data, address }: InfoProps) {
   const chains = useChains();
   const validators = useValidators();
 
-  const { rewards, commissions, delegations, redelegations, unbondings } = { ...data };
-  const { symbol } = { ...(getChainData('axelarnet', chains)?.native_token as Record<string, unknown>) };
+  const { rewards, commissions, delegations, redelegations, unbondings } = {
+    ...data,
+  };
+  const { symbol } = {
+    ...(getChainData('axelarnet', chains)?.native_token as Record<
+      string,
+      unknown
+    >),
+  };
 
   const validatorData = (toArray(validators) as Validator[]).find(d =>
     equalsIgnoreCase(d.delegator_address, address)

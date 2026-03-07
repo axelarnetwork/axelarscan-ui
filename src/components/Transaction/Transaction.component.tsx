@@ -19,7 +19,9 @@ export function Transaction({ tx }: TransactionProps) {
 
   useEffect(() => {
     const getData = async () => {
-      const { tx_response } = { ...(await getTransaction(tx)) as { tx_response?: TransactionData } };
+      const { tx_response } = {
+        ...((await getTransaction(tx)) as { tx_response?: TransactionData }),
+      };
 
       let responseData = tx_response;
 

@@ -13,7 +13,7 @@ export function NextHopLinks({
   if (isAxelar(destinationChain)) return null;
 
   const ids = toArray(childMessageIDs)
-    .map((idValue) => {
+    .map(idValue => {
       if (typeof idValue === 'string') return idValue;
       if (typeof idValue === 'number') return idValue.toString();
       return undefined;
@@ -22,7 +22,7 @@ export function NextHopLinks({
 
   return (
     <>
-      {ids.map((childId) => (
+      {ids.map(childId => (
         <div key={childId} className={statusTimelineStyles.hopLinkWrapper}>
           <Link
             href={`/gmp/${childId}`}

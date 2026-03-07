@@ -21,7 +21,7 @@ export function DelegationsTable({ delegations }: DelegationsTableProps) {
   const visibleDelegations = delegations.filter(
     (_d: Delegation, i: number) =>
       i >= (page - 1) * DELEGATIONS_SIZE_PER_PAGE &&
-      i < page * DELEGATIONS_SIZE_PER_PAGE,
+      i < page * DELEGATIONS_SIZE_PER_PAGE
   );
 
   return (

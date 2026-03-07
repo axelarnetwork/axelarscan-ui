@@ -6,10 +6,12 @@ interface PriceEntry {
 }
 
 export const fetchAssets = async (): Promise<Asset[] | null> => {
-  const assets = await getAssets() as Asset[] | null;
+  const assets = (await getAssets()) as Asset[] | null;
   if (!assets) return null;
 
-  const prices = await getTokensPrice({ symbols: assets.map(d => d.id) }) as Record<string, PriceEntry> | null;
+  const prices = (await getTokensPrice({
+    symbols: assets.map(d => d.id),
+  })) as Record<string, PriceEntry> | null;
   if (prices) {
     for (const [key, v] of Object.entries(prices)) {
       const i = assets.findIndex(d => d.id === key);
@@ -23,12 +25,12 @@ export const fetchAssets = async (): Promise<Asset[] | null> => {
 };
 
 export const fetchITSAssets = async (): Promise<Asset[] | null> => {
-  const itsAssets = await getITSAssets() as Asset[] | null;
+  const itsAssets = (await getITSAssets()) as Asset[] | null;
   if (!itsAssets) return null;
 
-  const prices = await getTokensPrice({
+  const prices = (await getTokensPrice({
     symbols: itsAssets.map(d => d.symbol),
-  }) as Record<string, PriceEntry> | null;
+  })) as Record<string, PriceEntry> | null;
   if (prices) {
     for (const [key, v] of Object.entries(prices)) {
       const i = itsAssets.findIndex(d => d.symbol === key);

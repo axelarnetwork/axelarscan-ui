@@ -8,7 +8,11 @@ import clsx from 'clsx';
 import { mobileNavLink } from './Header.styles';
 import type { MobileNavLinkProps } from './Header.types';
 
-export function MobileNavLink({ href, children, className }: MobileNavLinkProps) {
+export function MobileNavLink({
+  href,
+  children,
+  className,
+}: MobileNavLinkProps) {
   const pathname = usePathname();
 
   return (

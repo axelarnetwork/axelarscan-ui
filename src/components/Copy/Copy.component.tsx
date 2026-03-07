@@ -51,11 +51,13 @@ export function Copy({
     );
   }
 
-  if (isValidElement(children) && children.props && (children.props as Record<string, unknown>).href) {
+  if (
+    isValidElement(children) &&
+    children.props &&
+    (children.props as Record<string, unknown>).href
+  ) {
     return (
-      <div
-        className={clsx(copyStyles.wrapperWithChildren, childrenClassName)}
-      >
+      <div className={clsx(copyStyles.wrapperWithChildren, childrenClassName)}>
         {children}
         <CopyToClipboard text={value} onCopy={() => handleCopy()}>
           <LuClipboard

@@ -5,10 +5,7 @@ import * as styles from './Overview.styles';
 
 const SANKEY_TABS = ['transactions', 'volume'];
 
-export function SankeyTabs({
-  currentTab,
-  onTabChange,
-}: SankeyTabsProps) {
+export function SankeyTabs({ currentTab, onTabChange }: SankeyTabsProps) {
   return (
     <div className={styles.sankeyTabsWrapper}>
       {SANKEY_TABS.map((d, i) => (
@@ -17,7 +14,9 @@ export function SankeyTabs({
           onClick={() => onTabChange(d)}
           className={clsx(
             styles.sankeyTabBase,
-            d === currentTab ? styles.sankeyTabActive : styles.sankeyTabInactive,
+            d === currentTab
+              ? styles.sankeyTabActive
+              : styles.sankeyTabInactive,
             i > 0 ? 'ml-4' : ''
           )}
         >

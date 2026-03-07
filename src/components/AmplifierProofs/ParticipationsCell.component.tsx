@@ -4,7 +4,10 @@ import clsx from 'clsx';
 import { Number } from '@/components/Number';
 import { toTitle } from '@/lib/string';
 
-import type { SignOptionEntry, ParticipationsCellProps } from './AmplifierProofs.types';
+import type {
+  SignOptionEntry,
+  ParticipationsCellProps,
+} from './AmplifierProofs.types';
 import * as styles from './AmplifierProofs.styles';
 
 export function ParticipationsCell({ proof }: ParticipationsCellProps) {

@@ -12,7 +12,12 @@ import { NavLink } from '@/components/NavLink';
 import type { DesktopNavItemProps } from './Header.types';
 import { desktopPopover } from './Header.styles';
 
-export function DesktopNavItem({ item, index, popoverOpen, setPopoverOpen }: DesktopNavItemProps) {
+export function DesktopNavItem({
+  item,
+  index,
+  popoverOpen,
+  setPopoverOpen,
+}: DesktopNavItemProps) {
   const pathname = usePathname();
 
   if (!item.children) {
@@ -24,7 +29,8 @@ export function DesktopNavItem({ item, index, popoverOpen, setPopoverOpen }: Des
     );
   }
 
-  const isActive = item.href === pathname || item.children.some(c => c.href === pathname);
+  const isActive =
+    item.href === pathname || item.children.some(c => c.href === pathname);
 
   return (
     <Popover

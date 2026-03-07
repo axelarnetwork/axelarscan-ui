@@ -12,11 +12,7 @@ import type { FilterAttribute, FilterOption } from '@/components/FilterSelect';
 import { useChains, useAssets } from '@/hooks/useGlobalData';
 import type { Chain, Asset } from '@/types';
 import { toArray } from '@/lib/parser';
-import {
-  getParams,
-  getQueryString,
-  isFiltered,
-} from '@/lib/operator';
+import { getParams, getQueryString, isFiltered } from '@/lib/operator';
 import { capitalize } from '@/lib/string';
 
 import * as styles from './Transfers.styles';
@@ -28,7 +24,9 @@ export function Filters() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
-  const [params, setParams] = useState<Record<string, unknown>>(getParams(searchParams, size));
+  const [params, setParams] = useState<Record<string, unknown>>(
+    getParams(searchParams, size)
+  );
   const [searchInput, setSearchInput] = useState<Record<string, string>>({});
   const chains = useChains();
   const assets = useAssets();
@@ -42,7 +40,7 @@ export function Filters() {
   const onSubmit = (
     _e1: unknown,
     _e2: unknown,
-    _params?: Record<string, unknown>,
+    _params?: Record<string, unknown>
   ) => {
     if (!_params) {
       _params = params;
@@ -64,7 +62,7 @@ export function Filters() {
   const chainOptions = _.orderBy(
     toArray(chains).map((d: Chain, i: number) => ({ ...d, i })),
     ['deprecated', 'name', 'i'],
-    ['desc', 'asc', 'asc'],
+    ['desc', 'asc', 'asc']
   ).map((d: Chain & { i: number }) => ({
     value: d.id,
     title: `${d.name}${d.deprecated ? ` (deprecated)` : ''}`,
@@ -103,11 +101,14 @@ export function Filters() {
       multiple: true,
       options: _.orderBy(
         _.uniqBy(
-          toArray(assets).map((d: Asset) => ({ value: d.id, title: d.symbol ?? d.id })),
-          'value',
+          toArray(assets).map((d: Asset) => ({
+            value: d.id,
+            title: d.symbol ?? d.id,
+          })),
+          'value'
         ),
         ['title'],
-        ['asc'],
+        ['asc']
       ),
     },
     {
@@ -129,7 +130,10 @@ export function Filters() {
       type: 'select',
       options: _.concat(
         { title: 'Any' } as FilterOption,
-        ['executed', 'failed'].map((d: string) => ({ value: d, title: capitalize(d) })),
+        ['executed', 'failed'].map((d: string) => ({
+          value: d,
+          title: capitalize(d),
+        }))
       ),
     },
     { label: 'Sender', name: 'senderAddress' },

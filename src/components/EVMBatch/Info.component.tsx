@@ -37,7 +37,8 @@ export function Info({ data, chain, id, executeButton }: InfoProps) {
   const { url, address_path, transaction_path } = { ...explorer };
 
   const executed =
-    commands && commands.length === commands.filter((c: BatchCommand) => c.executed).length;
+    commands &&
+    commands.length === commands.filter((c: BatchCommand) => c.executed).length;
   const status = executed
     ? 'executed'
     : toCase(data?.status?.replace('BATCHED_COMMANDS_STATUS_', ''), 'lower');
@@ -51,9 +52,7 @@ export function Info({ data, chain, id, executeButton }: InfoProps) {
           </Copy>
           {key_id && (
             <Copy size={16} value={key_id}>
-              <span className={styles.keyIdLabel}>
-                {key_id}
-              </span>
+              <span className={styles.keyIdLabel}>{key_id}</span>
             </Copy>
           )}
         </h3>
@@ -73,7 +72,12 @@ export function Info({ data, chain, id, executeButton }: InfoProps) {
       </div>
       <div className={styles.infoBorder}>
         <dl className={styles.dlDivider}>
-          <ChainRow url={url} addressPath={address_path} gatewayAddress={gateway?.address} chain={chain} />
+          <ChainRow
+            url={url}
+            addressPath={address_path}
+            gatewayAddress={gateway?.address}
+            chain={chain}
+          />
           <StatusRow status={status} executeButton={executeButton} />
           {commands && (
             <CommandsSection
@@ -86,7 +90,10 @@ export function Info({ data, chain, id, executeButton }: InfoProps) {
             />
           )}
           <TimeRow createdAtMs={created_at?.ms} />
-          <DataRow label={executed ? 'Signed Commands' : 'Execute Data'} value={execute_data} />
+          <DataRow
+            label={executed ? 'Signed Commands' : 'Execute Data'}
+            value={execute_data}
+          />
           <DataRow label="Data" value={data?.data} />
           <SignaturesRow signatures={signatures!} />
         </dl>

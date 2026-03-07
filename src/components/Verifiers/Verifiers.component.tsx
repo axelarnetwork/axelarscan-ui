@@ -10,7 +10,8 @@ import { VerifierRow } from './Row.component';
 import * as styles from './Verifiers.styles';
 
 export function Verifiers() {
-  const { data, amplifierChains, additionalAmplifierChains } = useVerifiersData();
+  const { data, amplifierChains, additionalAmplifierChains } =
+    useVerifiersData();
 
   if (!data) {
     return (
@@ -42,9 +43,15 @@ export function Verifiers() {
           <table className={styles.table}>
             <thead className={styles.thead}>
               <tr className={styles.theadRow}>
-                <th scope="col" className={styles.thFirst}>#</th>
-                <th scope="col" className={styles.thMiddle}>Verifier</th>
-                <th scope="col" className={styles.thLast}>Amplifier Supported</th>
+                <th scope="col" className={styles.thFirst}>
+                  #
+                </th>
+                <th scope="col" className={styles.thMiddle}>
+                  Verifier
+                </th>
+                <th scope="col" className={styles.thLast}>
+                  Amplifier Supported
+                </th>
               </tr>
             </thead>
             <tbody className={styles.tbody}>

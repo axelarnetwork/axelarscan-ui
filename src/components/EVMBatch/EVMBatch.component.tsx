@@ -16,7 +16,12 @@ import { parseError } from '@/lib/parser';
 import { timeDiff } from '@/lib/time';
 
 import { Info } from './Info.component';
-import type { BatchCommand, BatchData, EVMBatchProps, ExecuteResponse } from './EVMBatch.types';
+import type {
+  BatchCommand,
+  BatchData,
+  EVMBatchProps,
+  ExecuteResponse,
+} from './EVMBatch.types';
 import * as styles from './EVMBatch.styles';
 
 const EXECUTE_PERIOD_SECONDS = 5 * 60;
@@ -32,11 +37,12 @@ export function EVMBatch({ chain, id }: EVMBatchProps) {
 
   const { commands, created_at, execute_data } = { ...data };
   const executed =
-    commands && commands.length === commands.filter((c: BatchCommand) => c.executed).length;
+    commands &&
+    commands.length === commands.filter((c: BatchCommand) => c.executed).length;
 
   useEffect(() => {
     const getData = async () => {
-      const data = await getBatch(chain, id) as BatchData | null;
+      const data = (await getBatch(chain, id)) as BatchData | null;
 
       console.log('[data]', data);
       setData(data);
@@ -61,7 +67,9 @@ export function EVMBatch({ chain, id }: EVMBatchProps) {
 
       switch (status) {
         case 'success':
-          icon = <PiCheckCircleFill size={20} className={styles.toastIconSuccess} />;
+          icon = (
+            <PiCheckCircleFill size={20} className={styles.toastIconSuccess} />
+          );
           break;
         case 'failed':
           icon = <PiXCircleFill size={20} className={styles.toastIconFailed} />;
@@ -170,7 +178,9 @@ export function EVMBatch({ chain, id }: EVMBatchProps) {
             Execut{executing ? 'ing...' : 'e'}
           </button>
         )}
-        {!executing && <EVMWallet connectChainId={chain_id as number | undefined} />}
+        {!executing && (
+          <EVMWallet connectChainId={chain_id as number | undefined} />
+        )}
       </div>
     );
 
@@ -186,12 +196,7 @@ export function EVMBatch({ chain, id }: EVMBatchProps) {
     <Container className="sm:mt-8">
       <div className={styles.contentWrapper}>
         <Toaster />
-        <Info
-          data={data}
-          chain={chain}
-          id={id}
-          executeButton={executeButton}
-        />
+        <Info data={data} chain={chain} id={id} executeButton={executeButton} />
       </div>
     </Container>
   );

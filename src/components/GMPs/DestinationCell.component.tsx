@@ -8,10 +8,14 @@ import { isAxelar } from '@/lib/chain';
 import type { DestinationCellProps, GMPRowProps } from './GMPs.types';
 import * as styles from './GMPs.styles';
 
-export function DestinationCell({ data: d, useAnotherHopChain }: DestinationCellProps) {
+export function DestinationCell({
+  data: d,
+  useAnotherHopChain,
+}: DestinationCellProps) {
   const destChain = d.call.returnValues?.destinationChain;
   const isDestAxelar = isAxelar(destChain);
-  const showMainChain = !isDestAxelar || !d.customValues?.recipientAddress || !useAnotherHopChain;
+  const showMainChain =
+    !isDestAxelar || !d.customValues?.recipientAddress || !useAnotherHopChain;
 
   return (
     <td className={styles.tdDefault}>
@@ -35,9 +39,7 @@ export function DestinationCell({ data: d, useAnotherHopChain }: DestinationCell
         )}
         {d.is_invalid_contract_address ? (
           <div className={styles.invalidChainWrapper}>
-            <Tooltip
-              content={d.call.returnValues?.destinationContractAddress}
-            >
+            <Tooltip content={d.call.returnValues?.destinationContractAddress}>
               <div className={styles.invalidChainContent}>
                 <PiWarningCircle size={20} />
                 <span>Invalid Contract</span>
@@ -72,7 +74,7 @@ function hopAndRecipient(
   d: GMPRowProps['data'],
   useAnotherHopChain: boolean,
   destChain: string | undefined,
-  isDestAxelar: boolean,
+  isDestAxelar: boolean
 ) {
   if (!d.callback_chain && !d.customValues?.recipientAddress) {
     return null;
@@ -96,7 +98,7 @@ function hopAndRecipient(
           <ChainProfile
             value={
               useAnotherHopChain
-                ? (d.callback_chain || d.customValues?.destinationChain)
+                ? d.callback_chain || d.customValues?.destinationChain
                 : undefined
             }
             className={styles.chainProfileHeight}

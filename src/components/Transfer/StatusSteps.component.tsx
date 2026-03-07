@@ -15,13 +15,14 @@ export function StatusSteps({
 }: StatusStepsProps) {
   return (
     <div className={styles.statusFlexCol}>
-      <nav
-        aria-label="Progress"
-        className={styles.statusNav}
-      >
+      <nav aria-label="Progress" className={styles.statusNav}>
         <ol role="list" className={styles.statusOl}>
           {steps.map((d: TransferStep, i: number) => {
-            const stepURL = resolveStepURL(d, axelarChainData, destinationChainData);
+            const stepURL = resolveStepURL(
+              d,
+              axelarChainData,
+              destinationChainData
+            );
 
             return (
               <li

@@ -26,7 +26,9 @@ export function ChainSelector({ chain, chainId }: ChainSelectorProps) {
 
   const vmChains = toArray(chains).filter((d: Chain) => d.chain_type === 'vm');
   const isSelected = (v: string) => v === chainId || equalsIgnoreCase(v, chain);
-  const selectedValue = toArray(chains).find((d: Chain) => isSelected(d.id)) as Chain | undefined;
+  const selectedValue = toArray(chains).find((d: Chain) => isSelected(d.id)) as
+    | Chain
+    | undefined;
 
   return (
     <Listbox
@@ -41,7 +43,10 @@ export function ChainSelector({ chain, chainId }: ChainSelectorProps) {
               {selectedValue?.name}
             </span>
             <span className={styles.listboxButtonIcon}>
-              <LuChevronsUpDown size={20} className={styles.listboxChevronIcon} />
+              <LuChevronsUpDown
+                size={20}
+                className={styles.listboxChevronIcon}
+              />
             </span>
           </Listbox.Button>
           <Transition
@@ -59,16 +64,26 @@ export function ChainSelector({ chain, chainId }: ChainSelectorProps) {
                   className={({ active }: { active: boolean }) =>
                     clsx(
                       styles.listboxOptionBase,
-                      active ? styles.listboxOptionActive : styles.listboxOptionInactive
+                      active
+                        ? styles.listboxOptionActive
+                        : styles.listboxOptionInactive
                     )
                   }
                 >
-                  {({ selected, active }: { selected: boolean; active: boolean }) => (
+                  {({
+                    selected,
+                    active,
+                  }: {
+                    selected: boolean;
+                    active: boolean;
+                  }) => (
                     <>
                       <span
                         className={clsx(
                           styles.listboxButtonText,
-                          selected ? styles.listboxOptionTextSelected : styles.listboxOptionTextNormal
+                          selected
+                            ? styles.listboxOptionTextSelected
+                            : styles.listboxOptionTextNormal
                         )}
                       >
                         {d.name}
@@ -77,7 +92,9 @@ export function ChainSelector({ chain, chainId }: ChainSelectorProps) {
                         <span
                           className={clsx(
                             styles.listboxCheckWrapper,
-                            active ? styles.listboxCheckActive : styles.listboxCheckInactive
+                            active
+                              ? styles.listboxCheckActive
+                              : styles.listboxCheckInactive
                           )}
                         >
                           <MdCheck size={20} />

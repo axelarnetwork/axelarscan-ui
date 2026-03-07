@@ -7,7 +7,14 @@ import { Copy } from '@/components/Copy';
 import type { NameServiceContentProps } from './Profile.types';
 import { nameService as styles } from './Profile.styles';
 
-export function NameServiceContent({ url, noCopy, address, width, className, element }: NameServiceContentProps) {
+export function NameServiceContent({
+  url,
+  noCopy,
+  address,
+  width,
+  className,
+  element,
+}: NameServiceContentProps) {
   const copySize = width < 24 ? 16 : 18;
 
   if (url) {

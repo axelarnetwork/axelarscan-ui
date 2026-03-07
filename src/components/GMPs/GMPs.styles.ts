@@ -8,8 +8,7 @@ export const filterIconActive = 'text-blue-600 dark:text-blue-500' as const;
 // ─── Main Layout ────────────────────────────────────────────────
 export const containerDefault = 'sm:mt-8' as const;
 
-export const headerRow =
-  'flex items-center justify-between gap-x-4' as const;
+export const headerRow = 'flex items-center justify-between gap-x-4' as const;
 export const headerLeft = 'sm:flex-auto' as const;
 export const headerTitle =
   'text-base font-semibold leading-6 text-zinc-900 dark:text-zinc-100' as const;
@@ -22,8 +21,7 @@ export const tableScrollContainer =
   '-mx-4 mt-4 overflow-x-auto sm:-mx-0 lg:overflow-x-visible' as const;
 export const table =
   'min-w-full divide-y divide-zinc-200 dark:divide-zinc-700' as const;
-export const tableHead =
-  'sticky top-0 z-10 bg-white dark:bg-zinc-900' as const;
+export const tableHead = 'sticky top-0 z-10 bg-white dark:bg-zinc-900' as const;
 export const tableHeadRow =
   'text-sm font-semibold text-zinc-800 dark:text-zinc-200' as const;
 export const tableBody =
@@ -62,8 +60,7 @@ export const interchainTransfersWrapper = 'flex flex-col gap-y-1.5' as const;
 
 // ─── Sender Cell ────────────────────────────────────────────────
 export const senderCellWrapper = 'flex flex-col gap-y-1' as const;
-export const senderChainProfileWrapper =
-  'flex items-center gap-x-2' as const;
+export const senderChainProfileWrapper = 'flex items-center gap-x-2' as const;
 export const chainProfileHeight = 'h-6' as const;
 export const chainProfileTitleBold = 'font-semibold' as const;
 export const explorerLinkContainerClassName = '!gap-x-1' as const;
@@ -75,8 +72,7 @@ export const destinationCellWrapper = 'flex flex-col gap-y-1' as const;
 export const invalidChainWrapper = 'flex' as const;
 export const invalidChainContent =
   'flex h-6 items-center gap-x-1.5 text-red-600 dark:text-red-500' as const;
-export const destinationContractTooltipParent =
-  '!justify-start' as const;
+export const destinationContractTooltipParent = '!justify-start' as const;
 export const hopChainWrapper = 'flex items-center gap-x-2' as const;
 export const recipientTooltipParent = '!justify-start' as const;
 

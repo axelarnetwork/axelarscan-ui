@@ -53,7 +53,10 @@ export function ContractFieldCell({
       );
 
     case 'last_distribution_epoch':
-      if (!isNumber(contract.epoch_duration) || !contract.last_distribution_epoch) {
+      if (
+        !isNumber(contract.epoch_duration) ||
+        !contract.last_distribution_epoch
+      ) {
         return <>-</>;
       }
       return (

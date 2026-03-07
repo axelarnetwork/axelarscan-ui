@@ -16,7 +16,9 @@ export function Info({ chain, rewardsPool, cumulativeRewards }: InfoProps) {
   const chainData = getChainData(chain, chains);
   const id = chainData?.id;
   const name = chainData?.name;
-  const multisigProver = chainData?.multisig_prover as { address?: string } | undefined;
+  const multisigProver = chainData?.multisig_prover as
+    | { address?: string }
+    | undefined;
   const { voting_verifier, multisig } = { ...rewardsPool };
 
   const contracts: RewardsContractInfo[] = [
@@ -24,10 +26,15 @@ export function Info({ chain, rewardsPool, cumulativeRewards }: InfoProps) {
     { ...multisig, id: 'multisig', title: 'Signing' },
   ];
 
-  const symbol = (getChainData('axelarnet', chains)?.native_token as { symbol?: string } | undefined)?.symbol;
+  const symbol = (
+    getChainData('axelarnet', chains)?.native_token as
+      | { symbol?: string }
+      | undefined
+  )?.symbol;
 
   const verifierCount = toArray(verifiers).filter(
-    (d: Record<string, unknown>) => id && find(id, d.supportedChains as string[])
+    (d: Record<string, unknown>) =>
+      id && find(id, d.supportedChains as string[])
   ).length;
 
   return (

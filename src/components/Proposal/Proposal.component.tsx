@@ -31,11 +31,11 @@ export function Proposal({ id }: ProposalProps) {
         toArray(votes)
           .map((d: VoteEntry) => ({
             ...d,
-            validatorData: validators.find((v) =>
+            validatorData: validators.find(v =>
               equalsIgnoreCase(v.delegator_address, d.voter)
             ),
           }))
-          .map((d) => ({
+          .map(d => ({
             ...d,
             voting_power: d.validatorData ? d.validatorData.tokens : -1,
           })),
@@ -46,7 +46,7 @@ export function Proposal({ id }: ProposalProps) {
 
     const getData = async () => {
       if (validators) {
-        const response = await getProposal({ id }) as ProposalData | null;
+        const response = (await getProposal({ id })) as ProposalData | null;
         setData({ ...response, votes: setValidatorsToVotes(response?.votes) });
       }
     };
@@ -62,9 +62,12 @@ export function Proposal({ id }: ProposalProps) {
       option: k,
       value: toArray(v).length,
     }))
-    .filter((d) => d.value);
+    .filter(d => d.value);
 
-  const isLoading = !(data && (!proposal_id || toNumber(id) === toNumber(proposal_id)));
+  const isLoading = !(
+    data &&
+    (!proposal_id || toNumber(id) === toNumber(proposal_id))
+  );
 
   if (isLoading) {
     return (

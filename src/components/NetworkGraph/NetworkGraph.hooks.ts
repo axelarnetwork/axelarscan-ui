@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import type { GraphNode, GraphEdge, ImagesMap } from './NetworkGraph.types';
-import { getImageAsync, drawNodeCanvasObject, drawLinkCanvasObject } from './NetworkGraph.utils';
+import {
+  getImageAsync,
+  drawNodeCanvasObject,
+  drawLinkCanvasObject,
+} from './NetworkGraph.utils';
 
 // ---------------------------------------------------------------------------
 // useImagePreloader
@@ -39,7 +43,7 @@ export const useNodeCanvasObject = (
   selectedNode: GraphNode | null,
   links: GraphEdge[] | undefined,
   images: ImagesMap,
-  theme: string | undefined,
+  theme: string | undefined
 ) =>
   useCallback(
     (node: GraphNode, ctx: CanvasRenderingContext2D, globalScale: number) =>
@@ -59,7 +63,10 @@ export const useNodeCanvasObject = (
 // useLinkCanvasObject
 // ---------------------------------------------------------------------------
 
-export const useLinkCanvasObject = (selectedNode: GraphNode | null, theme: string | undefined) =>
+export const useLinkCanvasObject = (
+  selectedNode: GraphNode | null,
+  theme: string | undefined
+) =>
   useCallback(
     (value: GraphEdge, ctx: CanvasRenderingContext2D, globalScale: number) =>
       drawLinkCanvasObject(value, ctx, globalScale, selectedNode, theme),

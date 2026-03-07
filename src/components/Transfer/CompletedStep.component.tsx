@@ -5,10 +5,7 @@ import type { CompletedStepProps } from './Transfer.types';
 import { StepElement } from './StepElement.component';
 import * as styles from './Transfer.styles';
 
-export function CompletedStep({
-  step,
-  stepURL,
-}: CompletedStepProps) {
+export function CompletedStep({ step, stepURL }: CompletedStepProps) {
   const element = <StepElement step={step} />;
 
   return (

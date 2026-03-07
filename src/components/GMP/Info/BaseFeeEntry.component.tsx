@@ -57,8 +57,7 @@ export function BaseFeeEntry({
                 className={gasStyles.nestedNumber}
               />
               {renderUsdValue(
-                approveFee *
-                  (entryFees.source_token?.token_price?.usd ?? 0),
+                approveFee * (entryFees.source_token?.token_price?.usd ?? 0),
                 gasStyles.nestedNumberMuted
               )}
             </div>

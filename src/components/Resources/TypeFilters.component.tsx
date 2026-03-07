@@ -19,11 +19,7 @@ const ASSET_TYPES = [
   { label: 'ITS', value: 'its' },
 ];
 
-export function TypeFilters({
-  resource,
-  params,
-  pathname,
-}: TypeFiltersProps) {
+export function TypeFilters({ resource, params, pathname }: TypeFiltersProps) {
   return (
     <div className={styles.typeFiltersRow}>
       {(resource === 'assets' ? ASSET_TYPES : CHAIN_TYPES).map((d, i) => (
@@ -32,7 +28,9 @@ export function TypeFilters({
           href={`${pathname}${getQueryString({ ...params, type: d.value })}`}
           className={clsx(
             styles.typeLinkBase,
-            d.value === params.type ? styles.typeLinkActive : styles.typeLinkInactive
+            d.value === params.type
+              ? styles.typeLinkActive
+              : styles.typeLinkInactive
           )}
         >
           <span>{d.label}</span>

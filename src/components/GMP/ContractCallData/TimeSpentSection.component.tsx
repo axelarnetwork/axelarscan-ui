@@ -15,9 +15,7 @@ export function TimeSpentSection({ data }: TimeSpentSectionProps) {
     ['express_executed', 'executed'].includes(status ?? '');
 
   const showTotal =
-    time_spent &&
-    (time_spent.total ?? 0) > 0 &&
-    status === 'executed';
+    time_spent && (time_spent.total ?? 0) > 0 && status === 'executed';
 
   const shouldRender =
     ((time_spent?.call_express_executed ?? 0) > 0 &&

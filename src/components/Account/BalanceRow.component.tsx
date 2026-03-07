@@ -12,7 +12,9 @@ import * as styles from './Account.styles';
 export function BalanceRow({ entry, index }: BalanceRowProps) {
   const assets = useAssets();
   const burnedPrefix = 'burned-';
-  const { symbol, image, price } = { ...getAssetData(entry.denom?.replace(burnedPrefix, ''), assets) };
+  const { symbol, image, price } = {
+    ...getAssetData(entry.denom?.replace(burnedPrefix, ''), assets),
+  };
   const isBurned = entry.denom?.startsWith(burnedPrefix);
 
   return (
@@ -31,7 +33,12 @@ export function BalanceRow({ entry, index }: BalanceRowProps) {
                 {!symbol && <Copy size={16} value={entry.denom} />}
               </div>
               {price! > 0 && (
-                <Number value={price!} maxDecimals={2} prefix="$" className={styles.assetPrice} />
+                <Number
+                  value={price!}
+                  maxDecimals={2}
+                  prefix="$"
+                  className={styles.assetPrice}
+                />
               )}
             </div>
           )}
@@ -45,7 +52,12 @@ export function BalanceRow({ entry, index }: BalanceRowProps) {
       <td className={styles.tdLast}>
         <div className={styles.cellEndAligned}>
           {price! > 0 && (
-            <Number value={entry.amount * price!} prefix="$" noTooltip={true} className={styles.balanceUsdValue} />
+            <Number
+              value={entry.amount * price!}
+              prefix="$"
+              noTooltip={true}
+              className={styles.balanceUsdValue}
+            />
           )}
         </div>
       </td>

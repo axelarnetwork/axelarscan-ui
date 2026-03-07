@@ -21,9 +21,8 @@ export function NetworkGraphSection({
 
   const totalValue =
     sankeyTab === 'transactions'
-      ? toNumber(
-          _.sumBy(data.GMPStatsByChains?.source_chains, 'num_txs')
-        ) + toNumber(data.transfersStats?.total)
+      ? toNumber(_.sumBy(data.GMPStatsByChains?.source_chains, 'num_txs')) +
+        toNumber(data.transfersStats?.total)
       : toNumber(data.GMPTotalVolume) + toNumber(data.transfersTotalVolume);
 
   const field = sankeyTab === 'transactions' ? 'num_txs' : 'volume';
@@ -47,7 +46,9 @@ export function NetworkGraphSection({
             topN={40}
             totalValue={totalValue}
             field={field}
-            title={<SankeyTabs currentTab={sankeyTab} onTabChange={setSankeyTab} />}
+            title={
+              <SankeyTabs currentTab={sankeyTab} onTabChange={setSankeyTab} />
+            }
             valuePrefix={valuePrefix}
             noBorder={true}
             className="h-144"

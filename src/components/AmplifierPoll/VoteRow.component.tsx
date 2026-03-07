@@ -12,7 +12,11 @@ import type { VoteRowProps } from './AmplifierPoll.types';
 import { getVoteLabel, getVoteOptionStyle } from './AmplifierPoll.types';
 import * as styles from './AmplifierPoll.styles';
 
-export function VoteRow({ vote: d, index: i, confirmationTxhash }: VoteRowProps) {
+export function VoteRow({
+  vote: d,
+  index: i,
+  confirmationTxhash,
+}: VoteRowProps) {
   const vote = getVoteLabel(d.vote);
 
   return (
@@ -77,7 +81,7 @@ export function VoteRow({ vote: d, index: i, confirmationTxhash }: VoteRowProps)
           <Tag
             className={clsx(
               'w-fit capitalize',
-              getVoteOptionStyle(vote, styles),
+              getVoteOptionStyle(vote, styles)
             )}
           >
             {toTitle(vote)}

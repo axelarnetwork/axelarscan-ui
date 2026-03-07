@@ -1,4 +1,9 @@
-import { ChainTimeEstimate, ChainMetadata, GMPMessage, GMPEventLog } from '../GMP.types';
+import {
+  ChainTimeEstimate,
+  ChainMetadata,
+  GMPMessage,
+  GMPEventLog,
+} from '../GMP.types';
 
 export interface StatusTimelineProps {
   timeline: GMPMessage[];

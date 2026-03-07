@@ -21,9 +21,7 @@ export function APRMetric({
 
   return (
     <div className={styles.metricRow}>
-      <div className={styles.metricLabel}>
-        APR:
-      </div>
+      <div className={styles.metricLabel}>APR:</div>
       <Link
         href="https://wallet.keplr.app/chains/axelar"
         target="_blank"

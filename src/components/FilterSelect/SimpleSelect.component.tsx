@@ -13,7 +13,11 @@ import { getSelectedValue } from './FilterSelect.utils';
 import { SelectButtonContent } from './SelectButtonContent.component';
 import { OptionContent } from './OptionContent.component';
 
-export function SimpleSelect({ attribute, params, setParams }: SelectFieldProps) {
+export function SimpleSelect({
+  attribute,
+  params,
+  setParams,
+}: SelectFieldProps) {
   const handleChange = (v: string | string[]) =>
     setParams({
       ...params,
@@ -43,7 +47,10 @@ export function SimpleSelect({ attribute, params, setParams }: SelectFieldProps)
                 setParams={setParams}
               />
               <span className={styles.selectIconWrapper}>
-                <LuChevronsUpDown size={20} className={styles.selectChevronIcon} />
+                <LuChevronsUpDown
+                  size={20}
+                  className={styles.selectChevronIcon}
+                />
               </span>
             </Listbox.Button>
             <Transition
@@ -64,15 +71,25 @@ export function SimpleSelect({ attribute, params, setParams }: SelectFieldProps)
                           styles.selectOptionBase,
                           active
                             ? styles.selectOptionActive
-                            : styles.selectOptionInactive,
+                            : styles.selectOptionInactive
                         )
                       }
                     >
-                      {({ selected, active }: { selected: boolean; active: boolean }) => (
-                        <OptionContent selected={selected} active={active} title={o.title} />
+                      {({
+                        selected,
+                        active,
+                      }: {
+                        selected: boolean;
+                        active: boolean;
+                      }) => (
+                        <OptionContent
+                          selected={selected}
+                          active={active}
+                          title={o.title}
+                        />
                       )}
                     </Listbox.Option>
-                  ),
+                  )
                 )}
               </Listbox.Options>
             </Transition>

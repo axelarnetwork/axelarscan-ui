@@ -10,7 +10,11 @@ import { useChains } from '@/hooks/useGlobalData';
 import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { ellipse } from '@/lib/string';
-import type { AssetProps, AssetAddressEntry, NormalizedAssetAddress } from './Resources.types';
+import type {
+  AssetProps,
+  AssetAddressEntry,
+  NormalizedAssetAddress,
+} from './Resources.types';
 import * as styles from './Resources.styles';
 import { ChainIcon } from './ChainIcon.component';
 import { FocusedChainDetail } from './FocusedChainDetail.component';
@@ -22,7 +26,13 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
   const [chainSelected, setChainSelected] = useState<string | null>(null);
   const chains = useChains();
 
-  const { type, denom, native_chain, symbol, addresses: rawAddresses } = { ...data };
+  const {
+    type,
+    denom,
+    native_chain,
+    symbol,
+    addresses: rawAddresses,
+  } = { ...data };
   const asset = type === 'its' ? data.id : denom;
 
   const chainAddresses: NormalizedAssetAddress[] = _.uniqBy(
@@ -34,13 +44,16 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
             ? data.chains?.[native_chain!]
             : rawAddresses?.[native_chain!]),
         },
-        Object.entries({ ...(type === 'its' ? data.chains : rawAddresses) }).map(
-          ([k, v]) => ({ chain: k, ...(v as AssetAddressEntry) })
-        )
+        Object.entries({
+          ...(type === 'its' ? data.chains : rawAddresses),
+        }).map(([k, v]) => ({ chain: k, ...(v as AssetAddressEntry) }))
       )
     ),
     'chain'
-  ).map((d: NormalizedAssetAddress) => ({ ...d, address: d.address || d.tokenAddress }));
+  ).map((d: NormalizedAssetAddress) => ({
+    ...d,
+    address: d.address || d.tokenAddress,
+  }));
 
   const isFocused = focusID === asset;
   const {
@@ -54,7 +67,9 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
     address,
     ibc_denom,
     symbol: tokenSymbol,
-  } = { ...chainAddresses.find((d: NormalizedAssetAddress) => d.chain === chain) };
+  } = {
+    ...chainAddresses.find((d: NormalizedAssetAddress) => d.chain === chain),
+  };
 
   useEffect(() => {
     if (focusID !== asset) {
@@ -69,7 +84,7 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
   );
 
   const handleChainClick = (chainId: string | undefined) => {
-    setChainSelected(chainId === chainSelected ? null : chainId ?? null);
+    setChainSelected(chainId === chainSelected ? null : (chainId ?? null));
     if (onFocus && asset) {
       onFocus(asset);
     }
@@ -102,13 +117,17 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
               </Tooltip>
             )}
             <div className={styles.denomsWrapper}>
-              {toArray(_.concat(denom, _.head(data.denoms))).map((d: string | undefined) => (
-                <Tooltip key={d} content="Denom" className={styles.symbolTooltip}>
-                  <Tag className={styles.denomTag}>
-                    {ellipse(d)}
-                  </Tag>
-                </Tooltip>
-              ))}
+              {toArray(_.concat(denom, _.head(data.denoms))).map(
+                (d: string | undefined) => (
+                  <Tooltip
+                    key={d}
+                    content="Denom"
+                    className={styles.symbolTooltip}
+                  >
+                    <Tag className={styles.denomTag}>{ellipse(d)}</Tag>
+                  </Tooltip>
+                )
+              )}
             </div>
           </div>
         </div>
@@ -126,16 +145,18 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
               {type === 'its' ? 'Interchain' : 'Gateway'} Tokens
             </span>
             <div className={styles.tokensIconRow}>
-              {visibleChains.map(({ chain: chainId }: NormalizedAssetAddress, i: number) => (
-                <ChainIcon
-                  key={i}
-                  chainId={chainId}
-                  nativeChain={native_chain}
-                  isSelected={isFocused && chainId === chainSelected}
-                  onClick={() => handleChainClick(chainId)}
-                  chains={chains}
-                />
-              ))}
+              {visibleChains.map(
+                ({ chain: chainId }: NormalizedAssetAddress, i: number) => (
+                  <ChainIcon
+                    key={i}
+                    chainId={chainId}
+                    nativeChain={native_chain}
+                    isSelected={isFocused && chainId === chainSelected}
+                    onClick={() => handleChainClick(chainId)}
+                    chains={chains}
+                  />
+                )
+              )}
               {chainAddresses.length > NUM_CHAINS_TRUNCATE && (
                 <button
                   onClick={handleSeeMoreClick}

@@ -50,11 +50,7 @@ npm run lint
 npm run lint:check
 ```
 
-### TypeScript Support
-
-This project supports both JavaScript and TypeScript files. You can gradually migrate existing JavaScript files to TypeScript or create new TypeScript files.
-
-#### TypeScript Commands
+### Build
 
 ```bash
 # Run TypeScript type checking (no emit)
@@ -94,13 +90,13 @@ Environment variables are managed via a single `.env` file locally and Vercel en
 cp .env.example .env
 ```
 
-| Environment       | Vercel Project               |
-| ----------------- | ---------------------------- |
-| Mainnet           | axelarscan-mainnet           |
-| Testnet           | axelarscan-testnet           |
-| Staging           | axelarscan-staging           |
-| Stagenet          | axelarscan-stagenet          |
-| Devnet Amplifier  | axelarscan-devnet-amplifier  |
+| Environment      | Vercel Project              |
+| ---------------- | --------------------------- |
+| Mainnet          | axelarscan-mainnet          |
+| Testnet          | axelarscan-testnet          |
+| Staging          | axelarscan-staging          |
+| Stagenet         | axelarscan-stagenet         |
+| Devnet Amplifier | axelarscan-devnet-amplifier |
 
 Each Vercel project has its own environment variables configured in the Vercel dashboard. Locally, set `NEXT_PUBLIC_ENVIRONMENT` in your `.env` to target the desired environment.
 

@@ -3,7 +3,11 @@
 import { useEffect, useState } from 'react';
 import _ from 'lodash';
 
-import { useChains, useVerifiers, useVerifiersByChain } from '@/hooks/useGlobalData';
+import {
+  useChains,
+  useVerifiers,
+  useVerifiersByChain,
+} from '@/hooks/useGlobalData';
 import { getVerifiersVotes, getVerifiersSigns } from '@/lib/api/validator';
 import { toArray } from '@/lib/parser';
 import { equalsIgnoreCase, find } from '@/lib/string';
@@ -28,7 +32,7 @@ function getVoteCount(
   chains: Record<string, { votes?: Record<string, number> }>
 ): number {
   return _.sum(
-    Object.values({ ...chains }).map((v) =>
+    Object.values({ ...chains }).map(v =>
       toNumber(
         _.last(
           Object.entries({ ...v?.votes }).find(([k]) =>
@@ -45,7 +49,7 @@ function getSignCount(
   chains: Record<string, { signs?: Record<string, number> }>
 ): number {
   return _.sum(
-    Object.values({ ...chains }).map((v) =>
+    Object.values({ ...chains }).map(v =>
       toNumber(
         _.last(
           Object.entries({ ...v?.signs }).find(([k]) =>
@@ -62,7 +66,7 @@ function mergeVerifierData(
   verifiersVotes: VerifierVotesResponse,
   verifiersSigns: VerifierSignsResponse
 ): VerifierData[] {
-  return verifiers.map((d) => {
+  return verifiers.map(d => {
     const totalPolls = toNumber(verifiersVotes.total);
     const rawVotes = { ...verifiersVotes.data[d.address] };
     const totalVotes = toNumber(rawVotes.total);
@@ -106,8 +110,10 @@ function mergeVerifierData(
 }
 
 export function useVerifiersData(): UseVerifiersDataResult {
-  const [verifiersVotes, setVerifiersVotes] = useState<VerifierVotesResponse | null>(null);
-  const [verifiersSigns, setVerifiersSigns] = useState<VerifierSignsResponse | null>(null);
+  const [verifiersVotes, setVerifiersVotes] =
+    useState<VerifierVotesResponse | null>(null);
+  const [verifiersSigns, setVerifiersSigns] =
+    useState<VerifierSignsResponse | null>(null);
   const [data, setData] = useState<VerifierData[] | null>(null);
 
   const chains = useChains();
@@ -116,7 +122,8 @@ export function useVerifiersData(): UseVerifiersDataResult {
 
   useEffect(() => {
     const getData = async () => {
-      const response = await getVerifiersVotes() as VerifierVotesResponse | null;
+      const response =
+        (await getVerifiersVotes()) as VerifierVotesResponse | null;
       if (response?.data) {
         setVerifiersVotes(response);
       }
@@ -126,7 +133,8 @@ export function useVerifiersData(): UseVerifiersDataResult {
 
   useEffect(() => {
     const getData = async () => {
-      const response = await getVerifiersSigns() as VerifierSignsResponse | null;
+      const response =
+        (await getVerifiersSigns()) as VerifierSignsResponse | null;
       if (response?.data) {
         setVerifiersSigns(response);
       }
@@ -148,13 +156,13 @@ export function useVerifiersData(): UseVerifiersDataResult {
   }, [verifiersVotes, verifiersSigns, data, verifiers]);
 
   const amplifierChains = (toArray(chains) as Chain[]).filter(
-    (c) => c.chain_type === 'vm' && !c.deprecated
+    c => c.chain_type === 'vm' && !c.deprecated
   );
 
   const additionalAmplifierChains = Object.entries({ ...verifiersByChain })
     .filter(
       ([k, v]) =>
-        amplifierChains.findIndex((d) => d.id === k) < 0 &&
+        amplifierChains.findIndex(d => d.id === k) < 0 &&
         toArray(v as unknown[]).length > 0
     )
     .map(([k]) => k);

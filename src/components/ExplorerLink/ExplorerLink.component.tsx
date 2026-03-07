@@ -15,7 +15,10 @@ import { isNumber } from '@/lib/number';
 import { LuSearch } from 'react-icons/lu';
 
 import * as styles from './ExplorerLink.styles';
-import type { BuildExplorerURLParams, ExplorerLinkProps } from './ExplorerLink.types';
+import type {
+  BuildExplorerURLParams,
+  ExplorerLinkProps,
+} from './ExplorerLink.types';
 
 export const buildExplorerURL = ({
   value,

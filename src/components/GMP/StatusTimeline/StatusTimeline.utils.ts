@@ -60,7 +60,8 @@ function resolveConfirmURL(
   poll_id?: string
 ): string | undefined {
   if (confirmation_txhash) return `/tx/${confirmation_txhash}`;
-  if (contract_address && poll_id) return `/amplifier-poll/${contract_address}_${poll_id}`;
+  if (contract_address && poll_id)
+    return `/amplifier-poll/${contract_address}_${poll_id}`;
   if (poll_id) return `/evm-poll/${poll_id}`;
   return undefined;
 }

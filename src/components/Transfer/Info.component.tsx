@@ -17,7 +17,11 @@ import { getChainData, getAssetData } from '@/lib/config';
 import { isString, ellipse, toTitle } from '@/lib/string';
 import { isNumber, formatUnits } from '@/lib/number';
 import { TIME_FORMAT } from '@/lib/time';
-import { getStep, getDepositAddressLabel, resolveSymbolAndImage } from './Transfer.utils';
+import {
+  getStep,
+  getDepositAddressLabel,
+  resolveSymbolAndImage,
+} from './Transfer.utils';
 import { StatusSteps } from './StatusSteps.component';
 import type { InfoProps } from './Transfer.types';
 import * as styles from './Transfer.styles';
@@ -41,34 +45,29 @@ export function Info({ data, tx }: InfoProps) {
   } = { ...data };
   const txhash = (send?.txhash as string | undefined) || tx;
 
-  const sourceChain = (send?.source_chain || link?.source_chain) as string | undefined;
-  const destinationChain = (
-    send?.destination_chain ||
+  const sourceChain = (send?.source_chain || link?.source_chain) as
+    | string
+    | undefined;
+  const destinationChain = (send?.destination_chain ||
     unwrap?.destination_chain ||
-    link?.destination_chain
-  ) as string | undefined;
+    link?.destination_chain) as string | undefined;
 
-  const senderAddress = (
-    wrap?.sender_address ||
+  const senderAddress = (wrap?.sender_address ||
     erc20_transfer?.sender_address ||
-    send?.sender_address
-  ) as string | undefined;
-  const recipientAddress = (unwrap?.recipient_address || link?.recipient_address) as string | undefined;
-  const depositAddress = (
-    wrap?.deposit_address ||
+    send?.sender_address) as string | undefined;
+  const recipientAddress = (unwrap?.recipient_address ||
+    link?.recipient_address) as string | undefined;
+  const depositAddress = (wrap?.deposit_address ||
     unwrap?.deposit_address_link ||
     erc20_transfer?.deposit_address ||
     send?.recipient_address ||
-    link?.deposit_address
-  ) as string | undefined;
+    link?.deposit_address) as string | undefined;
 
   const commandID = command?.command_id as string | undefined;
-  const transferID = (
-    command?.transfer_id ||
+  const transferID = (command?.transfer_id ||
     vote?.transfer_id ||
     confirm?.transfer_id ||
-    data.transfer_id
-  ) as string | undefined;
+    data.transfer_id) as string | undefined;
 
   const sourceChainData = getChainData(sourceChain, chains);
   const destinationChainData = getChainData(destinationChain, chains);
@@ -84,11 +83,13 @@ export function Info({ data, tx }: InfoProps) {
   const assetData = getAssetData(send?.denom as string | undefined, assets);
 
   const { addresses } = { ...assetData };
-  const rawSymbol = (sourceChainData ? addresses?.[sourceChainData.id] : undefined)?.symbol
-    ?? assetData?.symbol
-    ?? (send?.denom as string | undefined);
-  const rawImage = (sourceChainData ? addresses?.[sourceChainData.id] : undefined)?.image
-    ?? assetData?.image;
+  const rawSymbol =
+    (sourceChainData ? addresses?.[sourceChainData.id] : undefined)?.symbol ??
+    assetData?.symbol ??
+    (send?.denom as string | undefined);
+  const rawImage =
+    (sourceChainData ? addresses?.[sourceChainData.id] : undefined)?.image ??
+    assetData?.image;
 
   const { symbol, image } = resolveSymbolAndImage(rawSymbol, rawImage, type);
 
@@ -97,9 +98,7 @@ export function Info({ data, tx }: InfoProps) {
   return (
     <div className={styles.infoWrapper}>
       <div className={styles.infoHeaderPadding}>
-        <h3 className={styles.infoTitle}>
-          Transfer
-        </h3>
+        <h3 className={styles.infoTitle}>Transfer</h3>
         <div className={styles.infoSubtitle}>
           {txhash && (
             <div className={styles.infoTxHashRow}>
@@ -124,9 +123,7 @@ export function Info({ data, tx }: InfoProps) {
       <div className={styles.infoBorderTop}>
         <dl className={styles.infoDl}>
           <div className={styles.infoRow}>
-            <dt className={styles.infoDt}>
-              Type
-            </dt>
+            <dt className={styles.infoDt}>Type</dt>
             <dd className={styles.infoDd}>
               <Tag className={clsx(styles.tagFitCapitalize)}>
                 {toTitle(normalizeType(type))}
@@ -134,9 +131,7 @@ export function Info({ data, tx }: InfoProps) {
             </dd>
           </div>
           <div className={styles.infoRow}>
-            <dt className={styles.infoDt}>
-              Status
-            </dt>
+            <dt className={styles.infoDt}>Status</dt>
             <dd className={styles.infoDd}>
               <StatusSteps
                 steps={steps}
@@ -147,25 +142,19 @@ export function Info({ data, tx }: InfoProps) {
             </dd>
           </div>
           <div className={styles.infoRow}>
-            <dt className={styles.infoDt}>
-              Source Chain
-            </dt>
+            <dt className={styles.infoDt}>Source Chain</dt>
             <dd className={styles.infoDd}>
               <ChainProfile value={sourceChain} />
             </dd>
           </div>
           <div className={styles.infoRow}>
-            <dt className={styles.infoDt}>
-              Destination Chain
-            </dt>
+            <dt className={styles.infoDt}>Destination Chain</dt>
             <dd className={styles.infoDd}>
               <ChainProfile value={destinationChain} />
             </dd>
           </div>
           <div className={styles.infoRow}>
-            <dt className={styles.infoDt}>
-              Asset
-            </dt>
+            <dt className={styles.infoDt}>Asset</dt>
             <dd className={styles.infoDd}>
               <div className={styles.assetRow}>
                 <Image src={image} alt="" width={24} height={24} />
@@ -173,26 +162,25 @@ export function Info({ data, tx }: InfoProps) {
                   <Number
                     value={
                       isString(send!.amount)
-                        ? formatUnits(send!.amount as string, assetData?.decimals)
-                        : send!.amount as string | number
+                        ? formatUnits(
+                            send!.amount as string,
+                            assetData?.decimals
+                          )
+                        : (send!.amount as string | number)
                     }
                     format="0,0.000000"
                     suffix={` ${symbol}`}
                     className={styles.assetValue}
                   />
                 ) : (
-                  <span className={styles.assetValue}>
-                    {symbol}
-                  </span>
+                  <span className={styles.assetValue}>{symbol}</span>
                 )}
               </div>
             </dd>
           </div>
           {isNumber(send?.fee) && assets && (
             <div className={styles.infoRow}>
-              <dt className={styles.infoDt}>
-                Transfer Fee
-              </dt>
+              <dt className={styles.infoDt}>Transfer Fee</dt>
               <dd className={styles.infoDd}>
                 <div className={styles.assetRow}>
                   <Image src={image} alt="" width={24} height={24} />
@@ -200,7 +188,7 @@ export function Info({ data, tx }: InfoProps) {
                     value={
                       isString(send!.fee)
                         ? formatUnits(send!.fee as string, assetData?.decimals)
-                        : send!.fee as string | number
+                        : (send!.fee as string | number)
                     }
                     format="0,0.000000"
                     suffix={` ${symbol}`}
@@ -211,25 +199,19 @@ export function Info({ data, tx }: InfoProps) {
             </div>
           )}
           <div className={styles.infoRow}>
-            <dt className={styles.infoDt}>
-              Sender
-            </dt>
+            <dt className={styles.infoDt}>Sender</dt>
             <dd className={styles.infoDd}>
               <Profile address={senderAddress} chain={sourceChain} />
             </dd>
           </div>
           <div className={styles.infoRow}>
-            <dt className={styles.infoDt}>
-              Recipient
-            </dt>
+            <dt className={styles.infoDt}>Recipient</dt>
             <dd className={styles.infoDd}>
               <Profile address={recipientAddress} chain={destinationChain} />
             </dd>
           </div>
           <div className={styles.infoRow}>
-            <dt className={styles.infoDt}>
-              {getDepositAddressLabel(type)}
-            </dt>
+            <dt className={styles.infoDt}>{getDepositAddressLabel(type)}</dt>
             <dd className={styles.infoDd}>
               <Profile
                 address={depositAddress}
@@ -239,9 +221,7 @@ export function Info({ data, tx }: InfoProps) {
           </div>
           {commandID && (
             <div className={styles.infoRow}>
-              <dt className={styles.infoDt}>
-                Command ID
-              </dt>
+              <dt className={styles.infoDt}>Command ID</dt>
               <dd className={styles.infoDd}>
                 <Copy value={commandID}>
                   <span>{ellipse(commandID)}</span>
@@ -251,9 +231,7 @@ export function Info({ data, tx }: InfoProps) {
           )}
           {transferID && (
             <div className={styles.infoRow}>
-              <dt className={styles.infoDt}>
-                Transfer ID
-              </dt>
+              <dt className={styles.infoDt}>Transfer ID</dt>
               <dd className={styles.infoDd}>
                 <Copy value={transferID}>
                   <span>{transferID}</span>
@@ -262,19 +240,17 @@ export function Info({ data, tx }: InfoProps) {
             </div>
           )}
           <div className={styles.infoRow}>
-            <dt className={styles.infoDt}>
-              Created
-            </dt>
+            <dt className={styles.infoDt}>Created</dt>
             <dd className={styles.infoDd}>
-              {moment((send?.created_at as { ms?: number } | undefined)?.ms).format(TIME_FORMAT)}
+              {moment(
+                (send?.created_at as { ms?: number } | undefined)?.ms
+              ).format(TIME_FORMAT)}
             </dd>
           </div>
           {(time_spent?.total ?? 0) > 0 &&
             ['received'].includes(simplified_status ?? '') && (
               <div className={styles.infoRow}>
-                <dt className={styles.infoDt}>
-                  Time Spent
-                </dt>
+                <dt className={styles.infoDt}>Time Spent</dt>
                 <dd className={styles.infoDd}>
                   <TimeSpent
                     fromTimestamp={0}

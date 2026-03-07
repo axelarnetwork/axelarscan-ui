@@ -6,7 +6,5 @@ export function Container({
   className,
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div className={clsx(containerStyles.root, className)} {...props} />
-  );
+  return <div className={clsx(containerStyles.root, className)} {...props} />;
 }

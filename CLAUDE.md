@@ -22,11 +22,13 @@ ComponentName/
 2. **All types in `.types.ts`.** Never use inline types for component props. Always define a named interface in the `.types.ts` file and import it.
 
    Bad:
+
    ```tsx
    function Foo({ name, count }: { name: string; count: number }) {
    ```
 
    Good:
+
    ```tsx
    // in Component.types.ts
    export interface FooProps { name: string; count: number; }

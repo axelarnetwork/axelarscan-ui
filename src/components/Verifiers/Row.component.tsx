@@ -14,7 +14,10 @@ export function VerifierRow({
   amplifierChains,
   additionalAmplifierChains,
 }: VerifierRowProps) {
-  const allChains: (Chain | string)[] = [...amplifierChains, ...additionalAmplifierChains];
+  const allChains: (Chain | string)[] = [
+    ...amplifierChains,
+    ...additionalAmplifierChains,
+  ];
 
   return (
     <tr className={styles.row}>
@@ -37,7 +40,7 @@ export function VerifierRow({
               : styles.chainGridNarrow
           )}
         >
-          {allChains.map((c) => {
+          {allChains.map(c => {
             const chainId = isString(c) ? c : c.id;
             return (
               <ChainCell

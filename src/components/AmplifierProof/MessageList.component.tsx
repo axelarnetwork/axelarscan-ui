@@ -46,10 +46,7 @@ export function MessageList({ data, chains }: MessageListProps) {
                   {ellipse(cleanId).toUpperCase()}
                 </Link>
               </Copy>
-              <ExplorerLink
-                value={headString(cleanId)}
-                chain={sourceChain}
-              />
+              <ExplorerLink value={headString(cleanId)} chain={sourceChain} />
             </div>
           </div>
         );

@@ -18,7 +18,11 @@ import { ENVIRONMENT } from '@/lib/config';
 import { getParams, generateKeyByParams } from '@/lib/operator';
 import { toBoolean } from '@/lib/string';
 
-import type { BatchRecord, BatchSearchResponse, SearchResultsMap } from './EVMBatches.types';
+import type {
+  BatchRecord,
+  BatchSearchResponse,
+  SearchResultsMap,
+} from './EVMBatches.types';
 import { PAGE_SIZE } from './EVMBatches.types';
 import { BatchRow } from './BatchRow.component';
 import { Filters } from './Filters.component';
@@ -27,7 +31,9 @@ import * as styles from './EVMBatches.styles';
 export function EVMBatches() {
   const searchParams = useSearchParams();
   const [params, setParams] = useState<Record<string, unknown> | null>(null);
-  const [searchResults, setSearchResults] = useState<SearchResultsMap | null>(null);
+  const [searchResults, setSearchResults] = useState<SearchResultsMap | null>(
+    null
+  );
   const [refresh, setRefresh] = useState<boolean | null>(null);
   const chains = useChains();
   const assets = useAssets();
@@ -45,7 +51,10 @@ export function EVMBatches() {
     const getData = async () => {
       if (!params || !toBoolean(refresh)) return;
 
-      let response = await searchBatches({ ...params, size: PAGE_SIZE }) as BatchSearchResponse | null;
+      let response = (await searchBatches({
+        ...params,
+        size: PAGE_SIZE,
+      })) as BatchSearchResponse | null;
 
       if (
         response &&
@@ -81,14 +90,9 @@ export function EVMBatches() {
         <div className={styles.headerRow}>
           <div className={styles.headerAuto}>
             <div className={styles.headingRow}>
-              <h1 className={styles.pageTitle}>
-                EVM Batches
-              </h1>
+              <h1 className={styles.pageTitle}>EVM Batches</h1>
               <span className={styles.titleSeparator}>|</span>
-              <Link
-                href="/amplifier-proofs"
-                className={styles.amplifierLink}
-              >
+              <Link href="/amplifier-proofs" className={styles.amplifierLink}>
                 Amplifier Proofs
               </Link>
             </div>
@@ -119,10 +123,7 @@ export function EVMBatches() {
           <table className={styles.table}>
             <thead className={styles.thead}>
               <tr className={styles.theadRow}>
-                <th
-                  scope="col"
-                  className={styles.thFirst}
-                >
+                <th scope="col" className={styles.thFirst}>
                   ID
                 </th>
                 <th scope="col" className={styles.thMiddle}>
@@ -134,17 +135,19 @@ export function EVMBatches() {
                 <th scope="col" className={styles.thRight}>
                   Status
                 </th>
-                <th
-                  scope="col"
-                  className={styles.thLast}
-                >
+                <th scope="col" className={styles.thLast}>
                   Time
                 </th>
               </tr>
             </thead>
             <tbody className={styles.tbody}>
               {data.map((d: BatchRecord) => (
-                <BatchRow key={d.batch_id} batch={d} chains={chains} assets={assets} />
+                <BatchRow
+                  key={d.batch_id}
+                  batch={d}
+                  chains={chains}
+                  assets={assets}
+                />
               ))}
             </tbody>
           </table>

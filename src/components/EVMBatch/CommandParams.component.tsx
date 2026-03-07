@@ -11,7 +11,12 @@ import { NameInfo } from './NameInfo.component';
 import { OperatorsInfo } from './OperatorsInfo.component';
 import * as styles from './EVMBatch.styles';
 
-export function CommandParams({ command, chain, chains, assets }: CommandParamsProps) {
+export function CommandParams({
+  command,
+  chain,
+  chains,
+  assets,
+}: CommandParamsProps) {
   const { type, deposit_address } = { ...command };
   const {
     amount,
@@ -32,18 +37,13 @@ export function CommandParams({ command, chain, chains, assets }: CommandParamsP
   const transferID = parseInt(command.id, 16);
   const assetData = getAssetData(symbol, assets);
 
-  symbol =
-    assetData?.addresses?.[chain]?.symbol ||
-    assetData?.symbol ||
-    symbol;
+  symbol = assetData?.addresses?.[chain]?.symbol || assetData?.symbol || symbol;
   decimals =
     assetData?.addresses?.[chain]?.decimals ||
     assetData?.decimals ||
     decimals ||
     18;
-  const image =
-    assetData?.addresses?.[chain]?.image ||
-    assetData?.image;
+  const image = assetData?.addresses?.[chain]?.image || assetData?.image;
 
   const sourceChainData = getChainData(sourceChain, chains);
   const destinationChainData = getChainData(chain, chains);
@@ -76,15 +76,8 @@ export function CommandParams({ command, chain, chains, assets }: CommandParamsP
           chain={chain}
         />
       )}
-      {salt && (
-        <SaltInfo
-          salt={salt}
-          depositAddress={deposit_address}
-        />
-      )}
-      {name && (
-        <NameInfo name={name} decimals={decimals} cap={cap} />
-      )}
+      {salt && <SaltInfo salt={salt} depositAddress={deposit_address} />}
+      {name && <NameInfo name={name} decimals={decimals} cap={cap} />}
       {newOwners && (
         <Number
           value={split(newOwners, { delimiter: ';' }).length}
@@ -93,10 +86,7 @@ export function CommandParams({ command, chain, chains, assets }: CommandParamsP
         />
       )}
       {newOperators && (
-        <OperatorsInfo
-          newOperators={newOperators}
-          newWeights={newWeights}
-        />
+        <OperatorsInfo newOperators={newOperators} newWeights={newWeights} />
       )}
       {newThreshold && (
         <Number

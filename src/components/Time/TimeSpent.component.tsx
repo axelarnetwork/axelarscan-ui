@@ -42,9 +42,7 @@ export function TimeSpent({
   }
 
   const element = (
-    <span className={clsx(timeStyles.text, className)}>
-      {timeDisplay}
-    </span>
+    <span className={clsx(timeStyles.text, className)}>{timeDisplay}</span>
   );
 
   return noTooltip ? (

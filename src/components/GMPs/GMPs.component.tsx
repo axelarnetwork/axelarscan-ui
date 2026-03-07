@@ -3,9 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import _ from 'lodash';
-import {
-  MdOutlineRefresh,
-} from 'react-icons/md';
+import { MdOutlineRefresh } from 'react-icons/md';
 
 import { Container } from '@/components/Container';
 import { Overlay } from '@/components/Overlay';
@@ -15,10 +13,7 @@ import { Number } from '@/components/Number';
 import { Pagination } from '@/components/Pagination';
 import { searchGMP } from '@/lib/api/gmp';
 import { toArray } from '@/lib/parser';
-import {
-  getParams,
-  generateKeyByParams,
-} from '@/lib/operator';
+import { getParams, generateKeyByParams } from '@/lib/operator';
 import { toBoolean } from '@/lib/string';
 
 import { Filters } from './Filters.component';
@@ -29,10 +24,16 @@ import { customData } from './GMPs.utils';
 
 const size = 25;
 
-export function GMPs({ address = undefined, useAnotherHopChain = false }: GMPsProps) {
+export function GMPs({
+  address = undefined,
+  useAnotherHopChain = false,
+}: GMPsProps) {
   const searchParams = useSearchParams();
   const [params, setParams] = useState<Record<string, unknown> | null>(null);
-  const [searchResults, setSearchResults] = useState<Record<string, unknown> | null>(null);
+  const [searchResults, setSearchResults] = useState<Record<
+    string,
+    unknown
+  > | null>(null);
   const [refresh, setRefresh] = useState<boolean | string | null>(null);
 
   useEffect(() => {
@@ -56,12 +57,19 @@ export function GMPs({ address = undefined, useAnotherHopChain = false }: GMPsPr
         const _params = _.cloneDeep(params);
         delete _params.sortBy;
 
-        const response = await searchGMP({ ..._params, size, sort }) as Record<string, unknown>;
+        const response = (await searchGMP({
+          ..._params,
+          size,
+          sort,
+        })) as Record<string, unknown>;
 
         if (response?.data) {
           response.data = await Promise.all(
             toArray(response.data as unknown[]).map(
-              (d: unknown) => new Promise(async resolve => resolve(await customData(d as GMPRowData)))
+              (d: unknown) =>
+                new Promise(async resolve =>
+                  resolve(await customData(d as GMPRowData))
+                )
             )
           );
         }
@@ -83,7 +91,11 @@ export function GMPs({ address = undefined, useAnotherHopChain = false }: GMPsPr
     return () => clearInterval(interval);
   }, []);
 
-  const { data, total } = { ...(searchResults?.[generateKeyByParams(params ?? {})] as Record<string, unknown> | undefined) } as { data?: GMPRowData[]; total?: number };
+  const { data, total } = {
+    ...(searchResults?.[generateKeyByParams(params ?? {})] as
+      | Record<string, unknown>
+      | undefined),
+  } as { data?: GMPRowData[]; total?: number };
 
   if (!data) {
     return (
@@ -98,9 +110,7 @@ export function GMPs({ address = undefined, useAnotherHopChain = false }: GMPsPr
       <div>
         <div className={styles.headerRow}>
           <div className={styles.headerLeft}>
-            <h1 className={styles.headerTitle}>
-              General Message Passing
-            </h1>
+            <h1 className={styles.headerTitle}>General Message Passing</h1>
             <p className={styles.headerSubtitle}>
               <Number
                 value={total}
@@ -150,7 +160,11 @@ export function GMPs({ address = undefined, useAnotherHopChain = false }: GMPsPr
             </thead>
             <tbody className={styles.tableBody}>
               {data.map((d: GMPRowData) => (
-                <GMPRow key={d.message_id || d.call.transactionHash} data={d} useAnotherHopChain={useAnotherHopChain} />
+                <GMPRow
+                  key={d.message_id || d.call.transactionHash}
+                  data={d}
+                  useAnotherHopChain={useAnotherHopChain}
+                />
               ))}
             </tbody>
           </table>

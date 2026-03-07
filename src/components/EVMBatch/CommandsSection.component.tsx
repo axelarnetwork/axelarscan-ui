@@ -20,9 +20,15 @@ export function CommandsSection({
           <table className={styles.table}>
             <thead className={styles.tableHead}>
               <tr className={styles.tableHeadRow}>
-                <th scope="col" className={styles.thFirst}>ID</th>
-                <th scope="col" className={styles.thMiddle}>Command</th>
-                <th scope="col" className={styles.thLast}>Parameters</th>
+                <th scope="col" className={styles.thFirst}>
+                  ID
+                </th>
+                <th scope="col" className={styles.thMiddle}>
+                  Command
+                </th>
+                <th scope="col" className={styles.thLast}>
+                  Parameters
+                </th>
               </tr>
             </thead>
             <tbody className={styles.tableBody}>

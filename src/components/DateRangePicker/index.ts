@@ -1,1 +1,4 @@
-export { DateRangePicker, createDayJSFromUnixtime } from './DateRangePicker.component';
+export {
+  DateRangePicker,
+  createDayJSFromUnixtime,
+} from './DateRangePicker.component';

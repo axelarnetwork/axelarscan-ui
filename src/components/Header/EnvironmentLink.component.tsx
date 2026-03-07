@@ -8,7 +8,11 @@ import { ENVIRONMENT } from '@/lib/config';
 import type { EnvironmentLinkProps } from './Header.types';
 import { environmentLink } from './Header.styles';
 
-export function EnvironmentLink({ name, href, children }: EnvironmentLinkProps) {
+export function EnvironmentLink({
+  name,
+  href,
+  children,
+}: EnvironmentLinkProps) {
   return (
     <Link
       href={href}

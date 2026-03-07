@@ -12,8 +12,7 @@ export function MultihopBaseFee({
   renderFiPlus,
 }: MultihopBaseFeeProps) {
   const entries = toArray([data.originData, data, data.callbackData]).filter(
-    (entry): entry is GMPMessage =>
-      typeof entry === 'object' && entry !== null
+    (entry): entry is GMPMessage => typeof entry === 'object' && entry !== null
   );
 
   const hasBaseFee =
@@ -24,8 +23,7 @@ export function MultihopBaseFee({
   }
 
   const entriesWithFees = entries.filter(
-    (entry): entry is GMPMessage & { fees: GMPFees } =>
-      entry.fees !== undefined
+    (entry): entry is GMPMessage & { fees: GMPFees } => entry.fees !== undefined
   );
 
   return (

@@ -40,21 +40,23 @@ export function groupData(
       key: (v[0] as GroupDataItem)?.key || k,
       num_txs: _.sumBy(v, 'num_txs'),
       volume: _.sumBy(v, 'volume'),
-      chain: (_.orderBy(
-        toArray(
-          _.uniq(
-            toArray(
-              by === GROUP_BY_CUSTOM_KEY
-                ? (v[0] as GroupDataItem)?.chain
-                : (v as GroupDataItem[]).map((d: GroupDataItem) => d.chain)
-            ) as (string | string[] | undefined)[]
-          ).map((d: string | string[] | undefined) =>
-            getChainData(d as string, chains)
-          )
-        ),
-        ['i'],
-        ['asc']
-      ) as ChainData[]).map(d => d.id),
+      chain: (
+        _.orderBy(
+          toArray(
+            _.uniq(
+              toArray(
+                by === GROUP_BY_CUSTOM_KEY
+                  ? (v[0] as GroupDataItem)?.chain
+                  : (v as GroupDataItem[]).map((d: GroupDataItem) => d.chain)
+              ) as (string | string[] | undefined)[]
+            ).map((d: string | string[] | undefined) =>
+              getChainData(d as string, chains)
+            )
+          ),
+          ['i'],
+          ['asc']
+        ) as ChainData[]
+      ).map(d => d.id),
     })
   );
 }

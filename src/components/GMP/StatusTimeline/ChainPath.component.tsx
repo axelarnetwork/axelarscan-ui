@@ -5,10 +5,7 @@ import { ChainProfile } from '@/components/Profile';
 import type { ChainPathProps } from '../GMP.types';
 import { statusTimelineStyles } from './StatusTimeline.styles';
 
-export function ChainPath({
-  sourceChain,
-  destinationChain,
-}: ChainPathProps) {
+export function ChainPath({ sourceChain, destinationChain }: ChainPathProps) {
   return (
     <div className={statusTimelineStyles.chainPath}>
       <ChainProfile

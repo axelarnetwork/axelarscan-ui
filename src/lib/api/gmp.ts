@@ -6,16 +6,14 @@ export const getContracts = () => request('getContracts');
 export const getConfigurations = () => request('getConfigurations');
 export const estimateITSFee = (params?: ApiParams) =>
   request('estimateITSFee', params);
-export const searchGMP = (params?: ApiParams) =>
-  request('searchGMP', params);
+export const searchGMP = (params?: ApiParams) => request('searchGMP', params);
 export const GMPStatsByChains = (params?: ApiParams) =>
   request('GMPStatsByChains', params);
 export const GMPStatsByContracts = (params?: ApiParams) =>
   request('GMPStatsByContracts', params);
 export const GMPStatsAVGTimes = (params?: ApiParams) =>
   request('GMPStatsAVGTimes', params);
-export const GMPChart = (params?: ApiParams) =>
-  request('GMPChart', params);
+export const GMPChart = (params?: ApiParams) => request('GMPChart', params);
 export const GMPTotalVolume = (params?: ApiParams) =>
   request('GMPTotalVolume', params);
 export const GMPTopUsers = (params?: ApiParams) =>

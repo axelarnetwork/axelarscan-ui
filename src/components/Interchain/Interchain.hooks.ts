@@ -23,10 +23,7 @@ import { toNumber } from '@/lib/number';
 import { generateKeyByParams, getParams } from '@/lib/operator';
 import { toArray } from '@/lib/parser';
 import { toBoolean } from '@/lib/string';
-import {
-  ChartDataPoint,
-  FilterParams,
-} from './Interchain.types';
+import { ChartDataPoint, FilterParams } from './Interchain.types';
 import type { UseInterchainHooksParams } from './Interchain.types';
 
 const INTERCHAIN_METRICS = [
@@ -252,13 +249,13 @@ async function processAirdropData(
     return null;
   }
 
-  const airdropResponse = await transfersChart({
+  const airdropResponse = (await transfersChart({
     ...currentParams,
     chain,
     fromTime: airdropFromTime,
     toTime: airdropToTime,
     granularity,
-  }) as { data?: ChartDataPoint[] } | null;
+  })) as { data?: ChartDataPoint[] } | null;
 
   if (toArray(airdropResponse?.data).length === 0) {
     return null;
@@ -315,10 +312,10 @@ async function fetchTransfersChart(
     return [metricName, false];
   }
 
-  let chartValue = await transfersChart({
+  let chartValue = (await transfersChart({
     ...currentParams,
     granularity,
-  }) as { data?: ChartDataPoint[] } | null;
+  })) as { data?: ChartDataPoint[] } | null;
 
   if (!chartValue?.data || granularity !== 'month') {
     return [metricName, chartValue];
@@ -535,18 +532,20 @@ export function useInterchainData(params: UseInterchainHooksParams) {
 
       const fetchedData = Object.fromEntries(
         await Promise.all(
-          (toArray(INTERCHAIN_METRICS) as unknown as string[]).map(async metricName => {
-            const result = await fetchMetricData(
-              metricName,
-              currentParams,
-              types,
-              stats,
-              assets,
-              itsAssets,
-              granularity
-            );
-            return result;
-          })
+          (toArray(INTERCHAIN_METRICS) as unknown as string[]).map(
+            async metricName => {
+              const result = await fetchMetricData(
+                metricName,
+                currentParams,
+                types,
+                stats,
+                assets,
+                itsAssets,
+                granularity
+              );
+              return result;
+            }
+          )
         ).then((results: ([string, unknown] | [string, unknown][])[]) =>
           results
             .filter(result => result !== null && result !== undefined)
@@ -557,7 +556,10 @@ export function useInterchainData(params: UseInterchainHooksParams) {
 
       setData(prevData => ({
         ...prevData,
-        [generateKeyByParams(currentParams)]: fetchedData as Record<string, unknown>,
+        [generateKeyByParams(currentParams)]: fetchedData as Record<
+          string,
+          unknown
+        >,
       }));
       setRefresh(false);
     };
@@ -603,7 +605,10 @@ export function useInterchainTimeSpent(params: UseInterchainHooksParams) {
 
       setTimeSpentData(prevData => ({
         ...prevData,
-        [generateKeyByParams(currentParams)]: timeSpentData as Record<string, unknown>,
+        [generateKeyByParams(currentParams)]: timeSpentData as Record<
+          string,
+          unknown
+        >,
       }));
     };
 

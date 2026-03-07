@@ -17,7 +17,12 @@ import { formatUnits, numberFormat } from '@/lib/number';
 import { timeDiff } from '@/lib/time';
 
 import type { Validator } from '@/types';
-import type { VoteOption, ConfirmationEvent, AssetJson, PollRowProps } from './EVMPolls.types';
+import type {
+  VoteOption,
+  ConfirmationEvent,
+  AssetJson,
+  PollRowProps,
+} from './EVMPolls.types';
 import * as styles from './EVMPolls.styles';
 import { buildVoteSuffix } from './EVMPolls.utils';
 
@@ -29,8 +34,7 @@ export function PollRow({ poll: d, chains, assets, validators }: PollRowProps) {
   const totalParticipantsPower = _.sumBy(
     toArray(validators).filter(
       (val: Validator) =>
-        true ||
-        toArray(d.participants).includes(val.operator_address)
+        true || toArray(d.participants).includes(val.operator_address)
     ),
     'quadratic_voting_power'
   );
@@ -44,7 +48,11 @@ export function PollRow({ poll: d, chains, assets, validators }: PollRowProps) {
       <td className={styles.tdFirst}>
         <div className={styles.pollIdWrapper}>
           <Copy value={d.id}>
-            <Link href={`/evm-poll/${d.id}`} target="_blank" className={styles.pollLink}>
+            <Link
+              href={`/evm-poll/${d.id}`}
+              target="_blank"
+              className={styles.pollLink}
+            >
               {ellipse(d.id)}
             </Link>
           </Copy>
@@ -77,55 +85,63 @@ export function PollRow({ poll: d, chains, assets, validators }: PollRowProps) {
             ) : (
               eventElement
             ))}
-          {toArray(d.confirmation_events).map((e: ConfirmationEvent, i: number) => {
-            let { asset, symbol, amount } = { ...e };
-            const assetObj = toJson<AssetJson>(asset);
+          {toArray(d.confirmation_events).map(
+            (e: ConfirmationEvent, i: number) => {
+              let { asset, symbol, amount } = { ...e };
+              const assetObj = toJson<AssetJson>(asset);
 
-            if (assetObj) {
-              asset = assetObj.denom;
-              amount = assetObj.amount;
-            }
+              if (assetObj) {
+                asset = assetObj.denom;
+                amount = assetObj.amount;
+              }
 
-            const assetData = getAssetData(asset || symbol, assets);
-            const { decimals, addresses } = { ...assetData };
-            let { image } = { ...assetData };
+              const assetData = getAssetData(asset || symbol, assets);
+              const { decimals, addresses } = { ...assetData };
+              let { image } = { ...assetData };
 
-            if (assetData) {
-              const chainAddresses = chain ? addresses?.[chain] : undefined;
-              symbol = chainAddresses?.symbol || assetData.symbol || symbol;
-              image = chainAddresses?.image || image;
-            }
+              if (assetData) {
+                const chainAddresses = chain ? addresses?.[chain] : undefined;
+                symbol = chainAddresses?.symbol || assetData.symbol || symbol;
+                image = chainAddresses?.image || image;
+              }
 
-            const element = symbol && (
-              <div className={styles.assetPill}>
-                <Image src={image} alt="" width={16} height={16} />
-                {amount && assets ? (
-                  <Number
-                    value={formatUnits(String(amount), decimals)}
-                    format="0,0.000000"
-                    suffix={` ${symbol}`}
-                    className={styles.assetText}
-                  />
+              const element = symbol && (
+                <div className={styles.assetPill}>
+                  <Image src={image} alt="" width={16} height={16} />
+                  {amount && assets ? (
+                    <Number
+                      value={formatUnits(String(amount), decimals)}
+                      format="0,0.000000"
+                      suffix={` ${symbol}`}
+                      className={styles.assetText}
+                    />
+                  ) : (
+                    <span className={styles.assetText}>{symbol}</span>
+                  )}
+                </div>
+              );
+
+              return (
+                element &&
+                (d.url ? (
+                  <Link key={i} href={d.url} target="_blank">
+                    {element}
+                  </Link>
                 ) : (
-                  <span className={styles.assetText}>{symbol}</span>
-                )}
-              </div>
-            );
-
-            return (
-              element &&
-              (d.url ? (
-                <Link key={i} href={d.url} target="_blank">{element}</Link>
-              ) : (
-                <div key={i}>{element}</div>
-              ))
-            );
-          })}
+                  <div key={i}>{element}</div>
+                ))
+              );
+            }
+          )}
         </div>
       </td>
       <td className={styles.tdMiddle}>
         {d.height && (
-          <Link href={`/block/${d.height}`} target="_blank" className={styles.blockLink}>
+          <Link
+            href={`/block/${d.height}`}
+            target="_blank"
+            className={styles.blockLink}
+          >
             <Number value={d.height} />
           </Link>
         )}
@@ -144,14 +160,28 @@ export function PollRow({ poll: d, chains, assets, validators }: PollRowProps) {
           )}
           <div className={styles.statusLinksWrapper}>
             {d.initiated_txhash && (
-              <Link href={`/tx/${d.initiated_txhash}`} target="_blank" className={styles.statusLinkRow}>
-                <IoCheckmarkCircle size={18} className={styles.statusIconGreen} />
+              <Link
+                href={`/tx/${d.initiated_txhash}`}
+                target="_blank"
+                className={styles.statusLinkRow}
+              >
+                <IoCheckmarkCircle
+                  size={18}
+                  className={styles.statusIconGreen}
+                />
                 <span className={styles.statusLabelMuted}>Initiated</span>
               </Link>
             )}
             {d.confirmation_txhash && (
-              <Link href={`/tx/${d.confirmation_txhash}`} target="_blank" className={styles.statusLinkRow}>
-                <IoCheckmarkDoneCircle size={18} className={styles.statusIconGreen} />
+              <Link
+                href={`/tx/${d.confirmation_txhash}`}
+                target="_blank"
+                className={styles.statusLinkRow}
+              >
+                <IoCheckmarkDoneCircle
+                  size={18}
+                  className={styles.statusIconGreen}
+                />
                 <span className={styles.statusLabelGreen}>Confirmation</span>
               </Link>
             )}
@@ -159,12 +189,17 @@ export function PollRow({ poll: d, chains, assets, validators }: PollRowProps) {
         </div>
       </td>
       <td className={styles.tdMiddle}>
-        <Link href={`/evm-poll/${d.id}`} target="_blank" className={styles.participationLink}>
+        <Link
+          href={`/evm-poll/${d.id}`}
+          target="_blank"
+          className={styles.participationLink}
+        >
           {d.voteOptions.map((v: VoteOption, i: number) => {
             const totalVotersPower = _.sumBy(
-              toArray(validators).filter((val: Validator) =>
-                val.broadcaster_address != null &&
-                toArray(v.voters).includes(val.broadcaster_address)
+              toArray(validators).filter(
+                (val: Validator) =>
+                  val.broadcaster_address != null &&
+                  toArray(v.voters).includes(val.broadcaster_address)
               ),
               'quadratic_voting_power'
             );
@@ -173,7 +208,8 @@ export function PollRow({ poll: d, chains, assets, validators }: PollRowProps) {
               totalVotersPower > 0 && totalParticipantsPower > 0
                 ? `${numberFormat(totalVotersPower, '0,0.0a')} (${numberFormat((totalVotersPower * 100) / totalParticipantsPower, '0,0.0')}%)`
                 : '';
-            const isDisplayPower = !!powerDisplay && timeDiff(d.created_at?.ms, 'days') < 3;
+            const isDisplayPower =
+              !!powerDisplay && timeDiff(d.created_at?.ms, 'days') < 3;
 
             return (
               <Number

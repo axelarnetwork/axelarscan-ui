@@ -4,7 +4,13 @@ import { Tooltip } from '@/components/Tooltip';
 import type { SortHeaderProps } from './Validators.types';
 import * as styles from './Validators.styles';
 
-export function SortHeader({ label, sortKey, order, onSort, className }: SortHeaderProps) {
+export function SortHeader({
+  label,
+  sortKey,
+  order,
+  onSort,
+  className,
+}: SortHeaderProps) {
   return (
     <th
       scope="col"

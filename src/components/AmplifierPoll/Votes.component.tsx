@@ -6,7 +6,11 @@ import _ from 'lodash';
 import { useVerifiers } from '@/hooks/useGlobalData';
 import { toArray } from '@/lib/parser';
 import { equalsIgnoreCase, find } from '@/lib/string';
-import type { VotesProps, PollVote, VerifierEntry } from './AmplifierPoll.types';
+import type {
+  VotesProps,
+  PollVote,
+  VerifierEntry,
+} from './AmplifierPoll.types';
 import * as styles from './AmplifierPoll.styles';
 import { VoteRow } from './VoteRow.component';
 
@@ -29,7 +33,9 @@ export function Votes({ data }: VotesProps) {
         p =>
           !find(
             p,
-            mappedVotes.map(v => v.verifierData?.address).filter(Boolean) as string[]
+            mappedVotes
+              .map(v => v.verifierData?.address)
+              .filter(Boolean) as string[]
           )
       )
       .map(p => {
@@ -54,12 +60,24 @@ export function Votes({ data }: VotesProps) {
       <table className={styles.votesTable}>
         <thead className={styles.votesThead}>
           <tr className={styles.votesTheadRow}>
-            <th scope="col" className={styles.votesThFirst}>#</th>
-            <th scope="col" className={styles.votesTh}>Voter</th>
-            <th scope="col" className={styles.votesThWrap}>Tx Hash</th>
-            <th scope="col" className={styles.votesTh}>Height</th>
-            <th scope="col" className={styles.votesThRight}>Vote</th>
-            <th scope="col" className={styles.votesThLast}>Time</th>
+            <th scope="col" className={styles.votesThFirst}>
+              #
+            </th>
+            <th scope="col" className={styles.votesTh}>
+              Voter
+            </th>
+            <th scope="col" className={styles.votesThWrap}>
+              Tx Hash
+            </th>
+            <th scope="col" className={styles.votesTh}>
+              Height
+            </th>
+            <th scope="col" className={styles.votesThRight}>
+              Vote
+            </th>
+            <th scope="col" className={styles.votesThLast}>
+              Time
+            </th>
           </tr>
         </thead>
         <tbody className={styles.votesTbody}>

@@ -74,7 +74,10 @@ export function buildPollUrl(
 
   const isGmp =
     includesSomePatterns(eventName, ['contract_call', 'ContractCall']) ||
-    !(includesSomePatterns(eventName, ['transfer', 'Transfer']) || d.deposit_address);
+    !(
+      includesSomePatterns(eventName, ['transfer', 'Transfer']) ||
+      d.deposit_address
+    );
   const routePrefix = isGmp ? 'gmp' : 'transfer';
 
   if (d.transaction_id) {

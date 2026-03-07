@@ -1,4 +1,11 @@
-import type { Validator, Delegation, UptimeBlock, ProposedBlock, EVMVote, Asset } from '@/types';
+import type {
+  Validator,
+  Delegation,
+  UptimeBlock,
+  ProposedBlock,
+  EVMVote,
+  Asset,
+} from '@/types';
 
 export interface InfoProps {
   data: Validator;

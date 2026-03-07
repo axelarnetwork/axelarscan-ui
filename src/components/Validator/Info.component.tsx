@@ -25,7 +25,9 @@ import * as styles from './Validator.styles';
 
 function getStatusStyle(status: string): string {
   if (status.includes('UN')) {
-    return status.endsWith('ED') ? styles.statusUnbonded : styles.statusUnbonding;
+    return status.endsWith('ED')
+      ? styles.statusUnbonded
+      : styles.statusUnbonding;
   }
   return styles.statusBonded;
 }
@@ -48,10 +50,13 @@ export function Info({ data, address, delegations }: InfoProps) {
   const { rate } = { ...data?.commission?.commission_rates };
 
   const bondedValidators = toArray(validators).filter(
-    (d: ValidatorType) => d.status === 'BOND_STATUS_BONDED',
+    (d: ValidatorType) => d.status === 'BOND_STATUS_BONDED'
   );
   const totalVotingPower = _.sumBy(bondedValidators, 'tokens');
-  const totalQuadraticVotingPower = _.sumBy(bondedValidators, 'quadratic_voting_power');
+  const totalQuadraticVotingPower = _.sumBy(
+    bondedValidators,
+    'quadratic_voting_power'
+  );
   const isBonded = status === 'BOND_STATUS_BONDED';
 
   return (
@@ -122,7 +127,7 @@ export function Info({ data, address, delegations }: InfoProps) {
                         'font-medium',
                         broadcasterBalance!.amount! < 5
                           ? styles.balanceLow
-                          : styles.balanceOk,
+                          : styles.balanceOk
                       )}
                     />
                   )}

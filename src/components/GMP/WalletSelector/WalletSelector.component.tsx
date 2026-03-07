@@ -1,6 +1,12 @@
 import React from 'react';
 
-import { CosmosWallet, EVMWallet, StellarWallet, SuiWallet, XRPLWallet } from '@/components/Wallet';
+import {
+  CosmosWallet,
+  EVMWallet,
+  StellarWallet,
+  SuiWallet,
+  XRPLWallet,
+} from '@/components/Wallet';
 import { getChainData } from '@/lib/config';
 import { isNumber } from '@/lib/number';
 import { headString } from '@/lib/string';

@@ -4,7 +4,12 @@ import { isString } from '@/lib/string';
 import { isNumber, toNumber } from '@/lib/number';
 import { toArray } from '@/lib/parser';
 
-import type { GraphNode, GraphEdge, ImagesMap, TierConfig } from './NetworkGraph.types';
+import type {
+  GraphNode,
+  GraphEdge,
+  ImagesMap,
+  TierConfig,
+} from './NetworkGraph.types';
 
 // ---------------------------------------------------------------------------
 // Image preloading helpers
@@ -19,7 +24,9 @@ export const preloadImagePromise = (src: string): Promise<HTMLImageElement> =>
     img.crossOrigin = 'anonymous';
   });
 
-export const getImageAsync = async (url: string): Promise<HTMLImageElement | undefined> => {
+export const getImageAsync = async (
+  url: string
+): Promise<HTMLImageElement | undefined> => {
   try {
     return await preloadImagePromise(url);
   } catch (error) {
@@ -36,7 +43,7 @@ export const drawNode = (
   ctx: CanvasRenderingContext2D,
   globalScale: number,
   isSelected: boolean,
-  image?: HTMLImageElement,
+  image?: HTMLImageElement
 ) => {
   let { x, y } = node;
   if (x === undefined || y === undefined) return;
@@ -88,7 +95,7 @@ export const drawTitle = (
   node: GraphNode,
   ctx: CanvasRenderingContext2D,
   isSelected: boolean,
-  theme: string | undefined,
+  theme: string | undefined
 ) => {
   const fontSize = 2;
 
@@ -123,7 +130,7 @@ export const drawNodeCanvasObject = (
   selectedNode: GraphNode | null,
   links: GraphEdge[] | undefined,
   images: ImagesMap,
-  theme: string | undefined,
+  theme: string | undefined
 ) => {
   if (!node || node.x === undefined || node.y === undefined) return;
 
@@ -145,7 +152,7 @@ export const drawLine = (
   ctx: CanvasRenderingContext2D,
   scale: number,
   isSelected: boolean,
-  theme: string | undefined,
+  theme: string | undefined
 ) => {
   if (isString(link.source) || isString(link.target)) return;
 
@@ -180,7 +187,7 @@ export const calculateAndDrawComet = (
   sourceY: number,
   commetProgress: number,
   color: string | undefined,
-  theme: string | undefined,
+  theme: string | undefined
 ) => {
   const diffX = targetX - sourceX;
   const diffY = targetY - sourceY;
@@ -216,7 +223,11 @@ export const calculateAndDrawComet = (
   ctx.stroke();
 };
 
-export const drawCommet = (link: GraphEdge, ctx: CanvasRenderingContext2D, theme: string | undefined) => {
+export const drawCommet = (
+  link: GraphEdge,
+  ctx: CanvasRenderingContext2D,
+  theme: string | undefined
+) => {
   if (isString(link.source) || isString(link.target)) return;
 
   const { x: sourceX, y: sourceY } = link.source;
@@ -257,7 +268,7 @@ export const drawLinkCanvasObject = (
   ctx: CanvasRenderingContext2D,
   scale: number,
   selectedNode: GraphNode | null,
-  theme: string | undefined,
+  theme: string | undefined
 ) => {
   if (!link) return;
 
@@ -295,12 +306,19 @@ export const SD = (data: GraphNode[], field: string = 'num_txs'): number => {
   }
 
   return Math.sqrt(
-    _.sum(items.map(d => Math.pow(toNumber(d[field as keyof GraphNode]) - MEAN(items, field), 2))) /
-      items.length
+    _.sum(
+      items.map(d =>
+        Math.pow(toNumber(d[field as keyof GraphNode]) - MEAN(items, field), 2)
+      )
+    ) / items.length
   );
 };
 
-export const THRESHOLD = (data: GraphNode[], n_sd: number | null, field: string = 'num_txs'): number =>
+export const THRESHOLD = (
+  data: GraphNode[],
+  n_sd: number | null,
+  field: string = 'num_txs'
+): number =>
   !isNumber(n_sd) ? 0 : MEAN(data, field) + (n_sd as number) * SD(data, field);
 
 // ---------------------------------------------------------------------------

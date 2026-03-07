@@ -25,7 +25,9 @@ const TABS = ['gmp', 'transfers'] as const;
 export function Address({ address }: AddressProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [params, setParams] = useState<Record<string, unknown>>(getParams(searchParams));
+  const [params, setParams] = useState<Record<string, unknown>>(
+    getParams(searchParams)
+  );
 
   useEffect(() => {
     const params = getParams(searchParams);

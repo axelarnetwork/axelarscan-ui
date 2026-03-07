@@ -99,10 +99,7 @@ export function computeStepTxAndUrl(
           stepURL = `${url}${transaction_path.replace('{tx}', String(transactionHash))}`;
         }
       }
-    } else if (
-      axelarTransactionHash &&
-      axelarChainData?.explorer?.url
-    ) {
+    } else if (axelarTransactionHash && axelarChainData?.explorer?.url) {
       stepTX = axelarTransactionHash;
       stepURL = `${axelarChainData.explorer.url}${axelarChainData.explorer.transaction_path!.replace('{tx}', axelarTransactionHash)}`;
     }
@@ -172,8 +169,7 @@ export function computeGasAmount(
     case 'pay_gas':
       if (isString(step.data)) {
         const dataValue = Number(step.data);
-        const destGasPrice =
-          fees?.destination_native_token?.gas_price ?? 0;
+        const destGasPrice = fees?.destination_native_token?.gas_price ?? 0;
         const destTokenPrice =
           fees?.destination_native_token?.token_price?.usd ?? 0;
         const srcTokenPrice = fees?.source_token?.token_price?.usd;

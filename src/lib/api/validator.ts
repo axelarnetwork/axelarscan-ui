@@ -1,15 +1,11 @@
 import { createApiClient, ApiParams } from '@/lib/api/client';
 
-const request = createApiClient(
-  process.env.NEXT_PUBLIC_VALIDATOR_API_URL!
-);
+const request = createApiClient(process.env.NEXT_PUBLIC_VALIDATOR_API_URL!);
 
-export const rpc = (params?: ApiParams) =>
-  request('rpc', params, 'POST');
+export const rpc = (params?: ApiParams) => request('rpc', params, 'POST');
 export const getRPCStatus = (params?: ApiParams) =>
   request('rpc', { ...params, path: '/status' }, 'POST');
-export const lcd = (params?: ApiParams) =>
-  request('lcd', params, 'POST');
+export const lcd = (params?: ApiParams) => request('lcd', params, 'POST');
 export const getBlock = (height: string | number) =>
   request(
     'lcd',
@@ -19,18 +15,12 @@ export const getBlock = (height: string | number) =>
 export const getValidatorSets = (height: string | number = 'latest') =>
   request('lcd', { path: `/validatorsets/${height}` }, 'POST');
 export const getTransaction = (txhash: string) =>
-  request(
-    'lcd',
-    { path: `/cosmos/tx/v1beta1/txs/${txhash}` },
-    'POST'
-  );
+  request('lcd', { path: `/cosmos/tx/v1beta1/txs/${txhash}` }, 'POST');
 export const searchBlocks = (params?: ApiParams) =>
   request('searchBlocks', params);
 export const searchTransactions = (params?: ApiParams) =>
   request('searchTransactions', params);
-export const getTransactions = (
-  params: ApiParams & { events?: string }
-) => {
+export const getTransactions = (params: ApiParams & { events?: string }) => {
   // after the upgrade to cosmos 0.50.0 the "events" parameter has changed to "query"
   // for backwards compatibility, and while the upgrade is still ongoing, we need to support both
   // we're sending requests including both fields, putting the same value to both

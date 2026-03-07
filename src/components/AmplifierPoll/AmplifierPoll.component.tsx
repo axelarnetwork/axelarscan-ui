@@ -16,7 +16,11 @@ import type {
   PollVote,
   VoteOption,
 } from './AmplifierPoll.types';
-import { getVoteLabel, getVoteOptionIndex, derivePollStatus } from './AmplifierPoll.types';
+import {
+  getVoteLabel,
+  getVoteOptionIndex,
+  derivePollStatus,
+} from './AmplifierPoll.types';
 import { Info } from './Info.component';
 import { Votes } from './Votes.component';
 import * as styles from './AmplifierPoll.styles';
@@ -28,7 +32,8 @@ export function AmplifierPoll({ id }: AmplifierPollProps) {
   const verifiers = useVerifiers();
 
   useEffect(() => {
-    const getData = async () => setBlockData(await getRPCStatus() as RPCStatusData);
+    const getData = async () =>
+      setBlockData((await getRPCStatus()) as RPCStatusData);
     getData();
   }, []);
 
@@ -36,22 +41,28 @@ export function AmplifierPoll({ id }: AmplifierPollProps) {
     const getData = async () => {
       if (!blockData) return;
 
-      const response = await searchAmplifierPolls({
+      const response = (await searchAmplifierPolls({
         verifierContractAddress: id.includes('_')
           ? headString(id, '_')
           : undefined,
         pollId: lastString(id, '_'),
-      }) as { data?: AmplifierPollData[] } | undefined;
+      })) as { data?: AmplifierPollData[] } | undefined;
 
       let d = response?.data?.[0];
 
       if (d) {
-        const pollVotes = (getValuesOfAxelarAddressKey(d as unknown as Record<string, unknown>) as PollVote[]).map(v => ({
+        const pollVotes = (
+          getValuesOfAxelarAddressKey(
+            d as unknown as Record<string, unknown>
+          ) as PollVote[]
+        ).map(v => ({
           ...v,
           option: getVoteLabel(v.vote),
         }));
 
-        const voteOptions: VoteOption[] = Object.entries(_.groupBy(pollVotes, 'option'))
+        const voteOptions: VoteOption[] = Object.entries(
+          _.groupBy(pollVotes, 'option')
+        )
           .map(([k, v]) => ({
             option: k,
             value: v?.length,
@@ -70,7 +81,8 @@ export function AmplifierPoll({ id }: AmplifierPollProps) {
         ) {
           voteOptions.push({
             option: 'unsubmitted',
-            value: (d.participants?.length ?? 0) - _.sumBy(voteOptions, 'value'),
+            value:
+              (d.participants?.length ?? 0) - _.sumBy(voteOptions, 'value'),
           });
         }
 
@@ -78,7 +90,11 @@ export function AmplifierPoll({ id }: AmplifierPollProps) {
           ...d,
           status: derivePollStatus(d, blockData.latest_block_height ?? 0),
           height: _.minBy(pollVotes, 'height')?.height || d.height,
-          votes: _.orderBy(pollVotes, ['height', 'created_at'], ['desc', 'desc']),
+          votes: _.orderBy(
+            pollVotes,
+            ['height', 'created_at'],
+            ['desc', 'desc']
+          ),
           voteOptions: _.orderBy(voteOptions, ['i'], ['asc']),
           url: `/gmp/${d.transaction_id || 'search'}`,
         };

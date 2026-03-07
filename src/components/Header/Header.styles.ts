@@ -16,7 +16,8 @@ export const mobileNavIcon = {
 
 // ─── MobileNavigation ──────────────────────────────────────────────
 export const mobileNavigation = {
-  button: 'relative z-10 flex h-8 w-8 items-center justify-center ui-not-focus-visible:outline-none',
+  button:
+    'relative z-10 flex h-8 w-8 items-center justify-center ui-not-focus-visible:outline-none',
   overlay: 'fixed inset-0 bg-zinc-100/50 dark:bg-zinc-900/50',
   panel:
     'absolute inset-x-0 top-full mt-4 flex origin-top flex-col rounded-2xl bg-white p-4 text-lg tracking-tight text-zinc-900 shadow-xl ring-1 ring-zinc-900/5 dark:bg-zinc-800 dark:text-zinc-100',

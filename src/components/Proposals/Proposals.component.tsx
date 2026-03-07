@@ -47,13 +47,27 @@ export function Proposals() {
           <table className={styles.table}>
             <thead className={styles.thead}>
               <tr className={styles.theadRow}>
-                <th scope="col" className={styles.thFirst}>ID</th>
-                <th scope="col" className={styles.thMiddle}>Proposal</th>
-                <th scope="col" className={styles.thMiddle}>Type</th>
-                <th scope="col" className={styles.thHidden}>Height</th>
-                <th scope="col" className={styles.thHiddenWrap}>Voting Period</th>
-                <th scope="col" className={styles.thHiddenRight}>Deposit</th>
-                <th scope="col" className={styles.thLast}>Status</th>
+                <th scope="col" className={styles.thFirst}>
+                  ID
+                </th>
+                <th scope="col" className={styles.thMiddle}>
+                  Proposal
+                </th>
+                <th scope="col" className={styles.thMiddle}>
+                  Type
+                </th>
+                <th scope="col" className={styles.thHidden}>
+                  Height
+                </th>
+                <th scope="col" className={styles.thHiddenWrap}>
+                  Voting Period
+                </th>
+                <th scope="col" className={styles.thHiddenRight}>
+                  Deposit
+                </th>
+                <th scope="col" className={styles.thLast}>
+                  Status
+                </th>
               </tr>
             </thead>
             <tbody className={styles.tbody}>

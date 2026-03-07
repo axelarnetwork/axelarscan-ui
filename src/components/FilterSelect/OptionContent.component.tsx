@@ -12,7 +12,9 @@ export function OptionContent({ selected, active, title }: OptionContentProps) {
       <span
         className={clsx(
           styles.selectTruncate,
-          selected ? styles.selectOptionTextSelected : styles.selectOptionTextNormal,
+          selected
+            ? styles.selectOptionTextSelected
+            : styles.selectOptionTextNormal
         )}
       >
         {title}
@@ -21,7 +23,7 @@ export function OptionContent({ selected, active, title }: OptionContentProps) {
         <span
           className={clsx(
             styles.selectCheckWrapper,
-            active ? styles.selectCheckActive : styles.selectCheckInactive,
+            active ? styles.selectCheckActive : styles.selectCheckInactive
           )}
         >
           <MdCheck size={20} />

@@ -89,4 +89,3 @@ export interface StatusCellProps {
 export interface ParticipationsCellProps {
   proof: AmplifierProofEntry;
 }
-

@@ -6,7 +6,10 @@ import { isAxelar } from '@/lib/chain';
 
 import type { GMPMessage } from '../GMP.types';
 import { TimeSpentSection } from './TimeSpentSection.component';
-import { contractCallDataStyles, getStatusTagClass } from './ContractCallData.styles';
+import {
+  contractCallDataStyles,
+  getStatusTagClass,
+} from './ContractCallData.styles';
 
 interface MultihopStatusProps {
   data: GMPMessage;
@@ -34,7 +37,7 @@ export function MultihopStatus({ data }: MultihopStatusProps) {
           <Tag
             className={clsx(
               contractCallDataStyles.statusTag,
-              getStatusTagClass(data.simplified_status),
+              getStatusTagClass(data.simplified_status)
             )}
           >
             {resolveStatusLabel(data)}

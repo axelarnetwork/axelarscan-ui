@@ -6,10 +6,7 @@ import { ExplorerLink } from '@/components/ExplorerLink';
 import { TimeAgo } from '@/components/Time';
 import { getAssetData } from '@/lib/config';
 import { toCase } from '@/lib/parser';
-import {
-  equalsIgnoreCase,
-  ellipse,
-} from '@/lib/string';
+import { equalsIgnoreCase, ellipse } from '@/lib/string';
 
 import { StatusCell } from './StatusCell.component';
 import { MethodCell } from './MethodCell.component';
@@ -18,8 +15,12 @@ import * as styles from './Transfers.styles';
 
 function resolveSymbol(
   d: TransferRowData,
-  assets: TransferRowProps['assets'],
-): { symbol: string | undefined; image: string | undefined; assetData: ReturnType<typeof getAssetData> } {
+  assets: TransferRowProps['assets']
+): {
+  symbol: string | undefined;
+  image: string | undefined;
+  assetData: ReturnType<typeof getAssetData>;
+} {
   const assetData = getAssetData(d.send.denom, assets);
   const { addresses } = { ...assetData };
   let { symbol, image } = { ...addresses?.[d.send.source_chain] };
@@ -31,8 +32,7 @@ function resolveSymbol(
     const WRAP_PREFIXES = ['w', 'axl'];
     const i = WRAP_PREFIXES.findIndex(
       (p: string) =>
-        toCase(symbol!, 'lower').startsWith(p) &&
-        !equalsIgnoreCase(p, symbol!),
+        toCase(symbol!, 'lower').startsWith(p) && !equalsIgnoreCase(p, symbol!)
     );
     if (i > -1) {
       symbol = symbol.substring(WRAP_PREFIXES[i].length);
@@ -67,10 +67,7 @@ export function TransferRow({ d, assets }: TransferRowProps) {
               {ellipse(d.send.txhash, 4, '0x')}
             </Link>
           </Copy>
-          <ExplorerLink
-            value={d.send.txhash}
-            chain={d.send.source_chain}
-          />
+          <ExplorerLink value={d.send.txhash} chain={d.send.source_chain} />
         </div>
       </td>
       <td className={styles.tdDefault}>
@@ -88,10 +85,7 @@ export function TransferRow({ d, assets }: TransferRowProps) {
             value={d.send.source_chain}
             titleClassName="font-semibold"
           />
-          <Profile
-            address={senderAddress}
-            chain={d.send.source_chain}
-          />
+          <Profile address={senderAddress} chain={d.send.source_chain} />
         </div>
       </td>
       <td className={styles.tdDefault}>
@@ -100,10 +94,7 @@ export function TransferRow({ d, assets }: TransferRowProps) {
             value={destinationChain}
             titleClassName="font-semibold"
           />
-          <Profile
-            address={recipientAddress}
-            chain={destinationChain}
-          />
+          <Profile address={recipientAddress} chain={destinationChain} />
         </div>
       </td>
       <td className={styles.tdDefault}>

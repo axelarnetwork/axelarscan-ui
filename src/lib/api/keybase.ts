@@ -2,9 +2,7 @@ import _ from 'lodash';
 
 import { sleep } from '@/lib/operator';
 
-export const getKeybaseUser = async (
-  params?: Record<string, string>
-) => {
+export const getKeybaseUser = async (params?: Record<string, string>) => {
   await sleep(_.random(0, 3, true) * 1000);
 
   const qs = new URLSearchParams();

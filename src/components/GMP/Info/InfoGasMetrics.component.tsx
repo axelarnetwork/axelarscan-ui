@@ -57,8 +57,7 @@ export function InfoGasMetrics({
 
   const sourceToken = combinedFees?.source_token;
 
-  const formatTokenSuffix = (symbol?: string) =>
-    symbol ? ` ${symbol}` : '';
+  const formatTokenSuffix = (symbol?: string) => (symbol ? ` ${symbol}` : '');
 
   const renderFiPlus = (index: number) =>
     index > 0 ? <FiPlus size={18} className={gasStyles.plusIcon} /> : null;

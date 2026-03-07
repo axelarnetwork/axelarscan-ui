@@ -99,9 +99,7 @@ const _getReverseRecord = async (address: string) => {
   return response && ((await response.json()) as { reverseRecord?: string });
 };
 
-export const getENS = async (
-  addresses?: string | string[]
-) => {
+export const getENS = async (addresses?: string | string[]) => {
   if (addresses) {
     const normalizedAddresses: string[] = _.uniq(
       toArray(addresses, { toCase: 'lower' })
@@ -119,7 +117,8 @@ export const getENS = async (
     }
 
     if (domainsData?.length > 0) {
-      const ensData: Record<string, { reverseRecord?: string } | undefined> = {};
+      const ensData: Record<string, { reverseRecord?: string } | undefined> =
+        {};
 
       for (const address of normalizedAddresses) {
         const resolvedAddresses = domainsData.filter((d: ENSDomain) =>
@@ -142,9 +141,7 @@ export const getENS = async (
             const { reverseRecord } = {
               ...ensData[getKeyFromDomain(d) as string],
             };
-            return (
-              !reverseRecord || equalsIgnoreCase(d.name, reverseRecord)
-            );
+            return !reverseRecord || equalsIgnoreCase(d.name, reverseRecord);
           })
           .map((d: ENSDomain) => [getKeyFromDomain(d), d])
       );
@@ -159,8 +156,8 @@ export const getDomainFromENS = async (
   ensData?: Record<string, ENSDomain>
 ) => {
   if (ens) {
-    const domainData = toArray(Object.values({ ...ensData })).find(
-      (d) => equalsIgnoreCase((d as ENSDomain).name, ens)
+    const domainData = toArray(Object.values({ ...ensData })).find(d =>
+      equalsIgnoreCase((d as ENSDomain).name, ens)
     );
     if (domainData) return domainData;
 
@@ -170,7 +167,7 @@ export const getDomainFromENS = async (
       })),
     };
 
-    return toArray(data).find((d) =>
+    return toArray(data).find(d =>
       equalsIgnoreCase((d as ENSDomain).name, ens)
     );
   }

@@ -18,7 +18,11 @@ import { StatusTag } from './StatusTag.component';
 import { PlanInfo } from './PlanInfo.component';
 import { ChangeRow } from './ChangeRow.component';
 import { GmpChainIcon } from './GmpChainIcon.component';
-import type { InfoProps, ProposalDeposit, VoteOptionSummary } from './Proposal.types';
+import type {
+  InfoProps,
+  ProposalDeposit,
+  VoteOptionSummary,
+} from './Proposal.types';
 import * as styles from './Proposal.styles';
 
 export function Info({ id, data, end, voteOptions }: InfoProps) {
@@ -101,10 +105,21 @@ export function Info({ id, data, end, voteOptions }: InfoProps) {
               )}
             </>
           )}
-          {(toArray(changes) as { key?: string; value?: string; subspace?: string }[])
-            .filter((d) => d.subspace)
+          {(
+            toArray(changes) as {
+              key?: string;
+              value?: string;
+              subspace?: string;
+            }[]
+          )
+            .filter(d => d.subspace)
             .map((d, i: number) => (
-              <ChangeRow key={i} keyName={d.key} value={d.value} subspace={d.subspace} />
+              <ChangeRow
+                key={i}
+                keyName={d.key}
+                value={d.value}
+                subspace={d.subspace}
+              />
             ))}
           {toArray(contract_calls).length > 0 && (
             <div className={styles.dlRow}>
@@ -116,10 +131,20 @@ export function Info({ id, data, end, voteOptions }: InfoProps) {
               >
                 <div>
                   <div className="block dark:hidden">
-                    <Image src="/logos/logo.png" alt="" width={24} height={24} />
+                    <Image
+                      src="/logos/logo.png"
+                      alt=""
+                      width={24}
+                      height={24}
+                    />
                   </div>
                   <div className="hidden dark:block">
-                    <Image src="/logos/logo_white.png" alt="" width={24} height={24} />
+                    <Image
+                      src="/logos/logo_white.png"
+                      alt=""
+                      width={24}
+                      height={24}
+                    />
                   </div>
                 </div>
                 <div className={styles.gmpDivider} />
@@ -157,15 +182,17 @@ export function Info({ id, data, end, voteOptions }: InfoProps) {
             <dt className={styles.dtLabel}>Total Deposit</dt>
             <dd className={styles.ddValue}>
               <div className={styles.depositList}>
-                {(toArray(total_deposit) as ProposalDeposit[]).map((d: ProposalDeposit, i: number) => (
-                  <Number
-                    key={i}
-                    value={d.amount}
-                    suffix={` ${d.symbol}`}
-                    noTooltip={true}
-                    className={styles.depositValue}
-                  />
-                ))}
+                {(toArray(total_deposit) as ProposalDeposit[]).map(
+                  (d: ProposalDeposit, i: number) => (
+                    <Number
+                      key={i}
+                      value={d.amount}
+                      suffix={` ${d.symbol}`}
+                      noTooltip={true}
+                      className={styles.depositValue}
+                    />
+                  )
+                )}
               </div>
             </dd>
           </div>

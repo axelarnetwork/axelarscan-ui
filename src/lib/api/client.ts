@@ -3,7 +3,7 @@ import { objToQS } from '@/lib/parser';
 export type ApiParams = Record<string, unknown>;
 
 const hasObjectValues = (params?: ApiParams): boolean =>
-  Object.values({ ...params }).some((v) => v && typeof v === 'object');
+  Object.values({ ...params }).some(v => v && typeof v === 'object');
 
 export async function apiRequest<T = unknown>(
   baseUrl: string,

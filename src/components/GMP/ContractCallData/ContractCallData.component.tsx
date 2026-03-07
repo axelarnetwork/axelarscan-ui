@@ -14,7 +14,7 @@ import { MultihopStatus } from './MultihopStatus.component';
 
 function resolveDestinationAssetConfig(
   destinationChain: string | undefined,
-  assetAddresses: Record<string, AssetAddressEntry | undefined> | undefined,
+  assetAddresses: Record<string, AssetAddressEntry | undefined> | undefined
 ): AssetAddressEntry | undefined {
   if (!assetAddresses || !destinationChain) return undefined;
 
@@ -57,7 +57,7 @@ export function ContractCallData({
   const assetEntry = getAssetData(symbol, assets) as AssetDataEntry | undefined;
   const destinationAssetConfig = resolveDestinationAssetConfig(
     destinationChain,
-    assetEntry?.addresses,
+    assetEntry?.addresses
   );
 
   const messageId = data.message_id;
@@ -117,9 +117,14 @@ export function ContractCallData({
             textClassName={contractCallDataStyles.chainLabel}
           />
         )}
-        {sourceAddress && <DataField label="sourceAddress" value={sourceAddress} />}
+        {sourceAddress && (
+          <DataField label="sourceAddress" value={sourceAddress} />
+        )}
         {destinationContractAddress && (
-          <DataField label="destinationContractAddress" value={destinationContractAddress} />
+          <DataField
+            label="destinationContractAddress"
+            value={destinationContractAddress}
+          />
         )}
         {payloadHash && <DataField label="payloadHash" value={payloadHash} />}
         {payload && <DataField label="payload" value={payload} />}

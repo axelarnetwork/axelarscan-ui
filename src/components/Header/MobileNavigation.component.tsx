@@ -11,7 +11,10 @@ import { mobileNavigation } from './Header.styles';
 export function MobileNavigation({ navigations }: MobileNavigationProps) {
   return (
     <Popover>
-      <Popover.Button className={mobileNavigation.button} aria-label="Toggle Navigation">
+      <Popover.Button
+        className={mobileNavigation.button}
+        aria-label="Toggle Navigation"
+      >
         {({ open }) => <MobileNavIcon open={open} />}
       </Popover.Button>
       <Transition.Root>

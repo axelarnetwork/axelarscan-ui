@@ -14,7 +14,11 @@ export function EventDataItems({
   onToggleSeeMore,
 }: EventDataItemsProps) {
   const isExpanded = seeMoreTypes.includes(type);
-  const visibleItems = _.slice(items, 0, isExpanded ? items.length : COLLAPSE_SIZE);
+  const visibleItems = _.slice(
+    items,
+    0,
+    isExpanded ? items.length : COLLAPSE_SIZE
+  );
   const showToggle = items.length > COLLAPSE_SIZE || isExpanded;
 
   return (

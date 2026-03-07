@@ -23,8 +23,7 @@ export function GasPaidSection({
     ? (data.originData.gas?.gas_paid_amount ?? 0)
     : gasPaid
       ? (gas?.gas_paid_amount ?? 0)
-      : (gasPaidToCallback ?? 0) *
-        (combinedFees?.source_token?.gas_price ?? 0);
+      : (gasPaidToCallback ?? 0) * (combinedFees?.source_token?.gas_price ?? 0);
 
   return (
     <InfoSection label="Gas Paid">
@@ -36,9 +35,7 @@ export function GasPaidSection({
           noTooltip
           className={infoStyles.inlineNumber}
         />
-        {renderUsdValue(
-          gasPaidValue * (sourceToken?.token_price?.usd ?? 0)
-        )}
+        {renderUsdValue(gasPaidValue * (sourceToken?.token_price?.usd ?? 0))}
       </div>
     </InfoSection>
   );

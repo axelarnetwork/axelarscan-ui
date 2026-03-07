@@ -7,7 +7,11 @@ import { useVerifiers } from '@/hooks/useGlobalData';
 import { toArray } from '@/lib/parser';
 import { equalsIgnoreCase, find } from '@/lib/string';
 
-import type { SignsProps, ProofSign, VerifierEntry } from './AmplifierProof.types';
+import type {
+  SignsProps,
+  ProofSign,
+  VerifierEntry,
+} from './AmplifierProof.types';
 import * as styles from './AmplifierProof.styles';
 import { SignRow } from './SignRow.component';
 
@@ -30,7 +34,9 @@ export function Signs({ data }: SignsProps) {
         p =>
           !find(
             p,
-            signsList.map(s => s.verifierData?.address).filter(Boolean) as string[]
+            signsList
+              .map(s => s.verifierData?.address)
+              .filter(Boolean) as string[]
           )
       )
       .map(p => {
@@ -56,12 +62,24 @@ export function Signs({ data }: SignsProps) {
       <table className={styles.table}>
         <thead className={styles.thead}>
           <tr className={styles.theadRow}>
-            <th scope="col" className={styles.thFirst}>#</th>
-            <th scope="col" className={styles.thMiddle}>Signer</th>
-            <th scope="col" className={styles.thMiddleNowrap}>Tx Hash</th>
-            <th scope="col" className={styles.thMiddle}>Height</th>
-            <th scope="col" className={styles.thRight}>Sign</th>
-            <th scope="col" className={styles.thLast}>Time</th>
+            <th scope="col" className={styles.thFirst}>
+              #
+            </th>
+            <th scope="col" className={styles.thMiddle}>
+              Signer
+            </th>
+            <th scope="col" className={styles.thMiddleNowrap}>
+              Tx Hash
+            </th>
+            <th scope="col" className={styles.thMiddle}>
+              Height
+            </th>
+            <th scope="col" className={styles.thRight}>
+              Sign
+            </th>
+            <th scope="col" className={styles.thLast}>
+              Time
+            </th>
           </tr>
         </thead>
         <tbody className={styles.tbody}>

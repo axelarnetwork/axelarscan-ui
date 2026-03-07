@@ -15,7 +15,9 @@ export function Balances({ data }: BalancesProps) {
   if (!data) return null;
 
   const pageStart = (page - 1) * SIZE_PER_PAGE;
-  const visibleData = data.filter((_d, i) => i >= pageStart && i < pageStart + SIZE_PER_PAGE);
+  const visibleData = data.filter(
+    (_d, i) => i >= pageStart && i < pageStart + SIZE_PER_PAGE
+  );
 
   return (
     <div className={styles.balancesContainer}>
@@ -24,10 +26,18 @@ export function Balances({ data }: BalancesProps) {
         <table className={styles.table}>
           <thead className={styles.tableHead}>
             <tr className={styles.tableHeadRow}>
-              <th scope="col" className={styles.thFirst}>#</th>
-              <th scope="col" className={styles.thDefault}>Asset</th>
-              <th scope="col" className={styles.thRight}>Balance</th>
-              <th scope="col" className={styles.thLast}>Value</th>
+              <th scope="col" className={styles.thFirst}>
+                #
+              </th>
+              <th scope="col" className={styles.thDefault}>
+                Asset
+              </th>
+              <th scope="col" className={styles.thRight}>
+                Balance
+              </th>
+              <th scope="col" className={styles.thLast}>
+                Value
+              </th>
             </tr>
           </thead>
           <tbody className={styles.tableBody}>
@@ -39,7 +49,12 @@ export function Balances({ data }: BalancesProps) {
       </div>
       {data.length > SIZE_PER_PAGE && (
         <div className={styles.paginationWrapper}>
-          <TablePagination data={data} value={page} onChange={(p: number) => setPage(p)} sizePerPage={SIZE_PER_PAGE} />
+          <TablePagination
+            data={data}
+            value={page}
+            onChange={(p: number) => setPage(p)}
+            sizePerPage={SIZE_PER_PAGE}
+          />
         </div>
       )}
     </div>

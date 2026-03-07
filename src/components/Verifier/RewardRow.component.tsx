@@ -22,7 +22,11 @@ export function RewardRow({ entry }: RewardRowProps) {
       <td className={styles.rewardsTdFirst}>
         <div className={styles.rewardsTdFirstInner}>
           <Copy size={16} value={entry.height}>
-            <Link href={`/block/${entry.height}`} target="_blank" className={styles.blueLink}>
+            <Link
+              href={`/block/${entry.height}`}
+              target="_blank"
+              className={styles.blueLink}
+            >
               <Number value={entry.height} className={styles.numberXs} />
             </Link>
           </Copy>

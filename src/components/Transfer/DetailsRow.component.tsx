@@ -31,9 +31,7 @@ export function DetailsRow({
   return (
     <tr className={styles.detailsTr}>
       <td className={styles.detailsTdStep}>
-        <span className={styles.detailsTdStepText}>
-          {step.title}
-        </span>
+        <span className={styles.detailsTdStepText}>{step.title}</span>
       </td>
       <td className={styles.detailsTdDefault}>
         <div className={styles.detailsTxFlexCol}>
@@ -56,9 +54,7 @@ export function DetailsRow({
             </div>
           )}
           {stepMoreInfos.length > 0 && (
-            <div className={styles.detailsMoreInfos}>
-              {stepMoreInfos}
-            </div>
+            <div className={styles.detailsMoreInfos}>{stepMoreInfos}</div>
           )}
         </div>
       </td>

@@ -32,7 +32,9 @@ const size = 25;
 export function EVMPolls() {
   const searchParams = useSearchParams();
   const [params, setParams] = useState<Record<string, unknown> | null>(null);
-  const [searchResults, setSearchResults] = useState<SearchResults | null>(null);
+  const [searchResults, setSearchResults] = useState<SearchResults | null>(
+    null
+  );
   const [refresh, setRefresh] = useState<boolean | null>(null);
   const chains = useChains();
   const assets = useAssets();
@@ -51,8 +53,14 @@ export function EVMPolls() {
     const getData = async () => {
       if (!params || !toBoolean(refresh)) return;
 
-      const response = await searchEVMPolls({ ...params, size }) as Record<string, unknown> | null;
-      const { data: rawData, total } = { ...response } as { data?: unknown; total?: number };
+      const response = (await searchEVMPolls({ ...params, size })) as Record<
+        string,
+        unknown
+      > | null;
+      const { data: rawData, total } = { ...response } as {
+        data?: unknown;
+        total?: number;
+      };
 
       setSearchResults({
         ...(refresh ? undefined : searchResults),
@@ -71,7 +79,9 @@ export function EVMPolls() {
     getData();
   }, [params, setSearchResults, refresh, setRefresh, chains]);
 
-  const { data, total } = { ...searchResults?.[generateKeyByParams(params ?? {})] };
+  const { data, total } = {
+    ...searchResults?.[generateKeyByParams(params ?? {})],
+  };
 
   if (!data) {
     return (
@@ -87,14 +97,9 @@ export function EVMPolls() {
         <div className={styles.headerRow}>
           <div className={styles.headerAuto}>
             <div className={styles.headingRow}>
-              <h1 className={styles.pageTitle}>
-                EVM Polls
-              </h1>
+              <h1 className={styles.pageTitle}>EVM Polls</h1>
               <span className={styles.titleSeparator}>|</span>
-              <Link
-                href="/amplifier-polls"
-                className={styles.amplifierLink}
-              >
+              <Link href="/amplifier-polls" className={styles.amplifierLink}>
                 Amplifier Polls
               </Link>
             </div>
@@ -125,10 +130,7 @@ export function EVMPolls() {
           <table className={styles.table}>
             <thead className={styles.thead}>
               <tr className={styles.theadRow}>
-                <th
-                  scope="col"
-                  className={styles.thFirst}
-                >
+                <th scope="col" className={styles.thFirst}>
                   ID
                 </th>
                 <th scope="col" className={styles.thMiddle}>
@@ -146,17 +148,20 @@ export function EVMPolls() {
                 <th scope="col" className={styles.thMiddle}>
                   Participations
                 </th>
-                <th
-                  scope="col"
-                  className={styles.thLast}
-                >
+                <th scope="col" className={styles.thLast}>
                   Time
                 </th>
               </tr>
             </thead>
             <tbody className={styles.tbody}>
               {data.map((d: ProcessedPoll) => (
-                <PollRow key={d.id} poll={d} chains={chains} assets={assets} validators={validators} />
+                <PollRow
+                  key={d.id}
+                  poll={d}
+                  chains={chains}
+                  assets={assets}
+                  validators={validators}
+                />
               ))}
             </tbody>
           </table>

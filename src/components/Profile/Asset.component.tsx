@@ -64,7 +64,11 @@ export function AssetProfile({
     >
       <Image src={image} alt="" width={width} height={height} />
       {isNumber(amount) && (
-        <Number value={amount} format="0,0.000000" className={clsx(styles.amountText, titleClassName)} />
+        <Number
+          value={amount}
+          format="0,0.000000"
+          className={clsx(styles.amountText, titleClassName)}
+        />
       )}
       <span
         className={clsx(
@@ -80,7 +84,10 @@ export function AssetProfile({
 
   if (isLink && url) {
     return (
-      <Link href={`${url}${contract_path?.replace('{address}', addressOrDenom || value)}`} target="_blank">
+      <Link
+        href={`${url}${contract_path?.replace('{address}', addressOrDenom || value)}`}
+        target="_blank"
+      >
         {element}
       </Link>
     );

@@ -16,19 +16,25 @@ export interface ChainSignData {
 
 /** API response from getVerifiersVotes() */
 export interface VerifierVotesResponse {
-  data: Record<string, {
-    total: number;
-    chains: Record<string, ChainVoteData>;
-  }>;
+  data: Record<
+    string,
+    {
+      total: number;
+      chains: Record<string, ChainVoteData>;
+    }
+  >;
   total: number;
 }
 
 /** API response from getVerifiersSigns() */
 export interface VerifierSignsResponse {
-  data: Record<string, {
-    total: number;
-    chains: Record<string, ChainSignData>;
-  }>;
+  data: Record<
+    string,
+    {
+      total: number;
+      chains: Record<string, ChainSignData>;
+    }
+  >;
   total: number;
 }
 

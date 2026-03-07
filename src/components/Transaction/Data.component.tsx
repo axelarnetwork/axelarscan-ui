@@ -33,7 +33,6 @@ const FORMATTABLE_TYPES = [
   'SignCommands',
 ];
 
-
 export function Data({ data }: DataProps) {
   const [formattable, setFormattable] = useState<boolean | null>(null);
   const [formatted, setFormatted] = useState(true);

@@ -26,10 +26,7 @@ export function InfoAsset({
           titleClassName="text-xs"
         />
         {!!contractAddress && (
-          <Tooltip
-            content="Token Address"
-            className={infoStyles.tooltip}
-          >
+          <Tooltip content="Token Address" className={infoStyles.tooltip}>
             <Profile
               address={contractAddress}
               chain={sourceChain}

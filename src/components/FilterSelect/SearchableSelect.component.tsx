@@ -50,7 +50,10 @@ export function SearchableSelect({
                 setParams={setParams}
               />
               <span className={styles.selectIconWrapper}>
-                <LuChevronsUpDown size={20} className={styles.selectChevronIcon} />
+                <LuChevronsUpDown
+                  size={20}
+                  className={styles.selectChevronIcon}
+                />
               </span>
             </Combobox.Button>
             <Transition
@@ -77,8 +80,8 @@ export function SearchableSelect({
                     .filter((o: FilterOption) =>
                       filterSearchInput(
                         [o.title, o.value].filter(Boolean) as string[],
-                        searchInput[attribute.name],
-                      ),
+                        searchInput[attribute.name]
+                      )
                     )
                     .map((o: FilterOption, j: number) => (
                       <Combobox.Option
@@ -89,12 +92,22 @@ export function SearchableSelect({
                             styles.selectOptionBase,
                             active
                               ? styles.selectOptionActive
-                              : styles.selectOptionInactive,
+                              : styles.selectOptionInactive
                           )
                         }
                       >
-                        {({ selected, active }: { selected: boolean; active: boolean }) => (
-                          <OptionContent selected={selected} active={active} title={o.title} />
+                        {({
+                          selected,
+                          active,
+                        }: {
+                          selected: boolean;
+                          active: boolean;
+                        }) => (
+                          <OptionContent
+                            selected={selected}
+                            active={active}
+                            title={o.title}
+                          />
                         )}
                       </Combobox.Option>
                     ))}

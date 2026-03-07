@@ -19,9 +19,11 @@ export function DepositAddress({ data, address }: DepositAddressProps) {
   const { txhash } = { ...transferData?.send };
 
   const sourceChain = transferData?.send?.source_chain || source_chain;
-  const destinationChain = transferData?.send?.destination_chain || destination_chain;
+  const destinationChain =
+    transferData?.send?.destination_chain || destination_chain;
   const senderAddress = transferData?.send?.sender_address || sender_address;
-  const destinationAddress = transferData?.send?.recipient_address || recipient_address;
+  const destinationAddress =
+    transferData?.send?.recipient_address || recipient_address;
 
   return (
     <div className={styles.card}>
@@ -46,7 +48,10 @@ export function DepositAddress({ data, address }: DepositAddressProps) {
             <dd className={styles.detailValue}>
               <div className={styles.detailValueCol}>
                 <ChainProfile value={destinationChain} />
-                <Profile address={destinationAddress} chain={destinationChain} />
+                <Profile
+                  address={destinationAddress}
+                  chain={destinationChain}
+                />
               </div>
             </dd>
           </div>
@@ -61,7 +66,11 @@ export function DepositAddress({ data, address }: DepositAddressProps) {
               <dt className={styles.detailLabel}>Transfer</dt>
               <dd className={styles.detailValue}>
                 <Copy value={txhash}>
-                  <Link href={`/transfer/${txhash}`} target="_blank" className={styles.transferLink}>
+                  <Link
+                    href={`/transfer/${txhash}`}
+                    target="_blank"
+                    className={styles.transferLink}
+                  >
                     {ellipse(txhash)}
                   </Link>
                 </Copy>

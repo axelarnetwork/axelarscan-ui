@@ -47,9 +47,7 @@ export function DistributionRow({
         </Copy>
       </td>
       <td className={styles.tdMiddle}>
-        <Tag className={styles.poolTag}>
-          {toTitle(d.pool_type)}
-        </Tag>
+        <Tag className={styles.poolTag}>{toTitle(d.pool_type)}</Tag>
       </td>
       <td className={styles.tdMiddle}>
         <div className={styles.recipientsWrapper}>

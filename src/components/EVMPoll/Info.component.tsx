@@ -52,7 +52,9 @@ export function Info({ data, id }: InfoProps) {
     'quadratic_voting_power'
   );
 
-  const eventElement = <Tag className={clsx(styles.eventTagBase)}>{eventName}</Tag>;
+  const eventElement = (
+    <Tag className={clsx(styles.eventTagBase)}>{eventName}</Tag>
+  );
 
   return (
     <div className={styles.infoPanel}>
@@ -99,16 +101,18 @@ export function Info({ data, id }: InfoProps) {
                   ) : (
                     eventElement
                   )}
-                  {(toArray(confirmation_events) as ConfirmationEvent[]).map((e, i) => (
-                    <ConfirmationAsset
-                      key={i}
-                      event={e}
-                      chain={chain}
-                      url={data.url}
-                      assets={assets}
-                      index={i}
-                    />
-                  ))}
+                  {(toArray(confirmation_events) as ConfirmationEvent[]).map(
+                    (e, i) => (
+                      <ConfirmationAsset
+                        key={i}
+                        event={e}
+                        chain={chain}
+                        url={data.url}
+                        assets={assets}
+                        index={i}
+                      />
+                    )
+                  )}
                 </div>
               </dd>
             </div>
@@ -118,7 +122,10 @@ export function Info({ data, id }: InfoProps) {
             <dd className={styles.ddValue}>
               {status && (
                 <Tag
-                  className={clsx(styles.statusTagBase, styles.getStatusTagStyle(status))}
+                  className={clsx(
+                    styles.statusTagBase,
+                    styles.getStatusTagStyle(status)
+                  )}
                 >
                   {status}
                 </Tag>
@@ -215,7 +222,9 @@ export function Info({ data, id }: InfoProps) {
           )}
           {participants && (
             <div className={styles.dlRow}>
-              <dt className={styles.dtLabel}>{`Participants${participants.length > 1 ? ` (${participants.length})` : ''}`}</dt>
+              <dt
+                className={styles.dtLabel}
+              >{`Participants${participants.length > 1 ? ` (${participants.length})` : ''}`}</dt>
               <dd className={styles.ddValue}>
                 <div className={styles.participantsWrapper}>
                   {voteOptions!.map((v: VoteOption, i: number) => (

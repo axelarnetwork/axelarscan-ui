@@ -16,7 +16,8 @@ export function ConfirmTimeEstimate({
   if (!estimatedTimeSpent?.confirm) return null;
   if (!rootCall?.block_timestamp) return null;
 
-  const targetMs = (rootCall.block_timestamp + estimatedTimeSpent.confirm) * 1000;
+  const targetMs =
+    (rootCall.block_timestamp + estimatedTimeSpent.confirm) * 1000;
   if (timeDiff(moment(), 'seconds', targetMs) <= 0) return null;
 
   return (

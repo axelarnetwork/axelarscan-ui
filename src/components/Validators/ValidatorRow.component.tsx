@@ -14,12 +14,24 @@ import type { ValidatorRowProps } from './Validators.types';
 import { EvmChainVote } from './EvmChainVote.component';
 import * as styles from './Validators.styles';
 
-export function ValidatorRow({ validator: d, index: i, status, filteredValidators, chains }: ValidatorRowProps) {
+export function ValidatorRow({
+  validator: d,
+  index: i,
+  status,
+  filteredValidators,
+  chains,
+}: ValidatorRowProps) {
   const { rate } = { ...d.commission?.commission_rates };
 
   const totalVotingPower = _.sumBy(filteredValidators, 'tokens');
-  const totalQuadraticVotingPower = _.sumBy(filteredValidators, 'quadratic_voting_power');
-  const cumulativeVotingPower = _.sumBy(_.slice(filteredValidators, 0, i + 1), 'tokens');
+  const totalQuadraticVotingPower = _.sumBy(
+    filteredValidators,
+    'quadratic_voting_power'
+  );
+  const cumulativeVotingPower = _.sumBy(
+    _.slice(filteredValidators, 0, i + 1),
+    'tokens'
+  );
   const cumulativeQuadraticVotingPower = _.sumBy(
     _.slice(filteredValidators, 0, i + 1),
     'quadratic_voting_power'
@@ -27,16 +39,10 @@ export function ValidatorRow({ validator: d, index: i, status, filteredValidator
 
   return (
     <tr className={styles.tr}>
-      <td className={styles.tdIndex}>
-        {i + 1}
-      </td>
+      <td className={styles.tdIndex}>{i + 1}</td>
       <td className={styles.tdDefault}>
         <div className={styles.validatorInfoCol}>
-          <Profile
-            i={i}
-            address={d.operator_address}
-            prefix="axelarvaloper"
-          />
+          <Profile i={i} address={d.operator_address} prefix="axelarvaloper" />
           <Copy value={d.operator_address}>
             <span className={styles.operatorAddress}>
               {ellipse(d.operator_address, 6, 'axelarvaloper')}
@@ -72,8 +78,7 @@ export function ValidatorRow({ validator: d, index: i, status, filteredValidator
               className={styles.numberMuted}
             />
           )}
-          {(status === 'inactive' ||
-            d.status !== 'BOND_STATUS_BONDED') && (
+          {(status === 'inactive' || d.status !== 'BOND_STATUS_BONDED') && (
             <>
               {d.status && (
                 <Tag
@@ -89,11 +94,7 @@ export function ValidatorRow({ validator: d, index: i, status, filteredValidator
                   {d.status.replace('BOND_STATUS_', '')}
                 </Tag>
               )}
-              {d.jailed && (
-                <Tag className={styles.tagJailed}>
-                  Jailed
-                </Tag>
-              )}
+              {d.jailed && <Tag className={styles.tagJailed}>Jailed</Tag>}
             </>
           )}
         </div>
@@ -121,10 +122,7 @@ export function ValidatorRow({ validator: d, index: i, status, filteredValidator
             </div>
             {status === 'active' && (
               <ProgressBar
-                value={
-                  (cumulativeVotingPower * 100) /
-                  totalVotingPower
-                }
+                value={(cumulativeVotingPower * 100) / totalVotingPower}
               />
             )}
           </div>
@@ -143,8 +141,7 @@ export function ValidatorRow({ validator: d, index: i, status, filteredValidator
                 />
                 <Number
                   value={
-                    (d.quadratic_voting_power * 100) /
-                    totalQuadraticVotingPower
+                    (d.quadratic_voting_power * 100) / totalQuadraticVotingPower
                   }
                   format="0,0.0a"
                   prefix="("
@@ -178,41 +175,42 @@ export function ValidatorRow({ validator: d, index: i, status, filteredValidator
               )}
             />
           )}
-          {status === 'active' &&
-            isNumber(d.proposed_blocks) && (
-              <div className={styles.proposedBlockCol}>
-                <span className={styles.proposedBlockLabel}>
-                  Proposed Block
-                </span>
-                <div className={styles.proposedBlockRow}>
-                  <Number
-                    value={d.proposed_blocks}
-                    format="0,0.0a"
-                    noTooltip={true}
-                    className={styles.proposedBlockValue}
-                  />
-                  <Number
-                    value={d.proposed_blocks_proportion}
-                    format="0,0.0a"
-                    prefix="("
-                    suffix="%)"
-                    noTooltip={true}
-                    className={styles.proposedBlockPct}
-                  />
-                </div>
+          {status === 'active' && isNumber(d.proposed_blocks) && (
+            <div className={styles.proposedBlockCol}>
+              <span className={styles.proposedBlockLabel}>Proposed Block</span>
+              <div className={styles.proposedBlockRow}>
+                <Number
+                  value={d.proposed_blocks}
+                  format="0,0.0a"
+                  noTooltip={true}
+                  className={styles.proposedBlockValue}
+                />
+                <Number
+                  value={d.proposed_blocks_proportion}
+                  format="0,0.0a"
+                  prefix="("
+                  suffix="%)"
+                  noTooltip={true}
+                  className={styles.proposedBlockPct}
+                />
               </div>
-            )}
+            </div>
+          )}
         </div>
       </td>
       <td className={styles.tdEvmSupported}>
         <div className={styles.evmGrid}>
           {toArray(chains)
-            .filter(
-              (c: Chain) => c.chain_type === 'evm' && !c.deprecated
-            )
+            .filter((c: Chain) => c.chain_type === 'evm' && !c.deprecated)
             .map((c: Chain) => {
-              const chainVotes = ((d.votes as Record<string, unknown>)?.chains as Record<string, ValidatorsVotesChain> | undefined)?.[c.id];
-              const isSupported = d.supportedChains?.includes(c.maintainer_id ?? '');
+              const chainVotes = (
+                (d.votes as Record<string, unknown>)?.chains as
+                  | Record<string, ValidatorsVotesChain>
+                  | undefined
+              )?.[c.id];
+              const isSupported = d.supportedChains?.includes(
+                c.maintainer_id ?? ''
+              );
 
               return (
                 <EvmChainVote

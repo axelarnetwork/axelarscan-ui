@@ -22,16 +22,21 @@ interface CosmosTxResponse {
   logs?: CosmosLog[];
 }
 
-export const getAttributeValue = (attributes: CosmosAttribute[] | undefined, key: string) => {
+export const getAttributeValue = (
+  attributes: CosmosAttribute[] | undefined,
+  key: string
+) => {
   const { value } = {
-    ...(toArray(attributes).find((a) => (a as CosmosAttribute).key === key) as CosmosAttribute | undefined),
+    ...(toArray(attributes).find(a => (a as CosmosAttribute).key === key) as
+      | CosmosAttribute
+      | undefined),
   };
   return toJson(value) || removeDoubleQuote(value);
 };
 
 export const getMsgIndexFromEvent = (event: CosmosEvent) => {
   const attr = toArray(event?.attributes).find(
-    (a) => (a as CosmosAttribute).key === 'msg_index'
+    a => (a as CosmosAttribute).key === 'msg_index'
   ) as CosmosAttribute | undefined;
   if (
     !attr ||
@@ -45,8 +50,11 @@ export const getMsgIndexFromEvent = (event: CosmosEvent) => {
   return Number.isNaN(index) ? undefined : index;
 };
 
-export const getEventByType = (events: CosmosEvent[] | undefined, type: string | string[]) =>
-  toArray(events).find((e) =>
+export const getEventByType = (
+  events: CosmosEvent[] | undefined,
+  type: string | string[]
+) =>
+  toArray(events).find(e =>
     includesSomePatterns((e as CosmosEvent).type, toArray(type))
   );
 
@@ -64,7 +72,7 @@ export const normalizeEvents = (tx_response: CosmosTxResponse) => {
 
       for (const event of logEvents) {
         const hasMsgIndex = toArray(event.attributes).some(
-          (a) => (a as CosmosAttribute).key === 'msg_index'
+          a => (a as CosmosAttribute).key === 'msg_index'
         );
 
         const attributes: CosmosAttribute[] | undefined = hasMsgIndex

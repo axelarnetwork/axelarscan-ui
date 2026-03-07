@@ -4,9 +4,7 @@ import clsx from 'clsx';
 import NextImage, { type ImageProps as NextImageProps } from 'next/image';
 import type React from 'react';
 
-import {
-  getChainSpecificClasses,
-} from './Image.styles';
+import { getChainSpecificClasses } from './Image.styles';
 
 const OPTIMIZER_URL = '';
 
