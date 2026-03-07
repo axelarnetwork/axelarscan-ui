@@ -3,91 +3,20 @@
 import Link from 'next/link';
 // @ts-expect-error react-linkify has no type declarations
 import Linkify from 'react-linkify';
-import clsx from 'clsx';
 import moment from 'moment';
 
 import { Image } from '@/components/Image';
-import { JSONView } from '@/components/JSONView';
-import { Tooltip } from '@/components/Tooltip';
 import { Tag } from '@/components/Tag';
 import { Number } from '@/components/Number';
 import { useChains } from '@/hooks/useGlobalData';
-import { getChainData } from '@/lib/config';
-import { toJson, toArray } from '@/lib/parser';
+import { toArray } from '@/lib/parser';
 import { toTitle } from '@/lib/string';
 import { toNumber } from '@/lib/number';
 import { TIME_FORMAT } from '@/lib/time';
 
-import type { ProposalData, ProposalDeposit, VoteOptionSummary } from './Proposal.types';
+import { StatusTag, PlanInfo, ChangeRow, GmpChainIcon } from './InfoHelpers.component';
+import type { InfoProps, ProposalDeposit, VoteOptionSummary } from './Proposal.types';
 import * as styles from './Proposal.styles';
-
-interface InfoProps {
-  id: string;
-  data: ProposalData;
-  end: boolean;
-  voteOptions: VoteOptionSummary[];
-}
-
-function StatusTag({ status }: { status: string }) {
-  const className = clsx(
-    'w-fit',
-    ['UNSPECIFIED', 'DEPOSIT_PERIOD'].includes(status)
-      ? ''
-      : ['VOTING_PERIOD'].includes(status)
-        ? 'bg-yellow-400 dark:bg-yellow-500'
-        : ['REJECTED', 'FAILED'].includes(status)
-          ? 'bg-red-600 dark:bg-red-500'
-          : 'bg-green-600 dark:bg-green-500'
-  );
-
-  return <Tag className={className}>{status}</Tag>;
-}
-
-function PlanInfo({ info, type: _type }: { info: string; type?: string }) {
-  if (typeof toJson(info) === 'object') {
-    return <JSONView value={info} />;
-  }
-
-  return <div className={styles.infoCodeBlock}>{info}</div>;
-}
-
-function ChangeRow({ keyName, value, subspace }: { keyName?: string; value?: string; subspace?: string }) {
-  if (typeof toJson(value) === 'object') {
-    return (
-      <div className={styles.dlRow}>
-        <dt className={styles.dtLabel}>{subspace}</dt>
-        <dd className={styles.ddValueBold}>
-          <div className="flex flex-col gap-y-2">
-            <Tag className={styles.changeTag}>{keyName}</Tag>
-            <JSONView value={value} />
-          </div>
-        </dd>
-      </div>
-    );
-  }
-
-  return (
-    <div className={styles.dlRow}>
-      <dt className={styles.dtLabel}>{subspace}</dt>
-      <dd className={styles.ddValueBold}>
-        <Tag className={styles.changeTag}>
-          {keyName} = {value}
-        </Tag>
-      </dd>
-    </div>
-  );
-}
-
-function GmpChainIcon({ chain, chains }: { chain?: string; chains: ReturnType<typeof useChains> }) {
-  const { name, image } = { ...getChainData(chain, chains) };
-  return (
-    <div className={styles.gmpChainItem}>
-      <Tooltip content={name}>
-        <Image src={image} alt="" width={20} height={20} />
-      </Tooltip>
-    </div>
-  );
-}
 
 export function Info({ id, data, end, voteOptions }: InfoProps) {
   const chains = useChains();

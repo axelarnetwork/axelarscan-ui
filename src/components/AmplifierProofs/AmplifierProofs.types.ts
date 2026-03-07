@@ -1,3 +1,5 @@
+import type { Chain } from '@/types';
+
 export interface FilterOption {
   value?: string;
   title: string;
@@ -70,6 +72,38 @@ export interface SearchResult {
   total: number;
 }
 
+export interface ProofsTableProps {
+  data: AmplifierProofEntry[];
+  chains: Chain[] | null;
+}
+
+export interface ProofRowProps {
+  proof: AmplifierProofEntry;
+  chains: Chain[] | null;
+}
+
+export interface SessionIdCellProps {
+  proof: AmplifierProofEntry;
+  chain: string | undefined;
+}
+
+export interface MessagesCellProps {
+  proof: AmplifierProofEntry;
+  chains: Chain[] | null;
+}
+
+export interface HeightCellProps {
+  height: number | undefined;
+}
+
+export interface StatusCellProps {
+  status: string;
+}
+
+export interface ParticipationsCellProps {
+  proof: AmplifierProofEntry;
+}
+
 export interface SelectButtonContentProps {
   attribute: FilterAttribute;
   selectedValue: FilterOption | FilterOption[] | undefined;
@@ -81,4 +115,15 @@ export interface OptionContentProps {
   selected: boolean;
   active: boolean;
   title: string;
+}
+
+export interface SelectFieldProps {
+  attribute: FilterAttribute;
+  params: Record<string, unknown>;
+  setParams: (params: Record<string, unknown>) => void;
+}
+
+export interface SearchableSelectProps extends SelectFieldProps {
+  searchInput: Record<string, string>;
+  setSearchInput: (input: Record<string, string>) => void;
 }

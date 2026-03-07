@@ -50,6 +50,24 @@ export interface EVMProfileProps {
   [key: string]: unknown;
 }
 
+export interface NameServiceImageProps {
+  src: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  fallbackSrc: any;
+  width: number;
+  height: number;
+  onLoad?: () => void;
+}
+
+export interface NameServiceContentProps {
+  url?: string;
+  noCopy: boolean;
+  address: string;
+  width: number;
+  className?: string;
+  element: React.ReactNode;
+}
+
 export interface ProfileProps {
   i?: number;
   address: string | number[] | null | undefined;

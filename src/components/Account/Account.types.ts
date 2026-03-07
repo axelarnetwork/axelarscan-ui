@@ -59,6 +59,12 @@ export interface BalancesProps {
   data: BalanceEntry[] | undefined;
 }
 
+export interface DelegationRowProps {
+  entry: DelegationEntry;
+  index: number;
+  tab: string;
+}
+
 export interface DelegationsProps {
   data: AccountData;
 }

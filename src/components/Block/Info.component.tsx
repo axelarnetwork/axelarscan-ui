@@ -16,24 +16,8 @@ import { isNumber, toNumber, numberFormat } from '@/lib/number';
 import { TIME_FORMAT } from '@/lib/time';
 import { toArray } from '@/lib/parser';
 import type { InfoProps, ValidatorSetEntry } from './Block.types';
+import { ValidatorList } from './ValidatorList.component';
 import * as styles from './Block.styles';
-
-function ValidatorList({ validators }: { validators: ValidatorSetEntry[] }) {
-  return (
-    <div className={styles.signerGrid}>
-      {validators.map((d, i) => (
-        <Profile
-          key={i}
-          i={i}
-          address={d.operator_address}
-          width={20}
-          height={20}
-          className="text-xs"
-        />
-      ))}
-    </div>
-  );
-}
 
 export function Info({ data, height, validatorSets }: InfoProps) {
   const [signedCollpased, setSignedCollpased] = useState(true);

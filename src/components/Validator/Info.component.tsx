@@ -15,66 +15,17 @@ import { Number } from '@/components/Number';
 import { Profile } from '@/components/Profile';
 import { TablePagination } from '@/components/Pagination';
 import { useChains, useAssets, useValidators } from '@/hooks/useGlobalData';
-import { getChainData, getAssetData } from '@/lib/config';
+import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { ellipse } from '@/lib/string';
 import { isNumber, numberFormat } from '@/lib/number';
 import type { Validator as ValidatorType, Delegation } from '@/types';
+
+import { AddressRow, DelegationRow } from './InfoHelpers.component';
 import type { InfoProps } from './Validator.types';
 import * as styles from './Validator.styles';
 
 const DELEGATIONS_SIZE_PER_PAGE = 10;
-
-function AddressRow({ label, value, children }: { label: string; value: string; children: React.ReactNode }) {
-  return (
-    <div className={styles.dlRow}>
-      <dt className={styles.dlLabel}>{label}</dt>
-      <dd className={styles.dlValue}>
-        <Copy value={value}>{children}</Copy>
-      </dd>
-    </div>
-  );
-}
-
-function DelegationRow({ d, assets }: { d: Delegation; assets: import('@/types').Asset[] | null | undefined }) {
-  const { price } = { ...getAssetData(d.denom, assets) } as Record<string, unknown>;
-
-  return (
-    <tr className={styles.delegationsRow}>
-      <td className={styles.delegationsTdFirst}>
-        <Copy size={14} value={d.delegator_address}>
-          <Link
-            href={`/account/${d.delegator_address}`}
-            target="_blank"
-            className={styles.delegatorLink}
-          >
-            {ellipse(d.delegator_address, 6, 'axelar')}
-          </Link>
-        </Copy>
-      </td>
-      <td className={styles.delegationsTdMiddle}>
-        <div className={styles.delegationsAmountWrapper}>
-          <Number
-            value={d.amount}
-            className={styles.delegationsAmountValue}
-          />
-        </div>
-      </td>
-      <td className={styles.delegationsTdLast}>
-        {isNumber(d.amount) && isNumber(price) && (
-          <div className={styles.delegationsAmountWrapper}>
-            <Number
-              value={d.amount! * (price as number)}
-              prefix="$"
-              noTooltip={true}
-              className={styles.delegationsValueNumber}
-            />
-          </div>
-        )}
-      </td>
-    </tr>
-  );
-}
 
 export function Info({ data, address, delegations }: InfoProps) {
   const [delegationsPage, setDelegationsPage] = useState(1);

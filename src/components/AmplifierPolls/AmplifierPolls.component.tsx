@@ -3,30 +3,23 @@
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import clsx from 'clsx';
 import _ from 'lodash';
 import { MdOutlineRefresh } from 'react-icons/md';
 
 import { Container } from '@/components/Container';
 import { Overlay } from '@/components/Overlay';
 import { Button } from '@/components/Button';
-import { Copy } from '@/components/Copy';
-import { Tooltip } from '@/components/Tooltip';
 import { Spinner } from '@/components/Spinner';
-import { Tag } from '@/components/Tag';
 import { Number } from '@/components/Number';
-import { ChainProfile } from '@/components/Profile';
-import { ExplorerLink, buildExplorerURL } from '@/components/ExplorerLink';
-import { TimeAgo } from '@/components/Time';
 import { Pagination } from '@/components/Pagination';
 import { useChains } from '@/hooks/useGlobalData';
 import { getRPCStatus, searchAmplifierPolls } from '@/lib/api/validator';
-import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { getParams, generateKeyByParams } from '@/lib/operator';
-import { toBoolean, ellipse, toTitle } from '@/lib/string';
-import type { AmplifierPollEntry, PollVoteOption, PollRowProps } from './AmplifierPolls.types';
+import { toBoolean } from '@/lib/string';
+import type { AmplifierPollEntry } from './AmplifierPolls.types';
 import { Filters } from './Filters.component';
+import { PollRow } from './PollRow.component';
 import * as styles from './AmplifierPolls.styles';
 import { processPollData } from './AmplifierPolls.utils';
 
@@ -175,119 +168,3 @@ export function AmplifierPolls() {
   );
 }
 
-function PollRow({
-  poll,
-  chains,
-}: PollRowProps) {
-  const explorer = {
-    ...getChainData(poll.sender_chain, chains)?.explorer,
-  };
-  const txHref = buildExplorerURL({
-    value: poll.transaction_id,
-    type: 'tx',
-    useContractLink: false,
-    hasEventLog: false,
-    explorer,
-  });
-
-  return (
-    <tr className={styles.tr}>
-      <td className={styles.tdFirst}>
-        <div className={styles.cellColumn}>
-          <Copy value={poll.poll_id}>
-            <Link
-              href={`/amplifier-poll/${poll.id}`}
-              target="_blank"
-              className={styles.pollLink}
-            >
-              {poll.poll_id}
-            </Link>
-          </Copy>
-          {poll.transaction_id && (
-            <div className={styles.txRow}>
-              <Copy value={poll.transaction_id}>
-                <Link
-                  href={txHref}
-                  target="_blank"
-                  className={styles.pollLink}
-                >
-                  {ellipse(poll.transaction_id)}
-                </Link>
-              </Copy>
-              <ExplorerLink
-                value={poll.transaction_id}
-                chain={poll.sender_chain}
-              />
-            </div>
-          )}
-        </div>
-      </td>
-      <td className={styles.tdMiddle}>
-        <div className={styles.cellColumn}>
-          <ChainProfile value={poll.sender_chain} />
-          {poll.contract_address && (
-            <div className="flex items-center">
-              <Tooltip
-                content="Verifier Contract"
-                className={styles.verifierTooltip}
-              >
-                <Copy value={poll.contract_address}>
-                  {ellipse(poll.contract_address)}
-                </Copy>
-              </Tooltip>
-            </div>
-          )}
-        </div>
-      </td>
-      <td className={styles.tdMiddle}>
-        {poll.height && (
-          <Link
-            href={`/block/${poll.height}`}
-            target="_blank"
-            className={styles.blockLink}
-          >
-            <Number value={poll.height} />
-          </Link>
-        )}
-      </td>
-      <td className={styles.tdMiddle}>
-        <div className={styles.statusColumn}>
-          {poll.status && (
-            <Tag
-              className={clsx(
-                styles.statusTagBase,
-                styles.getStatusStyle(poll.status),
-              )}
-            >
-              {poll.status}
-            </Tag>
-          )}
-        </div>
-      </td>
-      <td className={styles.tdMiddle}>
-        <Link
-          href={`/amplifier-poll/${poll.id}`}
-          target="_blank"
-          className={styles.participationLink}
-        >
-          {poll.voteOptions?.map((v: PollVoteOption, i: number) => (
-            <Number
-              key={i}
-              value={v.value}
-              format="0,0"
-              suffix={` ${toTitle(v.option.substring(0, v.option === 'unsubmitted' ? 2 : 1))}`}
-              noTooltip={true}
-              className={clsx(
-                styles.voteOptionBase,
-                styles.getVoteOptionStyle(v.option),
-              )}
-            />
-          ))}
-        </Link>
-      </td>
-      <td className={styles.tdLast}>
-        <TimeAgo timestamp={poll.created_at?.ms} />
-      </td>
-    </tr>
-  );
-}

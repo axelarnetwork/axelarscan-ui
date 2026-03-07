@@ -24,6 +24,17 @@ export interface MobileNavIconProps {
   open: boolean;
 }
 
+export interface DesktopNavItemProps {
+  item: NavigationItem;
+  index: number;
+  popoverOpen: number | null;
+  setPopoverOpen: (i: number | null) => void;
+}
+
+export interface NavigationGroupProps {
+  item: NavigationItem;
+}
+
 export interface EnvironmentLinkProps {
   name: string;
   href: string;

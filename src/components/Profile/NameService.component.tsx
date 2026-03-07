@@ -1,11 +1,8 @@
 'use client';
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import clsx from 'clsx';
 
-import { Image } from '@/components/Image';
-import { Copy } from '@/components/Copy';
 import { getENS } from '@/lib/api/name-services/ens';
 import { getSpaceID } from '@/lib/api/name-services/spaceid';
 import { toCase, toArray } from '@/lib/parser';
@@ -16,73 +13,8 @@ import SpaceIDLogo from '@/images/name-services/spaceid.png';
 import type { SpaceIDProfileProps, ENSProfileProps, EVMProfileProps, NameServiceEntry } from './Profile.types';
 import { useNameServicesStore } from './Profile.stores';
 import { setDefaultData } from './Profile.utils';
+import { NameServiceImage, NameServiceContent } from './NameServiceHelpers.component';
 import { nameService as styles } from './Profile.styles';
-
-function NameServiceImage({ src, fallbackSrc, width, height, onLoad }: {
-  src: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  fallbackSrc: any;
-  width: number;
-  height: number;
-  onLoad?: () => void;
-}) {
-  const [image404, setImage404] = useState<boolean | null>(null);
-  const sizeClass = width === 24 ? styles.imageSizeDefault : styles.imageSizeSmall;
-  const marginClass = width < 24 ? styles.imageMarginSmall : styles.imageMarginDefault;
-
-  if (typeof image404 === 'boolean') {
-    return (
-      <Image
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        src={(image404 ? fallbackSrc : src) as any}
-        alt=""
-        width={width}
-        height={height}
-        className={clsx(styles.imageRoundedFull, width === 24 && styles.imageSizeDefault, marginClass)}
-      />
-    );
-  }
-
-  return (
-    <img
-      src={src}
-      alt=""
-      onLoad={() => { setImage404(false); onLoad?.(); }}
-      onError={() => setImage404(true)}
-      className={clsx(styles.imageRoundedFull, sizeClass, marginClass)}
-    />
-  );
-}
-
-function NameServiceContent({ url, noCopy, address, width, className, element }: {
-  url?: string;
-  noCopy: boolean;
-  address: string;
-  width: number;
-  className?: string;
-  element: React.ReactNode;
-}) {
-  const copySize = width < 24 ? 16 : 18;
-
-  if (url) {
-    return (
-      <div className={clsx(styles.linkWrapper, className)}>
-        <Link href={url} target="_blank" className={styles.linkText}>
-          {element}
-        </Link>
-        {!noCopy && <Copy size={copySize} value={address} />}
-      </div>
-    );
-  }
-
-  if (noCopy) return <>{element}</>;
-
-  return (
-    <Copy size={copySize} value={address}>
-      <span className={clsx(className)}>{element}</span>
-    </Copy>
-  );
-}
 
 export function ENSProfile({
   address,

@@ -68,6 +68,10 @@ export interface SignsProps {
   data: VerifierSignEntry[] | null;
 }
 
+export interface RewardRowProps {
+  entry: RewardEntry;
+}
+
 export interface VerifierProps {
   address: string;
 }

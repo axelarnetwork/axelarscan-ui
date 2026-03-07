@@ -1,4 +1,4 @@
-import type { Validator, Delegation, UptimeBlock, ProposedBlock, EVMVote } from '@/types';
+import type { Validator, Delegation, UptimeBlock, ProposedBlock, EVMVote, Asset } from '@/types';
 
 export interface InfoProps {
   data: Validator;
@@ -20,4 +20,15 @@ export interface VotesProps {
 
 export interface ValidatorProps {
   address: string;
+}
+
+export interface AddressRowProps {
+  label: string;
+  value: string;
+  children: React.ReactNode;
+}
+
+export interface DelegationRowProps {
+  d: Delegation;
+  assets: Asset[] | null | undefined;
 }

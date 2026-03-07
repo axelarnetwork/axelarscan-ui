@@ -5,127 +5,22 @@ import clsx from 'clsx';
 import _ from 'lodash';
 import moment from 'moment';
 
-import { Image } from '@/components/Image';
 import { Copy } from '@/components/Copy';
 import { Tag } from '@/components/Tag';
 import { Number } from '@/components/Number';
 import { ChainProfile } from '@/components/Profile';
 import { ExplorerLink } from '@/components/ExplorerLink';
 import { useChains, useAssets, useValidators } from '@/hooks/useGlobalData';
-import { getChainData, getAssetData } from '@/lib/config';
-import { toJson, toArray } from '@/lib/parser';
-import { ellipse, toTitle } from '@/lib/string';
-import { formatUnits, numberFormat } from '@/lib/number';
-import { timeDiff, TIME_FORMAT } from '@/lib/time';
-import type { Asset, Validator } from '@/types';
+import { getChainData } from '@/lib/config';
+import { toArray } from '@/lib/parser';
+import { ellipse } from '@/lib/string';
+import { TIME_FORMAT } from '@/lib/time';
+import type { Validator } from '@/types';
 
 import type { InfoProps, VoteOption, ConfirmationEvent } from './EVMPoll.types';
 import * as styles from './EVMPoll.styles';
-
-interface ConfirmationAssetProps {
-  event: ConfirmationEvent;
-  chain: string | undefined;
-  url: string | undefined;
-  assets: Asset[] | null | undefined;
-  index: number;
-}
-
-function ConfirmationAsset({ event, chain, url, assets, index }: ConfirmationAssetProps) {
-  let { asset, symbol, amount } = { ...event };
-
-  const assetObj = toJson(asset) as { denom?: string; amount?: string } | null;
-  if (assetObj) {
-    asset = assetObj.denom;
-    amount = assetObj.amount;
-  }
-
-  const assetData = getAssetData(asset || symbol, assets);
-  const { decimals, addresses } = { ...assetData };
-  let { image } = { ...assetData };
-
-  if (assetData) {
-    symbol =
-      (chain ? addresses?.[chain]?.symbol : undefined) ||
-      assetData.symbol ||
-      symbol;
-    image = (chain ? addresses?.[chain]?.image : undefined) || image;
-  }
-
-  if (!symbol) {
-    return null;
-  }
-
-  const element = (
-    <div className={styles.assetPill}>
-      <Image src={image} alt="" width={16} height={16} />
-      {amount && assets ? (
-        <Number
-          value={formatUnits(amount, decimals)}
-          format="0,0.000000"
-          suffix={` ${symbol}`}
-          className={styles.assetText}
-        />
-      ) : (
-        <span className={styles.assetText}>{symbol}</span>
-      )}
-    </div>
-  );
-
-  if (url) {
-    return (
-      <Link key={index} href={url} target="_blank">
-        {element}
-      </Link>
-    );
-  }
-
-  return <div key={index}>{element}</div>;
-}
-
-interface ParticipantOptionProps {
-  option: VoteOption;
-  validators: Validator[];
-  totalParticipantsPower: number;
-  createdAtMs: number | undefined;
-  index: number;
-}
-
-function ParticipantOption({
-  option,
-  validators,
-  totalParticipantsPower,
-  createdAtMs,
-  index,
-}: ParticipantOptionProps) {
-  const totalVotersPower = _.sumBy(
-    validators.filter(d =>
-      toArray(option.voters).includes(d.broadcaster_address!)
-    ),
-    'quadratic_voting_power'
-  );
-
-  const powerDisplay =
-    totalVotersPower > 0 && totalParticipantsPower > 0
-      ? `${numberFormat(totalVotersPower, '0,0.0a')} (${numberFormat((totalVotersPower * 100) / totalParticipantsPower, '0,0.0')}%)`
-      : '';
-  const isDisplayPower = powerDisplay && timeDiff(createdAtMs, 'days') < 3;
-
-  const optionAbbrev = option.option.substring(
-    0,
-    option.option === 'unsubmitted' ? 2 : 1
-  );
-
-  return (
-    <Number
-      key={index}
-      value={option.value}
-      format="0,0"
-      suffix={` ${toTitle(optionAbbrev)}${isDisplayPower ? `: ${powerDisplay}` : ''}`}
-      noTooltip={true}
-      className={clsx(styles.voteOptionBase, styles.getVoteOptionStyle(option.option))}
-    />
-  );
-}
+import { ConfirmationAsset } from './ConfirmationAsset.component';
+import { ParticipantOption } from './ParticipantOption.component';
 
 export function Info({ data, id }: InfoProps) {
   const chains = useChains();

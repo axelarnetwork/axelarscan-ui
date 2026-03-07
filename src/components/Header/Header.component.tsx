@@ -5,19 +5,18 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Popover, Transition } from '@headlessui/react';
 import clsx from 'clsx';
-import { FiChevronDown } from 'react-icons/fi';
 
 import { Container } from '@/components/Container';
 import { Logo } from '@/components/Logo';
-import { NavLink } from '@/components/NavLink';
 import { Search } from '@/components/Search';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useTVL } from '@/hooks/useGlobalData';
 import { ENVIRONMENT } from '@/lib/config';
 
-import type { NavigationItem, EnvironmentItem, EnvironmentLinkProps } from './Header.types';
+import type { NavigationItem, EnvironmentItem } from './Header.types';
 import { MobileNavigation } from './MobileNavigation.component';
-import { header, desktopPopover, environmentPopover, environmentLink } from './Header.styles';
+import { DesktopNavItem, EnvironmentLink } from './DesktopNav.component';
+import { header, environmentPopover } from './Header.styles';
 
 const NAVIGATIONS: NavigationItem[] = [
   {
@@ -58,80 +57,6 @@ const ENVIRONMENTS: EnvironmentItem[] = [
 ].filter(
   d => !['stagenet', 'devnet-amplifier'].includes(d.name) || d.name === ENVIRONMENT
 );
-
-function EnvironmentLink({ name, href, children }: EnvironmentLinkProps) {
-  return (
-    <Link
-      href={href}
-      className={clsx(
-        environmentLink.base,
-        name === ENVIRONMENT ? environmentLink.active : environmentLink.inactive
-      )}
-    >
-      {children}
-    </Link>
-  );
-}
-
-function DesktopNavItem({ item, index, popoverOpen, setPopoverOpen }: {
-  item: NavigationItem;
-  index: number;
-  popoverOpen: number | null;
-  setPopoverOpen: (i: number | null) => void;
-}) {
-  const pathname = usePathname();
-
-  if (!item.children) {
-    if (!item.href) return null;
-    return (
-      <NavLink href={item.href}>
-        <div className={desktopPopover.topLevelInner}>{item.title}</div>
-      </NavLink>
-    );
-  }
-
-  const isActive = item.href === pathname || item.children.some(c => c.href === pathname);
-
-  return (
-    <Popover
-      onMouseEnter={() => setPopoverOpen(index)}
-      onMouseLeave={() => setPopoverOpen(null)}
-      className={desktopPopover.wrapper}
-    >
-      <Popover.Button
-        className={clsx(
-          desktopPopover.button,
-          isActive ? desktopPopover.buttonActive : desktopPopover.buttonInactive
-        )}
-      >
-        <Link href={item.children[0].href} className={desktopPopover.linkInner}>
-          <span>{item.title}</span>
-          <FiChevronDown className={desktopPopover.chevron} />
-        </Link>
-      </Popover.Button>
-      <Transition
-        show={index === popoverOpen}
-        as={Fragment}
-        enter="transition ease-out duration-200"
-        enterFrom="opacity-0 translate-y-1"
-        enterTo="opacity-100 translate-y-0"
-        leave="transition ease-in duration-150"
-        leaveFrom="opacity-100 translate-y-0"
-        leaveTo="opacity-0 translate-y-1"
-      >
-        <Popover.Panel className={desktopPopover.panel}>
-          <div className={desktopPopover.panelInner}>
-            {item.children.map((c, j) => (
-              <NavLink key={j} href={c.href}>
-                {c.title}
-              </NavLink>
-            ))}
-          </div>
-        </Popover.Panel>
-      </Transition>
-    </Popover>
-  );
-}
 
 export function Header() {
   const pathname = usePathname();

@@ -1,4 +1,4 @@
-import type { Validator } from '@/types';
+import type { Asset, Validator } from '@/types';
 
 export interface VoteOption {
   option: string;
@@ -68,6 +68,30 @@ export interface InfoProps {
 
 export interface VotesProps {
   data: EVMPollData;
+}
+
+export interface ConfirmationAssetProps {
+  event: ConfirmationEvent;
+  chain: string | undefined;
+  url: string | undefined;
+  assets: Asset[] | null | undefined;
+  index: number;
+}
+
+export interface ParticipantOptionProps {
+  option: VoteOption;
+  validators: Validator[];
+  totalParticipantsPower: number;
+  createdAtMs: number | undefined;
+  index: number;
+}
+
+export interface VoteRowProps {
+  vote: PollVote;
+  index: number;
+  totalVotingPower: number;
+  initiatedTxhash: string | undefined;
+  confirmationTxhash: string | undefined;
 }
 
 export interface EVMPollProps {

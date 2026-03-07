@@ -47,6 +47,10 @@ export interface EventRowProps {
   onToggleSeeMore: (type: string) => void;
 }
 
+export interface ValidatorListProps {
+  validators: ValidatorSetEntry[];
+}
+
 export interface BlockProps {
   height: string;
 }

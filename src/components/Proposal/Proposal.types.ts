@@ -1,3 +1,5 @@
+import type { Chain } from '@/types';
+
 export interface ProposalDeposit {
   amount?: number;
   symbol?: string;
@@ -36,4 +38,37 @@ export interface VoteEntry {
 export interface VoteOptionSummary {
   option: string;
   value: number;
+}
+
+export interface InfoProps {
+  id: string;
+  data: ProposalData;
+  end: boolean;
+  voteOptions: VoteOptionSummary[];
+}
+
+export interface VoteRowProps {
+  entry: VoteEntry;
+  index: number;
+  totalVotingPower: number;
+}
+
+export interface StatusTagProps {
+  status: string;
+}
+
+export interface PlanInfoProps {
+  info: string;
+  type?: string;
+}
+
+export interface ChangeRowProps {
+  keyName?: string;
+  value?: string;
+  subspace?: string;
+}
+
+export interface GmpChainIconProps {
+  chain?: string;
+  chains: Chain[] | null;
 }
