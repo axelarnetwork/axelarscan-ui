@@ -9,6 +9,7 @@ import parse from 'html-react-parser';
 
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
+import { NavigationProgress } from '@/components/NavigationProgress';
 
 import * as styles from './Layout.styles';
 import type { LayoutProps } from './Layout.types';
@@ -24,6 +25,7 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <div className={styles.layoutWrapper}>
+      <NavigationProgress />
       {!noHeader && (
         <>
           <motion.header layoutScroll className={styles.headerMotion}>
