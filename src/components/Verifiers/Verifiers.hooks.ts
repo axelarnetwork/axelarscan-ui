@@ -2,8 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-import { THIRTY_SECONDS_MS } from '@/lib/constants';
-
+import { REFETCH_INTERVAL_MS } from './Verifiers.constants';
 import { fetchVerifiersPageData } from './Verifiers.utils';
 import type { VerifiersPageData } from './Verifiers.types';
 
@@ -12,7 +11,7 @@ export function useVerifiersData(initialData: VerifiersPageData | null) {
     queryKey: ['verifiers-page'],
     queryFn: fetchVerifiersPageData,
     initialData: initialData ?? undefined,
-    refetchInterval: THIRTY_SECONDS_MS,
+    refetchInterval: REFETCH_INTERVAL_MS,
     refetchOnWindowFocus: false,
   });
 }

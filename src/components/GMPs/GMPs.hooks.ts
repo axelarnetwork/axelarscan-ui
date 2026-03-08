@@ -4,11 +4,11 @@ import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
 
-import { THIRTY_SECONDS_MS } from '@/lib/constants';
 import { searchGMP } from '@/lib/api/gmp';
 import { toArray } from '@/lib/parser';
 import { getParams } from '@/lib/operator';
 
+import { REFETCH_INTERVAL_MS } from './GMPs.constants';
 import { customData } from './GMPs.utils';
 import type { GMPRowData } from './GMPs.types';
 
@@ -56,7 +56,7 @@ export function useGMPSearch(
     queryKey: ['gmp-search', params],
     queryFn: () => fetchGMPData(params),
     initialData: initialData ?? undefined,
-    refetchInterval: THIRTY_SECONDS_MS,
+    refetchInterval: REFETCH_INTERVAL_MS,
     refetchOnWindowFocus: false,
   });
 }

@@ -6,9 +6,9 @@ import { useEffect, useState } from 'react';
 import { Container } from '@/components/Container';
 import { Spinner } from '@/components/Spinner';
 import { Response } from '@/components/Response';
-import { THIRTY_SECONDS_MS } from '@/lib/constants';
 import { searchTransfers } from '@/lib/api/token-transfer';
 import { getParams } from '@/lib/operator';
+import { REFRESH_INTERVAL_MS } from './Transfer.constants';
 import { Info } from './Info.component';
 import { Details } from './Details.component';
 import { isTerminalStatus, makeErrorData } from './Transfer.utils';
@@ -77,7 +77,7 @@ export function Transfer({ tx, lite, initialData }: TransferProps) {
 
     getData();
 
-    const interval = !ended && setInterval(() => getData(), THIRTY_SECONDS_MS);
+    const interval = !ended && setInterval(() => getData(), REFRESH_INTERVAL_MS);
     return () => clearInterval(interval as ReturnType<typeof setInterval>);
   }, [tx, router, searchParams, setData, ended, setEnded]);
 

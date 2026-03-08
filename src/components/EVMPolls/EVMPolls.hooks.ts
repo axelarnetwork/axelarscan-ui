@@ -4,11 +4,11 @@ import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
 
-import { THIRTY_SECONDS_MS } from '@/lib/constants';
 import { useChains } from '@/hooks/useGlobalData';
 import { searchEVMPolls } from '@/lib/api/validator';
 import { getParams } from '@/lib/operator';
 
+import { REFETCH_INTERVAL_MS } from './EVMPolls.constants';
 import { processPolls } from './EVMPolls.utils';
 import type { EVMPollRecord, SearchResultEntry } from './EVMPolls.types';
 
@@ -47,7 +47,7 @@ export function useEVMPollsSearch(initialData: SearchResultEntry | null) {
     queryKey: ['evm-polls-search', params],
     queryFn: () => fetchEVMPollsData(params, chains),
     initialData: initialData ?? undefined,
-    refetchInterval: THIRTY_SECONDS_MS,
+    refetchInterval: REFETCH_INTERVAL_MS,
     refetchOnWindowFocus: false,
   });
 }

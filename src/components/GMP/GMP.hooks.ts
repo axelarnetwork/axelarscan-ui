@@ -21,9 +21,9 @@ import { ENVIRONMENT, getAssetData, getChainData } from '@/lib/config';
 import { toBigNumber, toNumber } from '@/lib/number';
 import { getParams } from '@/lib/operator';
 import { toArray, toCase } from '@/lib/parser';
-import { THIRTY_SECONDS_MS } from '@/lib/constants';
 import { equalsIgnoreCase } from '@/lib/string';
 
+import { REFRESH_INTERVAL_MS } from './GMP.constants';
 import {
   AssetDataEntry,
   ChainTimeEstimate,
@@ -308,7 +308,7 @@ export function useGMPMessageData(
       if (isActive && !ended) {
         intervalRef.current = setInterval(() => {
           void refresh();
-        }, THIRTY_SECONDS_MS);
+        }, REFRESH_INTERVAL_MS);
       }
     };
 

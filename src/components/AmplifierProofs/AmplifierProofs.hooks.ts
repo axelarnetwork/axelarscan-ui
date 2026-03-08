@@ -4,7 +4,6 @@ import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
 
-import { THIRTY_SECONDS_MS } from '@/lib/constants';
 import { getRPCStatus, searchAmplifierProofs } from '@/lib/api/validator';
 import { toArray } from '@/lib/parser';
 import { getParams } from '@/lib/operator';
@@ -14,6 +13,7 @@ import type {
   SearchResult,
   AmplifierProofsSearchResult,
 } from './AmplifierProofs.types';
+import { REFETCH_INTERVAL_MS } from './AmplifierProofs.constants';
 import { buildProofEntry } from './AmplifierProofs.utils';
 
 const SIZE = 25;
@@ -58,7 +58,7 @@ export function useAmplifierProofsSearch(
     initialData: initialData
       ? { data: initialData.data, total: initialData.total }
       : undefined,
-    refetchInterval: THIRTY_SECONDS_MS,
+    refetchInterval: REFETCH_INTERVAL_MS,
     refetchOnWindowFocus: false,
   });
 }

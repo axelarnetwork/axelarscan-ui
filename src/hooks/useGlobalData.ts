@@ -19,11 +19,11 @@ import {
   fetchConfigurations,
 } from '@/lib/queries/contractQueries';
 import { fetchStats } from '@/lib/queries/statsQueries';
-import { FIVE_MINUTES_MS } from '@/lib/constants';
+const GLOBAL_DATA_INTERVAL_MS = 5 * 60 * 1000;
 
 const defaultOptions = {
-  staleTime: FIVE_MINUTES_MS,
-  refetchInterval: FIVE_MINUTES_MS,
+  staleTime: GLOBAL_DATA_INTERVAL_MS,
+  refetchInterval: GLOBAL_DATA_INTERVAL_MS,
   refetchOnWindowFocus: false,
 } as const;
 

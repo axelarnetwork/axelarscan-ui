@@ -4,12 +4,12 @@ import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
 
-import { THIRTY_SECONDS_MS } from '@/lib/constants';
 import { searchTransfers } from '@/lib/api/token-transfer';
 import { ENVIRONMENT } from '@/lib/config';
 import { getParams } from '@/lib/operator';
 import { isNumber } from '@/lib/number';
 
+import { REFETCH_INTERVAL_MS } from './Transfers.constants';
 import type { TransferSearchResult } from './Transfers.types';
 
 const SIZE = 25;
@@ -59,7 +59,7 @@ export function useTransfersSearch(
     queryKey: ['transfers-search', params],
     queryFn: () => fetchTransfersData(params),
     initialData: initialData ?? undefined,
-    refetchInterval: THIRTY_SECONDS_MS,
+    refetchInterval: REFETCH_INTERVAL_MS,
     refetchOnWindowFocus: false,
   });
 }

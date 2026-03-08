@@ -21,9 +21,8 @@ import { queryKeys } from '@/lib/queries/keys';
 import { fetchITSAssets } from '@/lib/queries/assetQueries';
 import { getInputType, split, toArray } from '@/lib/parser';
 import { equalsIgnoreCase, find } from '@/lib/string';
-import { FIVE_MINUTES_MS } from '@/lib/constants';
-
 import { search as styles } from './Search.styles';
+import { STALE_TIME_MS } from './Search.constants';
 
 export function Search() {
   const pathname = usePathname();
@@ -115,7 +114,7 @@ export function Search() {
         const itsAssets = await queryClient.ensureQueryData({
           queryKey: queryKeys.itsAssets,
           queryFn: fetchITSAssets,
-          staleTime: FIVE_MINUTES_MS,
+          staleTime: STALE_TIME_MS,
         });
         if (getITSAssetData(_input, itsAssets)) {
           _input = `search?assetType=its&itsTokenAddress=${_input}`;

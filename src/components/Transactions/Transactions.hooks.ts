@@ -4,7 +4,6 @@ import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
 
-import { THIRTY_SECONDS_MS } from '@/lib/constants';
 import { useChains, useAssets } from '@/hooks/useGlobalData';
 import { searchTransactions, getTransactions } from '@/lib/api/validator';
 import { searchDepositAddresses } from '@/lib/api/token-transfer';
@@ -19,6 +18,7 @@ import type {
   TransactionsSearchResult,
 } from './Transactions.types';
 import { PAGE_SIZE } from './Transactions.types';
+import { REFETCH_INTERVAL_MS } from './Transactions.constants';
 import { getType, getSender, getRecipient } from './Transactions.utils';
 
 import type { Chain } from '@/types';
@@ -193,7 +193,7 @@ export function useTransactionsSearch(
     queryFn: () =>
       fetchTransactionsData(params, height, address, chains!, assets!),
     initialData: initialData ?? undefined,
-    refetchInterval: THIRTY_SECONDS_MS,
+    refetchInterval: REFETCH_INTERVAL_MS,
     refetchOnWindowFocus: false,
     enabled: !!chains && !!assets,
   });

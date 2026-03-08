@@ -7,8 +7,7 @@ export interface BlockEntry {
 }
 
 export interface BlocksProps {
-  data: BlockEntry[];
-  height?: string;
+  initialData: { data: BlockEntry[] };
 }
 
 export interface BlockRowProps {

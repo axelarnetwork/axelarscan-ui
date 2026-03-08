@@ -2,8 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 
-import { THIRTY_SECONDS_MS } from '@/lib/constants';
-
+import { REFETCH_INTERVAL_MS } from './Validators.constants';
 import { fetchValidatorsPageData } from './Validators.utils';
 import type { ValidatorsPageData } from './Validators.types';
 
@@ -12,7 +11,7 @@ export function useValidatorsData(initialData: ValidatorsPageData | null) {
     queryKey: ['validators-page'],
     queryFn: fetchValidatorsPageData,
     initialData: initialData ?? undefined,
-    refetchInterval: THIRTY_SECONDS_MS,
+    refetchInterval: REFETCH_INTERVAL_MS,
     refetchOnWindowFocus: false,
   });
 }

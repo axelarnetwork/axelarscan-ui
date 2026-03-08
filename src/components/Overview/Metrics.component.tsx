@@ -11,11 +11,11 @@ import {
   useInflationData,
   useNetworkParameters,
 } from '@/hooks/useGlobalData';
-import { SIX_SECONDS_MS } from '@/lib/constants';
 import { getRPCStatus } from '@/lib/api/validator';
 import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { isNumber } from '@/lib/number';
+import { REFRESH_INTERVAL_MS } from './Overview.constants';
 import { MetricWithTooltip } from './MetricWithTooltip.component';
 import { StakedMetric } from './StakedMetric.component';
 import { APRMetric } from './APRMetric.component';
@@ -43,7 +43,7 @@ export function Metrics() {
 
     getData();
 
-    const interval = setInterval(() => getData(), SIX_SECONDS_MS);
+    const interval = setInterval(() => getData(), REFRESH_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [setBlockData]);
 

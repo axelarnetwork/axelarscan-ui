@@ -3,11 +3,11 @@
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 
-import { THIRTY_SECONDS_MS } from '@/lib/constants';
 import { getRPCStatus, searchAmplifierPolls } from '@/lib/api/validator';
 import { toArray } from '@/lib/parser';
 import { getParams } from '@/lib/operator';
 
+import { REFETCH_INTERVAL_MS } from './AmplifierPolls.constants';
 import { processPollData } from './AmplifierPolls.utils';
 import type {
   AmplifierPollEntry,
@@ -49,7 +49,7 @@ export function useAmplifierPollsSearch(
     queryKey: ['amplifier-polls-search', params],
     queryFn: () => fetchAmplifierPollsData(params),
     initialData: initialData ?? undefined,
-    refetchInterval: THIRTY_SECONDS_MS,
+    refetchInterval: REFETCH_INTERVAL_MS,
     refetchOnWindowFocus: false,
   });
 }

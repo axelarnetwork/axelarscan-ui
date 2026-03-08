@@ -3,11 +3,11 @@
 import { useSearchParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 
-import { THIRTY_SECONDS_MS } from '@/lib/constants';
 import { searchBatches } from '@/lib/api/token-transfer';
 import { ENVIRONMENT } from '@/lib/config';
 import { getParams } from '@/lib/operator';
 
+import { REFETCH_INTERVAL_MS } from './EVMBatches.constants';
 import type { BatchSearchResponse } from './EVMBatches.types';
 import { PAGE_SIZE } from './EVMBatches.types';
 
@@ -38,7 +38,7 @@ export function useEVMBatchesSearch(initialData: BatchSearchResponse | null) {
     queryKey: ['evm-batches-search', params],
     queryFn: () => fetchBatchData(params),
     initialData: initialData ?? undefined,
-    refetchInterval: THIRTY_SECONDS_MS,
+    refetchInterval: REFETCH_INTERVAL_MS,
     refetchOnWindowFocus: false,
   });
 }

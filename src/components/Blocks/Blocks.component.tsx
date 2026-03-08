@@ -1,10 +1,15 @@
+'use client';
+
 import { Container } from '@/components/Container';
 import { numberFormat } from '@/lib/number';
 import * as styles from './Blocks.styles';
-import type { BlockEntry, BlocksProps } from './Blocks.types';
+import type { BlocksProps } from './Blocks.types';
 import { BlockRow } from './BlockRow.component';
+import { useBlocksSearch } from './Blocks.hooks';
 
-export function Blocks({ data }: BlocksProps) {
+export function Blocks({ initialData }: BlocksProps) {
+  const { data: result } = useBlocksSearch(initialData);
+  const data = result.data;
   return (
     <Container className="sm:mt-8">
       <div>

@@ -7,6 +7,8 @@ import type { GMPRowData } from '@/components/GMPs/GMPs.types';
 
 const SIZE = 25;
 
+export const revalidate = 10;
+
 export default async function GMPsSearchPage({
   searchParams,
 }: {
