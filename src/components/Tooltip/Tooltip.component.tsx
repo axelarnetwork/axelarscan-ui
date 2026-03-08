@@ -12,11 +12,11 @@ export function Tooltip({
   parentClassName,
 }: TooltipProps) {
   return (
-    <div className={clsx(tooltipStyles.parent, parentClassName)}>
-      <div className={tooltipStyles.popup}>
-        <div className={clsx(tooltipStyles.content, className)}>{content}</div>
-      </div>
+    <span className={clsx(tooltipStyles.parent, parentClassName)}>
+      <span className={tooltipStyles.popup}>
+        <span className={clsx(tooltipStyles.content, className)}>{content}</span>
+      </span>
       {children}
-    </div>
+    </span>
   );
 }

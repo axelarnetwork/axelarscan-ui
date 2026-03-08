@@ -117,7 +117,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, [rendered, setXRPLlRegisterWallets, metamaskProvider]);
 
   return (
-    <ThemeProvider attribute="class" disableTransitionOnChange>
+    <ThemeProvider attribute="class" disableTransitionOnChange enableColorScheme={false}>
       <IntercomProvider
         appId={process.env.NEXT_PUBLIC_INTERCOM_APP_ID!}
         autoBoot={true}

@@ -42,6 +42,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      // next-themes injects a "light"/"dark" class on <html> via a blocking script
+      // before React hydrates, causing a className mismatch in React 19+.
+      // Can be removed if next-themes adds cookie-based SSR theme detection,
+      // or if we replace next-themes with a custom cookie-based solution.
+      suppressHydrationWarning
       className={clsx(
         'h-full scroll-smooth bg-white antialiased dark:bg-zinc-900',
         inter.variable,

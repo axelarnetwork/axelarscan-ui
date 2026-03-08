@@ -4,7 +4,7 @@
 
 export const tooltipStyles = {
   // Parent container for relative positioning
-  parent: 'group relative flex justify-center',
+  parent: 'group relative inline-flex justify-center',
 
   // Tooltip popup container
   popup:

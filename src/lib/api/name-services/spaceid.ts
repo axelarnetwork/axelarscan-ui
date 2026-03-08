@@ -27,10 +27,13 @@ const request = async (
   try {
     const chain = _.head(Object.entries(TLDS).find(([_k, v]) => tld === v));
     const { chain_id } = { ...getChainData(chain, chainsData) };
+    const sidAddress = getSidAddress(chain_id);
+
+    if (!sidAddress) return;
 
     const sid = new SID({
       provider: getProvider(chain, chainsData),
-      sidAddress: getSidAddress(chain_id),
+      sidAddress,
     });
 
     return await sid.getName(address);

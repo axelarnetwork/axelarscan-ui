@@ -1,8 +1,6 @@
 'use client';
 
-import { isValidElement, useEffect, useState } from 'react';
-// @ts-expect-error — no type declarations available
-import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { isValidElement, useCallback, useEffect, useState } from 'react';
 import clsx from 'clsx';
 import { LuClipboard, LuClipboardCheck } from 'react-icons/lu';
 
@@ -26,12 +24,13 @@ export function Copy({
     return () => clearTimeout(timeout);
   }, [copied]);
 
-  const handleCopy = () => {
-    setCopied(true);
-    if (onCopy) {
-      onCopy();
+  const handleCopy = useCallback(() => {
+    if (value) {
+      navigator.clipboard.writeText(String(value));
     }
-  };
+    setCopied(true);
+    onCopy?.();
+  }, [value, onCopy]);
 
   if (copied) {
     return (
@@ -59,31 +58,29 @@ export function Copy({
     return (
       <div className={clsx(copyStyles.wrapperWithChildren, childrenClassName)}>
         {children}
-        <CopyToClipboard text={value} onCopy={() => handleCopy()}>
-          <LuClipboard
-            size={size}
-            className={clsx(copyStyles.clipboardIcon, className)}
-          />
-        </CopyToClipboard>
+        <LuClipboard
+          size={size}
+          onClick={handleCopy}
+          className={clsx(copyStyles.clipboardIcon, className)}
+        />
       </div>
     );
   }
 
   return (
-    <CopyToClipboard text={value} onCopy={() => handleCopy()}>
-      <div
-        className={clsx(
-          copyStyles.wrapper,
-          children && 'min-w-max',
-          childrenClassName
-        )}
-      >
-        {children}
-        <LuClipboard
-          size={size}
-          className={clsx(copyStyles.clipboardIcon, className)}
-        />
-      </div>
-    </CopyToClipboard>
+    <div
+      onClick={handleCopy}
+      className={clsx(
+        copyStyles.wrapper,
+        children && 'min-w-max',
+        childrenClassName
+      )}
+    >
+      {children}
+      <LuClipboard
+        size={size}
+        className={clsx(copyStyles.clipboardIcon, className)}
+      />
+    </div>
   );
 }
