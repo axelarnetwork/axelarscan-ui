@@ -122,7 +122,8 @@ export function FilterSelectInput({
     ? options.find(o => isSelected(o?.value || ''))
     : undefined;
 
-  const handleChange = (v: string | string[]) => {
+  const handleChange = (v: string | string[] | null) => {
+    if (v === null) return;
     setParams({
       ...params,
       [attribute.name]: attribute.multiple
@@ -190,7 +191,7 @@ function SearchableInput({
   selectedArray: FilterOption[];
   selectedSingle: FilterOption | undefined;
   options: FilterOption[];
-  onChange: (v: string | string[]) => void;
+  onChange: (v: string | string[] | null) => void;
   onRemoveItem: (item: FilterOption) => void;
 }) {
   const filteredOptions = options.filter(o =>
@@ -205,7 +206,7 @@ function SearchableInput({
       value={
         attribute.multiple
           ? split(params[attribute.name])
-          : params[attribute.name]
+          : String(params[attribute.name] ?? '')
       }
       onChange={onChange}
       multiple={attribute.multiple}
@@ -285,7 +286,7 @@ function SimpleInput({
   selectedArray: FilterOption[];
   selectedSingle: FilterOption | undefined;
   options: FilterOption[];
-  onChange: (v: string | string[]) => void;
+  onChange: (v: string | string[] | null) => void;
   onRemoveItem: (item: FilterOption) => void;
 }) {
   return (
@@ -293,7 +294,7 @@ function SimpleInput({
       value={
         attribute.multiple
           ? split(params[attribute.name])
-          : params[attribute.name]
+          : String(params[attribute.name] ?? '')
       }
       onChange={onChange}
       multiple={attribute.multiple}

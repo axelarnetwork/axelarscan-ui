@@ -1,9 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    missingSuspenseWithCSRBailout: false,
-  },
-  transpilePackages: ['@xrpl-wallet-standard/core'],
+  transpilePackages: [
+    '@xrpl-wallet-standard/core',
+    '@xrpl-wallet-adapter/walletconnect',
+  ],
 };
 
 module.exports = nextConfig;

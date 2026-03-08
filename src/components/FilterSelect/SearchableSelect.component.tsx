@@ -21,7 +21,7 @@ export function SearchableSelect({
   searchInput,
   setSearchInput,
 }: SearchableSelectProps) {
-  const handleChange = (v: string | string[]) =>
+  const handleChange = (v: string | string[] | null) =>
     setParams({
       ...params,
       [attribute.name]: attribute.multiple ? (v as string[]).join(',') : v,

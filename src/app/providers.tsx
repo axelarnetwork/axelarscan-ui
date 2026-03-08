@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { ThemeProvider, useTheme } from 'next-themes';
 // @ts-expect-error — no type declarations available
 import TagManager from 'react-gtm-module';
@@ -53,9 +53,21 @@ function ThemeWatcher() {
   return null;
 }
 
-export function Providers({ children }: { children: React.ReactNode }) {
+function AnalyticsTracker() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (pathname && searchParams) {
+      const qs = searchParams.toString();
+      ga.pageview(`${pathname}${qs ? `?${qs}` : ''}`);
+    }
+  }, [pathname, searchParams]);
+
+  return null;
+}
+
+export function Providers({ children }: { children: React.ReactNode }) {
   const [rendered, setRendered] = useState(false);
   const [tagManagerInitiated, setTagManagerInitiated] = useState(false);
   const [xrplRegisterWallets, setXRPLlRegisterWallets] = useState<
@@ -74,14 +86,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
       setTagManagerInitiated(true);
     }
   }, [rendered, tagManagerInitiated, setTagManagerInitiated]);
-
-  // google analytics
-  useEffect(() => {
-    if (pathname && searchParams) {
-      const qs = searchParams.toString();
-      ga.pageview(`${pathname}${qs ? `?${qs}` : ''}`);
-    }
-  }, [pathname, searchParams]);
 
   // sui
   const { networkConfig } = createNetworkConfig({
@@ -119,6 +123,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         autoBoot={true}
       >
         <ThemeWatcher />
+        <Suspense>
+          <AnalyticsTracker />
+        </Suspense>
         <QueryClientProvider client={client}>
           <Global />
           <WagmiConfigProvider>

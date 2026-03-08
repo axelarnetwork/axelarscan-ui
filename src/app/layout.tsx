@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import Script from 'next/script';
 import { Inter, Lexend } from 'next/font/google';
 import clsx from 'clsx';
@@ -72,7 +73,9 @@ export default function RootLayout({
       <body className="flex min-h-full bg-white antialiased dark:bg-zinc-900">
         <Providers>
           <div className="w-full">
-            <Layout>{children}</Layout>
+            <Layout>
+              <Suspense>{children}</Suspense>
+            </Layout>
           </div>
         </Providers>
         <Analytics />
