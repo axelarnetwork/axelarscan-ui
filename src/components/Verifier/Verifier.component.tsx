@@ -32,7 +32,7 @@ import * as styles from './Verifier.styles';
 
 const SIZE = 200;
 
-export function Verifier({ address }: VerifierProps) {
+export function Verifier({ address, initialRPCStatus }: VerifierProps) {
   const [data, setData] = useState<VerifierData | null>(null);
   const [votes, setVotes] = useState<VerifierPollEntry[] | null>(null);
   const [signs, setSigns] = useState<VerifierSignEntry[] | null>(null);
@@ -71,8 +71,9 @@ export function Verifier({ address }: VerifierProps) {
     const verifierAddress = data.address;
 
     const fetchMetrics = async () => {
+      const rpcResponse = initialRPCStatus ?? (await getRPCStatus());
       const { latest_block_height } = {
-        ...((await getRPCStatus()) as Record<string, unknown>),
+        ...(rpcResponse as Record<string, unknown>),
       } as { latest_block_height?: number };
       if (!latest_block_height) return;
 

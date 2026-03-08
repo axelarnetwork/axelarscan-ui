@@ -86,3 +86,10 @@ export interface CrossChainActivityProps {
 export interface InflationMetricProps {
   inflation: number;
 }
+
+export interface OverviewProps {
+  data: OverviewData;
+  chains: import('@/types').Chain[] | null;
+  networkGraph: NetworkGraphDataItem[];
+  chainPairs: Record<string, unknown>[];
+}

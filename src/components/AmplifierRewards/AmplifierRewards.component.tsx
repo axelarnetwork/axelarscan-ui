@@ -6,7 +6,6 @@ import _ from 'lodash';
 import { MdOutlineRefresh } from 'react-icons/md';
 
 import { Container } from '@/components/Container';
-import { Overlay } from '@/components/Overlay';
 import { Button } from '@/components/Button';
 import { Spinner } from '@/components/Spinner';
 import { Number } from '@/components/Number';
@@ -199,7 +198,6 @@ export function AmplifierRewards({ chain }: AmplifierRewardsProps) {
               )}
             </div>
           </div>
-          {refresh && <Overlay />}
           <div className={styles.tableWrapper}>
             <table className={styles.table}>
               <thead className={styles.thead}>

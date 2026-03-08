@@ -1,80 +1,33 @@
 'use client';
 
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import _ from 'lodash';
 import { MdOutlineRefresh } from 'react-icons/md';
 
 import { Container } from '@/components/Container';
-import { Overlay } from '@/components/Overlay';
 import { Button } from '@/components/Button';
 import { Spinner } from '@/components/Spinner';
 import { Number } from '@/components/Number';
 import { Pagination } from '@/components/Pagination';
 import { useChains, useAssets } from '@/hooks/useGlobalData';
-import { searchBatches } from '@/lib/api/token-transfer';
-import { ENVIRONMENT } from '@/lib/config';
-import { getParams, generateKeyByParams } from '@/lib/operator';
-import { toBoolean } from '@/lib/string';
 
-import type {
-  BatchRecord,
-  BatchSearchResponse,
-  SearchResultsMap,
-} from './EVMBatches.types';
+import type { BatchRecord, EVMBatchesProps } from './EVMBatches.types';
 import { PAGE_SIZE } from './EVMBatches.types';
+import { useEVMBatchesSearch } from './EVMBatches.hooks';
 import { BatchRow } from './BatchRow.component';
 import { Filters } from './Filters.component';
 import * as styles from './EVMBatches.styles';
 
-export function EVMBatches() {
-  const searchParams = useSearchParams();
-  const [params, setParams] = useState<Record<string, unknown> | null>(null);
-  const [searchResults, setSearchResults] = useState<SearchResultsMap | null>(
-    null
-  );
-  const [refresh, setRefresh] = useState<boolean | null>(null);
+export function EVMBatches({ initialData = null }: EVMBatchesProps) {
+  const {
+    data: result,
+    isFetching,
+    refetch,
+  } = useEVMBatchesSearch(initialData);
   const chains = useChains();
   const assets = useAssets();
 
-  useEffect(() => {
-    const _params = getParams(searchParams, PAGE_SIZE);
-
-    if (!_.isEqual(_params, params)) {
-      setParams(_params);
-      setRefresh(true);
-    }
-  }, [searchParams, params, setParams]);
-
-  useEffect(() => {
-    const getData = async () => {
-      if (!params || !toBoolean(refresh)) return;
-
-      let response = (await searchBatches({
-        ...params,
-        size: PAGE_SIZE,
-      })) as BatchSearchResponse | null;
-
-      if (
-        response &&
-        !response.data &&
-        !['mainnet', 'testnet'].includes(ENVIRONMENT!)
-      ) {
-        response = { data: [], total: 0 };
-      }
-
-      setSearchResults({
-        ...(refresh ? undefined : searchResults),
-        [generateKeyByParams(params)]: { ...response },
-      });
-      setRefresh(false);
-    };
-
-    getData();
-  }, [params, setSearchResults, refresh, setRefresh]);
-
-  const { data, total } = { ...searchResults?.[generateKeyByParams(params!)] };
+  const data = result?.data;
+  const total = result?.total;
 
   if (!data) {
     return (
@@ -105,20 +58,14 @@ export function EVMBatches() {
           </div>
           <div className={styles.actionsRow}>
             <Filters />
-            {refresh ? (
-              <Spinner />
-            ) : (
-              <Button
-                color="default"
-                circle="true"
-                onClick={() => setRefresh(true)}
-              >
-                <MdOutlineRefresh size={20} />
-              </Button>
-            )}
+            <Button color="default" circle="true" onClick={() => refetch()}>
+              <MdOutlineRefresh
+                size={20}
+                className={isFetching ? 'animate-spin' : ''}
+              />
+            </Button>
           </div>
         </div>
-        {refresh && <Overlay />}
         <div className={styles.tableWrapper}>
           <table className={styles.table}>
             <thead className={styles.thead}>

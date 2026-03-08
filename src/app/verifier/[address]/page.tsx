@@ -1,9 +1,13 @@
 import { Verifier } from '@/components/Verifier';
+import { getRPCStatus } from '@/lib/api/validator';
 
-export default function VerifierPage({
+export default async function VerifierPage({
   params,
 }: {
-  params: { address: string };
+  params: Promise<{ address: string }>;
 }) {
-  return <Verifier {...params} />;
+  const { address } = await params;
+  const rpcStatus = await getRPCStatus();
+
+  return <Verifier address={address} initialRPCStatus={rpcStatus} />;
 }

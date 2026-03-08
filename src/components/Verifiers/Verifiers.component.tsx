@@ -6,20 +6,26 @@ import { Container } from '@/components/Container';
 import { Spinner } from '@/components/Spinner';
 
 import { useVerifiersData } from './Verifiers.hooks';
+import type { VerifiersProps } from './Verifiers.types';
 import { VerifierRow } from './Row.component';
 import * as styles from './Verifiers.styles';
 
-export function Verifiers() {
-  const { data, amplifierChains, additionalAmplifierChains } =
-    useVerifiersData();
+export function Verifiers({ initialData = null }: VerifiersProps) {
+  const { data: result } = useVerifiersData(initialData);
 
-  if (!data) {
+  if (!result) {
     return (
       <Container className="sm:mt-8">
         <Spinner />
       </Container>
     );
   }
+
+  const {
+    verifiers: data,
+    amplifierChains,
+    additionalAmplifierChains,
+  } = result;
 
   return (
     <Container className="sm:mt-8">

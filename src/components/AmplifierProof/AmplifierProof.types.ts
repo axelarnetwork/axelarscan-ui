@@ -88,6 +88,8 @@ export interface SignsProps {
 
 export interface AmplifierProofProps {
   id: string;
+  initialRPCStatus?: RPCStatusData;
+  initialData?: { data?: AmplifierProofData[] };
 }
 
 export interface SignRowProps {

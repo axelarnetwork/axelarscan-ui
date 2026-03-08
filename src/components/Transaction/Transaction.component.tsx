@@ -13,8 +13,8 @@ import { Info } from './Info.component';
 import { Data } from './Data.component';
 import * as styles from './Transaction.styles';
 
-export function Transaction({ tx }: TransactionProps) {
-  const [data, setData] = useState<TransactionData | null>(null);
+export function Transaction({ tx, initialData }: TransactionProps) {
+  const [data, setData] = useState<TransactionData | null>(initialData ?? null);
   const assets = useAssets();
 
   useEffect(() => {

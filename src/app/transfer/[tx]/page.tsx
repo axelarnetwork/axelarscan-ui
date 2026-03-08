@@ -1,5 +1,15 @@
 import { Transfer } from '@/components/Transfer';
+import type { SearchTransfersResult } from '@/components/Transfer/Transfer.types';
+import { searchTransfers } from '@/lib/api/token-transfer';
 
-export default function TransferPage({ params }: { params: { tx: string } }) {
-  return <Transfer {...params} />;
+export default async function TransferPage({
+  params,
+}: {
+  params: Promise<{ tx: string }>;
+}) {
+  const { tx } = await params;
+  const data = (await searchTransfers({
+    txHash: tx,
+  })) as SearchTransfersResult | null;
+  return <Transfer tx={tx} initialData={data} />;
 }

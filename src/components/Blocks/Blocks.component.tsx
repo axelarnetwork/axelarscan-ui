@@ -1,61 +1,17 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-
 import { Container } from '@/components/Container';
-import { Spinner } from '@/components/Spinner';
-import { SIX_SECONDS_MS } from '@/lib/constants';
-import { searchBlocks } from '@/lib/api/validator';
-import { toBoolean } from '@/lib/string';
 import { numberFormat } from '@/lib/number';
 import * as styles from './Blocks.styles';
 import type { BlockEntry, BlocksProps } from './Blocks.types';
 import { BlockRow } from './BlockRow.component';
 
-const SIZE = 250;
-
-export function Blocks({ height = undefined }: BlocksProps) {
-  const [data, setData] = useState<BlockEntry[] | null>(null);
-  const [refresh, setRefresh] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const getData = async () => {
-      if (toBoolean(refresh)) {
-        const response = (await searchBlocks({ height, size: SIZE })) as
-          | { data?: BlockEntry[] }
-          | undefined;
-        const { data: responseData } = { ...response };
-
-        if (responseData) {
-          setData(responseData);
-          setRefresh(false);
-        }
-      }
-    };
-
-    getData();
-  }, [height, refresh]);
-
-  useEffect(() => {
-    const interval = setInterval(() => setRefresh(true), SIX_SECONDS_MS);
-    return () => clearInterval(interval);
-  }, []);
-
-  if (!data) {
-    return (
-      <Container className="sm:mt-8">
-        <Spinner />
-      </Container>
-    );
-  }
-
+export function Blocks({ data }: BlocksProps) {
   return (
     <Container className="sm:mt-8">
       <div>
         <div className="sm:flex-auto">
           <h1 className={styles.pageTitle}>Blocks</h1>
           <p className={styles.pageDescription}>
-            Latest {numberFormat(SIZE, '0,0')} Blocks
+            Latest {numberFormat(data.length, '0,0')} Blocks
           </p>
         </div>
         <div className={styles.tableWrapper}>

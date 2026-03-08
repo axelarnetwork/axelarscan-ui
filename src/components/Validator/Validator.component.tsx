@@ -36,7 +36,11 @@ import {
 } from './Validator.utils';
 import * as styles from './Validator.styles';
 
-export function Validator({ address }: ValidatorProps) {
+export function Validator({
+  address,
+  initialBalances,
+  initialRPCStatus,
+}: ValidatorProps) {
   const router = useRouter();
   const [EVMChains, setEVMChains] = useState<Chain[] | null>(null);
   const [data, setData] = useState<ValidatorType | null>(null);
@@ -143,10 +147,13 @@ export function Validator({ address }: ValidatorProps) {
 
       // broadcaster balance
       if (_data.broadcaster_address) {
-        const { data: balanceData } = {
-          ...((await getBalances({
+        const balancesResponse =
+          initialBalances ??
+          (await getBalances({
             address: _data.broadcaster_address,
-          })) as Record<string, unknown>),
+          }));
+        const { data: balanceData } = {
+          ...(balancesResponse as Record<string, unknown>),
         };
         _data.broadcasterBalance = toArray(balanceData).find(
           (d: Record<string, unknown>) =>
@@ -174,8 +181,9 @@ export function Validator({ address }: ValidatorProps) {
       if (!address || !data || data.status === 'error') return;
 
       const { consensus_address, broadcaster_address } = { ...data };
+      const rpcResponse = initialRPCStatus ?? (await getRPCStatus());
       const { latest_block_height } = {
-        ...((await getRPCStatus()) as Record<string, unknown>),
+        ...(rpcResponse as Record<string, unknown>),
       } as { latest_block_height?: number };
 
       if (!latest_block_height) return;

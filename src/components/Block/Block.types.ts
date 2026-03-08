@@ -53,6 +53,8 @@ export interface ValidatorListProps {
 
 export interface BlockProps {
   height: string;
+  initialBlock?: BlockData | null;
+  initialValidatorSets?: ValidatorSetEntry[] | null;
 }
 
 export interface SignerSectionProps {

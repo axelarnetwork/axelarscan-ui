@@ -27,6 +27,8 @@ export interface VotesProps {
 
 export interface ValidatorProps {
   address: string;
+  initialBalances?: unknown;
+  initialRPCStatus?: unknown;
 }
 
 export interface AddressRowProps {

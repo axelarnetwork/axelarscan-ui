@@ -1,5 +1,9 @@
 import { Validators } from '@/components/Validators';
+import { fetchValidatorsPageData } from '@/components/Validators/Validators.utils';
 
-export default function ValidatorsPage() {
-  return <Validators status="active" />;
+export const revalidate = 30;
+
+export default async function ValidatorsPage() {
+  const initialData = await fetchValidatorsPageData();
+  return <Validators status="active" initialData={initialData} />;
 }

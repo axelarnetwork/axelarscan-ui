@@ -79,6 +79,7 @@ export interface GmpChainIconProps {
 
 export interface ProposalProps {
   id: string;
+  initialData?: ProposalData | null;
 }
 
 export interface VotesProps {

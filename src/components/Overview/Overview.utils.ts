@@ -1,17 +1,10 @@
-import { useEffect, useState } from 'react';
 import _ from 'lodash';
 
-import { useChains, useStats } from '@/hooks/useGlobalData';
-import {
-  GMPStatsByChains,
-  GMPStatsByContracts,
-  GMPTotalVolume,
-} from '@/lib/api/gmp';
-import { transfersStats, transfersTotalVolume } from '@/lib/api/token-transfer';
 import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { find } from '@/lib/string';
 import { toNumber } from '@/lib/number';
+import type { Chain } from '@/types';
 import type {
   NetworkGraphDataItem,
   OverviewData,
@@ -20,56 +13,10 @@ import type {
   TransferStatsEntry,
 } from './Overview.types';
 
-async function resolveMetric(
-  key: string,
-  stats: Record<string, unknown> | null
-): Promise<[string, unknown]> {
-  const cached = stats?.[key];
-  switch (key) {
-    case 'GMPStatsByChains':
-      return [
-        key,
-        {
-          ...((cached as Record<string, unknown>) ||
-            (await GMPStatsByChains())),
-        },
-      ];
-    case 'GMPStatsByContracts':
-      return [
-        key,
-        {
-          ...((cached as Record<string, unknown>) ||
-            (await GMPStatsByContracts())),
-        },
-      ];
-    case 'GMPTotalVolume':
-      return [key, toNumber(cached || (await GMPTotalVolume()))];
-    case 'transfersStats':
-      return [
-        key,
-        {
-          ...((cached as Record<string, unknown>) || (await transfersStats())),
-        },
-      ];
-    case 'transfersTotalVolume':
-      return [key, toNumber(cached || (await transfersTotalVolume()))];
-    default:
-      return [key, undefined];
-  }
-}
-
-const METRIC_KEYS = [
-  'GMPStatsByChains',
-  'GMPStatsByContracts',
-  'GMPTotalVolume',
-  'transfersStats',
-  'transfersTotalVolume',
-];
-
 function resolveChainId(
   key: string,
   lookup: Record<string, string | undefined>,
-  chains: ReturnType<typeof useChains>
+  chains: Chain[] | null | undefined
 ): string {
   const cached = lookup[key] || getChainData(key, chains)?.id;
   lookup[key] = cached;
@@ -79,7 +26,7 @@ function resolveChainId(
 function buildGmpGraphItems(
   data: OverviewData,
   lookup: Record<string, string | undefined>,
-  chains: ReturnType<typeof useChains>
+  chains: Chain[] | null | undefined
 ): NetworkGraphDataItem[] {
   return (
     toArray(data.GMPStatsByChains?.source_chains) as SourceChainEntry[]
@@ -103,7 +50,7 @@ function buildGmpGraphItems(
 function buildTransferGraphItems(
   data: OverviewData,
   lookup: Record<string, string | undefined>,
-  chains: ReturnType<typeof useChains>
+  chains: Chain[] | null | undefined
 ): NetworkGraphDataItem[] {
   return (toArray(data.transfersStats?.data) as TransferStatsEntry[]).map(
     (t: TransferStatsEntry) => {
@@ -124,9 +71,9 @@ function buildTransferGraphItems(
   );
 }
 
-function buildNetworkGraphData(
+export function buildNetworkGraphData(
   data: OverviewData,
-  chains: ReturnType<typeof useChains>
+  chains: Chain[] | null | undefined
 ): NetworkGraphDataItem[] {
   const lookup: Record<string, string | undefined> = {};
   const gmpItems = buildGmpGraphItems(data, lookup, chains);
@@ -151,44 +98,11 @@ function buildNetworkGraphData(
   );
 }
 
-export function useOverviewData() {
-  const [data, setData] = useState<OverviewData | null>(null);
-  const [networkGraph, setNetworkGraph] = useState<
-    NetworkGraphDataItem[] | null
-  >(null);
-  const [chainFocus, setChainFocus] = useState<string | null>(null);
-  const chains = useChains();
-  const stats = useStats();
-
-  useEffect(() => {
-    const getData = async () => {
-      if (!chains) return;
-      const entries = await Promise.all(
-        METRIC_KEYS.map(key =>
-          resolveMetric(key, stats as Record<string, unknown> | null)
-        )
-      );
-      setData(Object.fromEntries(entries));
-    };
-    getData();
-  }, [setData, chains, stats]);
-
-  useEffect(() => {
-    const getData = async () => {
-      if (!data) return;
-      setNetworkGraph(buildNetworkGraphData(data, chains));
-    };
-    getData();
-  }, [data, setNetworkGraph, chains]);
-
-  return { data, networkGraph, chainFocus, setChainFocus, chains };
-}
-
-export function useChainPairs(
-  data: OverviewData | null,
+export function buildChainPairs(
+  data: OverviewData,
   chainFocus: string | null,
-  chains: ReturnType<typeof useChains>
-) {
+  chains: Chain[] | null | undefined
+): Record<string, unknown>[] {
   const groupData = (items: Record<string, unknown>[], by = 'key') =>
     Object.entries(_.groupBy(toArray(items), by)).map(([k, v]) => ({
       key: ((v[0] as Record<string, unknown>)?.key as string) || k,
@@ -211,7 +125,7 @@ export function useChainPairs(
 
   return groupData(
     _.concat(
-      toArray(data?.GMPStatsByChains?.source_chains).flatMap(
+      toArray(data.GMPStatsByChains?.source_chains).flatMap(
         (s: SourceChainEntry) =>
           toArray(s.destination_chains)
             .filter(
@@ -224,7 +138,7 @@ export function useChainPairs(
               volume: d.volume,
             }))
       ),
-      toArray(data?.transfersStats?.data)
+      toArray(data.transfersStats?.data)
         .filter(
           (d: TransferStatsEntry) =>
             !chainFocus ||

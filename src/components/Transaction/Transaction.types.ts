@@ -24,6 +24,7 @@ export interface DataProps {
 
 export interface TransactionProps {
   tx: string;
+  initialData?: TransactionData | null;
 }
 
 // ─── Activity / Event types ────────────────────────────────────

@@ -1,9 +1,5 @@
 import type { Asset } from '@/types';
 
-export interface TransfersProps {
-  address?: string;
-}
-
 export interface TransferSend {
   txhash: string;
   source_chain: string;
@@ -50,6 +46,11 @@ export interface TransferRowData {
 export interface TransferSearchResult {
   data?: TransferRowData[];
   total?: number;
+}
+
+export interface TransfersProps {
+  initialData?: TransferSearchResult | null;
+  address?: string;
 }
 
 export interface TransferSearchResults {

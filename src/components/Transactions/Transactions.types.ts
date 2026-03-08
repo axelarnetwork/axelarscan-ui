@@ -135,7 +135,13 @@ export interface FiltersProps {
 }
 
 // ─── Transactions ───────────────────────────────────────────────
+export interface TransactionsSearchResult {
+  data: TransactionRowData[];
+  total: number;
+}
+
 export interface TransactionsProps {
+  initialData?: TransactionsSearchResult | null;
   height?: string | number;
   address?: string;
 }

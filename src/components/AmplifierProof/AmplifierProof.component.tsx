@@ -20,28 +20,36 @@ import { Info } from './Info.component';
 import { Signs } from './Signs.component';
 import * as styles from './AmplifierProof.styles';
 
-export function AmplifierProof({ id }: AmplifierProofProps) {
+export function AmplifierProof({
+  id,
+  initialRPCStatus,
+  initialData,
+}: AmplifierProofProps) {
   const [data, setData] = useState<AmplifierProofData | null>(null);
-  const [blockData, setBlockData] = useState<RPCStatusData | null>(null);
+  const [blockData, setBlockData] = useState<RPCStatusData | null>(
+    initialRPCStatus ?? null
+  );
   const _chains = useChains();
   const verifiers = useVerifiers();
 
   useEffect(() => {
+    if (blockData) return;
     const getData = async () =>
       setBlockData((await getRPCStatus()) as RPCStatusData);
     getData();
-  }, [setBlockData]);
+  }, [blockData]);
 
   useEffect(() => {
     const getData = async () => {
       if (!blockData) return;
 
-      const response = (await searchAmplifierProofs({
-        multisigContractAddress: id.includes('_')
-          ? headString(id, '_')
-          : undefined,
-        sessionId: lastString(id, '_'),
-      })) as { data?: AmplifierProofData[] } | undefined;
+      const response = (initialData ??
+        (await searchAmplifierProofs({
+          multisigContractAddress: id.includes('_')
+            ? headString(id, '_')
+            : undefined,
+          sessionId: lastString(id, '_'),
+        }))) as { data?: AmplifierProofData[] } | undefined;
 
       let d = response?.data?.[0];
 

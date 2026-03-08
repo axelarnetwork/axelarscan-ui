@@ -1,9 +1,13 @@
 import { Transaction } from '@/components/Transaction';
+import { getTransaction } from '@/lib/api/validator';
+import type { TransactionData } from '@/components/Transaction/Transaction.types';
 
-export default function TransactionPage({
+export default async function TransactionPage({
   params,
 }: {
-  params: { tx: string };
+  params: Promise<{ tx: string }>;
 }) {
-  return <Transaction {...params} />;
+  const { tx } = await params;
+  const data = (await getTransaction(tx)) as TransactionData | null;
+  return <Transaction tx={tx} initialData={data} />;
 }

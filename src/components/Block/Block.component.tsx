@@ -18,11 +18,15 @@ import * as styles from './Block.styles';
 
 const BLOCK_EVENTS = ['begin_block_events', 'end_block_events'];
 
-export function Block({ height }: BlockProps) {
-  const [data, setData] = useState<BlockData | null>(null);
+export function Block({
+  height,
+  initialBlock,
+  initialValidatorSets,
+}: BlockProps) {
+  const [data, setData] = useState<BlockData | null>(initialBlock ?? null);
   const [validatorSets, setValidatorSets] = useState<
     ValidatorSetEntry[] | null
-  >(null);
+  >(initialValidatorSets ?? null);
   const validators = useValidators();
 
   useEffect(() => {

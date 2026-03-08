@@ -1,4 +1,10 @@
+export interface GMPSearchResult {
+  data?: GMPRowData[];
+  total?: number;
+}
+
 export interface GMPsProps {
+  initialData?: GMPSearchResult | null;
   address?: string;
   useAnotherHopChain?: boolean;
 }

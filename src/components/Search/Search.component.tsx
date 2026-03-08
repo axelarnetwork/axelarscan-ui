@@ -3,21 +3,25 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useQueryClient } from '@tanstack/react-query';
 import clsx from 'clsx';
 import { FiSearch } from 'react-icons/fi';
 
 import { Spinner } from '@/components/Spinner';
 import { Button } from '@/components/Button';
 import { useNameServicesStore } from '@/components/Profile';
-import { useChains, useITSAssets } from '@/hooks/useGlobalData';
+import { useChains } from '@/hooks/useGlobalData';
 import { searchGMP } from '@/lib/api/gmp';
 import { searchTransfers } from '@/lib/api/token-transfer';
 import { getENS } from '@/lib/api/name-services/ens';
 import { getSpaceID } from '@/lib/api/name-services/spaceid';
 import { getSlug } from '@/lib/navigation';
 import { getITSAssetData } from '@/lib/config';
+import { queryKeys } from '@/lib/queries/keys';
+import { fetchITSAssets } from '@/lib/queries/assetQueries';
 import { getInputType, split, toArray } from '@/lib/parser';
 import { equalsIgnoreCase, find } from '@/lib/string';
+import { FIVE_MINUTES_MS } from '@/lib/constants';
 
 import { search as styles } from './Search.styles';
 
@@ -28,8 +32,8 @@ export function Search() {
   const [input, setInput] = useState('');
   const [searching, setSearching] = useState(false);
   const { handleSubmit } = useForm();
+  const queryClient = useQueryClient();
   const chains = useChains();
-  const itsAssets = useITSAssets();
   const { ens, spaceID, setENS, setSpaceID } = useNameServicesStore();
 
   const onSubmit = async () => {
@@ -107,7 +111,12 @@ export function Search() {
       }
 
       if (_input && type === 'address') {
-        // its asset
+        // its asset — await data if not yet loaded
+        const itsAssets = await queryClient.ensureQueryData({
+          queryKey: queryKeys.itsAssets,
+          queryFn: fetchITSAssets,
+          staleTime: FIVE_MINUTES_MS,
+        });
         if (getITSAssetData(_input, itsAssets)) {
           _input = `search?assetType=its&itsTokenAddress=${_input}`;
           type = 'gmp';
@@ -167,10 +176,6 @@ export function Search() {
   const address = getSlug(pathname, 'address');
   const searchable =
     !searching && !!input && !find(input, [tx as string, address as string]);
-
-  if (!itsAssets) {
-    return null;
-  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>

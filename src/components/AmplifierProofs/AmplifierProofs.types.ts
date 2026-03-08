@@ -58,6 +58,16 @@ export interface SearchResult {
   total: number;
 }
 
+export interface AmplifierProofsSearchResult {
+  data: AmplifierProofEntry[];
+  total: number;
+  blockData: BlockData | null;
+}
+
+export interface AmplifierProofsProps {
+  initialData?: AmplifierProofsSearchResult | null;
+}
+
 export interface ProofsTableProps {
   data: AmplifierProofEntry[];
   chains: Chain[] | null;

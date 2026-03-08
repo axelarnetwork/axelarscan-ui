@@ -65,6 +65,8 @@ export interface VotesProps {
 
 export interface AmplifierPollProps {
   id: string;
+  initialRPCStatus?: RPCStatusData;
+  initialData?: { data?: AmplifierPollData[] };
 }
 
 export interface VoteRowProps {

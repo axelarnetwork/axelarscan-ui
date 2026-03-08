@@ -7,6 +7,7 @@ export interface BlockEntry {
 }
 
 export interface BlocksProps {
+  data: BlockEntry[];
   height?: string;
 }
 

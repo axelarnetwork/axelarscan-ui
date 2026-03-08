@@ -14,10 +14,10 @@ import { GMPProps } from './GMP.types';
 import { GMPContainer } from './GMPContainer.component';
 import { Info } from './Info';
 
-export function GMP({ tx, lite }: GMPProps) {
+export function GMP({ tx, lite, initialData }: GMPProps) {
   const chains = useChains();
   const assets = useAssets();
-  const { data, refresh } = useGMPMessageData(tx);
+  const { data, refresh } = useGMPMessageData(tx, initialData);
   const estimatedTimeSpent = useEstimatedTimeSpent(data);
   const executeData = useExecuteData(data, chains, assets);
 

@@ -13,9 +13,16 @@ export interface ValidatorStoreState {
   setMaintainers: (data: Record<string, string[]>) => void;
 }
 
+// ─── Page Data ──────────────────────────────────────────────────
+export interface ValidatorsPageData {
+  validators: ValidatorType[];
+  chains: Chain[];
+}
+
 // ─── Props ─────────────────────────────────────────────────────
 export interface ValidatorsProps {
   status?: string;
+  initialData?: ValidatorsPageData | null;
 }
 
 // ─── Sub-component Props ───────────────────────────────────────

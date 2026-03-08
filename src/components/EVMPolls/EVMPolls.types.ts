@@ -75,6 +75,10 @@ export interface SearchResultEntry {
 
 export type SearchResults = Record<string, SearchResultEntry>;
 
+export interface EVMPollsProps {
+  initialData?: SearchResultEntry | null;
+}
+
 /** Props for the PollRow sub-component */
 export interface PollRowProps {
   poll: ProcessedPoll;

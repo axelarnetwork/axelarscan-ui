@@ -33,6 +33,15 @@ export interface PollVote {
   [key: string]: unknown;
 }
 
+export interface AmplifierPollsSearchResult {
+  data: AmplifierPollEntry[];
+  total: number;
+}
+
+export interface AmplifierPollsProps {
+  initialData?: AmplifierPollsSearchResult | null;
+}
+
 export interface PollRowProps {
   poll: AmplifierPollEntry;
   chains: Chain[] | null;

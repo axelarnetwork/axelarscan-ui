@@ -1,9 +1,10 @@
 import { Resources } from '@/components/Resources';
 
-export default function ResourcePage({
+export default async function ResourcePage({
   params,
 }: {
-  params: { resource: string };
+  params: Promise<{ resource: string }>;
 }) {
-  return <Resources {...params} />;
+  const { resource } = await params;
+  return <Resources resource={resource} />;
 }

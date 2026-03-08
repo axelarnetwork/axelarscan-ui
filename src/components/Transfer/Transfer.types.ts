@@ -89,7 +89,12 @@ export interface StatusStepsProps {
   insufficientFee?: boolean;
 }
 
+export interface SearchTransfersResult {
+  data?: TransferData[];
+}
+
 export interface TransferProps {
   tx?: string;
   lite?: boolean;
+  initialData?: SearchTransfersResult | null;
 }

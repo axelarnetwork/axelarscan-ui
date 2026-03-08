@@ -1,87 +1,36 @@
 'use client';
 
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import _ from 'lodash';
 import { MdOutlineRefresh } from 'react-icons/md';
 
 import { Container } from '@/components/Container';
-import { Overlay } from '@/components/Overlay';
 import { Button } from '@/components/Button';
 import { Spinner } from '@/components/Spinner';
 import { Number } from '@/components/Number';
 import { Pagination } from '@/components/Pagination';
 import { useChains } from '@/hooks/useGlobalData';
-import { getRPCStatus, searchAmplifierPolls } from '@/lib/api/validator';
-import { toArray } from '@/lib/parser';
-import { getParams, generateKeyByParams } from '@/lib/operator';
-import { toBoolean } from '@/lib/string';
-import type { AmplifierPollEntry } from './AmplifierPolls.types';
+
+import type {
+  AmplifierPollsProps,
+  AmplifierPollEntry,
+} from './AmplifierPolls.types';
 import { Filters } from './Filters.component';
 import { PollRow } from './PollRow.component';
+import { useAmplifierPollsSearch } from './AmplifierPolls.hooks';
 import * as styles from './AmplifierPolls.styles';
-import { processPollData } from './AmplifierPolls.utils';
 
-const size = 25;
+const SIZE = 25;
 
-export function AmplifierPolls() {
-  const searchParams = useSearchParams();
-  const [params, setParams] = useState<Record<string, unknown> | null>(null);
-  const [searchResults, setSearchResults] = useState<Record<
-    string,
-    { data: AmplifierPollEntry[]; total: number }
-  > | null>(null);
-  const [refresh, setRefresh] = useState<boolean | null>(null);
-  const [blockData, setBlockData] = useState<{
-    latest_block_height?: number;
-    [key: string]: unknown;
-  } | null>(null);
+export function AmplifierPolls({ initialData = null }: AmplifierPollsProps) {
+  const {
+    data: result,
+    isFetching,
+    refetch,
+  } = useAmplifierPollsSearch(initialData);
   const chains = useChains();
 
-  useEffect(() => {
-    const _params = getParams(searchParams, size);
-
-    if (!_.isEqual(_params, params)) {
-      setParams(_params);
-      setRefresh(true);
-    }
-  }, [searchParams, params, setParams]);
-
-  useEffect(() => {
-    const getData = async () =>
-      setBlockData((await getRPCStatus()) as Record<string, unknown>);
-    getData();
-  }, [setBlockData]);
-
-  useEffect(() => {
-    const getData = async () => {
-      if (!params || !toBoolean(refresh) || !blockData) return;
-
-      const response = (await searchAmplifierPolls({ ...params, size })) as
-        | { data?: AmplifierPollEntry[]; total?: number }
-        | undefined;
-      const { data, total } = { ...response };
-
-      setSearchResults({
-        ...(refresh ? undefined : searchResults),
-        [generateKeyByParams(params)]: {
-          data: processPollData(
-            toArray(data) as AmplifierPollEntry[],
-            blockData.latest_block_height ?? 0
-          ),
-          total: total ?? 0,
-        },
-      });
-      setRefresh(false);
-    };
-
-    getData();
-  }, [params, setSearchResults, refresh, setRefresh, blockData, chains]);
-
-  const { data, total } = {
-    ...searchResults?.[generateKeyByParams(params ?? {})],
-  };
+  const data = result?.data;
+  const total = result?.total;
 
   if (!data) {
     return (
@@ -112,20 +61,14 @@ export function AmplifierPolls() {
           </div>
           <div className={styles.actionsRow}>
             <Filters />
-            {refresh ? (
-              <Spinner />
-            ) : (
-              <Button
-                color="default"
-                circle="true"
-                onClick={() => setRefresh(true)}
-              >
-                <MdOutlineRefresh size={20} />
-              </Button>
-            )}
+            <Button color="default" circle="true" onClick={() => refetch()}>
+              <MdOutlineRefresh
+                size={20}
+                className={isFetching ? 'animate-spin' : ''}
+              />
+            </Button>
           </div>
         </div>
-        {refresh && <Overlay />}
         <div className={styles.tableWrapper}>
           <table className={styles.table}>
             <thead className={styles.thead}>
@@ -157,9 +100,9 @@ export function AmplifierPolls() {
             </tbody>
           </table>
         </div>
-        {(total ?? 0) > size && (
+        {(total ?? 0) > SIZE && (
           <div className={styles.paginationWrapper}>
-            <Pagination sizePerPage={size} total={total ?? 0} />
+            <Pagination sizePerPage={SIZE} total={total ?? 0} />
           </div>
         )}
       </div>

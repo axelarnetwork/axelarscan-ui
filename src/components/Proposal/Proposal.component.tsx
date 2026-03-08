@@ -17,8 +17,8 @@ import { Votes } from './Votes.component';
 import type { ProposalProps, ProposalData, VoteEntry } from './Proposal.types';
 import * as styles from './Proposal.styles';
 
-export function Proposal({ id }: ProposalProps) {
-  const [data, setData] = useState<ProposalData | null>(null);
+export function Proposal({ id, initialData }: ProposalProps) {
+  const [data, setData] = useState<ProposalData | null>(initialData ?? null);
   const validators = useValidators();
 
   useEffect(() => {

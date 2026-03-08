@@ -23,14 +23,15 @@ import {
   buildVoteOptions,
 } from './EVMPoll.utils';
 
-export function EVMPoll({ id }: EVMPollProps) {
+export function EVMPoll({ id, initialData }: EVMPollProps) {
   const [data, setData] = useState<EVMPollData | null>(null);
   const chains = useChains();
   const validators = useValidators();
 
   useEffect(() => {
     const getData = async () => {
-      const response = (await searchEVMPolls({ pollId: id })) as
+      const response = (initialData ??
+        (await searchEVMPolls({ pollId: id }))) as
         | { data?: EVMPollData[] }
         | undefined;
 

@@ -96,4 +96,5 @@ export interface VoteRowProps {
 
 export interface EVMPollProps {
   id: string;
+  initialData?: { data?: EVMPollData[] };
 }

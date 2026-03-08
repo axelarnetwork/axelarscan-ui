@@ -1,9 +1,10 @@
 import { Account } from '@/components/Account';
 
-export default function AccountPage({
+export default async function AccountPage({
   params,
 }: {
-  params: { address: string };
+  params: Promise<{ address: string }>;
 }) {
-  return <Account {...params} />;
+  const { address } = await params;
+  return <Account address={address} />;
 }

@@ -1,9 +1,10 @@
 import { EVMBatch } from '@/components/EVMBatch';
 
-export default function BatchPage({
+export default async function BatchPage({
   params,
 }: {
-  params: { chain: string; id: string };
+  params: Promise<{ chain: string; id: string }>;
 }) {
-  return <EVMBatch {...params} />;
+  const { chain, id } = await params;
+  return <EVMBatch chain={chain} id={id} />;
 }

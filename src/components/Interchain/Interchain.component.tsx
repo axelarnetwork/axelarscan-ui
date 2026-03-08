@@ -5,7 +5,6 @@ import { useState } from 'react';
 
 import { Container } from '@/components/Container';
 import { useAssets, useITSAssets, useStats } from '@/hooks/useGlobalData';
-import { Overlay } from '@/components/Overlay';
 import { Spinner } from '@/components/Spinner';
 import { generateKeyByParams, getParams } from '@/lib/operator';
 
@@ -93,7 +92,6 @@ export function Interchain() {
           isRefreshing={refresh && typeof refresh !== 'boolean' ? true : false}
           onRefresh={() => setRefresh(true)}
         />
-        {refresh && typeof refresh !== 'boolean' && <Overlay />}
         <Summary
           data={data[generateKeyByParams(params)] as InterchainData}
           params={params}

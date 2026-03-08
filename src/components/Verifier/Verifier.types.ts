@@ -74,6 +74,7 @@ export interface RewardRowProps {
 
 export interface VerifierProps {
   address: string;
+  initialRPCStatus?: unknown;
 }
 
 export interface RewardsTableProps {

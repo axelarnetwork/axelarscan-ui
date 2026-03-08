@@ -1,9 +1,10 @@
 import { Address } from '@/components/Address';
 
-export default function AddressPage({
+export default async function AddressPage({
   params,
 }: {
-  params: { address: string };
+  params: Promise<{ address: string }>;
 }) {
-  return <Address {...params} />;
+  const { address } = await params;
+  return <Address address={address} />;
 }

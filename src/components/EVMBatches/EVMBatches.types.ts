@@ -68,5 +68,9 @@ export interface CommandItemProps {
   transactionPath?: string;
 }
 
+export interface EVMBatchesProps {
+  initialData?: BatchSearchResponse | null;
+}
+
 /** Number of results per page */
 export const PAGE_SIZE = 25;

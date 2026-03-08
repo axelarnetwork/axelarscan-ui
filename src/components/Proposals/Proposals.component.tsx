@@ -1,36 +1,9 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-
 import { Container } from '@/components/Container';
-import { Spinner } from '@/components/Spinner';
-import { getProposals } from '@/lib/api/axelarscan';
-import { toArray } from '@/lib/parser';
 import * as styles from './Proposals.styles';
-import type { ProposalListItem, ProposalsApiResponse } from './Proposals.types';
+import type { ProposalsProps, ProposalListItem } from './Proposals.types';
 import { ProposalRow } from './ProposalRow.component';
 
-export function Proposals() {
-  const [data, setData] = useState<ProposalListItem[] | null>(null);
-
-  useEffect(() => {
-    const getData = async () => {
-      const { data: responseData } = {
-        ...((await getProposals()) as ProposalsApiResponse | null),
-      };
-      setData(toArray(responseData));
-    };
-    getData();
-  }, []);
-
-  if (!data) {
-    return (
-      <Container className="sm:mt-8">
-        <Spinner />
-      </Container>
-    );
-  }
-
+export function Proposals({ data }: ProposalsProps) {
   return (
     <Container className="sm:mt-8">
       <div>

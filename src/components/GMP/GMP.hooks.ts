@@ -53,13 +53,19 @@ function getSearchParamsRecord(
   return getParams(searchParams) as unknown as Record<string, unknown>;
 }
 
-export function useGMPMessageData(tx?: string): {
+export function useGMPMessageData(
+  tx?: string,
+  initialData?: SearchGMPResult | null
+): {
   data: GMPMessage | null;
   refresh: () => Promise<GMPMessage | undefined>;
 } {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [data, setData] = useState<GMPMessage | null>(null);
+  const [data, setData] = useState<GMPMessage | null>(() => {
+    const first = initialData?.data?.[0] ?? null;
+    return first as GMPMessage | null;
+  });
   const [ended, setEnded] = useState<boolean>(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 

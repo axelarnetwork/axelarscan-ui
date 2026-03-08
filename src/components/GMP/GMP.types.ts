@@ -272,6 +272,7 @@ export interface GMPToastState {
 export interface GMPProps {
   tx?: string;
   lite?: boolean;
+  initialData?: SearchGMPResult | null;
 }
 
 export type GMPStepStatus = 'pending' | 'success' | 'failed' | string;

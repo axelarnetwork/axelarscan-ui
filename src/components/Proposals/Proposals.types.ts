@@ -23,6 +23,10 @@ export interface ProposalListItem {
   [key: string]: unknown;
 }
 
+export interface ProposalsProps {
+  data: ProposalListItem[];
+}
+
 export interface ProposalRowProps {
   proposal: ProposalListItem;
 }

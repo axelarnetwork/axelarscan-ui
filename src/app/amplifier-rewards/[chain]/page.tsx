@@ -1,9 +1,10 @@
 import { AmplifierRewards } from '@/components/AmplifierRewards';
 
-export default function AmplifierRewardsPage({
+export default async function AmplifierRewardsPage({
   params,
 }: {
-  params: { chain: string };
+  params: Promise<{ chain: string }>;
 }) {
-  return <AmplifierRewards {...params} />;
+  const { chain } = await params;
+  return <AmplifierRewards chain={chain} />;
 }

@@ -25,28 +25,36 @@ import { Info } from './Info.component';
 import { Votes } from './Votes.component';
 import * as styles from './AmplifierPoll.styles';
 
-export function AmplifierPoll({ id }: AmplifierPollProps) {
+export function AmplifierPoll({
+  id,
+  initialRPCStatus,
+  initialData,
+}: AmplifierPollProps) {
   const [data, setData] = useState<AmplifierPollData | null>(null);
-  const [blockData, setBlockData] = useState<RPCStatusData | null>(null);
+  const [blockData, setBlockData] = useState<RPCStatusData | null>(
+    initialRPCStatus ?? null
+  );
   const chains = useChains();
   const verifiers = useVerifiers();
 
   useEffect(() => {
+    if (blockData) return;
     const getData = async () =>
       setBlockData((await getRPCStatus()) as RPCStatusData);
     getData();
-  }, []);
+  }, [blockData]);
 
   useEffect(() => {
     const getData = async () => {
       if (!blockData) return;
 
-      const response = (await searchAmplifierPolls({
-        verifierContractAddress: id.includes('_')
-          ? headString(id, '_')
-          : undefined,
-        pollId: lastString(id, '_'),
-      })) as { data?: AmplifierPollData[] } | undefined;
+      const response = (initialData ??
+        (await searchAmplifierPolls({
+          verifierContractAddress: id.includes('_')
+            ? headString(id, '_')
+            : undefined,
+          pollId: lastString(id, '_'),
+        }))) as { data?: AmplifierPollData[] } | undefined;
 
       let d = response?.data?.[0];
 

@@ -18,11 +18,16 @@ import * as styles from './Transfer.styles';
 // Re-export for external consumers (index.ts)
 export { getStep } from './Transfer.utils';
 
-export function Transfer({ tx, lite }: TransferProps) {
+export function Transfer({ tx, lite, initialData }: TransferProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [data, setData] = useState<TransferData | null>(null);
-  const [ended, setEnded] = useState<boolean | null>(null);
+  const [data, setData] = useState<TransferData | null>(
+    () => initialData?.data?.[0] ?? null
+  );
+  const [ended, setEnded] = useState<boolean | null>(() => {
+    const first = initialData?.data?.[0];
+    return first ? isTerminalStatus(first.simplified_status) : null;
+  });
 
   useEffect(() => {
     const getData = async () => {

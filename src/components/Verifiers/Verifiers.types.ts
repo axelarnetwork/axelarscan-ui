@@ -93,3 +93,15 @@ export interface ChainCellProps {
   signsChains: Record<string, ChainSignData>;
   supportedChains: string[];
 }
+
+/** Server-side page data for Verifiers */
+export interface VerifiersPageData {
+  verifiers: VerifierData[];
+  amplifierChains: Chain[];
+  additionalAmplifierChains: string[];
+}
+
+/** Props for the Verifiers component */
+export interface VerifiersProps {
+  initialData?: VerifiersPageData | null;
+}
