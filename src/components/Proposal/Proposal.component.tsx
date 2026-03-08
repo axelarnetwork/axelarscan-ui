@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import _ from 'lodash';
 import moment from 'moment';
 
@@ -57,12 +57,12 @@ export function Proposal({ id, initialData }: ProposalProps) {
   const { proposal_id, voting_end_time, votes } = { ...data };
 
   const end = voting_end_time && voting_end_time < moment().valueOf();
-  const voteOptions = Object.entries(_.groupBy(toArray(votes), 'option'))
-    .map(([k, v]) => ({
-      option: k,
-      value: toArray(v).length,
-    }))
-    .filter(d => d.value);
+  const voteOptions = useMemo(() => {
+    if (!votes) return [];
+    return Object.entries(_.groupBy(votes, 'option'))
+      .map(([k, v]) => ({ option: k, value: v.length }))
+      .filter(d => d.value);
+  }, [votes]);
 
   const isLoading = !(
     data &&

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { Container } from '@/components/Container';
 import {
@@ -10,7 +10,6 @@ import {
   useTVL as useTVLStore,
 } from '@/hooks/useGlobalData';
 import { Spinner } from '@/components/Spinner';
-import { toArray } from '@/lib/parser';
 import { AssetRow } from './AssetRow.component';
 import { useChainsTVL, useTVLData } from './TVL.hooks';
 import { tvlStyles } from './TVL.styles';
@@ -32,27 +31,34 @@ export function TVL() {
 
   const processedData = useTVLData(globalStore);
 
+  const minAssetCount = useMemo(
+    () => assets ? (assets as Asset[]).filter((asset: Asset) => !asset.no_tvl).length - 3 : 0,
+    [assets]
+  );
+
   const hasData = processedData && assets;
-  const minAssetCount = assets
-    ? assets.filter((asset: Asset) => !asset.no_tvl).length - 3
-    : 0;
   const hasEnoughAssets =
     processedData && processedData.length >= minAssetCount;
   const loading = !hasData || !hasEnoughAssets;
 
-  const allData = toArray(processedData);
-  const filteredData: ProcessedTVLData[] = allData.filter(
-    (item): item is ProcessedTVLData => {
-      if (item === null || item === undefined || typeof item === 'string') {
-        return false;
+  const filteredData = useMemo(() => {
+    if (!processedData) return [];
+    return processedData.filter(
+      (item): item is ProcessedTVLData => {
+        if (item === null || item === undefined || typeof item === 'string') {
+          return false;
+        }
+        if (includeITS) {
+          return true;
+        }
+        return item.assetType !== 'its';
       }
+    );
+  }, [processedData, includeITS]);
 
-      if (includeITS) {
-        return true;
-      }
-
-      return item.assetType !== 'its';
-    }
+  const assetsWithData = useMemo(
+    () => filteredData.filter((asset: ProcessedTVLData) => asset.assetData),
+    [filteredData]
   );
 
   const chainsTVL = useChainsTVL(
@@ -70,10 +76,6 @@ export function TVL() {
       </Container>
     );
   }
-
-  const assetsWithData = filteredData.filter(
-    (asset: ProcessedTVLData) => asset.assetData
-  );
 
   return (
     <Container className={tvlStyles.container}>

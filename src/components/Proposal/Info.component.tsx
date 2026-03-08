@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import Link from 'next/link';
 // @ts-expect-error react-linkify has no type declarations
 import Linkify from 'react-linkify';
@@ -9,7 +10,7 @@ import { Image } from '@/components/Image';
 import { Tag } from '@/components/Tag';
 import { Number } from '@/components/Number';
 import { useChains } from '@/hooks/useGlobalData';
-import { toArray } from '@/lib/parser';
+
 import { toTitle } from '@/lib/string';
 import { toNumber } from '@/lib/number';
 import { TIME_FORMAT } from '@/lib/time';
@@ -40,18 +41,31 @@ export function Info({ id, data, end, voteOptions }: InfoProps) {
     total_deposit,
     final_tally_result,
   } = { ...data };
-  const { plan, title, description, changes, contract_calls } = { ...content };
-  const { height, info } = { ...plan };
+  const plan = content?.plan;
+  const title = content?.title;
+  const description = content?.description;
+  const changes = content?.changes;
+  const contract_calls = content?.contract_calls;
+  const height = plan?.height;
+  const info = plan?.info;
 
-  const tallyItems = end
-    ? Object.entries({ ...final_tally_result })
+  const tallyItems = useMemo(() => {
+    if (end && final_tally_result) {
+      return Object.entries(final_tally_result)
         .filter(([_k, v]) => toNumber(v) >= 0)
-        .map(([k, v]) => ({ key: k, value: v, label: toTitle(k) }))
-    : voteOptions.map((d: VoteOptionSummary, i: number) => ({
-        key: String(i),
-        value: d.value,
-        label: toTitle(d.option),
-      }));
+        .map(([k, v]) => ({ key: k, value: v, label: toTitle(k) }));
+    }
+    return voteOptions.map((d: VoteOptionSummary, i: number) => ({
+      key: String(i),
+      value: d.value,
+      label: toTitle(d.option),
+    }));
+  }, [end, final_tally_result, voteOptions]);
+
+  const filteredChanges = useMemo(
+    () => (Array.isArray(changes) ? changes : []).filter(d => d.subspace),
+    [changes]
+  );
 
   return (
     <div className={styles.infoPanel}>
@@ -105,23 +119,15 @@ export function Info({ id, data, end, voteOptions }: InfoProps) {
               )}
             </>
           )}
-          {(
-            toArray(changes) as {
-              key?: string;
-              value?: string;
-              subspace?: string;
-            }[]
-          )
-            .filter(d => d.subspace)
-            .map((d, i: number) => (
-              <ChangeRow
-                key={i}
-                keyName={d.key}
-                value={d.value}
-                subspace={d.subspace}
-              />
-            ))}
-          {toArray(contract_calls).length > 0 && (
+          {filteredChanges.map((d, i: number) => (
+            <ChangeRow
+              key={i}
+              keyName={d.key}
+              value={d.value}
+              subspace={d.subspace}
+            />
+          ))}
+          {Array.isArray(contract_calls) && contract_calls.length > 0 && (
             <div className={styles.dlRow}>
               <dt className={styles.dtLabel}>GMP(s)</dt>
               <Link
@@ -182,7 +188,7 @@ export function Info({ id, data, end, voteOptions }: InfoProps) {
             <dt className={styles.dtLabel}>Total Deposit</dt>
             <dd className={styles.ddValue}>
               <div className={styles.depositList}>
-                {(toArray(total_deposit) as ProposalDeposit[]).map(
+                {(Array.isArray(total_deposit) ? total_deposit : []).map(
                   (d: ProposalDeposit, i: number) => (
                     <Number
                       key={i}

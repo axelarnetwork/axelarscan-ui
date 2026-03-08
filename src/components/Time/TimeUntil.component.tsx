@@ -21,18 +21,20 @@ export function TimeUntil({
   title,
   className,
 }: TimeUntilProps) {
-  const [trigger, setTrigger] = useState(false);
+  const [trigger, setTrigger] = useState(0);
+
+  const time = (timestamp || isNumber(timestamp)) ? moment(timestamp) : null;
+  const remaining = time ? timeDiff(moment(), 'seconds', time) : 0;
 
   useEffect(() => {
-    const timeout = setTimeout(() => setTrigger(!trigger), 1000);
+    if (!time || remaining <= 0) return;
+    // Update every second when under 60s, every 30s otherwise
+    const interval = remaining <= 59 ? 1000 : 30_000;
+    const timeout = setTimeout(() => setTrigger(t => t + 1), interval);
     return () => clearTimeout(timeout);
-  }, [trigger, setTrigger]);
+  }, [trigger, time, remaining]);
 
-  if (!(timestamp || isNumber(timestamp))) return null;
-
-  const time = moment(timestamp);
-
-  if (!(timeDiff(moment(), 'seconds', time) > 0)) return null;
+  if (!time || remaining <= 0) return null;
 
   const timeDisplay = timeDiffString(moment(), time);
 

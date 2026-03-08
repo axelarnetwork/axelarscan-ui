@@ -32,7 +32,6 @@ export function InterchainHeader({
           {_.slice(toArray(contractAddress), 0, 1).map((address, index) => (
             <Profile
               key={index}
-              i={index}
               address={address}
               chain=""
               width={18}
@@ -45,7 +44,6 @@ export function InterchainHeader({
           {!contractAddress &&
             equalsIgnoreCase(String(contractMethod || ''), 'SquidCoral') && (
               <Profile
-                i={0}
                 address={
                   accounts.find(d => equalsIgnoreCase(d.name, 'Squid Coral'))
                     ?.address

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import clsx from 'clsx';
 
 import { Profile } from '@/components/Profile';
@@ -8,7 +9,7 @@ import { ChainCell } from './ChainCell.component';
 import type { VerifierRowProps } from './Verifiers.types';
 import * as styles from './Verifiers.styles';
 
-export function VerifierRow({
+export const VerifierRow = memo(function VerifierRow({
   verifier,
   index,
   amplifierChains,
@@ -25,7 +26,6 @@ export function VerifierRow({
       <td className={styles.tdMiddle}>
         <div className={styles.profileWrapper}>
           <Profile
-            i={index}
             address={verifier.address}
             customURL={`/verifier/${verifier.address}`}
           />
@@ -56,4 +56,4 @@ export function VerifierRow({
       </td>
     </tr>
   );
-}
+});

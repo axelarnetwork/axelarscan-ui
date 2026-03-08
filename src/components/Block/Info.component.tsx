@@ -11,22 +11,24 @@ import { Profile } from '@/components/Profile';
 import { find, ellipse } from '@/lib/string';
 import { isNumber, toNumber, numberFormat } from '@/lib/number';
 import { TIME_FORMAT } from '@/lib/time';
-import { toArray } from '@/lib/parser';
+
 import type { InfoProps, ValidatorSetEntry } from './Block.types';
 import { SignerSection } from './SignerSection.component';
 import * as styles from './Block.styles';
 
 export function Info({ data, height, validatorSets }: InfoProps) {
-  const { hash } = { ...data.block_id };
-  const { proposer_address, time } = { ...data.block?.header };
-  const { txs } = { ...data.block?.data };
+  const hash = data.block_id?.hash;
+  const proposer_address = data.block?.header?.proposer_address;
+  const time = data.block?.header?.time;
+  const txs = data.block?.data?.txs;
 
-  const signedValidatorsData = (
-    toArray(validatorSets) as ValidatorSetEntry[]
-  ).filter(d => d.address && find(d.address, data.validators as string[]));
-  const unsignedValidatorsData = (
-    toArray(validatorSets) as ValidatorSetEntry[]
-  ).filter(d => !d.address || !find(d.address, data.validators as string[]));
+  const allValidatorSets = (validatorSets ?? []) as ValidatorSetEntry[];
+  const signedValidatorsData = allValidatorSets.filter(
+    d => d.address && find(d.address, data.validators as string[])
+  );
+  const unsignedValidatorsData = allValidatorSets.filter(
+    d => !d.address || !find(d.address, data.validators as string[])
+  );
 
   const totalValidators =
     signedValidatorsData.length + unsignedValidatorsData.length;

@@ -1,7 +1,7 @@
 'use client';
 
 import _ from 'lodash';
-import { useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 
 import { Number } from '@/components/Number';
@@ -41,6 +41,20 @@ export function StatsBarChart({
     granularity,
   });
 
+  // Throttle mouse move to avoid 60+ state updates/sec
+  const lastXRef = useRef<number | null>(null);
+  const handleMouseMove = useCallback((e: { activePayload?: Array<{ payload?: { timestamp?: number } }> } | null) => {
+    const ts = e?.activePayload?.[0]?.payload?.timestamp ?? null;
+    if (ts !== lastXRef.current) {
+      lastXRef.current = ts;
+      setX(ts);
+    }
+  }, []);
+  const handleMouseLeave = useCallback(() => {
+    lastXRef.current = null;
+    setX(null);
+  }, []);
+
   const selectedData = chartData
     ? (toArray(chartData).find(
         item => (item as ChartDataPoint)?.timestamp === x
@@ -49,6 +63,8 @@ export function StatsBarChart({
 
   const value = getChartValue(selectedData, chartData, field, totalValue);
   const timeString = getChartTimeString(selectedData, chartData);
+
+  const reversedStacks = useMemo(() => _.reverse(_.cloneDeep(stacks)), [stacks]);
 
   return (
     <div className={statsBarChartStyles.container(i)}>
@@ -85,11 +101,9 @@ export function StatsBarChart({
           <ResponsiveContainer>
             <BarChart
               data={chartData}
-              onMouseEnter={e =>
-                setX(e?.activePayload?.[0]?.payload?.timestamp)
-              }
-              onMouseMove={e => setX(e?.activePayload?.[0]?.payload?.timestamp)}
-              onMouseLeave={() => setX(null)}
+              onMouseEnter={handleMouseMove}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
               margin={{ top: 12, right: 0, bottom: 0, left: 0 }}
             >
               <XAxis
@@ -109,7 +123,7 @@ export function StatsBarChart({
                 }
                 cursor={{ fill: 'transparent' }}
               />
-              {_.reverse(_.cloneDeep(stacks)).map((s, i) => (
+              {reversedStacks.map((s, i) => (
                 <Bar
                   key={i}
                   stackId={useStack ? field : undefined}

@@ -30,8 +30,11 @@ export interface ValidatorRowProps {
   validator: ValidatorType;
   index: number;
   status?: string;
-  filteredValidators: ValidatorType[];
-  chains: Chain[];
+  totalVotingPower: number;
+  totalQuadraticVotingPower: number;
+  cumulativeVotingPower: number;
+  cumulativeQuadraticVotingPower: number;
+  evmChains: Chain[];
 }
 
 export interface EvmChainVoteProps {

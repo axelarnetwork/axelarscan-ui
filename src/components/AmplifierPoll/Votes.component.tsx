@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import _ from 'lodash';
 
 import { useVerifiers } from '@/hooks/useGlobalData';
-import { toArray } from '@/lib/parser';
 import { equalsIgnoreCase, find } from '@/lib/string';
 import type {
   VotesProps,
@@ -21,25 +20,24 @@ export function Votes({ data }: VotesProps) {
   useEffect(() => {
     if (!data?.votes) return;
 
+    const verifierList = (verifiers ?? []) as VerifierEntry[];
+
     const mappedVotes: PollVote[] = data.votes.map(d => ({
       ...d,
-      verifierData: (toArray(verifiers) as VerifierEntry[]).find(v =>
+      verifierData: verifierList.find(v =>
         equalsIgnoreCase(v.address, d.voter)
       ) || { address: d.voter },
     }));
 
-    const unsubmitted: PollVote[] = (toArray(data.participants) as string[])
-      .filter(
-        p =>
-          !find(
-            p,
-            mappedVotes
-              .map(v => v.verifierData?.address)
-              .filter(Boolean) as string[]
-          )
-      )
+    const participants = (data.participants ?? []) as string[];
+    const mappedAddresses = mappedVotes
+      .map(v => v.verifierData?.address)
+      .filter(Boolean) as string[];
+
+    const unsubmitted: PollVote[] = participants
+      .filter(p => !find(p, mappedAddresses))
       .map(p => {
-        const verifierData = (toArray(verifiers) as VerifierEntry[]).find(v =>
+        const verifierData = verifierList.find(v =>
           equalsIgnoreCase(v.address, p)
         );
         return {
@@ -53,7 +51,7 @@ export function Votes({ data }: VotesProps) {
 
   if (!votes) return null;
 
-  const { confirmation_txhash } = { ...data };
+  const confirmation_txhash = data?.confirmation_txhash;
 
   return (
     <div className={styles.votesWrapper}>

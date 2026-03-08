@@ -41,8 +41,8 @@ export function Blocks({ initialData }: BlocksProps) {
               </tr>
             </thead>
             <tbody className={styles.tbody}>
-              {data.map((d, i) => (
-                <BlockRow key={d.height} block={d} index={i} />
+              {data.map(d => (
+                <BlockRow key={d.height} block={d} />
               ))}
             </tbody>
           </table>

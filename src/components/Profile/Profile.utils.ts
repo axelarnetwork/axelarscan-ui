@@ -1,7 +1,3 @@
-import _ from 'lodash';
-
-import { isNumber } from '@/lib/number';
-
 import type { NameServiceEntry } from './Profile.types';
 
 export function getAddressPagePath(
@@ -44,8 +40,14 @@ export function getExplorerUrl(
   return `${explorer.url}${resolvedPath.replace(accountSuffix, replacement)}`;
 }
 
-export const randImage = (i?: number) =>
-  `/logos/addresses/${isNumber(i) ? ((i as number) % 8) + 1 : _.random(1, 8)}.png`;
+export const randImage = (key?: string) => {
+  if (!key) return `/logos/addresses/${Math.floor(Math.random() * 8) + 1}.png`;
+  let hash = 0;
+  for (let i = 0; i < key.length; i++) {
+    hash = ((hash << 5) - hash + key.charCodeAt(i)) | 0;
+  }
+  return `/logos/addresses/${(Math.abs(hash) % 8) + 1}.png`;
+};
 
 export function setDefaultData(
   addresses: string[],

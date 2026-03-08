@@ -1,12 +1,11 @@
+import { memo } from 'react';
 import clsx from 'clsx';
-import _ from 'lodash';
 
 import { Copy } from '@/components/Copy';
 import { ProgressBar } from '@/components/ProgressBar';
 import { Tag } from '@/components/Tag';
 import { Number } from '@/components/Number';
 import { Profile } from '@/components/Profile';
-import { toArray } from '@/lib/parser';
 import { isNumber } from '@/lib/number';
 import { ellipse } from '@/lib/string';
 import type { Chain, ValidatorsVotesChain } from '@/types';
@@ -14,35 +13,24 @@ import type { ValidatorRowProps } from './Validators.types';
 import { EvmChainVote } from './EvmChainVote.component';
 import * as styles from './Validators.styles';
 
-export function ValidatorRow({
+export const ValidatorRow = memo(function ValidatorRow({
   validator: d,
   index: i,
   status,
-  filteredValidators,
-  chains,
+  totalVotingPower,
+  totalQuadraticVotingPower,
+  cumulativeVotingPower,
+  cumulativeQuadraticVotingPower,
+  evmChains,
 }: ValidatorRowProps) {
   const { rate } = { ...d.commission?.commission_rates };
-
-  const totalVotingPower = _.sumBy(filteredValidators, 'tokens');
-  const totalQuadraticVotingPower = _.sumBy(
-    filteredValidators,
-    'quadratic_voting_power'
-  );
-  const cumulativeVotingPower = _.sumBy(
-    _.slice(filteredValidators, 0, i + 1),
-    'tokens'
-  );
-  const cumulativeQuadraticVotingPower = _.sumBy(
-    _.slice(filteredValidators, 0, i + 1),
-    'quadratic_voting_power'
-  );
 
   return (
     <tr className={styles.tr}>
       <td className={styles.tdIndex}>{i + 1}</td>
       <td className={styles.tdDefault}>
         <div className={styles.validatorInfoCol}>
-          <Profile i={i} address={d.operator_address} prefix="axelarvaloper" />
+          <Profile address={d.operator_address} prefix="axelarvaloper" />
           <Copy value={d.operator_address}>
             <span className={styles.operatorAddress}>
               {ellipse(d.operator_address, 6, 'axelarvaloper')}
@@ -200,29 +188,27 @@ export function ValidatorRow({
       </td>
       <td className={styles.tdEvmSupported}>
         <div className={styles.evmGrid}>
-          {toArray(chains)
-            .filter((c: Chain) => c.chain_type === 'evm' && !c.deprecated)
-            .map((c: Chain) => {
-              const chainVotes = (
-                (d.votes as Record<string, unknown>)?.chains as
-                  | Record<string, ValidatorsVotesChain>
-                  | undefined
-              )?.[c.id];
-              const isSupported = d.supportedChains?.includes(
-                c.maintainer_id ?? ''
-              );
+          {evmChains.map((c: Chain) => {
+            const chainVotes = (
+              (d.votes as Record<string, unknown>)?.chains as
+                | Record<string, ValidatorsVotesChain>
+                | undefined
+            )?.[c.id];
+            const isSupported = d.supportedChains?.includes(
+              c.maintainer_id ?? ''
+            );
 
-              return (
-                <EvmChainVote
-                  key={c.id}
-                  chain={c}
-                  votes={chainVotes}
-                  isSupported={!!isSupported}
-                />
-              );
-            })}
+            return (
+              <EvmChainVote
+                key={c.id}
+                chain={c}
+                votes={chainVotes}
+                isSupported={!!isSupported}
+              />
+            );
+          })}
         </div>
       </td>
     </tr>
   );
-}
+});

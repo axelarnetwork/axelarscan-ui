@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import _ from 'lodash';
 import { RxCaretDown, RxCaretUp } from 'react-icons/rx';
 
@@ -15,10 +15,12 @@ export function SignerSection({
 }: SignerSectionProps) {
   const [collapsed, setCollapsed] = useState(true);
 
-  const allValidators = _.concat(signedValidatorsData, unsignedValidatorsData);
-  const signedPercent =
-    (_.sumBy(signedValidatorsData, 'tokens') * 100) /
-    _.sumBy(allValidators, 'tokens');
+  const signedPercent = useMemo(() => {
+    const totalTokens = _.sumBy(signedValidatorsData, 'tokens') + _.sumBy(unsignedValidatorsData, 'tokens');
+    return totalTokens > 0
+      ? (_.sumBy(signedValidatorsData, 'tokens') * 100) / totalTokens
+      : 0;
+  }, [signedValidatorsData, unsignedValidatorsData]);
 
   return (
     <div className={styles.signerSection}>

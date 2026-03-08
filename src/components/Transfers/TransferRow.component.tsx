@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import Link from 'next/link';
 
 import { Copy } from '@/components/Copy';
@@ -12,7 +13,7 @@ import { resolveSymbol } from './Transfers.utils';
 import type { TransferRowProps } from './Transfers.types';
 import * as styles from './Transfers.styles';
 
-export function TransferRow({ d, assets }: TransferRowProps) {
+export const TransferRow = memo(function TransferRow({ d, assets }: TransferRowProps) {
   const { symbol, image, assetData } = resolveSymbol(d, assets);
 
   const senderAddress =
@@ -75,4 +76,4 @@ export function TransferRow({ d, assets }: TransferRowProps) {
       </td>
     </tr>
   );
-}
+});

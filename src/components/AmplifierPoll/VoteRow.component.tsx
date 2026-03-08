@@ -24,7 +24,7 @@ export function VoteRow({
       <td className={styles.votesTdFirst}>{i + 1}</td>
       <td className={styles.votesTd}>
         {d.verifierData ? (
-          <Profile i={i} address={d.verifierData.address} />
+          <Profile address={d.verifierData.address} />
         ) : (
           <Copy value={d.voter}>
             <Link

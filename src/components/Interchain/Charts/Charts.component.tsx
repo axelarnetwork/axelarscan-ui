@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import _ from 'lodash';
 
 import { useChains } from '@/hooks/useGlobalData';
@@ -13,17 +14,14 @@ export function Charts({ data, granularity }: ChartsProps) {
 
   if (!data) return null;
 
-  const {
-    GMPStatsByChains,
-    GMPTotalVolume,
-    transfersStats,
-    transfersTotalVolume,
-  } = { ...data };
+  const { GMPStatsByChains, GMPTotalVolume, transfersStats, transfersTotalVolume } = data;
 
   const TIME_FORMAT = granularity === 'month' ? 'MMM' : 'D MMM';
   const chartData = processChartData(data);
   const { useStack } = getChartStack(chartData);
   const chainPairs = getChainPairs(data, chains);
+  const totalTxs = toNumber(_.sumBy(GMPStatsByChains?.source_chains, 'num_txs')) + toNumber(transfersStats?.total);
+  const totalVolume = toNumber(GMPTotalVolume) + toNumber(transfersTotalVolume);
 
   return (
     <div className={chartsStyles.container}>
@@ -31,10 +29,7 @@ export function Charts({ data, granularity }: ChartsProps) {
         <StatsBarChart
           i={0}
           data={chartData}
-          totalValue={
-            toNumber(_.sumBy(GMPStatsByChains?.source_chains, 'num_txs')) +
-            toNumber(transfersStats?.total)
-          }
+          totalValue={totalTxs}
           field="num_txs"
           title="Transactions"
           description={`Number of transactions by ${granularity}`}
@@ -44,7 +39,7 @@ export function Charts({ data, granularity }: ChartsProps) {
         <StatsBarChart
           i={1}
           data={chartData}
-          totalValue={toNumber(GMPTotalVolume) + toNumber(transfersTotalVolume)}
+          totalValue={totalVolume}
           field="volume"
           stacks={['transfers_airdrop', 'gmp', 'transfers']}
           useStack={useStack}
@@ -59,10 +54,7 @@ export function Charts({ data, granularity }: ChartsProps) {
         <SankeyChart
           i={0}
           data={chainPairs}
-          totalValue={
-            toNumber(_.sumBy(GMPStatsByChains?.source_chains, 'num_txs')) +
-            toNumber(transfersStats?.total)
-          }
+          totalValue={totalTxs}
           field="num_txs"
           title="Transactions"
           description="Total transactions between chains"
@@ -70,7 +62,7 @@ export function Charts({ data, granularity }: ChartsProps) {
         <SankeyChart
           i={1}
           data={chainPairs}
-          totalValue={toNumber(GMPTotalVolume) + toNumber(transfersTotalVolume)}
+          totalValue={totalVolume}
           field="volume"
           title="Volume"
           description="Total volume between chains"

@@ -15,9 +15,7 @@ export function Balances({ data }: BalancesProps) {
   if (!data) return null;
 
   const pageStart = (page - 1) * SIZE_PER_PAGE;
-  const visibleData = data.filter(
-    (_d, i) => i >= pageStart && i < pageStart + SIZE_PER_PAGE
-  );
+  const visibleData = data.slice(pageStart, pageStart + SIZE_PER_PAGE);
 
   return (
     <div className={styles.balancesContainer}>

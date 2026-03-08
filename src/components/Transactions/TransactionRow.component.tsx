@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import Link from 'next/link';
 import clsx from 'clsx';
 
@@ -15,7 +16,7 @@ import type { TransactionRowProps } from './Transactions.types';
 import type { Chain } from '@/types';
 import * as styles from './Transactions.styles';
 
-export function TransactionRow({
+export const TransactionRow = memo(function TransactionRow({
   data: d,
   height,
   address,
@@ -74,7 +75,7 @@ export function TransactionRow({
           ]) && (
             <div className={styles.cellFlexCol}>
               {toArray<string>(d.recipient).map((a: string, j: number) => (
-                <Profile key={j} i={j} address={a} />
+                <Profile key={j} address={a} />
               ))}
             </div>
           )}
@@ -101,4 +102,4 @@ export function TransactionRow({
       </td>
     </tr>
   );
-}
+});

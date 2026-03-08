@@ -20,14 +20,19 @@ export function TimeSpent({
   title,
   className,
 }: TimeSpentProps) {
-  const [trigger, setTrigger] = useState(false);
+  const [trigger, setTrigger] = useState(0);
+
+  const hasFrom = !!(fromTimestamp || isNumber(fromTimestamp));
+  const isLive = hasFrom && !toTimestamp;
 
   useEffect(() => {
-    const timeout = setTimeout(() => setTrigger(!trigger), 1000);
+    // Only tick when counting up (no toTimestamp). Completed durations are static.
+    if (!isLive) return;
+    const timeout = setTimeout(() => setTrigger(t => t + 1), 1000);
     return () => clearTimeout(timeout);
-  }, [trigger, setTrigger]);
+  }, [trigger, isLive]);
 
-  if (!(fromTimestamp || isNumber(fromTimestamp))) return null;
+  if (!hasFrom) return null;
 
   const fromTime = moment(fromTimestamp);
   const toTime = toTimestamp ? moment(toTimestamp) : moment();

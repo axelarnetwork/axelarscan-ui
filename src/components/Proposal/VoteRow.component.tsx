@@ -28,7 +28,6 @@ export function VoteRow({ entry, index, totalVotingPower }: VoteRowProps) {
       <td className={styles.votesTd}>
         {entry.validatorData && (
           <Profile
-            i={index}
             address={entry.validatorData.operator_address}
             prefix="axelarvaloper"
           />

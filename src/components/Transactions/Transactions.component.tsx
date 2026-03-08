@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import clsx from 'clsx';
 import { MdOutlineRefresh } from 'react-icons/md';
 
@@ -37,6 +37,12 @@ export function Transactions({
 
   const data = result?.data;
   const total = result?.total;
+
+  const visibleData = useMemo(() => {
+    if (!data) return [];
+    if (!height) return data;
+    return data.slice((page - 1) * SIZE_PER_PAGE, page * SIZE_PER_PAGE);
+  }, [data, height, page]);
 
   if (!data) {
     return (
@@ -131,16 +137,9 @@ export function Transactions({
               </tr>
             </thead>
             <tbody className={styles.tableBody}>
-              {(height
-                ? data.filter(
-                    (_d: TransactionRowData, i: number) =>
-                      i >= (page - 1) * SIZE_PER_PAGE &&
-                      i < page * SIZE_PER_PAGE
-                  )
-                : data
-              ).map((d: TransactionRowData, i: number) => (
+              {visibleData.map((d: TransactionRowData) => (
                 <TransactionRow
-                  key={i}
+                  key={d.txhash}
                   data={d}
                   height={height}
                   address={address}

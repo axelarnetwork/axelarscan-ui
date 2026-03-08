@@ -28,7 +28,6 @@ export function VoteRow({
       <td className={styles.tdMiddle}>
         {d.validatorData ? (
           <Profile
-            i={i}
             address={d.validatorData.operator_address}
             prefix="axelarvaloper"
           />

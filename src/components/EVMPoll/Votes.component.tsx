@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import _ from 'lodash';
 
 import { useValidators } from '@/hooks/useGlobalData';
-import { toArray } from '@/lib/parser';
 import { equalsIgnoreCase, find } from '@/lib/string';
 import type { Validator } from '@/types';
 
@@ -19,28 +18,26 @@ export function Votes({ data }: VotesProps) {
   useEffect(() => {
     if (!data?.votes) return;
 
+    const validatorList = (validators ?? []) as Validator[];
+
     const mappedVotes: PollVote[] = data.votes.map(d => ({
       ...d,
-      validatorData: (toArray(validators) as Validator[]).find(v =>
+      validatorData: validatorList.find(v =>
         equalsIgnoreCase(v.broadcaster_address, d.voter)
       ),
     }));
 
-    const unsubmitted: PollVote[] = (toArray(data.participants) as string[])
-      .filter(
-        p =>
-          !find(
-            p,
-            mappedVotes
-              .map(v => v.validatorData?.operator_address)
-              .filter(Boolean) as string[]
-          )
-      )
+    const participants = (data.participants ?? []) as string[];
+    const mappedOperators = mappedVotes
+      .map(v => v.validatorData?.operator_address)
+      .filter(Boolean) as string[];
+
+    const unsubmitted: PollVote[] = participants
+      .filter(p => !find(p, mappedOperators))
       .map(p => {
-        const validatorData = (toArray(validators) as Validator[]).find(v =>
+        const validatorData = validatorList.find(v =>
           equalsIgnoreCase(v.operator_address, p)
         );
-
         return {
           voter: validatorData?.broadcaster_address || p,
           validatorData,
@@ -59,13 +56,18 @@ export function Votes({ data }: VotesProps) {
     );
   }, [data, setVotes, validators]);
 
-  const { initiated_txhash, confirmation_txhash } = { ...data };
+  const initiated_txhash = data?.initiated_txhash;
+  const confirmation_txhash = data?.confirmation_txhash;
 
-  const totalVotingPower = _.sumBy(
-    (toArray(validators) as Validator[]).filter(
-      d => !d.jailed && d.status === 'BOND_STATUS_BONDED'
-    ),
-    'quadratic_voting_power'
+  const totalVotingPower = useMemo(
+    () =>
+      _.sumBy(
+        ((validators ?? []) as Validator[]).filter(
+          d => !d.jailed && d.status === 'BOND_STATUS_BONDED'
+        ),
+        'quadratic_voting_power'
+      ),
+    [validators]
   );
 
   if (!votes) return null;

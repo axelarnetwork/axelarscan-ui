@@ -24,7 +24,7 @@ export function SignRow({
       <td className={styles.tdFirst}>{i + 1}</td>
       <td className={styles.tdMiddle}>
         {d.verifierData ? (
-          <Profile i={i} address={d.verifierData.address} />
+          <Profile address={d.verifierData.address} />
         ) : (
           <Copy value={d.signer}>
             <Link

@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import { useAssets, useChains, useITSAssets } from '@/hooks/useGlobalData';
 import { getAssetData, getITSAssetData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
@@ -36,7 +38,7 @@ export function Tops({ data, types, params }: TopsProps) {
     transfersStats,
     transfersTopUsers,
     transfersTopUsersByVolume,
-  } = { ...data };
+  } = data;
 
   const hasTransfers =
     types.includes('transfers') &&
@@ -50,90 +52,36 @@ export function Tops({ data, types, params }: TopsProps) {
     params?.assetType !== 'gateway' &&
     toArray(params?.asset).findIndex(a => getAssetData(a, assets)) < 0;
 
-  const chainPairs = processChainPairs(
-    { GMPStatsByChains, transfersStats },
-    chains
-  );
+  const {
+    chainPairs,
+    sourceChains,
+    destinationChains,
+    transfersUsers,
+    transfersUsersByVolume,
+    contracts,
+    GMPUsers,
+    ITSUsers,
+    ITSUsersByVolume,
+    ITSAssets,
+    ITSAssetsByVolume,
+  } = useMemo(() => {
+    const filterValid = <T,>(arr: unknown[]): T[] =>
+      arr.filter((item): item is T => item !== undefined && typeof item !== 'string');
 
-  const sourceChains = processSourceChains(
-    { GMPStatsByChains, transfersStats },
-    chains
-  );
-
-  const destinationChains = processDestinationChains(
-    { GMPStatsByChains, transfersStats },
-    chains
-  );
-
-  const transfersUsers = processTransfersUsers(
-    (toArray(transfersTopUsers?.data) || []).filter(
-      (item): item is TopDataItem =>
-        item !== undefined && typeof item !== 'string'
-    ),
-    chains
-  );
-
-  const transfersUsersByVolume = processTransfersUsers(
-    (toArray(transfersTopUsersByVolume?.data) || []).filter(
-      (item): item is TopDataItem =>
-        item !== undefined && typeof item !== 'string'
-    ),
-    chains
-  );
-
-  const contracts = processContracts(
-    (toArray(GMPStatsByContracts?.chains) || []).filter(
-      (item): item is ChainWithContracts =>
-        item !== undefined && typeof item !== 'string'
-    ),
-    chains
-  );
-
-  const GMPUsers = processGMPUsers(
-    (toArray(GMPTopUsers?.data) || []).filter(
-      (item): item is TopDataItem =>
-        item !== undefined && typeof item !== 'string'
-    ),
-    chains
-  );
-
-  const ITSUsers = processITSUsers(
-    (toArray(GMPTopITSUsers?.data) || []).filter(
-      (item): item is TopDataItem =>
-        item !== undefined && typeof item !== 'string'
-    ),
-    chains,
-    false
-  );
-
-  const ITSUsersByVolume = processITSUsers(
-    (toArray(GMPTopITSUsersByVolume?.data) || []).filter(
-      (item): item is TopDataItem =>
-        item !== undefined && typeof item !== 'string'
-    ),
-    chains,
-    true
-  );
-
-  const ITSAssets = processITSAssets(
-    (toArray(GMPTopITSAssets?.data) || []).filter(
-      (item): item is TopDataItem =>
-        item !== undefined && typeof item !== 'string'
-    ),
-    chains,
-    itsAssets,
-    false
-  );
-
-  const ITSAssetsByVolume = processITSAssets(
-    (toArray(GMPTopITSAssetsByVolume?.data) || []).filter(
-      (item): item is TopDataItem =>
-        item !== undefined && typeof item !== 'string'
-    ),
-    chains,
-    itsAssets,
-    true
-  );
+    return {
+      chainPairs: processChainPairs({ GMPStatsByChains, transfersStats }, chains),
+      sourceChains: processSourceChains({ GMPStatsByChains, transfersStats }, chains),
+      destinationChains: processDestinationChains({ GMPStatsByChains, transfersStats }, chains),
+      transfersUsers: processTransfersUsers(filterValid<TopDataItem>(transfersTopUsers?.data ?? []), chains),
+      transfersUsersByVolume: processTransfersUsers(filterValid<TopDataItem>(transfersTopUsersByVolume?.data ?? []), chains),
+      contracts: processContracts(filterValid<ChainWithContracts>(GMPStatsByContracts?.chains ?? []), chains),
+      GMPUsers: processGMPUsers(filterValid<TopDataItem>(GMPTopUsers?.data ?? []), chains),
+      ITSUsers: processITSUsers(filterValid<TopDataItem>(GMPTopITSUsers?.data ?? []), chains, false),
+      ITSUsersByVolume: processITSUsers(filterValid<TopDataItem>(GMPTopITSUsersByVolume?.data ?? []), chains, true),
+      ITSAssets: processITSAssets(filterValid<TopDataItem>(GMPTopITSAssets?.data ?? []), chains, itsAssets, false),
+      ITSAssetsByVolume: processITSAssets(filterValid<TopDataItem>(GMPTopITSAssetsByVolume?.data ?? []), chains, itsAssets, true),
+    };
+  }, [data, chains, itsAssets]);
 
   return (
     <div className={topsStyles.container}>

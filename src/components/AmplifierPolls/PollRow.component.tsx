@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import Link from 'next/link';
 import clsx from 'clsx';
 
@@ -13,7 +14,7 @@ import { ellipse, toTitle } from '@/lib/string';
 import type { PollVoteOption, PollRowProps } from './AmplifierPolls.types';
 import * as styles from './AmplifierPolls.styles';
 
-export function PollRow({ poll, chains }: PollRowProps) {
+export const PollRow = memo(function PollRow({ poll, chains }: PollRowProps) {
   const explorer = {
     ...getChainData(poll.sender_chain, chains)?.explorer,
   };
@@ -121,4 +122,4 @@ export function PollRow({ poll, chains }: PollRowProps) {
       </td>
     </tr>
   );
-}
+});

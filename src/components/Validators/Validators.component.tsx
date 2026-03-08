@@ -1,13 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import clsx from 'clsx';
 import _ from 'lodash';
 
 import { Container } from '@/components/Container';
 import { Spinner } from '@/components/Spinner';
 import { toArray } from '@/lib/parser';
-import type { Validator as ValidatorType } from '@/types';
+import type { Chain, Validator as ValidatorType } from '@/types';
 import type { ValidatorsProps } from './Validators.types';
 import { STATUSES } from './Validators.types';
 import { useValidatorsData } from './Validators.hooks';
@@ -36,26 +36,35 @@ export function Validators({ status, initialData = null }: ValidatorsProps) {
 
   const chains = result?.chains ?? [];
 
-  const orderBy = (key: string) => {
-    switch (key) {
-      case 'quadratic_voting_power':
-        key = status === 'active' ? key : 'tokens';
-      // falls through
-      default:
-        setOrder([
-          key || 'tokens',
-          key !== order[0] || order[1] === 'asc' ? 'desc' : 'asc',
-        ]);
-        break;
-    }
-  };
+  const evmChains = useMemo(
+    () => toArray(chains).filter((c: Chain) => c.chain_type === 'evm' && !c.deprecated),
+    [chains]
+  );
 
-  const filter = (filterStatus?: string) =>
-    toArray(data).filter((d: ValidatorType) =>
-      filterStatus === 'inactive'
-        ? d.status !== 'BOND_STATUS_BONDED'
-        : d.status === 'BOND_STATUS_BONDED' && !d.jailed
-    );
+  const orderBy = useCallback((key: string) => {
+    setOrder(prev => {
+      const resolvedKey = key === 'quadratic_voting_power' && status !== 'active' ? 'tokens' : key;
+      const finalKey = resolvedKey || 'tokens';
+      return [
+        finalKey,
+        finalKey !== prev[0] || prev[1] === 'asc' ? 'desc' : 'asc',
+      ];
+    });
+  }, [status]);
+
+  const filteredByStatus = useMemo(() => {
+    const arr = toArray(data);
+    return Object.fromEntries(
+      STATUSES.map(s => [
+        s,
+        arr.filter((d: ValidatorType) =>
+          s === 'inactive'
+            ? d.status !== 'BOND_STATUS_BONDED'
+            : d.status === 'BOND_STATUS_BONDED' && !d.jailed
+        ),
+      ])
+    ) as Record<string, ValidatorType[]>;
+  }, [data]);
 
   if (!data) {
     return (
@@ -65,11 +74,22 @@ export function Validators({ status, initialData = null }: ValidatorsProps) {
     );
   }
 
-  const filteredData = filter(status);
-
+  const filteredData = filteredByStatus[status ?? 'active'] ?? [];
   const filterCounts = Object.fromEntries(
-    STATUSES.map(s => [s, filter(s).length])
+    STATUSES.map(s => [s, (filteredByStatus[s] ?? []).length])
   );
+
+  const totalVotingPower = _.sumBy(filteredData, 'tokens');
+  const totalQuadraticVotingPower = _.sumBy(filteredData, 'quadratic_voting_power');
+
+  // Pre-compute cumulative sums in a single pass
+  let cumulativeTokens = 0;
+  let cumulativeQuadratic = 0;
+  const cumulativeSums = filteredData.map((d: ValidatorType) => {
+    cumulativeTokens += d.tokens ?? 0;
+    cumulativeQuadratic += (d.quadratic_voting_power as number) ?? 0;
+    return { tokens: cumulativeTokens, quadratic: cumulativeQuadratic };
+  });
 
   return (
     <Container className={styles.container}>
@@ -129,12 +149,15 @@ export function Validators({ status, initialData = null }: ValidatorsProps) {
             <tbody className={styles.tbody}>
               {filteredData.map((d: ValidatorType, i: number) => (
                 <ValidatorRow
-                  key={i}
+                  key={d.operator_address || i}
                   validator={d}
                   index={i}
                   status={status}
-                  filteredValidators={filteredData}
-                  chains={chains}
+                  totalVotingPower={totalVotingPower}
+                  totalQuadraticVotingPower={totalQuadraticVotingPower}
+                  cumulativeVotingPower={cumulativeSums[i].tokens}
+                  cumulativeQuadraticVotingPower={cumulativeSums[i].quadratic}
+                  evmChains={evmChains}
                 />
               ))}
             </tbody>

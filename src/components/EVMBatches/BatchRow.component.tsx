@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import Link from 'next/link';
 import clsx from 'clsx';
 import _ from 'lodash';
@@ -18,14 +19,14 @@ import * as styles from './EVMBatches.styles';
 
 const NUM_COMMANDS_TRUNCATE = 10;
 
-export function BatchRow({ batch: d, chains, assets }: BatchRowProps) {
+export const BatchRow = memo(function BatchRow({ batch: d, chains, assets }: BatchRowProps) {
   const { url, transaction_path } = {
     ...getChainData(d.chain, chains)?.explorer,
   } as Partial<ChainExplorer>;
 
+  const commands = toArray(d.commands);
   const executed =
-    toArray(d.commands).length ===
-    toArray(d.commands).filter((c: BatchCommand) => c.executed).length;
+    commands.length > 0 && commands.every((c: BatchCommand) => c.executed);
   const status = executed
     ? 'executed'
     : toCase(d.status?.replace('BATCHED_COMMANDS_STATUS_', ''), 'lower');
@@ -53,7 +54,7 @@ export function BatchRow({ batch: d, chains, assets }: BatchRowProps) {
       </td>
       <td className={styles.tdMiddle}>
         <div className={styles.commandsWrapper}>
-          {_.slice(toArray(d.commands), 0, NUM_COMMANDS_TRUNCATE).map(
+          {commands.slice(0, NUM_COMMANDS_TRUNCATE).map(
             (c: BatchCommand, i: number) => (
               <CommandItem
                 key={i}
@@ -66,14 +67,14 @@ export function BatchRow({ batch: d, chains, assets }: BatchRowProps) {
               />
             )
           )}
-          {toArray(d.commands).length > NUM_COMMANDS_TRUNCATE && (
+          {commands.length > NUM_COMMANDS_TRUNCATE && (
             <Link
               href={`/evm-batch/${d.chain}/${d.batch_id}`}
               target="_blank"
               className={styles.moreCommandsLink}
             >
               <Number
-                value={toArray(d.commands).length - NUM_COMMANDS_TRUNCATE}
+                value={commands.length - NUM_COMMANDS_TRUNCATE}
                 prefix={'and '}
                 suffix={' more'}
               />
@@ -106,4 +107,4 @@ export function BatchRow({ batch: d, chains, assets }: BatchRowProps) {
       </td>
     </tr>
   );
-}
+});

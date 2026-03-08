@@ -1,11 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import clsx from 'clsx';
-import _ from 'lodash';
 
 import { TablePagination } from '@/components/Pagination';
-import { toArray } from '@/lib/parser';
 import type { DelegationsProps, DelegationEntry } from './Account.types';
 import { DelegationRow } from './DelegationRow.component';
 import * as styles from './Account.styles';
@@ -17,44 +15,44 @@ export function Delegations({ data }: DelegationsProps) {
   const [tab, setTab] = useState<string>(TABS[0]);
   const [page, setPage] = useState(1);
 
-  const { delegations, redelegations, unbondings } = { ...data };
+  const delegations = data?.delegations;
+  const redelegations = data?.redelegations;
+  const unbondings = data?.unbondings;
 
-  const allData = toArray(
-    _.concat(delegations?.data, redelegations?.data, unbondings?.data)
-  );
-  if (allData.length === 0) return null;
+  const hasAnyData =
+    (delegations?.data?.length ?? 0) > 0 ||
+    (redelegations?.data?.length ?? 0) > 0 ||
+    (unbondings?.data?.length ?? 0) > 0;
+  if (!hasAnyData) return null;
 
-  function getSelectedData(): DelegationEntry[] | undefined {
+  const selectedData = useMemo((): DelegationEntry[] => {
     switch (tab) {
       case 'delegations':
-        return delegations?.data;
+        return delegations?.data ?? [];
       case 'redelegations':
-        return redelegations?.data;
+        return redelegations?.data ?? [];
       case 'unstakings':
-        return unbondings?.data;
+        return unbondings?.data ?? [];
       default:
-        return undefined;
+        return [];
     }
-  }
+  }, [tab, delegations, redelegations, unbondings]);
 
-  function hasData(type: string): boolean {
+  const hasData = (type: string): boolean => {
     switch (type) {
       case 'delegations':
-        return toArray(delegations?.data).length > 0;
+        return (delegations?.data?.length ?? 0) > 0;
       case 'redelegations':
-        return toArray(redelegations?.data).length > 0;
+        return (redelegations?.data?.length ?? 0) > 0;
       case 'unstakings':
-        return toArray(unbondings?.data).length > 0;
+        return (unbondings?.data?.length ?? 0) > 0;
       default:
         return true;
     }
-  }
+  };
 
-  const selectedData = getSelectedData();
   const pageStart = (page - 1) * SIZE_PER_PAGE;
-  const visibleData = (toArray(selectedData) as DelegationEntry[]).filter(
-    (_d, i) => i >= pageStart && i < pageStart + SIZE_PER_PAGE
-  );
+  const visibleData = selectedData.slice(pageStart, pageStart + SIZE_PER_PAGE);
 
   return (
     <div className={styles.balancesContainer}>
@@ -110,10 +108,10 @@ export function Delegations({ data }: DelegationsProps) {
           </tbody>
         </table>
       </div>
-      {(selectedData?.length ?? 0) > SIZE_PER_PAGE && (
+      {selectedData.length > SIZE_PER_PAGE && (
         <div className={styles.paginationWrapper}>
           <TablePagination
-            data={selectedData!}
+            data={selectedData}
             value={page}
             onChange={(p: number) => setPage(p)}
             sizePerPage={SIZE_PER_PAGE}

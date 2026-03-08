@@ -12,5 +12,4 @@ export interface BlocksProps {
 
 export interface BlockRowProps {
   block: BlockEntry;
-  index: number;
 }

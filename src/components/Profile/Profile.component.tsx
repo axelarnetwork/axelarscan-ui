@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import clsx from 'clsx';
 import _ from 'lodash';
 import moment from 'moment';
@@ -79,7 +79,6 @@ interface ConfigurationsData {
 const AXELAR_LOGO = '/logos/accounts/axelarnet.svg';
 
 export function Profile({
-  i,
   address: addressProp,
   chain: chainProp,
   prefix: prefixProp = 'axelar',
@@ -98,15 +97,88 @@ export function Profile({
   const verifiers = useVerifiers();
   const { validatorImages, setValidatorImages } = useValidatorImagesStore();
 
-  let address = addressProp;
-  let chain = chainProp;
-  let prefix = prefixProp;
+  // Memoize expensive global account lookups before any early returns
+  // These only depend on global data (contracts, configurations, chains)
+  const globalAccounts = useMemo(() => {
+    const {
+      gateway_contracts,
+      gas_service_contracts,
+    } = { ...(contracts as ContractsData | null) };
+
+    const gateways = Object.entries({ ...gateway_contracts })
+      .filter(([_k, v]) => v?.address)
+      .map(([k, v]) => ({
+        ...v,
+        name: 'Axelar Gateway',
+        chain: k,
+        image: getChainData(k, chains)?.image || AXELAR_LOGO,
+      }));
+
+    const gasServices = Object.entries({ ...gas_service_contracts })
+      .filter(([_k, v]) => v?.address)
+      .map(([k, v]) => ({
+        ...v,
+        name: 'Axelar Gas Service',
+        chain: k,
+        image: getChainData(k, chains)?.image || AXELAR_LOGO,
+      }));
+
+    const axelarContractAddresses = toArray(chains).flatMap((d: Chain) => {
+      const addresses: { address: string; name: string; image: string }[] = [];
+      for (const f of axelarContractFields) {
+        const contractField = d[f] as { address?: string } | undefined;
+        if (contractField?.address) {
+          addresses.push({
+            address: contractField.address,
+            name: `${d.name} ${f === 'interchain_token_service_hub' ? 'ITS Hub' : toTitle(f, '_', true)}`,
+            image: d.image || AXELAR_LOGO,
+          });
+        }
+      }
+      return addresses;
+    });
+
+    const { relayers, express_relayers, refunders } = {
+      ...(configurations as ConfigurationsData | null),
+    };
+    const executorRelayers = _.uniq(
+      toArray(
+        _.concat(
+          relayers,
+          refunders,
+          Object.keys({
+            ...(broadcasters as Record<string, Record<string, unknown>>)[
+              ENVIRONMENT!
+            ],
+          })
+        )
+      )
+    ).map(a => ({
+      address: String(a),
+      name: 'Axelar Relayer',
+      image: AXELAR_LOGO,
+    }));
+    const expressRelayers = _.uniq(toArray(express_relayers)).map(a => ({
+      address: String(a),
+      name: 'Axelar Express Relayer',
+      image: AXELAR_LOGO,
+    }));
+
+    return _.concat(
+      accounts as AccountEntry[],
+      gateways as AccountEntry[],
+      gasServices as AccountEntry[],
+      axelarContractAddresses,
+      executorRelayers,
+      expressRelayers
+    );
+  }, [contracts, configurations, chains]);
 
   useEffect(() => {
     const getData = async () => {
       if (
-        typeof address !== 'string' ||
-        !address?.startsWith('axelar') ||
+        typeof addressProp !== 'string' ||
+        !addressProp?.startsWith('axelar') ||
         !validators
       )
         return;
@@ -114,7 +186,7 @@ export function Profile({
       const { operator_address, description } = {
         ...validators.find(d =>
           includesSomePatterns(
-            address as string,
+            addressProp as string,
             [
               d.broadcaster_address ?? '',
               d.operator_address ?? '',
@@ -149,7 +221,7 @@ export function Profile({
         if (moniker?.startsWith('axelar-core-')) {
           image = AXELAR_LOGO;
         } else if (!identity) {
-          image = randImage();
+          image = randImage(addressProp as string);
         }
         if (image) {
           value = { image, updatedAt: moment().valueOf() };
@@ -162,9 +234,13 @@ export function Profile({
     };
 
     getData();
-  }, [address, validators, setValidatorImages]);
+  }, [addressProp, validators, setValidatorImages]);
 
-  if (!address) return null;
+  if (!addressProp) return null;
+
+  let address = addressProp;
+  let chain = chainProp;
+  let prefix = prefixProp;
 
   if (Array.isArray(address)) {
     address = toHex(address);
@@ -186,8 +262,6 @@ export function Profile({
 
   const {
     interchain_token_service_contract,
-    gateway_contracts,
-    gas_service_contracts,
   } = { ...(contracts as ContractsData | null) };
 
   const itss = toArray(interchain_token_service_contract?.addresses).map(
@@ -198,74 +272,9 @@ export function Profile({
     })
   );
 
-  const gateways = Object.entries({ ...gateway_contracts })
-    .filter(([_k, v]) => v?.address)
-    .map(([k, v]) => ({
-      ...v,
-      name: 'Axelar Gateway',
-      chain: k,
-      image: getChainData(k, chains)?.image || AXELAR_LOGO,
-    }));
-
-  const gasServices = Object.entries({ ...gas_service_contracts })
-    .filter(([_k, v]) => v?.address)
-    .map(([k, v]) => ({
-      ...v,
-      name: 'Axelar Gas Service',
-      chain: k,
-      image: getChainData(k, chains)?.image || AXELAR_LOGO,
-    }));
-
-  const axelarContractAddresses = toArray(chains).flatMap((d: Chain) => {
-    const addresses: { address: string; name: string; image: string }[] = [];
-    for (const f of axelarContractFields) {
-      const contractField = d[f] as { address?: string } | undefined;
-      if (contractField?.address) {
-        addresses.push({
-          address: contractField.address,
-          name: `${d.name} ${f === 'interchain_token_service_hub' ? 'ITS Hub' : toTitle(f, '_', true)}`,
-          image: d.image || AXELAR_LOGO,
-        });
-      }
-    }
-    return addresses;
-  });
-
-  const { relayers, express_relayers, refunders } = {
-    ...(configurations as ConfigurationsData | null),
-  };
-  const executorRelayers = _.uniq(
-    toArray(
-      _.concat(
-        relayers,
-        refunders,
-        Object.keys({
-          ...(broadcasters as Record<string, Record<string, unknown>>)[
-            ENVIRONMENT!
-          ],
-        })
-      )
-    )
-  ).map(a => ({
-    address: String(a),
-    name: 'Axelar Relayer',
-    image: AXELAR_LOGO,
-  }));
-  const expressRelayers = _.uniq(toArray(express_relayers)).map(a => ({
-    address: String(a),
-    name: 'Axelar Express Relayer',
-    image: AXELAR_LOGO,
-  }));
-
-  const allAccounts: AccountEntry[] = _.concat(
-    accounts as AccountEntry[],
-    itss,
-    gateways as AccountEntry[],
-    gasServices as AccountEntry[],
-    axelarContractAddresses,
-    executorRelayers,
-    expressRelayers
-  );
+  const allAccounts: AccountEntry[] = itss.length > 0
+    ? _.concat(globalAccounts, itss)
+    : globalAccounts;
 
   let { name, image } = {
     ...allAccounts.find(
@@ -350,7 +359,7 @@ export function Profile({
         ) : (
           isValidator && (
             <Image
-              src={randImage(i)}
+              src={randImage(address)}
               alt=""
               width={width}
               height={height}

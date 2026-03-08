@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import { TimeAgo } from '@/components/Time';
 
 import { SessionIdCell } from './SessionIdCell.component';
@@ -8,7 +10,7 @@ import { ParticipationsCell } from './ParticipationsCell.component';
 import type { ProofRowProps } from './AmplifierProofs.types';
 import * as styles from './AmplifierProofs.styles';
 
-export function ProofRow({ proof, chains }: ProofRowProps) {
+export const ProofRow = memo(function ProofRow({ proof, chains }: ProofRowProps) {
   const chain = proof.chain || proof.destination_chain;
 
   return (
@@ -33,4 +35,4 @@ export function ProofRow({ proof, chains }: ProofRowProps) {
       </td>
     </tr>
   );
-}
+});

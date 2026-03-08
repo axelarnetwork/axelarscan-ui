@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import Link from 'next/link';
 
 import { Copy } from '@/components/Copy';
@@ -8,7 +9,7 @@ import { ellipse } from '@/lib/string';
 import * as styles from './Blocks.styles';
 import type { BlockRowProps } from './Blocks.types';
 
-export function BlockRow({ block: d, index: i }: BlockRowProps) {
+export const BlockRow = memo(function BlockRow({ block: d }: BlockRowProps) {
   return (
     <tr className={styles.row}>
       <td className={styles.tdFirst}>
@@ -38,7 +39,7 @@ export function BlockRow({ block: d, index: i }: BlockRowProps) {
         )}
       </td>
       <td className={styles.tdMiddle}>
-        <Profile i={i} address={d.proposer_address} />
+        <Profile address={d.proposer_address} />
       </td>
       <td className={styles.tdTxCount}>
         <Number value={d.num_txs} className={styles.txCountValue} />
@@ -48,4 +49,4 @@ export function BlockRow({ block: d, index: i }: BlockRowProps) {
       </td>
     </tr>
   );
-}
+});

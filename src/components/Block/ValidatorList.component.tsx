@@ -8,7 +8,6 @@ export function ValidatorList({ validators }: ValidatorListProps) {
       {validators.map((d, i) => (
         <Profile
           key={i}
-          i={i}
           address={d.operator_address}
           width={20}
           height={20}

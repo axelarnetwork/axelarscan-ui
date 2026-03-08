@@ -19,17 +19,20 @@ export function TimeAgo({
   title,
   className,
 }: TimeAgoProps) {
-  const [trigger, setTrigger] = useState(false);
+  const [trigger, setTrigger] = useState(0);
+
+  const time = (!timestamp && !isNumber(timestamp)) ? null : moment(timestamp);
+  const diff = time ? timeDiff(time) : 0;
 
   useEffect(() => {
-    const timeout = setTimeout(() => setTrigger(!trigger), 1000);
+    // Update every second for recent timestamps, every 30s for older ones
+    const interval = diff > 0 && diff <= 59 ? 1000 : 30_000;
+    const timeout = setTimeout(() => setTrigger(t => t + 1), interval);
     return () => clearTimeout(timeout);
-  }, [trigger, setTrigger]);
+  }, [trigger, diff]);
 
-  if (!timestamp && !isNumber(timestamp)) return null;
+  if (!time) return null;
 
-  const time = moment(timestamp);
-  const diff = timeDiff(time);
   const timeDisplay = diff > 59 || diff <= 0 ? time.fromNow() : `${diff}s ago`;
 
   let resolvedFormat = format;

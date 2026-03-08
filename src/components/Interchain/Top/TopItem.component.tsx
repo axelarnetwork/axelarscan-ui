@@ -49,7 +49,6 @@ export function TopItem({
             return (
               <Profile
                 key={keyIndex}
-                i={keyIndex}
                 address={keyPart}
                 chain={toArray(data.chain)[0] as string}
                 width={20}

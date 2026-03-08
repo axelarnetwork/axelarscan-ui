@@ -5,7 +5,9 @@ import NextImage, { type ImageProps as NextImageProps } from 'next/image';
 import type React from 'react';
 
 import { getChainSpecificClasses } from './Image.styles';
-import { loader } from './Image.utils';
+import { loader, type LoaderParams } from './Image.utils';
+
+const imageLoader = (params: LoaderParams) => loader({ ...params, src: params.src as string });
 
 /**
  * Props for the Image component
@@ -39,7 +41,7 @@ export function Image({
       alt={alt}
       {...props}
       src={src}
-      loader={params => loader({ ...params, src: params.src as string })}
+      loader={imageLoader}
       unoptimized
       className={clsx(className, chainClasses)}
     />

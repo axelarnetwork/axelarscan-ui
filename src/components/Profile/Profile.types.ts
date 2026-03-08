@@ -70,7 +70,6 @@ export interface NameServiceContentProps {
 }
 
 export interface ProfileProps {
-  i?: number;
   address: string | number[] | null | undefined;
   chain?: string;
   prefix?: string;

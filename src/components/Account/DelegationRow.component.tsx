@@ -19,7 +19,6 @@ export function DelegationRow({ entry, index, tab }: DelegationRowProps) {
       <td className={styles.tdDefault}>
         <div className={styles.delegationValidatorCell}>
           <Profile
-            i={index}
             address={validatorAddress}
             width={16}
             height={16}
@@ -32,7 +31,6 @@ export function DelegationRow({ entry, index, tab }: DelegationRowProps) {
                 className={styles.redelegationArrow}
               />
               <Profile
-                i={index}
                 address={entry.validator_dst_address}
                 width={16}
                 height={16}
