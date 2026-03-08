@@ -1,12 +1,7 @@
 import { Copy } from '@/components/Copy';
 
 import { contractCallDataStyles } from './ContractCallData.styles';
-
-interface DataFieldProps {
-  label: string;
-  value: string | number;
-  textClassName?: string;
-}
+import type { DataFieldProps } from './ContractCallData.types';
 
 export function DataField({ label, value, textClassName }: DataFieldProps) {
   const textClass = textClassName ?? contractCallDataStyles.copyText;

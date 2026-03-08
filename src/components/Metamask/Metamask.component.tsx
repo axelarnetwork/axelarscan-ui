@@ -17,10 +17,7 @@ import {
   cursorPointerClass,
   tooltipClass,
 } from './Metamask.styles';
-import type {
-  TokenData,
-  AddMetamaskProps,
-} from './Metamask.types';
+import type { TokenData, AddMetamaskProps } from './Metamask.types';
 
 export function AddMetamask({
   chain,

@@ -1,15 +1,7 @@
-import { ReactNode } from 'react';
 import clsx from 'clsx';
 
 import { infoStyles } from './Info.styles';
-
-interface SectionProps {
-  label?: ReactNode;
-  children: ReactNode;
-  wrapperClassName?: string;
-  valueClassName?: string;
-  labelClassName?: string;
-}
+import type { SectionProps } from './Info.types';
 
 export function Section({
   label,

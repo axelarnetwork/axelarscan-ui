@@ -67,6 +67,13 @@ export const statusTagReceived = 'bg-green-600 dark:bg-green-500' as const;
 export const statusTagApproved = 'bg-orange-500 dark:bg-orange-600' as const;
 export const statusTagFailed = 'bg-red-600 dark:bg-red-500' as const;
 export const statusTagDefault = 'bg-yellow-400 dark:bg-yellow-500' as const;
+
+export function getStatusTagStyle(simplifiedStatus: string): string {
+  if (['received'].includes(simplifiedStatus)) return statusTagReceived;
+  if (['approved'].includes(simplifiedStatus)) return statusTagApproved;
+  if (['failed'].includes(simplifiedStatus)) return statusTagFailed;
+  return statusTagDefault;
+}
 export const insufficientFeeRow =
   'flex items-center gap-x-1 text-red-600 dark:text-red-500' as const;
 export const insufficientFeeText = 'text-xs' as const;

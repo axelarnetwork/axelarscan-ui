@@ -4,25 +4,13 @@ import { useChains, useAssets } from '@/hooks/useGlobalData';
 import { ChainProfile } from '@/components/Profile';
 import { isAxelar } from '@/lib/chain';
 import { getAssetData, getChainData } from '@/lib/config';
-import { toCase } from '@/lib/parser';
 
-import { AssetAddressEntry, AssetDataEntry } from '../GMP.types';
+import { AssetDataEntry } from '../GMP.types';
 import { contractCallDataStyles } from './ContractCallData.styles';
 import { ContractCallDataProps } from './ContractCallData.types';
+import { resolveDestinationAssetConfig } from './ContractCallData.utils';
 import { DataField } from './DataField.component';
 import { MultihopStatus } from './MultihopStatus.component';
-
-function resolveDestinationAssetConfig(
-  destinationChain: string | undefined,
-  assetAddresses: Record<string, AssetAddressEntry | undefined> | undefined
-): AssetAddressEntry | undefined {
-  if (!assetAddresses || !destinationChain) return undefined;
-
-  const key = toCase(destinationChain, 'lower');
-  if (typeof key !== 'string') return undefined;
-
-  return assetAddresses[key];
-}
 
 export function ContractCallData({
   data,

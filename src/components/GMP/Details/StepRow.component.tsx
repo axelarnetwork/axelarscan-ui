@@ -13,6 +13,7 @@ import type { Chain } from '@/types';
 
 import { GMPEventLog, GMPMessage, GMPStep } from '../GMP.types';
 import { detailsStyles } from './Details.styles';
+import type { StepRowProps } from './Details.types';
 import {
   getStepData,
   computeStepTxAndUrl,
@@ -25,14 +26,6 @@ import { HeightCell } from './HeightCell.component';
 import { AddressCell } from './AddressCell.component';
 import { GasCell } from './GasCell.component';
 import { ExecuteErrorInfo } from './ExecuteErrorInfo.component';
-
-interface StepRowProps {
-  step: GMPStep;
-  index: number;
-  data: GMPMessage;
-  axelarChainData: Chain | undefined;
-  destinationChainData: Chain | undefined;
-}
 
 export function StepRow({
   step,

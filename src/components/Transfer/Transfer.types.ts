@@ -68,6 +68,12 @@ export interface DetailsProps {
   data: TransferData;
 }
 
+export interface StepTxInfo {
+  stepTX: string | undefined;
+  stepURL: string | undefined;
+  stepMoreInfos: React.ReactNode[];
+}
+
 export interface DetailsRowProps {
   step: TransferStep;
   stepTX: string | undefined;

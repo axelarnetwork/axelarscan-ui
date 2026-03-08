@@ -1,3 +1,5 @@
+import { ReactNode } from 'react';
+
 import { ChainTimeEstimate, GMPMessage } from '../GMP.types';
 
 export interface InfoProps {
@@ -25,4 +27,12 @@ export interface InfoContractCallDetailsProps {
   data: import('../GMP.types').GMPMessage;
   executeData?: string | null;
   isMultihop: boolean;
+}
+
+export interface SectionProps {
+  label?: ReactNode;
+  children: ReactNode;
+  wrapperClassName?: string;
+  valueClassName?: string;
+  labelClassName?: string;
 }

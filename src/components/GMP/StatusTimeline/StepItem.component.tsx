@@ -1,27 +1,12 @@
 import clsx from 'clsx';
 
 import { isString } from '@/lib/string';
-import type {
-  ChainTimeEstimate,
-  GMPEventLog,
-  GMPMessage,
-  GMPStep,
-} from '../GMP.types';
+import type { GMPEventLog } from '../GMP.types';
 import { PendingStep } from './PendingStep.component';
 import { CompletedStep } from './CompletedStep.component';
 import { resolveStepURL } from './StatusTimeline.utils';
 import { statusTimelineStyles } from './StatusTimeline.styles';
-
-interface StepItemProps {
-  step: GMPStep;
-  stepIndex: number;
-  totalSteps: number;
-  entry: GMPMessage;
-  expressExecuted?: GMPEventLog;
-  estimatedTimeSpent?: ChainTimeEstimate | null;
-  rootCall?: GMPMessage['call'];
-  previousStepStatus?: string;
-}
+import type { StepItemProps } from './StatusTimeline.types';
 
 export function StepItem({
   step,

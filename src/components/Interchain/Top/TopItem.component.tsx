@@ -1,21 +1,11 @@
 import { Image } from '@/components/Image';
 import { Number } from '@/components/Number';
 import { AssetProfile, Profile } from '@/components/Profile';
-import type { Chain } from '@/types';
 import { getChainData } from '@/lib/config';
 import { split, toArray } from '@/lib/parser';
 import { MdKeyboardArrowRight } from 'react-icons/md';
+import type { TopItemProps } from './Top.types';
 import { topItemStyles } from './TopItem.styles';
-
-interface TopItemProps {
-  data: Record<string, unknown>;
-  type: string;
-  field: string;
-  format: string;
-  prefix: string;
-  transfersType?: string;
-  chains: Chain[] | null;
-}
 
 export function TopItem({
   data,

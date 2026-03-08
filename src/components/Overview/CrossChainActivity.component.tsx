@@ -1,13 +1,8 @@
 import { Summary } from '@/components/Interchain';
 import type { Chain } from '@/types';
-import type { OverviewData } from './Overview.types';
+import type { CrossChainActivityProps } from './Overview.types';
 import { ConnectedChainsTag } from './ConnectedChainsTag.component';
 import * as styles from './Overview.styles';
-
-interface CrossChainActivityProps {
-  data: OverviewData;
-  chains: Chain[] | null | undefined;
-}
 
 export function CrossChainActivity({ data, chains }: CrossChainActivityProps) {
   const activeChainCount = chains

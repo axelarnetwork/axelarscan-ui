@@ -2,7 +2,6 @@
 
 import { Fragment } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
-import clsx from 'clsx';
 import { LuChevronsUpDown } from 'react-icons/lu';
 
 import { split, toArray } from '@/lib/parser';
@@ -11,7 +10,7 @@ import type { FilterOption, SelectFieldProps } from './FilterSelect.types';
 import * as styles from './FilterSelect.styles';
 import { getSelectedValue } from './FilterSelect.utils';
 import { SelectButtonContent } from './SelectButtonContent.component';
-import { OptionContent } from './OptionContent.component';
+import { SimpleOptionsList } from './SimpleOptionsList.component';
 
 export function SimpleSelect({
   attribute,
@@ -23,6 +22,8 @@ export function SimpleSelect({
       ...params,
       [attribute.name]: attribute.multiple ? (v as string[]).join(',') : v,
     });
+
+  const options = toArray(attribute.options) as FilterOption[];
 
   return (
     <Listbox
@@ -61,36 +62,7 @@ export function SimpleSelect({
               leaveTo="opacity-0"
             >
               <Listbox.Options className={styles.selectOptions}>
-                {toArray(attribute.options).map(
-                  (o: FilterOption, j: number) => (
-                    <Listbox.Option
-                      key={j}
-                      value={o.value}
-                      className={({ active }: { active: boolean }) =>
-                        clsx(
-                          styles.selectOptionBase,
-                          active
-                            ? styles.selectOptionActive
-                            : styles.selectOptionInactive
-                        )
-                      }
-                    >
-                      {({
-                        selected,
-                        active,
-                      }: {
-                        selected: boolean;
-                        active: boolean;
-                      }) => (
-                        <OptionContent
-                          selected={selected}
-                          active={active}
-                          title={o.title}
-                        />
-                      )}
-                    </Listbox.Option>
-                  )
-                )}
+                <SimpleOptionsList options={options} />
               </Listbox.Options>
             </Transition>
           </div>

@@ -4,12 +4,8 @@ import { ChainColumnCell } from './ChainColumnCell.component';
 import { ITSBadge } from './ITSBadge.component';
 import { TotalColumn } from './TotalColumn.component';
 import { TotalLockedCell } from './TotalLockedCell.component';
-import { ChainWithTotalValue, ProcessedTVLData } from './TVL.types';
-
-interface AssetRowProps {
-  data: ProcessedTVLData;
-  chainsTVL: ChainWithTotalValue[] | null;
-}
+import type { AssetRowProps } from './TVL.types';
+import { ChainWithTotalValue } from './TVL.types';
 
 /**
  * Renders a single asset row in the TVL table

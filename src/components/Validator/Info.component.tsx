@@ -23,15 +23,6 @@ import { VotingPowerRow } from './VotingPowerRow.component';
 import type { InfoProps } from './Validator.types';
 import * as styles from './Validator.styles';
 
-function getStatusStyle(status: string): string {
-  if (status.includes('UN')) {
-    return status.endsWith('ED')
-      ? styles.statusUnbonded
-      : styles.statusUnbonding;
-  }
-  return styles.statusBonded;
-}
-
 export function Info({ data, address, delegations }: InfoProps) {
   const validators = useValidators();
 
@@ -139,7 +130,7 @@ export function Info({ data, address, delegations }: InfoProps) {
             <dt className={styles.dlLabel}>Status</dt>
             <dd className={styles.dlValue}>
               {status && (
-                <Tag className={clsx('w-fit', getStatusStyle(status))}>
+                <Tag className={clsx('w-fit', styles.getStatusStyle(status))}>
                   {status.replace('BOND_STATUS_', '')}
                 </Tag>
               )}

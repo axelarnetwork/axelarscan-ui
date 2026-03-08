@@ -19,13 +19,6 @@ import * as styles from './AmplifierProof.styles';
 import { MessageList } from './MessageList.component';
 import { TxHashRow } from './TxHashRow.component';
 
-function getStatusStyle(status: string): string {
-  if (status === 'completed') return styles.statusTagCompleted;
-  if (status === 'failed') return styles.statusTagFailed;
-  if (status === 'expired') return styles.statusTagExpired;
-  return styles.statusTagPending;
-}
-
 export function Info({ data, id }: InfoProps) {
   const chains = useChains();
 
@@ -104,7 +97,10 @@ export function Info({ data, id }: InfoProps) {
             <dd className={styles.ddValue}>
               {status && (
                 <Tag
-                  className={clsx(styles.statusTagBase, getStatusStyle(status))}
+                  className={clsx(
+                    styles.statusTagBase,
+                    styles.getStatusStyle(status)
+                  )}
                 >
                   {status}
                 </Tag>

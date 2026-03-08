@@ -3,19 +3,13 @@ import _ from 'lodash';
 import { Image } from '@/components/Image';
 import { Number } from '@/components/Number';
 import { Switch } from '@/components/Switch';
+import type { TVLTableHeaderProps } from './TVL.types';
 import { ChainWithTotalValue, ProcessedTVLData } from './TVL.types';
 import {
   getSwitchTitleClass,
   switchStyles,
   tableHeaderStyles,
 } from './TVLTableHeader.styles';
-
-interface TVLTableHeaderProps {
-  includeITS: boolean;
-  onToggleITS: (value: boolean) => void;
-  filteredData: ProcessedTVLData[];
-  chainsTVL: ChainWithTotalValue[] | null;
-}
 
 /**
  * Table header for the TVL table

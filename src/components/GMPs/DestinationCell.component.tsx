@@ -2,11 +2,11 @@ import { PiWarningCircle } from 'react-icons/pi';
 
 import { Tooltip } from '@/components/Tooltip';
 import { Profile, ChainProfile } from '@/components/Profile';
-import { ExplorerLink } from '@/components/ExplorerLink';
 import { isAxelar } from '@/lib/chain';
 
-import type { DestinationCellProps, GMPRowProps } from './GMPs.types';
+import type { DestinationCellProps } from './GMPs.types';
 import * as styles from './GMPs.styles';
+import { HopAndRecipient } from './HopAndRecipient.component';
 
 export function DestinationCell({
   data: d,
@@ -60,80 +60,15 @@ export function DestinationCell({
                 />
               </Tooltip>
             )}
-            {hopAndRecipient(d, useAnotherHopChain, destChain, isDestAxelar)}
+            <HopAndRecipient
+              data={d}
+              useAnotherHopChain={useAnotherHopChain}
+              destChain={destChain}
+              isDestAxelar={isDestAxelar}
+            />
           </>
         )}
       </div>
     </td>
-  );
-}
-
-// ─── Helper (not a component — returns a fragment) ──────────────────────────
-
-function hopAndRecipient(
-  d: GMPRowProps['data'],
-  useAnotherHopChain: boolean,
-  destChain: string | undefined,
-  isDestAxelar: boolean
-) {
-  if (!d.callback_chain && !d.customValues?.recipientAddress) {
-    return null;
-  }
-
-  const recipientAddress =
-    d.customValues?.recipientAddress ||
-    (useAnotherHopChain && d.callback_destination_address);
-
-  const recipientTooltipContent =
-    isDestAxelar &&
-    (d.customValues?.projectName === 'ITS' ||
-      (!d.customValues?.recipientAddress && d.callback_destination_address))
-      ? 'Destination Address'
-      : `${d.customValues?.projectName ? d.customValues.projectName : 'Final User'} Recipient`;
-
-  return (
-    <>
-      {isDestAxelar && (
-        <div className={styles.hopChainWrapper}>
-          <ChainProfile
-            value={
-              useAnotherHopChain
-                ? d.callback_chain || d.customValues?.destinationChain
-                : undefined
-            }
-            className={styles.chainProfileHeight}
-            titleClassName={styles.chainProfileTitleBold}
-          />
-          {useAnotherHopChain && (
-            <ExplorerLink
-              value={d.call.returnValues?.destinationContractAddress}
-              chain={destChain}
-              type="address"
-              title="via"
-              iconOnly={false}
-              width={11}
-              height={11}
-              containerClassName={styles.explorerLinkContainerClassName}
-              nonIconClassName={styles.explorerLinkNonIconClassName}
-            />
-          )}
-        </div>
-      )}
-      {recipientAddress && (
-        <Tooltip
-          content={recipientTooltipContent}
-          parentClassName={styles.recipientTooltipParent}
-        >
-          <Profile
-            address={recipientAddress}
-            chain={
-              (useAnotherHopChain && d.callback_chain) ||
-              d.customValues?.destinationChain ||
-              destChain
-            }
-          />
-        </Tooltip>
-      )}
-    </>
   );
 }

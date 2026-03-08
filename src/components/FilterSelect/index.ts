@@ -1,4 +1,5 @@
 export { FilterDialog } from './FilterDialog.component';
+export { FilterField } from './FilterField.component';
 export { SearchableSelect } from './SearchableSelect.component';
 export { SimpleSelect } from './SimpleSelect.component';
 export { SelectButtonContent } from './SelectButtonContent.component';

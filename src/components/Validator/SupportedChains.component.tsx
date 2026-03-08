@@ -3,11 +3,8 @@ import { Tooltip } from '@/components/Tooltip';
 import { useChains } from '@/hooks/useGlobalData';
 import { getChainData } from '@/lib/config';
 
+import type { SupportedChainsProps } from './Validator.types';
 import * as styles from './Validator.styles';
-
-interface SupportedChainsProps {
-  supportedChains: string[];
-}
 
 export function SupportedChains({ supportedChains }: SupportedChainsProps) {
   const chains = useChains();

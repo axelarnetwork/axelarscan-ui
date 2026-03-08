@@ -1,18 +1,9 @@
 import clsx from 'clsx';
 import { PiClock } from 'react-icons/pi';
 
-import type { ChainTimeEstimate, GMPEventLog } from '../GMP.types';
 import { ConfirmTimeEstimate } from './ConfirmTimeEstimate.component';
 import { statusTimelineStyles } from './StatusTimeline.styles';
-
-interface PendingStepProps {
-  id: string;
-  title: string;
-  hasPreviousStep: boolean;
-  expressExecuted?: GMPEventLog;
-  estimatedTimeSpent?: ChainTimeEstimate | null;
-  rootCall?: { block_timestamp?: number };
-}
+import type { PendingStepProps } from './StatusTimeline.types';
 
 export function PendingStep({
   id,

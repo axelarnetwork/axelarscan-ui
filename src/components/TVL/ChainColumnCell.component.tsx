@@ -9,13 +9,8 @@ import {
   getAmountNumberClass,
 } from './ChainColumnCell.styles';
 import { CustomBalanceItem } from './CustomBalanceItem.component';
+import type { ChainColumnCellProps } from './TVL.types';
 import { CustomBalance, TVLPerChain } from './TVL.types';
-
-interface ChainColumnCellProps {
-  chainId: string;
-  tvlData: TVLPerChain;
-  price?: number;
-}
 
 /**
  * Renders a table cell for a specific chain column

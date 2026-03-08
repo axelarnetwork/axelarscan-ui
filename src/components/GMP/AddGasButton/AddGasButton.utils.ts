@@ -639,9 +639,10 @@ async function handleXrplAddGas({
       ? transactionMeta.TransactionResult
       : undefined;
   const status = transactionResult === 'tesSUCCESS' ? 'success' : 'failed';
-  const fallback = status === 'success'
-    ? 'Pay gas successful'
-    : (transactionResult as string) || 'Pay gas failed';
+  const fallback =
+    status === 'success'
+      ? 'Pay gas successful'
+      : (transactionResult as string) || 'Pay gas failed';
   const message = resolveErrorMessage(xrplError, fallback);
 
   setResponse({

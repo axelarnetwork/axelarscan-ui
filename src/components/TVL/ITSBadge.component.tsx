@@ -1,11 +1,8 @@
 import { Tag } from '@/components/Tag';
 import { Tooltip } from '@/components/Tooltip';
 import { itsBadgeStyles } from './ITSBadge.styles';
-import { ProcessedTVLData, TVLPerChain } from './TVL.types';
-
-interface ITSBadgeProps {
-  data: ProcessedTVLData;
-}
+import type { ITSBadgeProps } from './TVL.types';
+import { TVLPerChain } from './TVL.types';
 
 /**
  * Displays an ITS badge with tooltip indicating whether it's canonical or custom

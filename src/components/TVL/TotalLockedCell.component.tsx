@@ -7,11 +7,8 @@ import {
   getTotalNumberClass,
   totalLockedCellStyles,
 } from './TotalLockedCell.styles';
-import { ProcessedTVLData, TVLPerChain } from './TVL.types';
-
-interface TotalLockedCellProps {
-  data: ProcessedTVLData;
-}
+import type { TotalLockedCellProps } from './TVL.types';
+import { TVLPerChain } from './TVL.types';
 
 /**
  * Renders the total locked amount cell for an asset

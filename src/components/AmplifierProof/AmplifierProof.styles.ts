@@ -29,6 +29,13 @@ export const statusTagFailed = 'bg-red-600 dark:bg-red-500' as const;
 export const statusTagExpired = 'bg-zinc-400 dark:bg-zinc-500' as const;
 export const statusTagPending = 'bg-yellow-400 dark:bg-yellow-500' as const;
 
+export function getStatusStyle(status: string): string {
+  if (status === 'completed') return statusTagCompleted;
+  if (status === 'failed') return statusTagFailed;
+  if (status === 'expired') return statusTagExpired;
+  return statusTagPending;
+}
+
 // Link styles
 export const blockLink =
   'font-medium text-blue-600 dark:text-blue-500' as const;

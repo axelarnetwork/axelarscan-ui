@@ -2,7 +2,7 @@ import type { Asset, Chain, Validator } from '@/types';
 import type {
   TransactionData as BaseTransactionData,
   TransactionActivity,
-} from '@/components/Transactions/Transactions.types';
+} from '@/components/Transactions';
 
 export interface TransactionData extends BaseTransactionData {
   sender?: string;

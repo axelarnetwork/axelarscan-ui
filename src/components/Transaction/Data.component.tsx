@@ -8,7 +8,7 @@ import { Switch } from '@/components/Switch';
 import { getActivities, getType } from '@/components/Transactions';
 import { toJson } from '@/lib/parser';
 import type { DataProps, EventLogRecord } from './Transaction.types';
-import type { TransactionActivity } from '@/components/Transactions/Transactions.types';
+import type { TransactionActivity } from '@/components/Transactions';
 import { ActivityItem } from './ActivityItem.component';
 import { EventLogEntry } from './EventLogEntry.component';
 import * as styles from './Transaction.styles';

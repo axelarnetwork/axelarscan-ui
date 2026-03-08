@@ -7,12 +7,7 @@ import {
   useSyncState,
 } from './CosmosWallet.hooks';
 import { walletStyles } from './Wallet.styles';
-
-interface CosmosWalletProps {
-  connectChainId?: string;
-  children?: React.ReactNode;
-  className?: string;
-}
+import type { CosmosWalletProps } from './Wallet.types';
 
 export function CosmosWallet({
   connectChainId,

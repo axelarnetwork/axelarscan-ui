@@ -35,6 +35,19 @@ export const statusFailed = 'bg-red-600 dark:bg-red-500' as const;
 export const statusExpired = 'bg-zinc-400 dark:bg-zinc-500' as const;
 export const statusPending = 'bg-yellow-400 dark:bg-yellow-500' as const;
 
+export function getVoteOptionStyle(option: string): string {
+  if (option === 'no') return voteOptionNo;
+  if (option === 'yes') return voteOptionYes;
+  return voteOptionDefault;
+}
+
+export function getStatusStyle(status: string): string {
+  if (status === 'completed') return statusCompleted;
+  if (status === 'failed') return statusFailed;
+  if (status === 'expired') return statusExpired;
+  return statusPending;
+}
+
 // Votes table
 export const votesWrapper =
   '-mx-4 mt-8 overflow-x-auto sm:-mx-0 lg:overflow-x-visible' as const;

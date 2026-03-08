@@ -606,10 +606,7 @@ export const parseError = (error: unknown): ParsedError => {
   return { code, message };
 };
 
-export const resolveErrorMessage = (
-  error: unknown,
-  fallback: string
-): string =>
+export const resolveErrorMessage = (error: unknown, fallback: string): string =>
   parseError(error)?.message ||
   (typeof error === 'string' ? error : undefined) ||
   fallback;

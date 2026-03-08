@@ -113,6 +113,13 @@ export interface StatusCellProps {
   data: GMPRowData;
 }
 
+export interface HopAndRecipientProps {
+  data: GMPRowData;
+  useAnotherHopChain: boolean;
+  destChain: string | undefined;
+  isDestAxelar: boolean;
+}
+
 /** Wider input type for getEvent/getStatusLabel — compatible with both GMPRowData and GMPMessage */
 export interface EventDataInput {
   call?: {

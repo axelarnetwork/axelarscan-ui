@@ -1,3 +1,7 @@
+import _ from 'lodash';
+
+import { isNumber } from '@/lib/number';
+
 import type { NameServiceEntry } from './Profile.types';
 
 export function getAddressPagePath(
@@ -39,6 +43,9 @@ export function getExplorerUrl(
 
   return `${explorer.url}${resolvedPath.replace(accountSuffix, replacement)}`;
 }
+
+export const randImage = (i?: number) =>
+  `/logos/addresses/${isNumber(i) ? ((i as number) % 8) + 1 : _.random(1, 8)}.png`;
 
 export function setDefaultData(
   addresses: string[],

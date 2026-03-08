@@ -6,12 +6,7 @@ import {
   customBalanceItemStyles,
   getCustomBalanceNumberClass,
 } from './CustomBalanceItem.styles';
-import { CustomBalance } from './TVL.types';
-
-interface CustomBalanceItemProps {
-  customBalance: CustomBalance;
-  price?: number;
-}
+import type { CustomBalanceItemProps } from './TVL.types';
 
 /**
  * Renders a single custom balance item (contracts or tokens)

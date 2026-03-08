@@ -2,15 +2,10 @@
 
 import { DatePicker } from 'antd';
 import clsx from 'clsx';
-import moment from 'moment';
 import dayjs from 'dayjs';
 
 import * as styles from './DateRangePicker.styles';
-import { createDayJSFromUnixtime } from './DateRangePicker.utils';
-
-const getUnixtime = (time: { valueOf: () => number } | null | undefined) =>
-  time && moment(time.valueOf()).unix();
-
+import { createDayJSFromUnixtime, getUnixtime } from './DateRangePicker.utils';
 import type { DateRangePickerProps } from './DateRangePicker.types';
 
 export function DateRangePicker({

@@ -59,3 +59,11 @@ export interface UptimeBlockDotProps {
 export interface ProposedBlockDotProps {
   d: ProposedBlock;
 }
+
+export interface DelegationsTableProps {
+  delegations: Delegation[];
+}
+
+export interface SupportedChainsProps {
+  supportedChains: string[];
+}

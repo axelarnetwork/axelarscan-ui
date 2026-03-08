@@ -9,21 +9,10 @@ import accounts from '@/data/accounts';
 import { toArray } from '@/lib/parser';
 import { equalsIgnoreCase } from '@/lib/string';
 import { Filters } from '../Filters';
-import { FilterParams } from '../Interchain.types';
 import { TIME_RANGE_SHORTCUTS } from '../Interchain.utils';
 import { interchainHeaderStyles } from './InterchainHeader.styles';
+import type { InterchainHeaderProps } from './InterchainHeader.types';
 import { buildShortcutUrl, isShortcutSelected } from './InterchainHeader.utils';
-
-interface InterchainHeaderProps {
-  pathname: string;
-  params: FilterParams;
-  contractAddress?: string | string[];
-  contractMethod?: string | string[];
-  fromTime?: number;
-  toTime?: number;
-  isRefreshing: boolean;
-  onRefresh: () => void;
-}
 
 export function InterchainHeader({
   pathname,

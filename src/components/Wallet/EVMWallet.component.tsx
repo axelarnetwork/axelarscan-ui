@@ -11,14 +11,13 @@ import {
   useWalletClient,
 } from 'wagmi';
 
-import { useEVMWalletStore, walletClientToProvider, walletClientToSigner } from './EVMWallet.stores';
+import {
+  useEVMWalletStore,
+  walletClientToProvider,
+  walletClientToSigner,
+} from './EVMWallet.stores';
 import { walletStyles } from './Wallet.styles';
-
-interface EVMWalletProps {
-  connectChainId?: number;
-  children?: React.ReactNode;
-  className?: string;
-}
+import type { EVMWalletProps } from './Wallet.types';
 
 export function EVMWallet({
   connectChainId,

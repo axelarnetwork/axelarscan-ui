@@ -94,40 +94,6 @@ export function getVoteLabel(vote: boolean | undefined): string {
 }
 
 /**
- * Returns the style class for a vote option tag.
- */
-export function getVoteOptionStyle(
-  option: string,
-  styles: {
-    voteOptionNo: string;
-    voteOptionYes: string;
-    voteOptionDefault: string;
-  }
-): string {
-  if (option === 'no') return styles.voteOptionNo;
-  if (option === 'yes') return styles.voteOptionYes;
-  return styles.voteOptionDefault;
-}
-
-/**
- * Returns the style class for a poll status tag.
- */
-export function getStatusStyle(
-  status: string,
-  styles: {
-    statusCompleted: string;
-    statusFailed: string;
-    statusExpired: string;
-    statusPending: string;
-  }
-): string {
-  if (status === 'completed') return styles.statusCompleted;
-  if (status === 'failed') return styles.statusFailed;
-  if (status === 'expired') return styles.statusExpired;
-  return styles.statusPending;
-}
-
-/**
  * Derives a poll status from the poll data fields and current block height.
  */
 export function derivePollStatus(

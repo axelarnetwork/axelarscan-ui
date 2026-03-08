@@ -3,16 +3,8 @@ import { Number } from '@/components/Number';
 import { Profile } from '@/components/Profile';
 import { isNumber, formatUnits } from '@/lib/number';
 
-import type { RewardsContractInfo } from './AmplifierRewards.types';
+import type { ContractFieldCellProps } from './AmplifierRewards.types';
 import * as styles from './AmplifierRewards.styles';
-
-interface ContractFieldCellProps {
-  field: string;
-  contract: RewardsContractInfo;
-  symbol: string | undefined;
-  chainName: string | undefined;
-  multisigProverAddress: string | undefined;
-}
 
 export function ContractFieldCell({
   field,

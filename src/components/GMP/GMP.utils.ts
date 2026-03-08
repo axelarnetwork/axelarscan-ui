@@ -505,8 +505,7 @@ export async function fetchSettlementEvents(
 
   while (
     (!isNumber(totalEvents) ||
-      (typeof totalEvents === 'number' &&
-        totalEvents > accumulator.length) ||
+      (typeof totalEvents === 'number' && totalEvents > accumulator.length) ||
       (typeof totalEvents === 'number' && offset < totalEvents)) &&
     retryCount < 10
   ) {

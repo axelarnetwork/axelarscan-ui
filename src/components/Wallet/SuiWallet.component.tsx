@@ -11,15 +11,7 @@ import '@mysten/dapp-kit/dist/index.css';
 
 import { useSuiWalletStore } from './SuiWallet.stores';
 import { walletStyles } from './Wallet.styles';
-
-interface SuiAccount {
-  address?: string;
-}
-
-interface SuiWalletProps {
-  children?: React.ReactNode;
-  className?: string;
-}
+import type { SuiAccount, SuiWalletProps } from './Wallet.types';
 
 export function SuiWallet({ children, className }: SuiWalletProps) {
   const { address, setAddress } = useSuiWalletStore();

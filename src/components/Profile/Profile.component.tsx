@@ -33,7 +33,7 @@ import type { Chain } from '@/types';
 
 import type { ProfileProps } from './Profile.types';
 import { useValidatorImagesStore } from './Profile.stores';
-import { getAddressPagePath, getExplorerUrl } from './Profile.utils';
+import { getAddressPagePath, getExplorerUrl, randImage } from './Profile.utils';
 import { EVMProfile } from './EVMProfile.component';
 import { profile as styles } from './Profile.styles';
 
@@ -77,8 +77,6 @@ interface ConfigurationsData {
 }
 
 const AXELAR_LOGO = '/logos/accounts/axelarnet.svg';
-const randImage = (i?: number) =>
-  `/logos/addresses/${isNumber(i) ? ((i as number) % 8) + 1 : _.random(1, 8)}.png`;
 
 export function Profile({
   i,

@@ -9,13 +9,12 @@ import {
 import clsx from 'clsx';
 
 import { ENVIRONMENT } from '@/lib/config';
-import { useStellarWalletStore, getSorobanRpcUrl } from './StellarWallet.stores';
+import {
+  useStellarWalletStore,
+  getSorobanRpcUrl,
+} from './StellarWallet.stores';
 import { walletStyles } from './Wallet.styles';
-
-interface StellarWalletProps {
-  children?: React.ReactNode;
-  className?: string;
-}
+import type { StellarWalletProps } from './Wallet.types';
 
 export function StellarWallet({ children, className }: StellarWalletProps) {
   const {

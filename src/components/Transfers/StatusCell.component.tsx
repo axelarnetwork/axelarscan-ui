@@ -9,13 +9,6 @@ import { TimeSpent } from '@/components/Time';
 import type { TransferStatusCellProps } from './Transfers.types';
 import * as styles from './Transfers.styles';
 
-function getStatusTagStyle(simplifiedStatus: string): string {
-  if (['received'].includes(simplifiedStatus)) return styles.statusTagReceived;
-  if (['approved'].includes(simplifiedStatus)) return styles.statusTagApproved;
-  if (['failed'].includes(simplifiedStatus)) return styles.statusTagFailed;
-  return styles.statusTagDefault;
-}
-
 export function StatusCell({ d }: TransferStatusCellProps) {
   const showTimeSpent =
     (d.time_spent?.total ?? 0) > 0 &&
@@ -29,7 +22,7 @@ export function StatusCell({ d }: TransferStatusCellProps) {
           <Tag
             className={clsx(
               styles.tagFitCapitalize,
-              getStatusTagStyle(d.simplified_status)
+              styles.getStatusTagStyle(d.simplified_status)
             )}
           >
             {d.simplified_status}

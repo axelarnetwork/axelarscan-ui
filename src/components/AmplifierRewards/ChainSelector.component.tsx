@@ -12,12 +12,8 @@ import { useChains } from '@/hooks/useGlobalData';
 import { equalsIgnoreCase } from '@/lib/string';
 import { toArray } from '@/lib/parser';
 
+import type { ChainSelectorProps } from './AmplifierRewards.types';
 import * as styles from './AmplifierRewards.styles';
-
-interface ChainSelectorProps {
-  chain: string;
-  chainId: string | undefined;
-}
 
 export function ChainSelector({ chain, chainId }: ChainSelectorProps) {
   const router = useRouter();

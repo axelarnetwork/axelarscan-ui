@@ -1,12 +1,7 @@
 import { DateRangePicker } from '@/components/DateRangePicker';
+import type { FilterParams } from '../Interchain.types';
 import { filterInputStyles } from './FilterInput.styles';
-import { FilterAttribute, FilterParams } from '../Interchain.types';
-
-interface FilterInputProps {
-  attribute: FilterAttribute;
-  params: FilterParams;
-  setParams: (params: FilterParams) => void;
-}
+import type { FilterInputProps } from './Filters.types';
 
 export function FilterInput({
   attribute,

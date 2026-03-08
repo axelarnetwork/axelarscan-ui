@@ -6,13 +6,10 @@ import { numberFormat } from '@/lib/number';
 import type { Delegation } from '@/types';
 
 import { DelegationRow } from './DelegationRow.component';
+import type { DelegationsTableProps } from './Validator.types';
 import * as styles from './Validator.styles';
 
 const DELEGATIONS_SIZE_PER_PAGE = 10;
-
-interface DelegationsTableProps {
-  delegations: Delegation[];
-}
 
 export function DelegationsTable({ delegations }: DelegationsTableProps) {
   const [page, setPage] = useState(1);

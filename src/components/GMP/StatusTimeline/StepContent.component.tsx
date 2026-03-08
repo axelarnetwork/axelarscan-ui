@@ -1,14 +1,8 @@
 import clsx from 'clsx';
 import { MdCheck, MdClose } from 'react-icons/md';
 
-import { GMPStepStatus } from '../GMP.types';
 import { statusTimelineStyles } from './StatusTimeline.styles';
-
-interface StepContentProps {
-  id: string;
-  title: string;
-  status: GMPStepStatus;
-}
+import type { StepContentProps } from './StatusTimeline.types';
 
 export function StepContent({ id, title, status }: StepContentProps) {
   return (

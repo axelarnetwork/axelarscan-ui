@@ -2,7 +2,6 @@
 
 import { Fragment } from 'react';
 import { Combobox, Transition } from '@headlessui/react';
-import clsx from 'clsx';
 import { LuChevronsUpDown } from 'react-icons/lu';
 
 import { split, toArray } from '@/lib/parser';
@@ -12,7 +11,7 @@ import type { FilterOption, SearchableSelectProps } from './FilterSelect.types';
 import * as styles from './FilterSelect.styles';
 import { getSelectedValue } from './FilterSelect.utils';
 import { SelectButtonContent } from './SelectButtonContent.component';
-import { OptionContent } from './OptionContent.component';
+import { SearchableOptionsList } from './SearchableOptionsList.component';
 
 export function SearchableSelect({
   attribute,
@@ -26,6 +25,13 @@ export function SearchableSelect({
       ...params,
       [attribute.name]: attribute.multiple ? (v as string[]).join(',') : v,
     });
+
+  const filteredOptions = toArray(attribute.options).filter((o: FilterOption) =>
+    filterSearchInput(
+      [o.title, o.value].filter(Boolean) as string[],
+      searchInput[attribute.name]
+    )
+  );
 
   return (
     <Combobox
@@ -76,41 +82,7 @@ export function SearchableSelect({
                   className={styles.filterInput}
                 />
                 <Combobox.Options className={styles.selectOptions}>
-                  {toArray(attribute.options)
-                    .filter((o: FilterOption) =>
-                      filterSearchInput(
-                        [o.title, o.value].filter(Boolean) as string[],
-                        searchInput[attribute.name]
-                      )
-                    )
-                    .map((o: FilterOption, j: number) => (
-                      <Combobox.Option
-                        key={j}
-                        value={o.value}
-                        className={({ active }: { active: boolean }) =>
-                          clsx(
-                            styles.selectOptionBase,
-                            active
-                              ? styles.selectOptionActive
-                              : styles.selectOptionInactive
-                          )
-                        }
-                      >
-                        {({
-                          selected,
-                          active,
-                        }: {
-                          selected: boolean;
-                          active: boolean;
-                        }) => (
-                          <OptionContent
-                            selected={selected}
-                            active={active}
-                            title={o.title}
-                          />
-                        )}
-                      </Combobox.Option>
-                    ))}
+                  <SearchableOptionsList options={filteredOptions} />
                 </Combobox.Options>
               </div>
             </Transition>

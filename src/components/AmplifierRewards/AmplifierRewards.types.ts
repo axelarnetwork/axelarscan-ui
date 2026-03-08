@@ -71,4 +71,17 @@ export interface AmplifierRewardsProps {
   chain?: string;
 }
 
+export interface ChainSelectorProps {
+  chain: string;
+  chainId: string | undefined;
+}
+
+export interface ContractFieldCellProps {
+  field: string;
+  contract: RewardsContractInfo;
+  symbol: string | undefined;
+  chainName: string | undefined;
+  multisigProverAddress: string | undefined;
+}
+
 export const PAGE_SIZE = 25;

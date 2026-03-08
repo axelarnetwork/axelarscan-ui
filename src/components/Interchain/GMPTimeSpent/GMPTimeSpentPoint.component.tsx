@@ -1,11 +1,6 @@
 import { Tooltip } from '@/components/Tooltip';
+import type { GMPTimeSpentPointProps } from './GMPTimeSpent.types';
 import { gmpTimeSpentPointStyles } from './GMPTimeSpentPoint.styles';
-
-interface GMPTimeSpentPointProps {
-  title: string;
-  name: string;
-  noTooltip?: boolean;
-}
 
 export function GMPTimeSpentPoint({
   title,

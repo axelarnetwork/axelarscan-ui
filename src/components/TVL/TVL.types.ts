@@ -74,3 +74,40 @@ export interface GlobalStore {
     data: RawTVLData[];
   } | null;
 }
+
+export interface ChainColumnCellProps {
+  chainId: string;
+  tvlData: TVLPerChain;
+  price?: number;
+}
+
+export interface ITSBadgeProps {
+  data: ProcessedTVLData;
+}
+
+export interface TotalLockedCellProps {
+  data: ProcessedTVLData;
+}
+
+export interface CustomBalanceItemProps {
+  customBalance: CustomBalance;
+  price?: number;
+}
+
+export interface TotalColumnProps {
+  total: number;
+  value: number;
+  symbol?: string;
+}
+
+export interface TVLTableHeaderProps {
+  includeITS: boolean;
+  onToggleITS: (value: boolean) => void;
+  filteredData: ProcessedTVLData[];
+  chainsTVL: ChainWithTotalValue[] | null;
+}
+
+export interface AssetRowProps {
+  data: ProcessedTVLData;
+  chainsTVL: ChainWithTotalValue[] | null;
+}

@@ -50,6 +50,16 @@ export interface FilterFieldProps {
   setSearchInput: (input: Record<string, string>) => void;
 }
 
+// ---- Options list props ----
+
+export interface SearchableOptionsListProps {
+  options: FilterOption[];
+}
+
+export interface SimpleOptionsListProps {
+  options: FilterOption[];
+}
+
 // ---- FilterDialog props ----
 
 export interface FilterDialogProps {

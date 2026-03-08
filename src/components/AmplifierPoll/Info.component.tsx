@@ -15,11 +15,7 @@ import { isNumber } from '@/lib/number';
 import { ellipse, toTitle } from '@/lib/string';
 import { TIME_FORMAT } from '@/lib/time';
 import type { InfoProps, VoteOption } from './AmplifierPoll.types';
-import {
-  getStatusStyle,
-  getVoteOptionStyle,
-  getVoteOptionSuffix,
-} from './AmplifierPoll.types';
+import { getVoteOptionSuffix } from './AmplifierPoll.types';
 import * as styles from './AmplifierPoll.styles';
 
 export function Info({ data, id }: InfoProps) {
@@ -99,7 +95,7 @@ export function Info({ data, id }: InfoProps) {
                 <Tag
                   className={clsx(
                     'w-fit capitalize',
-                    getStatusStyle(status, styles)
+                    styles.getStatusStyle(status)
                   )}
                 >
                   {status}
@@ -207,7 +203,7 @@ export function Info({ data, id }: InfoProps) {
                       noTooltip={true}
                       className={clsx(
                         styles.voteOptionTag,
-                        getVoteOptionStyle(v.option, styles)
+                        styles.getVoteOptionStyle(v.option)
                       )}
                     />
                   ))}

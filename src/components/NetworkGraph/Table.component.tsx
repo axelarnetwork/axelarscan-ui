@@ -3,14 +3,11 @@ import { ChainProfile } from '@/components/Profile';
 import { TablePagination } from '@/components/Pagination';
 
 import { networkGraphStyles as styles } from './NetworkGraph.styles';
-import type { NetworkDataItem } from './NetworkGraph.types';
+import type {
+  NetworkDataItem,
+  NetworkGraphTableProps,
+} from './NetworkGraph.types';
 import { SIZE_PER_PAGE } from './NetworkGraph.utils';
-
-interface NetworkGraphTableProps {
-  filteredData: NetworkDataItem[];
-  page: number | undefined;
-  setPage: (page: number | undefined) => void;
-}
 
 export function NetworkGraphTable({
   filteredData,

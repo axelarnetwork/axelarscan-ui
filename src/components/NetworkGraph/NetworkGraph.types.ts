@@ -41,6 +41,12 @@ export interface GraphData {
 
 export type ImagesMap = Record<string, HTMLImageElement>;
 
+export interface NetworkGraphTableProps {
+  filteredData: NetworkDataItem[];
+  page: number | undefined;
+  setPage: (page: number | undefined) => void;
+}
+
 export interface TierConfig {
   id: number;
   n_sd: number | null;

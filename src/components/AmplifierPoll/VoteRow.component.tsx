@@ -9,7 +9,7 @@ import { Profile } from '@/components/Profile';
 import { TimeAgo } from '@/components/Time';
 import { equalsIgnoreCase, ellipse, toTitle } from '@/lib/string';
 import type { VoteRowProps } from './AmplifierPoll.types';
-import { getVoteLabel, getVoteOptionStyle } from './AmplifierPoll.types';
+import { getVoteLabel } from './AmplifierPoll.types';
 import * as styles from './AmplifierPoll.styles';
 
 export function VoteRow({
@@ -81,7 +81,7 @@ export function VoteRow({
           <Tag
             className={clsx(
               'w-fit capitalize',
-              getVoteOptionStyle(vote, styles)
+              styles.getVoteOptionStyle(vote)
             )}
           >
             {toTitle(vote)}

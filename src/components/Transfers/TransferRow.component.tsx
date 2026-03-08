@@ -4,43 +4,13 @@ import { Copy } from '@/components/Copy';
 import { Profile, ChainProfile } from '@/components/Profile';
 import { ExplorerLink } from '@/components/ExplorerLink';
 import { TimeAgo } from '@/components/Time';
-import { getAssetData } from '@/lib/config';
-import { toCase } from '@/lib/parser';
-import { equalsIgnoreCase, ellipse } from '@/lib/string';
+import { ellipse } from '@/lib/string';
 
 import { StatusCell } from './StatusCell.component';
 import { MethodCell } from './MethodCell.component';
-import type { TransferRowData, TransferRowProps } from './Transfers.types';
+import { resolveSymbol } from './Transfers.utils';
+import type { TransferRowProps } from './Transfers.types';
 import * as styles from './Transfers.styles';
-
-function resolveSymbol(
-  d: TransferRowData,
-  assets: TransferRowProps['assets']
-): {
-  symbol: string | undefined;
-  image: string | undefined;
-  assetData: ReturnType<typeof getAssetData>;
-} {
-  const assetData = getAssetData(d.send.denom, assets);
-  const { addresses } = { ...assetData };
-  let { symbol, image } = { ...addresses?.[d.send.source_chain] };
-
-  if (!symbol) symbol = assetData?.symbol;
-  if (!image) image = assetData?.image;
-
-  if (symbol && d.type === 'wrap') {
-    const WRAP_PREFIXES = ['w', 'axl'];
-    const i = WRAP_PREFIXES.findIndex(
-      (p: string) =>
-        toCase(symbol!, 'lower').startsWith(p) && !equalsIgnoreCase(p, symbol!)
-    );
-    if (i > -1) {
-      symbol = symbol.substring(WRAP_PREFIXES[i].length);
-    }
-  }
-
-  return { symbol, image, assetData };
-}
 
 export function TransferRow({ d, assets }: TransferRowProps) {
   const { symbol, image, assetData } = resolveSymbol(d, assets);

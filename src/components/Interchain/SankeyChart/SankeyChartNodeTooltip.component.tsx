@@ -1,10 +1,5 @@
+import type { SankeyChartNodeTooltipProps } from './SankeyChart.types';
 import { sankeyChartNodeTooltipStyles } from './SankeyChartNodeTooltip.styles';
-
-interface SankeyChartNodeTooltipProps {
-  id: string;
-  formattedValue: string;
-  nodeColor?: string;
-}
 
 export function SankeyChartNodeTooltip({
   id,

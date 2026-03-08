@@ -78,6 +78,11 @@ export interface APRMetricProps {
   bondedTokens: string;
 }
 
+export interface CrossChainActivityProps {
+  data: OverviewData;
+  chains: import('@/types').Chain[] | null | undefined;
+}
+
 export interface InflationMetricProps {
   inflation: number;
 }

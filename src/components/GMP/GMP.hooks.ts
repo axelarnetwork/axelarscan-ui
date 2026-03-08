@@ -267,7 +267,9 @@ export function useGMPMessageData(tx?: string): {
     if (parsedMessage.settlement_forwarded_events) {
       const filledEvents = await fetchSettlementEvents(
         'SquidCoralSettlementFilled',
-        parsedMessage.settlement_forwarded_events.map(e => e.orderHash).filter((h): h is string => !!h)
+        parsedMessage.settlement_forwarded_events
+          .map(e => e.orderHash)
+          .filter((h): h is string => !!h)
       );
       if (filledEvents.length > 0) {
         parsedMessage.settlementFilledData = filledEvents;
@@ -277,7 +279,9 @@ export function useGMPMessageData(tx?: string): {
     if (parsedMessage.settlement_filled_events) {
       const forwardedEvents = await fetchSettlementEvents(
         'SquidCoralSettlementForwarded',
-        parsedMessage.settlement_filled_events.map(e => e.orderHash).filter((h): h is string => !!h)
+        parsedMessage.settlement_filled_events
+          .map(e => e.orderHash)
+          .filter((h): h is string => !!h)
       );
       if (forwardedEvents.length > 0) {
         parsedMessage.settlementForwardedData = forwardedEvents;

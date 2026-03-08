@@ -1,11 +1,6 @@
 import { Number } from '@/components/Number';
+import type { TotalColumnProps } from './TVL.types';
 import { totalColumnStyles } from './TotalColumn.styles';
-
-interface TotalColumnProps {
-  total: number;
-  value: number;
-  symbol?: string;
-}
 
 /**
  * Displays a total amount column (EVM or Cosmos)

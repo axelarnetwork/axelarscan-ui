@@ -1,16 +1,9 @@
 import clsx from 'clsx';
 import Link from 'next/link';
 
-import type { GMPStepStatus } from '../GMP.types';
 import { StepContent } from './StepContent.component';
 import { statusTimelineStyles } from './StatusTimeline.styles';
-
-interface CompletedStepProps {
-  id: string;
-  title: string;
-  status: GMPStepStatus;
-  stepURL: string | undefined;
-}
+import type { CompletedStepProps } from './StatusTimeline.types';
 
 export function CompletedStep({
   id,

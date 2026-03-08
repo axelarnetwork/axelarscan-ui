@@ -13,11 +13,7 @@ import { useMetaMaskProvider } from '@/lib/wallets/eip6963';
 import { useXRPLWalletStore } from './XRPLWallet.stores';
 import { WalletButton } from './WalletButton.component';
 import { walletStyles } from './Wallet.styles';
-
-interface XRPLWalletProps {
-  children?: React.ReactNode;
-  className?: string;
-}
+import type { XRPLWalletProps } from './Wallet.types';
 
 export function XRPLWallet({ children, className }: XRPLWalletProps) {
   const { address, setAddress } = useXRPLWalletStore();

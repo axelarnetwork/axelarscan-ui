@@ -1,8 +1,12 @@
+import Link from 'next/link';
+
+import { Copy } from '@/components/Copy';
 import { getChainData } from '@/lib/config';
 import { toArray, toCase, split } from '@/lib/parser';
 import { equalsIgnoreCase } from '@/lib/string';
 import type { Chain } from '@/types';
-import type { TransferData, TransferStep } from './Transfer.types';
+import type { StepTxInfo, TransferData, TransferStep } from './Transfer.types';
+import * as styles from './Transfer.styles';
 
 function getSendData(
   type: string | undefined,
@@ -290,6 +294,172 @@ export function resolveStepURL(
 }
 
 // ─── Utilities from Details.component.tsx ──────────────────────
+
+export function resolveStepTxInfo(
+  step: TransferStep,
+  axelarChainData: ReturnType<typeof getChainData>,
+  destinationChainData: ReturnType<typeof getChainData>
+): StepTxInfo {
+  const stepData = step.data;
+  const txhash = stepData?.txhash;
+  const poll_id = stepData?.poll_id;
+  const batch_id = stepData?.batch_id;
+  const transactionHash = stepData?.transactionHash;
+  const recv_txhash = stepData?.recv_txhash;
+  const ack_txhash = stepData?.ack_txhash;
+  const failed_txhash = stepData?.failed_txhash;
+  const tx_hash_unwrap = stepData?.tx_hash_unwrap;
+  const { url, transaction_path } = { ...step.chainData?.explorer };
+
+  let stepTX: string | undefined;
+  let stepURL: string | undefined;
+  const stepMoreInfos: React.ReactNode[] = [];
+
+  if (!url || !transaction_path) {
+    return { stepTX, stepURL, stepMoreInfos };
+  }
+
+  switch (step.id) {
+    case 'link':
+    case 'send':
+    case 'wrap':
+    case 'erc20_transfer':
+    case 'confirm':
+    case 'axelar_transfer':
+      if (txhash) {
+        stepTX = txhash;
+        stepURL = `${url}${transaction_path.replace('{tx}', txhash)}`;
+      }
+      break;
+    case 'vote':
+      if (txhash) {
+        stepTX = txhash;
+        stepURL = `/tx/${txhash}`;
+      } else if (poll_id) {
+        stepTX = poll_id;
+        stepURL = `/evm-poll/${poll_id}`;
+      }
+      break;
+    case 'command':
+      if (transactionHash) {
+        stepTX = transactionHash;
+        stepURL = `${url}${transaction_path.replace('{tx}', transactionHash)}`;
+      }
+
+      if (batch_id && destinationChainData) {
+        if (!stepTX) {
+          stepTX = batch_id;
+        }
+
+        if (!stepURL) {
+          stepURL = `/evm-batch/${destinationChainData.id}/${batch_id}`;
+        }
+
+        if (transactionHash) {
+          stepMoreInfos.push(
+            <Copy key={stepMoreInfos.length} size={16} value={batch_id}>
+              <Link
+                href={`/evm-batch/${destinationChainData.id}/${batch_id}`}
+                target="_blank"
+                className={styles.detailsBatchLink}
+              >
+                Batch
+              </Link>
+            </Copy>
+          );
+        }
+      }
+      break;
+    case 'ibc_send':
+      if (recv_txhash) {
+        stepTX = recv_txhash;
+        stepURL = `${url}${transaction_path.replace('{tx}', recv_txhash)}`;
+      }
+
+      if (ack_txhash) {
+        if (!stepTX) {
+          stepTX = ack_txhash;
+        }
+
+        if (stepURL) {
+          stepURL = `${axelarChainData?.explorer?.url}${axelarChainData?.explorer?.transaction_path?.replace('{tx}', ack_txhash)}`;
+        }
+
+        if (recv_txhash) {
+          stepMoreInfos.push(
+            <Copy key={stepMoreInfos.length} size={16} value={ack_txhash}>
+              <Link
+                href={`${axelarChainData?.explorer?.url}${axelarChainData?.explorer?.transaction_path?.replace('{tx}', ack_txhash)}`}
+                target="_blank"
+                className={styles.detailsAckLink}
+              >
+                Acknowledgement
+              </Link>
+            </Copy>
+          );
+        }
+      }
+
+      if (failed_txhash) {
+        if (!stepTX) {
+          stepTX = failed_txhash;
+        }
+
+        if (!stepURL) {
+          stepURL = `${url}${transaction_path.replace('{tx}', failed_txhash)}`;
+        }
+
+        if (recv_txhash && !ack_txhash) {
+          stepMoreInfos.push(
+            <Copy key={stepMoreInfos.length} size={16} value={failed_txhash}>
+              <Link
+                href={`${url}${transaction_path.replace('{tx}', failed_txhash)}`}
+                target="_blank"
+                className={styles.detailsIbcFailedLink}
+              >
+                IBC Failed
+              </Link>
+            </Copy>
+          );
+        }
+      }
+
+      if (txhash) {
+        if (!stepTX) {
+          stepTX = txhash;
+        }
+
+        if (!stepURL) {
+          stepURL = `${url}${transaction_path.replace('{tx}', txhash)}`;
+        }
+
+        if (recv_txhash || ack_txhash || failed_txhash) {
+          stepMoreInfos.push(
+            <Copy key={stepMoreInfos.length} size={16} value={txhash}>
+              <Link
+                href={`${axelarChainData?.explorer?.url}${axelarChainData?.explorer?.transaction_path?.replace('{tx}', txhash)}`}
+                target="_blank"
+                className={styles.detailsIbcSendLink}
+              >
+                IBC Send
+              </Link>
+            </Copy>
+          );
+        }
+      }
+      break;
+    case 'unwrap':
+      if (tx_hash_unwrap) {
+        stepTX = tx_hash_unwrap;
+        stepURL = `${url}${transaction_path.replace('{tx}', tx_hash_unwrap)}`;
+      }
+      break;
+    default:
+      break;
+  }
+
+  return { stepTX, stepURL, stepMoreInfos };
+}
 
 export function resolveBlockURL(
   step: TransferStep,

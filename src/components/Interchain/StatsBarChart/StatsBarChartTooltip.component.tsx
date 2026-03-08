@@ -3,15 +3,9 @@ import _ from 'lodash';
 import { Number } from '@/components/Number';
 import { toArray } from '@/lib/parser';
 import { toTitle } from '@/lib/string';
-import { ChartDataPoint, CustomTooltipProps } from '../Interchain.types';
+import { ChartDataPoint } from '../Interchain.types';
+import type { StatsBarChartTooltipProps } from './StatsBarChart.types';
 import { statsBarChartTooltipStyles } from './StatsBarChartTooltip.styles';
-
-interface StatsBarChartTooltipProps extends CustomTooltipProps {
-  stacks: string[];
-  field: string;
-  valueFormat: string;
-  valuePrefix: string;
-}
 
 export function StatsBarChartTooltip({
   active,

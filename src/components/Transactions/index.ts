@@ -5,3 +5,7 @@ export {
   getSender,
   getRecipient,
 } from './Transactions.utils';
+export type {
+  TransactionData,
+  TransactionActivity,
+} from './Transactions.types';

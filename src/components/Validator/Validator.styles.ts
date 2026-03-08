@@ -93,6 +93,13 @@ export const statusBonded = 'bg-green-600 dark:bg-green-500' as const;
 export const statusUnbonding = 'bg-orange-500 dark:bg-orange-600' as const;
 export const statusUnbonded = 'bg-red-600 dark:bg-red-500' as const;
 
+export function getStatusStyle(status: string): string {
+  if (status.includes('UN')) {
+    return status.endsWith('ED') ? statusUnbonded : statusUnbonding;
+  }
+  return statusBonded;
+}
+
 // Balance colors
 export const balanceLow = 'text-red-600 dark:text-red-500' as const;
 export const balanceOk = 'text-green-600 dark:text-green-500' as const;
