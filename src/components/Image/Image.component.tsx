@@ -7,7 +7,8 @@ import type React from 'react';
 import { getChainSpecificClasses } from './Image.styles';
 import { loader, type LoaderParams } from './Image.utils';
 
-const imageLoader = (params: LoaderParams) => loader({ ...params, src: params.src as string });
+const imageLoader = (params: LoaderParams) =>
+  loader({ ...params, src: params.src as string });
 
 /**
  * Props for the Image component

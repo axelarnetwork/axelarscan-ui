@@ -23,7 +23,7 @@ export function TimeUntil({
 }: TimeUntilProps) {
   const [trigger, setTrigger] = useState(0);
 
-  const time = (timestamp || isNumber(timestamp)) ? moment(timestamp) : null;
+  const time = timestamp || isNumber(timestamp) ? moment(timestamp) : null;
   const remaining = time ? timeDiff(moment(), 'seconds', time) : 0;
 
   useEffect(() => {

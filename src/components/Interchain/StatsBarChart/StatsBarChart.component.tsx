@@ -43,13 +43,18 @@ export function StatsBarChart({
 
   // Throttle mouse move to avoid 60+ state updates/sec
   const lastXRef = useRef<number | null>(null);
-  const handleMouseMove = useCallback((e: { activePayload?: Array<{ payload?: { timestamp?: number } }> } | null) => {
-    const ts = e?.activePayload?.[0]?.payload?.timestamp ?? null;
-    if (ts !== lastXRef.current) {
-      lastXRef.current = ts;
-      setX(ts);
-    }
-  }, []);
+  const handleMouseMove = useCallback(
+    (
+      e: { activePayload?: Array<{ payload?: { timestamp?: number } }> } | null
+    ) => {
+      const ts = e?.activePayload?.[0]?.payload?.timestamp ?? null;
+      if (ts !== lastXRef.current) {
+        lastXRef.current = ts;
+        setX(ts);
+      }
+    },
+    []
+  );
   const handleMouseLeave = useCallback(() => {
     lastXRef.current = null;
     setX(null);
@@ -64,7 +69,10 @@ export function StatsBarChart({
   const value = getChartValue(selectedData, chartData, field, totalValue);
   const timeString = getChartTimeString(selectedData, chartData);
 
-  const reversedStacks = useMemo(() => _.reverse(_.cloneDeep(stacks)), [stacks]);
+  const reversedStacks = useMemo(
+    () => _.reverse(_.cloneDeep(stacks)),
+    [stacks]
+  );
 
   return (
     <div className={statsBarChartStyles.container(i)}>

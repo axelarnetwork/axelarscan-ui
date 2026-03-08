@@ -19,7 +19,11 @@ import * as styles from './EVMBatches.styles';
 
 const NUM_COMMANDS_TRUNCATE = 10;
 
-export const BatchRow = memo(function BatchRow({ batch: d, chains, assets }: BatchRowProps) {
+export const BatchRow = memo(function BatchRow({
+  batch: d,
+  chains,
+  assets,
+}: BatchRowProps) {
   const { url, transaction_path } = {
     ...getChainData(d.chain, chains)?.explorer,
   } as Partial<ChainExplorer>;
@@ -54,8 +58,9 @@ export const BatchRow = memo(function BatchRow({ batch: d, chains, assets }: Bat
       </td>
       <td className={styles.tdMiddle}>
         <div className={styles.commandsWrapper}>
-          {commands.slice(0, NUM_COMMANDS_TRUNCATE).map(
-            (c: BatchCommand, i: number) => (
+          {commands
+            .slice(0, NUM_COMMANDS_TRUNCATE)
+            .map((c: BatchCommand, i: number) => (
               <CommandItem
                 key={i}
                 command={c}
@@ -65,8 +70,7 @@ export const BatchRow = memo(function BatchRow({ batch: d, chains, assets }: Bat
                 explorerUrl={url}
                 transactionPath={transaction_path}
               />
-            )
-          )}
+            ))}
           {commands.length > NUM_COMMANDS_TRUNCATE && (
             <Link
               href={`/evm-batch/${d.chain}/${d.batch_id}`}

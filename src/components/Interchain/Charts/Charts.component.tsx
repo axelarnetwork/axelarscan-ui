@@ -14,13 +14,20 @@ export function Charts({ data, granularity }: ChartsProps) {
 
   if (!data) return null;
 
-  const { GMPStatsByChains, GMPTotalVolume, transfersStats, transfersTotalVolume } = data;
+  const {
+    GMPStatsByChains,
+    GMPTotalVolume,
+    transfersStats,
+    transfersTotalVolume,
+  } = data;
 
   const TIME_FORMAT = granularity === 'month' ? 'MMM' : 'D MMM';
   const chartData = processChartData(data);
   const { useStack } = getChartStack(chartData);
   const chainPairs = getChainPairs(data, chains);
-  const totalTxs = toNumber(_.sumBy(GMPStatsByChains?.source_chains, 'num_txs')) + toNumber(transfersStats?.total);
+  const totalTxs =
+    toNumber(_.sumBy(GMPStatsByChains?.source_chains, 'num_txs')) +
+    toNumber(transfersStats?.total);
   const totalVolume = toNumber(GMPTotalVolume) + toNumber(transfersTotalVolume);
 
   return (

@@ -37,20 +37,29 @@ export function Validators({ status, initialData = null }: ValidatorsProps) {
   const chains = result?.chains ?? [];
 
   const evmChains = useMemo(
-    () => toArray(chains).filter((c: Chain) => c.chain_type === 'evm' && !c.deprecated),
+    () =>
+      toArray(chains).filter(
+        (c: Chain) => c.chain_type === 'evm' && !c.deprecated
+      ),
     [chains]
   );
 
-  const orderBy = useCallback((key: string) => {
-    setOrder(prev => {
-      const resolvedKey = key === 'quadratic_voting_power' && status !== 'active' ? 'tokens' : key;
-      const finalKey = resolvedKey || 'tokens';
-      return [
-        finalKey,
-        finalKey !== prev[0] || prev[1] === 'asc' ? 'desc' : 'asc',
-      ];
-    });
-  }, [status]);
+  const orderBy = useCallback(
+    (key: string) => {
+      setOrder(prev => {
+        const resolvedKey =
+          key === 'quadratic_voting_power' && status !== 'active'
+            ? 'tokens'
+            : key;
+        const finalKey = resolvedKey || 'tokens';
+        return [
+          finalKey,
+          finalKey !== prev[0] || prev[1] === 'asc' ? 'desc' : 'asc',
+        ];
+      });
+    },
+    [status]
+  );
 
   const filteredByStatus = useMemo(() => {
     const arr = toArray(data);
@@ -80,7 +89,10 @@ export function Validators({ status, initialData = null }: ValidatorsProps) {
   );
 
   const totalVotingPower = _.sumBy(filteredData, 'tokens');
-  const totalQuadraticVotingPower = _.sumBy(filteredData, 'quadratic_voting_power');
+  const totalQuadraticVotingPower = _.sumBy(
+    filteredData,
+    'quadratic_voting_power'
+  );
 
   // Pre-compute cumulative sums in a single pass
   let cumulativeTokens = 0;

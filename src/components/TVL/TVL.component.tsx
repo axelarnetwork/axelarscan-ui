@@ -32,7 +32,10 @@ export function TVL() {
   const processedData = useTVLData(globalStore);
 
   const minAssetCount = useMemo(
-    () => assets ? (assets as Asset[]).filter((asset: Asset) => !asset.no_tvl).length - 3 : 0,
+    () =>
+      assets
+        ? (assets as Asset[]).filter((asset: Asset) => !asset.no_tvl).length - 3
+        : 0,
     [assets]
   );
 
@@ -43,17 +46,15 @@ export function TVL() {
 
   const filteredData = useMemo(() => {
     if (!processedData) return [];
-    return processedData.filter(
-      (item): item is ProcessedTVLData => {
-        if (item === null || item === undefined || typeof item === 'string') {
-          return false;
-        }
-        if (includeITS) {
-          return true;
-        }
-        return item.assetType !== 'its';
+    return processedData.filter((item): item is ProcessedTVLData => {
+      if (item === null || item === undefined || typeof item === 'string') {
+        return false;
       }
-    );
+      if (includeITS) {
+        return true;
+      }
+      return item.assetType !== 'its';
+    });
   }, [processedData, includeITS]);
 
   const assetsWithData = useMemo(

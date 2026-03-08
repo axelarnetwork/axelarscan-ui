@@ -14,7 +14,9 @@ export function Tooltip({
   return (
     <span className={clsx(tooltipStyles.parent, parentClassName)}>
       <span className={tooltipStyles.popup}>
-        <span className={clsx(tooltipStyles.content, className)}>{content}</span>
+        <span className={clsx(tooltipStyles.content, className)}>
+          {content}
+        </span>
       </span>
       {children}
     </span>

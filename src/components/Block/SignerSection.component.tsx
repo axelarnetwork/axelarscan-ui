@@ -16,7 +16,9 @@ export function SignerSection({
   const [collapsed, setCollapsed] = useState(true);
 
   const signedPercent = useMemo(() => {
-    const totalTokens = _.sumBy(signedValidatorsData, 'tokens') + _.sumBy(unsignedValidatorsData, 'tokens');
+    const totalTokens =
+      _.sumBy(signedValidatorsData, 'tokens') +
+      _.sumBy(unsignedValidatorsData, 'tokens');
     return totalTokens > 0
       ? (_.sumBy(signedValidatorsData, 'tokens') * 100) / totalTokens
       : 0;

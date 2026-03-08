@@ -27,7 +27,7 @@ export function useNavigationProgress() {
         setProgress(30);
 
         incrementTimer.current = setInterval(() => {
-          setProgress((p) => {
+          setProgress(p => {
             if (p >= 85) {
               clearInterval(incrementTimer.current);
               return 85;

@@ -13,7 +13,10 @@ import { resolveSymbol } from './Transfers.utils';
 import type { TransferRowProps } from './Transfers.types';
 import * as styles from './Transfers.styles';
 
-export const TransferRow = memo(function TransferRow({ d, assets }: TransferRowProps) {
+export const TransferRow = memo(function TransferRow({
+  d,
+  assets,
+}: TransferRowProps) {
   const { symbol, image, assetData } = resolveSymbol(d, assets);
 
   const senderAddress =

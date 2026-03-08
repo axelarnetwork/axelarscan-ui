@@ -10,7 +10,10 @@ import { SenderCell } from './SenderCell.component';
 import { DestinationCell } from './DestinationCell.component';
 import { StatusCell } from './StatusCell.component';
 
-export const GMPRow = memo(function GMPRow({ data: d, useAnotherHopChain }: GMPRowProps) {
+export const GMPRow = memo(function GMPRow({
+  data: d,
+  useAnotherHopChain,
+}: GMPRowProps) {
   const key = d.message_id || d.call.transactionHash;
 
   return (

@@ -66,20 +66,61 @@ export function Tops({ data, types, params }: TopsProps) {
     ITSAssetsByVolume,
   } = useMemo(() => {
     const filterValid = <T,>(arr: unknown[]): T[] =>
-      arr.filter((item): item is T => item !== undefined && typeof item !== 'string');
+      arr.filter(
+        (item): item is T => item !== undefined && typeof item !== 'string'
+      );
 
     return {
-      chainPairs: processChainPairs({ GMPStatsByChains, transfersStats }, chains),
-      sourceChains: processSourceChains({ GMPStatsByChains, transfersStats }, chains),
-      destinationChains: processDestinationChains({ GMPStatsByChains, transfersStats }, chains),
-      transfersUsers: processTransfersUsers(filterValid<TopDataItem>(transfersTopUsers?.data ?? []), chains),
-      transfersUsersByVolume: processTransfersUsers(filterValid<TopDataItem>(transfersTopUsersByVolume?.data ?? []), chains),
-      contracts: processContracts(filterValid<ChainWithContracts>(GMPStatsByContracts?.chains ?? []), chains),
-      GMPUsers: processGMPUsers(filterValid<TopDataItem>(GMPTopUsers?.data ?? []), chains),
-      ITSUsers: processITSUsers(filterValid<TopDataItem>(GMPTopITSUsers?.data ?? []), chains, false),
-      ITSUsersByVolume: processITSUsers(filterValid<TopDataItem>(GMPTopITSUsersByVolume?.data ?? []), chains, true),
-      ITSAssets: processITSAssets(filterValid<TopDataItem>(GMPTopITSAssets?.data ?? []), chains, itsAssets, false),
-      ITSAssetsByVolume: processITSAssets(filterValid<TopDataItem>(GMPTopITSAssetsByVolume?.data ?? []), chains, itsAssets, true),
+      chainPairs: processChainPairs(
+        { GMPStatsByChains, transfersStats },
+        chains
+      ),
+      sourceChains: processSourceChains(
+        { GMPStatsByChains, transfersStats },
+        chains
+      ),
+      destinationChains: processDestinationChains(
+        { GMPStatsByChains, transfersStats },
+        chains
+      ),
+      transfersUsers: processTransfersUsers(
+        filterValid<TopDataItem>(transfersTopUsers?.data ?? []),
+        chains
+      ),
+      transfersUsersByVolume: processTransfersUsers(
+        filterValid<TopDataItem>(transfersTopUsersByVolume?.data ?? []),
+        chains
+      ),
+      contracts: processContracts(
+        filterValid<ChainWithContracts>(GMPStatsByContracts?.chains ?? []),
+        chains
+      ),
+      GMPUsers: processGMPUsers(
+        filterValid<TopDataItem>(GMPTopUsers?.data ?? []),
+        chains
+      ),
+      ITSUsers: processITSUsers(
+        filterValid<TopDataItem>(GMPTopITSUsers?.data ?? []),
+        chains,
+        false
+      ),
+      ITSUsersByVolume: processITSUsers(
+        filterValid<TopDataItem>(GMPTopITSUsersByVolume?.data ?? []),
+        chains,
+        true
+      ),
+      ITSAssets: processITSAssets(
+        filterValid<TopDataItem>(GMPTopITSAssets?.data ?? []),
+        chains,
+        itsAssets,
+        false
+      ),
+      ITSAssetsByVolume: processITSAssets(
+        filterValid<TopDataItem>(GMPTopITSAssetsByVolume?.data ?? []),
+        chains,
+        itsAssets,
+        true
+      ),
     };
   }, [data, chains, itsAssets]);
 

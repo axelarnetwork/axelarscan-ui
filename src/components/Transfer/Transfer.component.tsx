@@ -77,7 +77,8 @@ export function Transfer({ tx, lite, initialData }: TransferProps) {
 
     getData();
 
-    const interval = !ended && setInterval(() => getData(), REFRESH_INTERVAL_MS);
+    const interval =
+      !ended && setInterval(() => getData(), REFRESH_INTERVAL_MS);
     return () => clearInterval(interval as ReturnType<typeof setInterval>);
   }, [tx, router, searchParams, setData, ended, setEnded]);
 

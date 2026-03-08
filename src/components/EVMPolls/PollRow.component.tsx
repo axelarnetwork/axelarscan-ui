@@ -27,7 +27,12 @@ import type {
 import * as styles from './EVMPolls.styles';
 import { buildVoteSuffix } from './EVMPolls.utils';
 
-export const PollRow = memo(function PollRow({ poll: d, chains, assets, validators }: PollRowProps) {
+export const PollRow = memo(function PollRow({
+  poll: d,
+  chains,
+  assets,
+  validators,
+}: PollRowProps) {
   const chainData = getChainData(d.sender_chain, chains);
   const chain = chainData?.id;
   const { url, transaction_path } = { ...chainData?.explorer };

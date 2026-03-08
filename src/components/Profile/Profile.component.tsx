@@ -36,7 +36,17 @@ export function Profile({
 
   if (!data) return null;
 
-  const { address, chain, prefix, name, image, isValidator, isVerifier, url, copySize } = data;
+  const {
+    address,
+    chain,
+    prefix,
+    name,
+    image,
+    isValidator,
+    isVerifier,
+    url,
+    copySize,
+  } = data;
 
   if (name) {
     return (

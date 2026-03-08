@@ -16,19 +16,16 @@ export function BlockEvents({ data }: BlockEventsProps) {
 
   const handleToggleSeeMore = useCallback((type: string) => {
     setSeeMoreTypes(prev =>
-      prev.includes(type)
-        ? prev.filter(t => t !== type)
-        : [...prev, type]
+      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
     );
   }, []);
 
   const activeEventFields = useMemo(
-    () => BLOCK_EVENT_FIELDS.filter(
-      f => {
+    () =>
+      BLOCK_EVENT_FIELDS.filter(f => {
         const events = data[f as keyof BlockData];
         return Array.isArray(events) && events.length > 0;
-      }
-    ),
+      }),
     [data]
   );
 

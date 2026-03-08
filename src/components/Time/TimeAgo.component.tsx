@@ -21,7 +21,7 @@ export function TimeAgo({
 }: TimeAgoProps) {
   const [trigger, setTrigger] = useState(0);
 
-  const time = (!timestamp && !isNumber(timestamp)) ? null : moment(timestamp);
+  const time = !timestamp && !isNumber(timestamp) ? null : moment(timestamp);
   const diff = time ? timeDiff(time) : 0;
 
   useEffect(() => {

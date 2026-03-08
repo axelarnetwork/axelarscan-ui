@@ -2,11 +2,7 @@ import _ from 'lodash';
 
 import { ENVIRONMENT, axelarContractFields, getChainData } from '@/lib/config';
 import { getIcapAddress, toHex, toCase, split, toArray } from '@/lib/parser';
-import {
-  equalsIgnoreCase,
-  includesSomePatterns,
-  toTitle,
-} from '@/lib/string';
+import { equalsIgnoreCase, includesSomePatterns, toTitle } from '@/lib/string';
 import { isNumber } from '@/lib/number';
 import accounts from '@/data/accounts';
 import broadcasters from '@/data/broadcasters';
@@ -28,10 +24,9 @@ export function buildGlobalAccounts(
   configurations: unknown,
   chains: Chain[] | null | undefined
 ): AccountEntry[] {
-  const {
-    gateway_contracts,
-    gas_service_contracts,
-  } = { ...(contracts as ContractsData | null) };
+  const { gateway_contracts, gas_service_contracts } = {
+    ...(contracts as ContractsData | null),
+  };
 
   const gateways = Object.entries({ ...gateway_contracts })
     .filter(([_k, v]) => v?.address)

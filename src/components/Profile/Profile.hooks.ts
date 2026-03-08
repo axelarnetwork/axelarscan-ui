@@ -118,7 +118,11 @@ export function useProfileData({
 
   if (!addressProp) return null;
 
-  const { address: rawAddress, chain, prefix } = resolveAddressInput(
+  const {
+    address: rawAddress,
+    chain,
+    prefix,
+  } = resolveAddressInput(
     addressProp as string | number[],
     chainProp,
     prefixProp,
@@ -132,13 +136,7 @@ export function useProfileData({
     chains
   );
 
-  const {
-    name,
-    image,
-    isValidator,
-    isVerifier,
-    address,
-  } = resolveProfile(
+  const { name, image, isValidator, isVerifier, address } = resolveProfile(
     rawAddress,
     chain,
     allAccounts,
@@ -158,5 +156,15 @@ export function useProfileData({
   );
   const copySize = width < 24 ? 16 : 18;
 
-  return { address, chain, prefix, name, image, isValidator, isVerifier, url, copySize };
+  return {
+    address,
+    chain,
+    prefix,
+    name,
+    image,
+    isValidator,
+    isVerifier,
+    url,
+    copySize,
+  };
 }
