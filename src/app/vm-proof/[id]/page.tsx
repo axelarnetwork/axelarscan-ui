@@ -5,7 +5,9 @@ import type {
   AmplifierProofData,
 } from '@/components/AmplifierProof/AmplifierProof.types';
 
-export default async function VMProofPage({
+export const revalidate = 30;
+
+export default async function AmplifierProofPage({
   params,
 }: {
   params: Promise<{ id: string }>;

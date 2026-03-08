@@ -2,6 +2,8 @@ import { Proposal } from '@/components/Proposal';
 import { getProposal } from '@/lib/api/axelarscan';
 import type { ProposalData } from '@/components/Proposal/Proposal.types';
 
+export const revalidate = 60;
+
 export default async function ProposalPage({
   params,
 }: {

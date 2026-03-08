@@ -2,7 +2,9 @@ import { EVMPoll } from '@/components/EVMPoll';
 import { searchEVMPolls } from '@/lib/api/validator';
 import type { EVMPollData } from '@/components/EVMPoll/EVMPoll.types';
 
-export default async function EVMPollPage({
+export const revalidate = 30;
+
+export default async function PollPage({
   params,
 }: {
   params: Promise<{ id: string }>;

@@ -1,6 +1,8 @@
 import { Verifier } from '@/components/Verifier';
 import { getRPCStatus } from '@/lib/api/validator';
 
+export const revalidate = 60;
+
 export default async function VerifierPage({
   params,
 }: {

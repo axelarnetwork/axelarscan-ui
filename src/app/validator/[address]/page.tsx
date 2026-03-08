@@ -2,6 +2,8 @@ import { Validator } from '@/components/Validator';
 import { getBalances } from '@/lib/api/axelarscan';
 import { getRPCStatus } from '@/lib/api/validator';
 
+export const revalidate = 60;
+
 export default async function ValidatorPage({
   params,
 }: {

@@ -5,7 +5,9 @@ import type {
   AmplifierPollData,
 } from '@/components/AmplifierPoll/AmplifierPoll.types';
 
-export default async function VMPollPage({
+export const revalidate = 30;
+
+export default async function AmplifierPollPage({
   params,
 }: {
   params: Promise<{ id: string }>;

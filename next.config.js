@@ -5,13 +5,12 @@ const nextConfig = {
     '@xrpl-wallet-adapter/walletconnect',
   ],
   experimental: {
-    // Next.js 15+ defaults dynamic pages to 0s in the Router Cache,
-    // meaning prefetched data is discarded immediately. Setting these
-    // values lets hover-prefetched pages load instantly from cache.
+    // Client-side Router Cache TTL. Visited pages are cached for these
+    // durations - repeat navigations are instant (no server roundtrip).
     // React Query still refetches on mount for fresh data.
     staleTimes: {
-      dynamic: 30,
-      static: 180,
+      dynamic: 180,
+      static: 300,
     },
   },
 };

@@ -5,6 +5,8 @@ import type {
   ValidatorSetEntry,
 } from '@/components/Block/Block.types';
 
+export const revalidate = 30;
+
 export default async function BlockPage({
   params,
 }: {

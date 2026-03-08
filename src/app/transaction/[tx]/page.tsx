@@ -2,6 +2,8 @@ import { Transaction } from '@/components/Transaction';
 import { getTransaction } from '@/lib/api/validator';
 import type { TransactionData } from '@/components/Transaction/Transaction.types';
 
+export const revalidate = 30;
+
 export default async function TransactionPage({
   params,
 }: {

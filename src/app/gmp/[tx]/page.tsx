@@ -2,6 +2,8 @@ import { GMP } from '@/components/GMP';
 import type { SearchGMPResult } from '@/components/GMP/GMP.types';
 import { searchGMP } from '@/lib/api/gmp';
 
+export const revalidate = 30;
+
 export default async function GMPPage({
   params,
 }: {
