@@ -82,6 +82,57 @@ export interface ProfileProps {
   className?: string;
 }
 
+export interface KeybaseUserResponse {
+  them?: Array<{
+    pictures?: {
+      primary?: { url?: string };
+    };
+  }>;
+}
+
+export interface AccountEntry {
+  address: string;
+  name: string;
+  image?: string;
+  chain?: string;
+  environment?: string;
+}
+
+export interface ContractsData {
+  interchain_token_service_contract?: {
+    addresses?: string[];
+    [key: string]: unknown;
+  };
+  gateway_contracts?: Record<
+    string,
+    { address?: string; [key: string]: unknown }
+  >;
+  gas_service_contracts?: Record<
+    string,
+    { address?: string; [key: string]: unknown }
+  >;
+  [key: string]: unknown;
+}
+
+export interface ConfigurationsData {
+  relayers?: string[];
+  express_relayers?: string[];
+  refunders?: string[];
+  [key: string]: unknown;
+}
+
+export interface ProfileData {
+  address: string;
+  chain: string;
+  prefix: string;
+  name: string | undefined;
+  image: string | undefined;
+  isValidator: boolean | undefined;
+  isVerifier: boolean | undefined;
+  url: string | undefined;
+  copySize: number;
+}
+
 export interface ChainProfileProps {
   value?: string;
   width?: number;
