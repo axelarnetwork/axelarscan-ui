@@ -1,3 +1,10 @@
+import type {
+  Chain,
+  Validator,
+  InflationData,
+  NetworkParameters,
+} from '@/types';
+
 export interface NetworkGraphDataItem {
   id: string;
   sourceChain: string;
@@ -80,16 +87,30 @@ export interface APRMetricProps {
 
 export interface CrossChainActivityProps {
   data: OverviewData;
-  chains: import('@/types').Chain[] | null | undefined;
+  chains: Chain[] | null | undefined;
 }
 
 export interface InflationMetricProps {
   inflation: number;
 }
 
+export interface BlockData {
+  latest_block_height?: number;
+  avg_block_time?: number;
+}
+
+export interface MetricsProps {
+  initialBlockData?: BlockData | null;
+  initialValidators?: Validator[] | null;
+  initialInflationData?: InflationData | null;
+  initialNetworkParameters?: NetworkParameters | null;
+  symbol?: string;
+}
+
 export interface OverviewProps {
   data: OverviewData;
-  chains: import('@/types').Chain[] | null;
+  chains: Chain[] | null;
   networkGraph: NetworkGraphDataItem[];
   chainPairs: Record<string, unknown>[];
+  metricsData?: MetricsProps;
 }

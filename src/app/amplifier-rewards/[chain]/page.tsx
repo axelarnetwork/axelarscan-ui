@@ -40,31 +40,23 @@ export default async function AmplifierRewardsPage({
     chainData?.voting_verifier as { address?: string } | undefined
   )?.address;
 
-  const rawData = searchResponse?.data as
-    | Record<string, unknown>[]
-    | undefined;
+  const rawData = searchResponse?.data as Record<string, unknown>[] | undefined;
   const total = searchResponse?.total as number | undefined;
 
-  const distributions = toArray(rawData).map(
-    (d: Record<string, unknown>) => ({
-      ...d,
-      pool_type: equalsIgnoreCase(
-        (d.contract_address || d.multisig_contract_address) as
-          | string
-          | undefined,
-        votingVerifierAddress
-      )
-        ? 'verification'
-        : 'signing',
-    })
-  ) as RewardsDistribution[];
+  const distributions = toArray(rawData).map((d: Record<string, unknown>) => ({
+    ...d,
+    pool_type: equalsIgnoreCase(
+      (d.contract_address || d.multisig_contract_address) as string | undefined,
+      votingVerifierAddress
+    )
+      ? 'verification'
+      : 'signing',
+  })) as RewardsDistribution[];
 
   const rewardsPool =
-    (
-      (poolResponse?.data as RewardsPoolData[] | undefined)?.[0] as
-        | RewardsPoolData
-        | undefined
-    ) ?? null;
+    ((poolResponse?.data as RewardsPoolData[] | undefined)?.[0] as
+      | RewardsPoolData
+      | undefined) ?? null;
 
   const aggs = aggsResponse?.aggs as
     | { cumulativeRewards?: { value?: number } }

@@ -15,6 +15,7 @@ export function Overview({
   chains,
   networkGraph,
   chainPairs: initialChainPairs,
+  metricsData,
 }: OverviewProps) {
   const [chainFocus, setChainFocus] = useState<string | null>(null);
 
@@ -28,7 +29,7 @@ export function Overview({
 
   return (
     <>
-      <Metrics />
+      <Metrics {...metricsData} />
       <Container className="mt-8">
         <div className={styles.contentWrapper}>
           <CrossChainActivity data={data} chains={chains} />

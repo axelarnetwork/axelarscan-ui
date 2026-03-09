@@ -21,17 +21,26 @@ import { MetricWithTooltip } from './MetricWithTooltip.component';
 import { StakedMetric } from './StakedMetric.component';
 import { APRMetric } from './APRMetric.component';
 import { InflationMetric } from './InflationMetric.component';
+import type { MetricsProps } from './Overview.types';
 import * as styles from './Overview.styles';
 
-export function Metrics() {
-  const [blockData, setBlockData] = useState<{
-    latest_block_height?: number;
-    avg_block_time?: number;
-  } | null>(null);
-  const chains = useChains();
-  const validators = useValidators();
-  const inflationData = useInflationData();
-  const networkParameters = useNetworkParameters();
+export function Metrics({
+  initialBlockData,
+  initialValidators,
+  initialInflationData,
+  initialNetworkParameters,
+  symbol: initialSymbol,
+}: MetricsProps) {
+  const [blockData, setBlockData] = useState(initialBlockData ?? null);
+  const hookChains = useChains();
+  const hookValidators = useValidators();
+  const hookInflationData = useInflationData();
+  const hookNetworkParameters = useNetworkParameters();
+
+  const validators = hookValidators ?? initialValidators ?? null;
+  const inflationData = hookInflationData ?? initialInflationData ?? null;
+  const networkParameters =
+    hookNetworkParameters ?? initialNetworkParameters ?? null;
 
   useEffect(() => {
     const getData = async () =>
@@ -42,15 +51,11 @@ export function Metrics() {
         } | null
       );
 
-    getData();
+    if (!initialBlockData) getData();
 
     const interval = setInterval(() => getData(), REFRESH_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [setBlockData]);
-
-  if (!blockData) {
-    return null;
-  }
+  }, [initialBlockData]);
 
   const externalChainVotingInflationRate =
     inflationData?.externalChainVotingInflationRate;
@@ -58,11 +63,13 @@ export function Metrics() {
     ? externalChainVotingInflationRate * 100
     : 0.2;
 
-  const { symbol } = {
-    ...(getChainData('axelarnet', chains)?.native_token as
-      | { symbol?: string }
-      | undefined),
-  };
+  const symbol =
+    initialSymbol ??
+    (
+      getChainData('axelarnet', hookChains)?.native_token as
+        | { symbol?: string }
+        | undefined
+    )?.symbol;
 
   const governanceHref =
     'https://axelar.network/blog/axelar-governance-explained';
@@ -79,7 +86,7 @@ export function Metrics() {
   return (
     <div className={styles.metricsWrapper}>
       <div className={styles.metricsInner}>
-        {blockData.latest_block_height && (
+        {blockData?.latest_block_height && (
           <div className={styles.metricRow}>
             <div className={styles.metricLabelWhitespace}>Latest Block:</div>
             <Link
