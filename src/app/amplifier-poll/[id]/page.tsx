@@ -1,5 +1,6 @@
 import { AmplifierPoll } from '@/components/AmplifierPoll';
 import { getRPCStatus, searchAmplifierPolls } from '@/lib/api/validator';
+import { parseCompoundId } from '@/lib/string';
 import type {
   RPCStatusData,
   AmplifierPollData,
@@ -15,7 +16,10 @@ export default async function AmplifierPollPage({
   const { id } = await params;
   const [rpcStatus, pollData] = await Promise.all([
     getRPCStatus() as Promise<RPCStatusData | null>,
-    searchAmplifierPolls({ pollId: id }) as Promise<{
+    searchAmplifierPolls({
+      verifierContractAddress: parseCompoundId(id).contractAddress,
+      pollId: parseCompoundId(id).resourceId,
+    }) as Promise<{
       data?: AmplifierPollData[];
     } | null>,
   ]);

@@ -8,7 +8,7 @@ import { Spinner } from '@/components/Spinner';
 import { useChains, useVerifiers } from '@/hooks/useGlobalData';
 import { getRPCStatus, searchAmplifierProofs } from '@/lib/api/validator';
 import { toArray, getValuesOfAxelarAddressKey } from '@/lib/parser';
-import { headString, lastString } from '@/lib/string';
+import { parseCompoundId } from '@/lib/string';
 
 import type {
   AmplifierProofProps,
@@ -45,10 +45,8 @@ export function AmplifierProof({
 
       const response = (initialData ??
         (await searchAmplifierProofs({
-          multisigContractAddress: id.includes('_')
-            ? headString(id, '_')
-            : undefined,
-          sessionId: lastString(id, '_'),
+          multisigContractAddress: parseCompoundId(id).contractAddress,
+          sessionId: parseCompoundId(id).resourceId,
         }))) as { data?: AmplifierProofData[] } | undefined;
 
       let d = response?.data?.[0];

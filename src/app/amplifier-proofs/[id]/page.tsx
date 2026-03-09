@@ -1,5 +1,6 @@
 import { AmplifierProof } from '@/components/AmplifierProof';
 import { getRPCStatus, searchAmplifierProofs } from '@/lib/api/validator';
+import { parseCompoundId } from '@/lib/string';
 import type {
   RPCStatusData,
   AmplifierProofData,
@@ -15,7 +16,10 @@ export default async function AmplifierProofPage({
   const { id } = await params;
   const [rpcStatus, proofData] = await Promise.all([
     getRPCStatus() as Promise<RPCStatusData | null>,
-    searchAmplifierProofs({ multisigSessionId: id }) as Promise<{
+    searchAmplifierProofs({
+      multisigContractAddress: parseCompoundId(id).contractAddress,
+      sessionId: parseCompoundId(id).resourceId,
+    }) as Promise<{
       data?: AmplifierProofData[];
     } | null>,
   ]);

@@ -8,7 +8,7 @@ import { Spinner } from '@/components/Spinner';
 import { useChains, useVerifiers } from '@/hooks/useGlobalData';
 import { getRPCStatus, searchAmplifierPolls } from '@/lib/api/validator';
 import { toArray, getValuesOfAxelarAddressKey } from '@/lib/parser';
-import { headString, lastString } from '@/lib/string';
+import { parseCompoundId } from '@/lib/string';
 import type {
   AmplifierPollProps,
   AmplifierPollData,
@@ -50,10 +50,8 @@ export function AmplifierPoll({
 
       const response = (initialData ??
         (await searchAmplifierPolls({
-          verifierContractAddress: id.includes('_')
-            ? headString(id, '_')
-            : undefined,
-          pollId: lastString(id, '_'),
+          verifierContractAddress: parseCompoundId(id).contractAddress,
+          pollId: parseCompoundId(id).resourceId,
         }))) as { data?: AmplifierPollData[] } | undefined;
 
       let d = response?.data?.[0];
