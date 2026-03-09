@@ -1,5 +1,6 @@
 import { Number } from '@/components/Number';
 import { formatUnits } from '@/lib/number';
+import { spacedSuffix } from '@/lib/string';
 
 import type { InfoSummaryProps } from './AmplifierRewards.types';
 import * as styles from './AmplifierRewards.styles';
@@ -39,7 +40,7 @@ export function InfoSummary({
                 {cumulativeRewards != null ? (
                   <Number
                     value={cumulativeRewards}
-                    suffix={` ${symbol}`}
+                    suffix={spacedSuffix(symbol)}
                     noTooltip={true}
                     className="font-medium"
                   />
@@ -56,7 +57,7 @@ export function InfoSummary({
                 {totalBalance != null ? (
                   <Number
                     value={formatUnits(String(totalBalance), 6)}
-                    suffix={` ${symbol}`}
+                    suffix={spacedSuffix(symbol)}
                     noTooltip={true}
                     className="font-medium"
                   />

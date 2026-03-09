@@ -13,7 +13,7 @@ import { Profile } from '@/components/Profile';
 import { Tag } from '@/components/Tag';
 import { getChainData } from '@/lib/config';
 import { formatUnits } from '@/lib/number';
-import { ellipse } from '@/lib/string';
+import { ellipse, spacedSuffix } from '@/lib/string';
 import { TIME_FORMAT } from '@/lib/time';
 import type { InfoProps } from './Transaction.types';
 import * as styles from './Transaction.styles';
@@ -28,6 +28,11 @@ export function Info({ data, tx }: InfoProps) {
     fee?: { amount?: { amount?: string; denom?: string }[] };
   };
   const { memo } = { ...data.tx?.body } as { memo?: string };
+  const feeSymbol = (
+    getChainData('axelarnet', chains)?.native_token as
+      | { symbol?: string }
+      | undefined
+  )?.symbol;
 
   return (
     <div className={styles.infoCard}>
@@ -87,7 +92,7 @@ export function Info({ data, tx }: InfoProps) {
                 <Number
                   value={formatUnits(fee.amount?.[0]?.amount, 6)}
                   format="0,0.00000000"
-                  suffix={` ${(getChainData('axelarnet', chains)?.native_token as Record<string, unknown> | undefined)?.symbol}`}
+                  suffix={spacedSuffix(feeSymbol)}
                   noTooltip={true}
                   className={styles.feeNumber}
                 />

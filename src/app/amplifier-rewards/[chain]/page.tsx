@@ -73,6 +73,12 @@ export default async function AmplifierRewardsPage({
     ? aggs!.cumulativeRewards!.value!
     : null;
 
+  const symbol = (
+    getChainData('axelarnet', chains)?.native_token as
+      | { symbol?: string }
+      | undefined
+  )?.symbol;
+
   return (
     <AmplifierRewards
       chain={chain}
@@ -82,6 +88,7 @@ export default async function AmplifierRewardsPage({
       }}
       initialRewardsPool={rewardsPool}
       initialCumulativeRewards={cumulativeRewards}
+      symbol={symbol}
     />
   );
 }

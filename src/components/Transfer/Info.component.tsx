@@ -14,7 +14,7 @@ import { ExplorerLink } from '@/components/ExplorerLink';
 import { normalizeType } from '@/components/Transfers';
 import { useChains, useAssets } from '@/hooks/useGlobalData';
 import { getChainData, getAssetData } from '@/lib/config';
-import { isString, ellipse, toTitle } from '@/lib/string';
+import { isString, ellipse, toTitle, spacedSuffix } from '@/lib/string';
 import { isNumber, formatUnits } from '@/lib/number';
 import { TIME_FORMAT } from '@/lib/time';
 import {
@@ -169,7 +169,7 @@ export function Info({ data, tx }: InfoProps) {
                         : (send!.amount as string | number)
                     }
                     format="0,0.000000"
-                    suffix={` ${symbol}`}
+                    suffix={spacedSuffix(symbol)}
                     className={styles.assetValue}
                   />
                 ) : (
@@ -191,7 +191,7 @@ export function Info({ data, tx }: InfoProps) {
                         : (send!.fee as string | number)
                     }
                     format="0,0.000000"
-                    suffix={` ${symbol}`}
+                    suffix={spacedSuffix(symbol)}
                     className={styles.assetValue}
                   />
                 </div>

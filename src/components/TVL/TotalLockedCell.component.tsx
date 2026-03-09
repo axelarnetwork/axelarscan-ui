@@ -3,6 +3,7 @@ import { PiInfo } from 'react-icons/pi';
 
 import { Number } from '@/components/Number';
 import { Tooltip } from '@/components/Tooltip';
+import { spacedSuffix } from '@/lib/string';
 import {
   getTotalNumberClass,
   totalLockedCellStyles,
@@ -35,7 +36,7 @@ export function TotalLockedCell({ data }: TotalLockedCellProps) {
     <Number
       value={data.total}
       format="0,0.0a"
-      suffix={` ${data.assetData?.symbol}`}
+      suffix={spacedSuffix(data.assetData?.symbol)}
       className={getTotalNumberClass(!!url)}
     />
   );

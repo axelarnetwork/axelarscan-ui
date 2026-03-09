@@ -8,7 +8,7 @@ import type { Validator } from '@/types';
 import { useChains, useValidators } from '@/hooks/useGlobalData';
 import { getChainData } from '@/lib/config';
 import { getInputType, toArray } from '@/lib/parser';
-import { equalsIgnoreCase } from '@/lib/string';
+import { equalsIgnoreCase, spacedSuffix } from '@/lib/string';
 import type { InfoProps } from './Account.types';
 import * as styles from './Account.styles';
 
@@ -22,7 +22,7 @@ export function Info({ data, address }: InfoProps) {
   const { symbol } = {
     ...(getChainData('axelarnet', chains)?.native_token as Record<
       string,
-      unknown
+      string | undefined
     >),
   };
 
@@ -63,7 +63,7 @@ export function Info({ data, address }: InfoProps) {
                   <Number
                     value={rewards.total[0].amount}
                     format="0,0.000000"
-                    suffix={` ${symbol}`}
+                    suffix={spacedSuffix(symbol)}
                     className={styles.numberValue}
                   />
                 </div>
@@ -79,7 +79,7 @@ export function Info({ data, address }: InfoProps) {
                     <Number
                       value={commissions[0].amount}
                       format="0,0.000000"
-                      suffix={` ${symbol}`}
+                      suffix={spacedSuffix(symbol)}
                       className={styles.numberValue}
                     />
                   )}
@@ -95,7 +95,7 @@ export function Info({ data, address }: InfoProps) {
                   <Number
                     value={_.sumBy(delegations.data, 'amount')}
                     format="0,0.000000"
-                    suffix={` ${symbol}`}
+                    suffix={spacedSuffix(symbol)}
                     className={styles.numberValue}
                   />
                 )}
@@ -110,7 +110,7 @@ export function Info({ data, address }: InfoProps) {
                   <Number
                     value={_.sumBy(redelegations.data, 'amount')}
                     format="0,0.000000"
-                    suffix={` ${symbol}`}
+                    suffix={spacedSuffix(symbol)}
                     className={styles.numberValue}
                   />
                 </div>
@@ -125,7 +125,7 @@ export function Info({ data, address }: InfoProps) {
                   <Number
                     value={_.sumBy(unbondings.data, 'amount')}
                     format="0,0.000000"
-                    suffix={` ${symbol}`}
+                    suffix={spacedSuffix(symbol)}
                     className={styles.numberValue}
                   />
                 )}

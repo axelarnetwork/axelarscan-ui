@@ -1,4 +1,5 @@
 import { Number } from '@/components/Number';
+import { spacedSuffix } from '@/lib/string';
 import type { TotalColumnProps } from './TVL.types';
 import { totalColumnStyles } from './TotalColumn.styles';
 
@@ -16,7 +17,7 @@ export function TotalColumn({ total, value, symbol }: TotalColumnProps) {
       <Number
         value={total}
         format="0,0.0a"
-        suffix={symbol ? ` ${symbol}` : ''}
+        suffix={spacedSuffix(symbol)}
         className={totalColumnStyles.total}
       />
       {value > 0 && (

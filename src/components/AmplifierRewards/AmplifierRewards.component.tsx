@@ -33,6 +33,7 @@ import * as styles from './AmplifierRewards.styles';
 
 export function AmplifierRewards({
   chain,
+  symbol,
   initialSearchResults,
   initialRewardsPool,
   initialCumulativeRewards,
@@ -157,11 +158,6 @@ export function AmplifierRewards({
 
   const resultKey = params ? generateKeyByParams(params) : '';
   const { data, total } = { ...searchResults?.[resultKey] };
-  const symbol = (
-    getChainData('axelarnet', chains)?.native_token as
-      | { symbol?: string }
-      | undefined
-  )?.symbol;
 
   if (!data) {
     return (

@@ -15,6 +15,7 @@ import { getRPCStatus } from '@/lib/api/validator';
 import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { isNumber } from '@/lib/number';
+import { spacedSuffix } from '@/lib/string';
 import { REFRESH_INTERVAL_MS } from './Overview.constants';
 import { MetricWithTooltip } from './MetricWithTooltip.component';
 import { StakedMetric } from './StakedMetric.component';
@@ -178,7 +179,7 @@ export function Metrics() {
             >
               <Number
                 value={0.0014}
-                suffix={` ${symbol}`}
+                suffix={spacedSuffix(symbol)}
                 className={styles.metricValue}
               />
             </MetricWithTooltip>

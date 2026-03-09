@@ -9,7 +9,7 @@ import { Number } from '@/components/Number';
 import { Profile } from '@/components/Profile';
 import { TimeAgo } from '@/components/Time';
 import { toArray } from '@/lib/parser';
-import { equalsIgnoreCase, ellipse, toTitle } from '@/lib/string';
+import { equalsIgnoreCase, ellipse, toTitle, spacedSuffix } from '@/lib/string';
 
 import type { Receiver, DistributionRowProps } from './AmplifierRewards.types';
 import * as styles from './AmplifierRewards.styles';
@@ -95,7 +95,7 @@ export function DistributionRow({
         <div className={styles.payoutWrapper}>
           <Number
             value={d.total_amount}
-            suffix={` ${symbol}`}
+            suffix={spacedSuffix(symbol)}
             noTooltip={true}
             className={styles.payoutAmount}
           />

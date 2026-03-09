@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { Image } from '@/components/Image';
 import { Tag } from '@/components/Tag';
 import { Number } from '@/components/Number';
-import { isString, toTitle } from '@/lib/string';
+import { isString, toTitle, spacedSuffix } from '@/lib/string';
 import { isNumber, formatUnits } from '@/lib/number';
 
 import { normalizeType } from './Transfers.utils';
@@ -33,7 +33,7 @@ export function MethodCell({
                   : d.send.amount
               }
               format="0,0.000000"
-              suffix={` ${symbol}`}
+              suffix={spacedSuffix(symbol)}
               className={styles.assetNumberText}
             />
           ) : (

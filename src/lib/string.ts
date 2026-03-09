@@ -395,6 +395,13 @@ export const toTitle = (
  * filterSearchInput('hello', '') // true (empty pattern)
  * ```
  */
+/**
+ * Returns a string prefixed with a space, or empty string if the value is nullish.
+ * Useful for Number suffix props where `\` ${symbol}\`` would produce " undefined".
+ */
+export const spacedSuffix = (value?: string | null): string =>
+  value ? ` ${value}` : '';
+
 export const filterSearchInput = (
   searchInput: string | string[],
   pattern: string | unknown

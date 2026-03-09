@@ -1,6 +1,7 @@
 import { Image } from '@/components/Image';
 import { Number } from '@/components/Number';
 import { formatUnits } from '@/lib/number';
+import { spacedSuffix } from '@/lib/string';
 
 import type { AssetBadgeProps } from './EVMBatch.types';
 import * as styles from './EVMBatch.styles';
@@ -19,7 +20,7 @@ export function AssetBadge({
         <Number
           value={formatUnits(amount, decimals)}
           format="0,0.000000"
-          suffix={` ${symbol}`}
+          suffix={spacedSuffix(symbol)}
           className={styles.assetText}
         />
       ) : (

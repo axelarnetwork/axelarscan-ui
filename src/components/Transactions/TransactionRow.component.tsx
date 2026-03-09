@@ -9,11 +9,10 @@ import { Profile } from '@/components/Profile';
 import { TimeAgo } from '@/components/Time';
 import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
-import { includesSomePatterns, ellipse } from '@/lib/string';
+import { includesSomePatterns, ellipse, spacedSuffix } from '@/lib/string';
 import { formatUnits } from '@/lib/number';
 
 import type { TransactionRowProps } from './Transactions.types';
-import type { Chain } from '@/types';
 import * as styles from './Transactions.styles';
 
 export const TransactionRow = memo(function TransactionRow({
@@ -22,6 +21,12 @@ export const TransactionRow = memo(function TransactionRow({
   address,
   chains,
 }: TransactionRowProps) {
+  const feeSymbol = (
+    getChainData('axelarnet', chains)?.native_token as
+      | { symbol?: string }
+      | undefined
+  )?.symbol;
+
   return (
     <tr className={styles.tableRow}>
       <td className={styles.tdFirst}>
@@ -90,7 +95,7 @@ export const TransactionRow = memo(function TransactionRow({
                 6
               )}
               format="0,0.00000000"
-              suffix={` ${(getChainData('axelarnet', chains) as (Chain & { native_token?: { symbol?: string } }) | undefined)?.native_token?.symbol}`}
+              suffix={spacedSuffix(feeSymbol)}
               noTooltip={true}
               className={styles.feeNumber}
             />

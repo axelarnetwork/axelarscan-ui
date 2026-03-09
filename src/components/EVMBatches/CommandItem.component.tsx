@@ -11,7 +11,7 @@ import { Number } from '@/components/Number';
 import { Profile } from '@/components/Profile';
 import { getChainData, getAssetData } from '@/lib/config';
 import { split } from '@/lib/parser';
-import { ellipse } from '@/lib/string';
+import { ellipse, spacedSuffix } from '@/lib/string';
 import { toNumber, formatUnits } from '@/lib/number';
 
 import type { CommandItemProps } from './EVMBatches.types';
@@ -91,7 +91,7 @@ export function CommandItem({
             <Number
               value={formatUnits(amount, decimals)}
               format="0,0.000000"
-              suffix={` ${symbol}`}
+              suffix={spacedSuffix(symbol)}
               className={styles.assetText}
             />
           ) : (

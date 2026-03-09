@@ -13,7 +13,7 @@ import { ExplorerLink } from '@/components/ExplorerLink';
 import { TimeAgo } from '@/components/Time';
 import { getChainData, getAssetData } from '@/lib/config';
 import { toJson, toArray } from '@/lib/parser';
-import { ellipse } from '@/lib/string';
+import { ellipse, spacedSuffix } from '@/lib/string';
 import { formatUnits, numberFormat } from '@/lib/number';
 import { timeDiff } from '@/lib/time';
 
@@ -118,7 +118,7 @@ export const PollRow = memo(function PollRow({
                     <Number
                       value={formatUnits(String(amount), decimals)}
                       format="0,0.000000"
-                      suffix={` ${symbol}`}
+                      suffix={spacedSuffix(symbol)}
                       className={styles.assetText}
                     />
                   ) : (

@@ -5,6 +5,7 @@ import { Number } from '@/components/Number';
 import { getAssetData } from '@/lib/config';
 import { toJson } from '@/lib/parser';
 import { formatUnits } from '@/lib/number';
+import { spacedSuffix } from '@/lib/string';
 
 import type { ConfirmationAssetProps } from './EVMPoll.types';
 import * as styles from './EVMPoll.styles';
@@ -47,7 +48,7 @@ export function ConfirmationAsset({
         <Number
           value={formatUnits(amount, decimals)}
           format="0,0.000000"
-          suffix={` ${symbol}`}
+          suffix={spacedSuffix(symbol)}
           className={styles.assetText}
         />
       ) : (

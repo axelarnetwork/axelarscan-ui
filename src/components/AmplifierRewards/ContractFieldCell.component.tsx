@@ -2,6 +2,7 @@ import { Tooltip } from '@/components/Tooltip';
 import { Number } from '@/components/Number';
 import { Profile } from '@/components/Profile';
 import { isNumber, formatUnits } from '@/lib/number';
+import { spacedSuffix } from '@/lib/string';
 
 import type { ContractFieldCellProps } from './AmplifierRewards.types';
 import * as styles from './AmplifierRewards.styles';
@@ -19,7 +20,7 @@ export function ContractFieldCell({
       return (
         <Number
           value={formatUnits(String(contract.balance), 6)}
-          suffix={` ${symbol}`}
+          suffix={spacedSuffix(symbol)}
           noTooltip={true}
           className="font-medium"
         />
@@ -40,7 +41,7 @@ export function ContractFieldCell({
       return (
         <Number
           value={formatUnits(String(contract.rewards_per_epoch), 6)}
-          suffix={` ${symbol}`}
+          suffix={spacedSuffix(symbol)}
           noTooltip={true}
           className="font-medium"
         />

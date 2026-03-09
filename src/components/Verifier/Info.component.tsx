@@ -10,7 +10,7 @@ import { Profile } from '@/components/Profile';
 import { useChains, useVerifiersByChain } from '@/hooks/useGlobalData';
 import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
-import { equalsIgnoreCase } from '@/lib/string';
+import { equalsIgnoreCase, spacedSuffix } from '@/lib/string';
 import { isNumber } from '@/lib/number';
 
 import { RewardsTable } from './RewardsTable.component';
@@ -74,7 +74,7 @@ export function Info({ data, address, rewards, cumulativeRewards }: InfoProps) {
                       <span className={styles.stateLabel}>Bonding State:</span>
                       <Number
                         value={bonding_state.Bonded.amount}
-                        suffix={` ${symbol}`}
+                        suffix={spacedSuffix(symbol)}
                         noTooltip={true}
                       />
                     </div>
@@ -148,7 +148,7 @@ export function Info({ data, address, rewards, cumulativeRewards }: InfoProps) {
                 >
                   <Number
                     value={cumulativeRewards.total_rewards}
-                    suffix={` ${symbol}`}
+                    suffix={spacedSuffix(symbol)}
                     noTooltip={true}
                     className={styles.cumulativeRewardsNumber}
                   />
