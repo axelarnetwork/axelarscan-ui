@@ -402,6 +402,9 @@ export const toTitle = (
 export const spacedSuffix = (value?: string | null): string =>
   value ? ` ${value}` : '';
 
+/** Non-breaking space - use as placeholder text to reserve layout space. */
+export const NBSP = '\u00A0';
+
 export const filterSearchInput = (
   searchInput: string | string[],
   pattern: string | unknown

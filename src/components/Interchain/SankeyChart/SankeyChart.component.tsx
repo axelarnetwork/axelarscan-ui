@@ -5,12 +5,13 @@ import _ from 'lodash';
 import { useTheme } from 'next-themes';
 import { useCallback } from 'react';
 
-import { useChains } from '@/hooks/useGlobalData';
 import { Number } from '@/components/Number';
 import { Spinner } from '@/components/Spinner';
+import { useChains } from '@/hooks/useGlobalData';
 import { getChainData } from '@/lib/config';
 import { isNumber } from '@/lib/number';
 import { toArray } from '@/lib/parser';
+import { NBSP } from '@/lib/string';
 import { GroupDataItem } from '../Interchain.types';
 import { useSankeyChartHover } from './SankeyChart.hooks';
 import { sankeyChartColors, sankeyChartStyles } from './SankeyChart.styles';
@@ -132,20 +133,21 @@ export function SankeyChart({
             </span>
           )}
         </div>
-        {isNumber(value) && (
-          <div className={sankeyChartStyles.header.valueContainer}>
-            <Number
-              value={value}
-              format={valueFormat}
-              prefix={valuePrefix}
-              noTooltip={true}
-              className={sankeyChartStyles.header.valueNumber}
-            />
-            <span className={sankeyChartStyles.header.valueKey}>
-              {keyString}
-            </span>
-          </div>
-        )}
+        <div
+          className={sankeyChartStyles.header.valueContainer}
+          style={{ visibility: isNumber(value) ? 'visible' : 'hidden' }}
+        >
+          <Number
+            value={value ?? 0}
+            format={valueFormat}
+            prefix={valuePrefix}
+            noTooltip={true}
+            className={sankeyChartStyles.header.valueNumber}
+          />
+          <span className={sankeyChartStyles.header.valueKey}>
+            {keyString ?? NBSP}
+          </span>
+        </div>
       </div>
       <div className={sankeyChartStyles.chart.container}>
         {!data ? (
