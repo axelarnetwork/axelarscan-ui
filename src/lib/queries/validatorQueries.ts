@@ -7,7 +7,7 @@ interface ValidatorsResponse {
 
 interface VerifiersResponse {
   data?: unknown[];
-  verifiersByChain?: Record<string, unknown[]>;
+  verifiersByChain?: Record<string, { addresses?: unknown[] }>;
 }
 
 export const fetchValidators = async (): Promise<Validator[] | null> => {

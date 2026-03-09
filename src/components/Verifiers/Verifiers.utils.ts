@@ -125,7 +125,7 @@ export async function fetchVerifiersPageData(): Promise<VerifiersPageData | null
     .filter(
       ([k, v]) =>
         amplifierChains.findIndex(d => d.id === k) < 0 &&
-        toArray(v as unknown[]).length > 0
+        toArray((v as { addresses?: unknown[] })?.addresses).length > 0
     )
     .map(([k]) => k);
 
