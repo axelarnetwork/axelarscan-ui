@@ -28,7 +28,7 @@ export function ChainSelector({ chain, chainId }: ChainSelectorProps) {
 
   return (
     <Listbox
-      value={chainId}
+      value={chainId ?? ''}
       onChange={(v: string) => router.push(`${pathname.replace(chain, v)}`)}
       {...({ className: styles.listboxWrapper } as Record<string, string>)}
     >

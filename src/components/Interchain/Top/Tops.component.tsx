@@ -25,21 +25,6 @@ export function Tops({ data, types, params }: TopsProps) {
   const assets = useAssets();
   const itsAssets = useITSAssets();
 
-  if (!data) return null;
-
-  const {
-    GMPStatsByChains,
-    GMPStatsByContracts,
-    GMPTopUsers,
-    GMPTopITSUsers,
-    GMPTopITSUsersByVolume,
-    GMPTopITSAssets,
-    GMPTopITSAssetsByVolume,
-    transfersStats,
-    transfersTopUsers,
-    transfersTopUsersByVolume,
-  } = data;
-
   const hasTransfers =
     types.includes('transfers') &&
     !(
@@ -65,6 +50,35 @@ export function Tops({ data, types, params }: TopsProps) {
     ITSAssets,
     ITSAssetsByVolume,
   } = useMemo(() => {
+    if (!data) {
+      return {
+        chainPairs: [],
+        sourceChains: [],
+        destinationChains: [],
+        transfersUsers: [],
+        transfersUsersByVolume: [],
+        contracts: [],
+        GMPUsers: [],
+        ITSUsers: [],
+        ITSUsersByVolume: [],
+        ITSAssets: [],
+        ITSAssetsByVolume: [],
+      };
+    }
+
+    const {
+      GMPStatsByChains,
+      GMPStatsByContracts,
+      GMPTopUsers,
+      GMPTopITSUsers,
+      GMPTopITSUsersByVolume,
+      GMPTopITSAssets,
+      GMPTopITSAssetsByVolume,
+      transfersStats,
+      transfersTopUsers,
+      transfersTopUsersByVolume,
+    } = data;
+
     const filterValid = <T,>(arr: unknown[]): T[] =>
       arr.filter(
         (item): item is T => item !== undefined && typeof item !== 'string'
@@ -123,6 +137,8 @@ export function Tops({ data, types, params }: TopsProps) {
       ),
     };
   }, [data, chains, itsAssets]);
+
+  if (!data) return null;
 
   return (
     <div className={topsStyles.container}>

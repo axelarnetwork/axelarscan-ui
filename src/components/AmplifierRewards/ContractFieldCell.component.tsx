@@ -15,9 +15,10 @@ export function ContractFieldCell({
 }: ContractFieldCellProps) {
   switch (field) {
     case 'balance':
+      if (contract.balance == null) return <>-</>;
       return (
         <Number
-          value={formatUnits(String(contract.balance ?? '0'), 6)}
+          value={formatUnits(String(contract.balance), 6)}
           suffix={` ${symbol}`}
           noTooltip={true}
           className="font-medium"
@@ -35,9 +36,10 @@ export function ContractFieldCell({
       );
 
     case 'rewards_per_epoch':
+      if (contract.rewards_per_epoch == null) return <>-</>;
       return (
         <Number
-          value={formatUnits(String(contract.rewards_per_epoch ?? '0'), 6)}
+          value={formatUnits(String(contract.rewards_per_epoch), 6)}
           suffix={` ${symbol}`}
           noTooltip={true}
           className="font-medium"

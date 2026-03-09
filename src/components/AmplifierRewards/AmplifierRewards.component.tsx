@@ -31,21 +31,37 @@ import { Filters } from './Filters.component';
 import { DistributionRow } from './DistributionRow.component';
 import * as styles from './AmplifierRewards.styles';
 
-export function AmplifierRewards({ chain }: AmplifierRewardsProps) {
+export function AmplifierRewards({
+  chain,
+  initialSearchResults,
+  initialRewardsPool,
+  initialCumulativeRewards,
+}: AmplifierRewardsProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [params, setParams] = useState<Record<string, unknown> | null>(null);
+
+  const initialParams = initialSearchResults
+    ? getParams(searchParams, PAGE_SIZE)
+    : null;
+
+  const [params, setParams] = useState<Record<string, unknown> | null>(
+    initialParams
+  );
   const [searchResults, setSearchResults] = useState<SearchResults | null>(
-    null
+    initialSearchResults && initialParams
+      ? { [generateKeyByParams(initialParams)]: initialSearchResults }
+      : null
   );
   const [refresh, setRefresh] = useState<boolean | null>(null);
   const [distributionExpanded, setDistributionExpanded] = useState<
     string | null
   >(null);
-  const [rewardsPool, setRewardsPool] = useState<RewardsPoolData | null>(null);
+  const [rewardsPool, setRewardsPool] = useState<RewardsPoolData | null>(
+    initialRewardsPool ?? null
+  );
   const [cumulativeRewards, setCumulativeRewards] = useState<number | null>(
-    null
+    initialCumulativeRewards ?? null
   );
   const chains = useChains();
 

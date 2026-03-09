@@ -69,6 +69,9 @@ export interface DistributionRowProps {
 
 export interface AmplifierRewardsProps {
   chain?: string;
+  initialSearchResults?: { data: RewardsDistribution[]; total: number };
+  initialRewardsPool?: RewardsPoolData | null;
+  initialCumulativeRewards?: number | null;
 }
 
 export interface ChainSelectorProps {

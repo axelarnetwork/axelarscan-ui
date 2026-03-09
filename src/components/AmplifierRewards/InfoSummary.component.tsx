@@ -36,12 +36,16 @@ export function InfoSummary({
             <div className={styles.infoRow}>
               <dt className={styles.infoDt}>Cumulative rewards</dt>
               <dd className={styles.infoDd}>
-                <Number
-                  value={cumulativeRewards}
-                  suffix={` ${symbol}`}
-                  noTooltip={true}
-                  className="font-medium"
-                />
+                {cumulativeRewards != null ? (
+                  <Number
+                    value={cumulativeRewards}
+                    suffix={` ${symbol}`}
+                    noTooltip={true}
+                    className="font-medium"
+                  />
+                ) : (
+                  <span className="font-medium">-</span>
+                )}
               </dd>
             </div>
           </dl>
@@ -49,12 +53,16 @@ export function InfoSummary({
             <div className={styles.infoRow}>
               <dt className={styles.infoDt}>Total reward pool balance</dt>
               <dd className={styles.infoDd}>
-                <Number
-                  value={formatUnits(String(totalBalance ?? '0'), 6)}
-                  suffix={` ${symbol}`}
-                  noTooltip={true}
-                  className="font-medium"
-                />
+                {totalBalance != null ? (
+                  <Number
+                    value={formatUnits(String(totalBalance), 6)}
+                    suffix={` ${symbol}`}
+                    noTooltip={true}
+                    className="font-medium"
+                  />
+                ) : (
+                  <span className="font-medium">-</span>
+                )}
               </dd>
             </div>
             <div className={styles.infoRow}>

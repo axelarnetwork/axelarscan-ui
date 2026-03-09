@@ -1,6 +1,6 @@
 // Info section styles
 export const infoCard =
-  'overflow-auto bg-zinc-50/75 shadow dark:bg-zinc-800/25 sm:rounded-lg' as const;
+  'overflow-visible bg-zinc-50/75 shadow dark:bg-zinc-800/25 sm:rounded-lg' as const;
 export const infoHeaderWrapper = 'px-4 py-6 sm:px-6' as const;
 export const infoHeading =
   'text-base font-semibold leading-7 text-zinc-900 dark:text-zinc-100' as const;
