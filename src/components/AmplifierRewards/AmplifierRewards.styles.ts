@@ -13,11 +13,11 @@ export const listboxButtonIcon =
   'pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2' as const;
 export const listboxChevronIcon = 'text-zinc-400' as const;
 export const listboxOptions =
-  'absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg sm:text-sm' as const;
+  'absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg dark:bg-zinc-800 sm:text-sm' as const;
 export const listboxOptionBase =
   'relative cursor-default select-none py-2 pl-3 pr-9' as const;
 export const listboxOptionActive = 'bg-blue-600 text-white' as const;
-export const listboxOptionInactive = 'text-zinc-900' as const;
+export const listboxOptionInactive = 'text-zinc-900 dark:text-zinc-100' as const;
 export const listboxOptionTextSelected = 'font-semibold' as const;
 export const listboxOptionTextNormal = 'font-normal' as const;
 export const listboxCheckActive = 'text-white' as const;

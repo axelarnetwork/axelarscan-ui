@@ -89,11 +89,11 @@ export const selectIconWrapper =
   'pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2' as const;
 export const selectChevronIcon = 'text-zinc-400' as const;
 export const selectOptions =
-  'absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg sm:text-sm' as const;
+  'absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg dark:bg-zinc-800 sm:text-sm' as const;
 export const selectOptionBase =
   'relative cursor-default select-none py-2 pl-3 pr-9' as const;
 export const selectOptionActive = 'bg-blue-600 text-white' as const;
-export const selectOptionInactive = 'text-zinc-900' as const;
+export const selectOptionInactive = 'text-zinc-900 dark:text-zinc-100' as const;
 export const selectOptionTextSelected = 'font-semibold' as const;
 export const selectOptionTextNormal = 'font-normal' as const;
 export const selectCheckWrapper =
@@ -102,7 +102,7 @@ export const selectCheckActive = 'text-white' as const;
 export const selectCheckInactive = 'text-blue-600' as const;
 export const selectRelative = 'relative' as const;
 export const filterInput =
-  'w-full rounded-md border border-zinc-200 py-1.5 text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:border-blue-600 focus:ring-0 sm:text-sm sm:leading-6' as const;
+  'w-full rounded-md border border-zinc-200 bg-white py-1.5 text-zinc-900 shadow-sm placeholder:text-zinc-400 focus:border-blue-600 focus:ring-0 dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500 sm:text-sm sm:leading-6' as const;
 
 // Grid
 export const resourceGrid =
