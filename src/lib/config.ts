@@ -111,11 +111,15 @@ export const getITSAssetData = (
 ): Asset | undefined => {
   if (!asset) return;
 
-  // check equals
-  return toArray(assetsData).find((d: Asset) =>
-    find(
+  // check equals against id, symbol, address, and addresses array
+  // ITS assets have addresses as string[] (not Record<string, AssetAddress>)
+  return toArray(assetsData).find((d: Asset) => {
+    const itsAddresses = Array.isArray(d.addresses) ? d.addresses : [];
+    return find(
       asset,
-      [d.id, d.symbol, d.address].filter((s): s is string => !!s)
-    )
-  );
+      [d.id, d.symbol, d.address, ...itsAddresses].filter(
+        (s): s is string => !!s && typeof s === 'string'
+      )
+    );
+  });
 };
