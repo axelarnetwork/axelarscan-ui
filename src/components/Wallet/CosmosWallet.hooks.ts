@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import toast from 'react-hot-toast';
 import { create } from 'zustand';
 import { getKeplrChainData } from '../../lib/api/keplr';
 import { KeplrSigner, KeplrWallet } from '../../types/cosmos';
@@ -39,7 +40,11 @@ export const useConnect = ({ connectChainId }: UseConnectProps) => {
    */
   const enable = async (chainId = connectChainId) => {
     if (!window.keplr || !chainId) {
-      console.error('Keplr not found or chainId not provided');
+      if (!window.keplr) {
+        toast.error(
+          'This action requires a transaction on the Axelar network. Please install Keplr wallet.'
+        );
+      }
       return;
     }
 
@@ -102,7 +107,7 @@ export const useConnect = ({ connectChainId }: UseConnectProps) => {
     const address = signer && (await getAddress(chainId));
 
     if (chainId && signer && address) {
-      setProvider(window?.keplr ?? null);
+      setProvider(window.keplr ?? null);
       setChainId(chainId);
       setAddress(address);
       setSigner(signer);
@@ -135,7 +140,7 @@ export const useSyncState = () => {
 
   useEffect(() => {
     if (chainId && signer && address) {
-      setProvider(window?.keplr ?? null);
+      setProvider(window.keplr ?? null);
       setChainId(chainId);
       setAddress(address);
       setSigner(signer);

@@ -3,6 +3,7 @@ import Script from 'next/script';
 import { Inter, Lexend } from 'next/font/google';
 import clsx from 'clsx';
 import { Analytics } from '@vercel/analytics/next';
+import { Toaster } from 'react-hot-toast';
 import type { Metadata } from 'next';
 
 import { Providers } from '@/app/providers';
@@ -83,6 +84,7 @@ export default function RootLayout({
             </Layout>
           </div>
         </Providers>
+        <Toaster />
         <Analytics />
       </body>
     </html>
