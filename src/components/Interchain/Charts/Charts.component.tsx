@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
 import _ from 'lodash';
+import { useMemo } from 'react';
 
 import { useChains } from '@/hooks/useGlobalData';
 import { toNumber } from '@/lib/number';
@@ -12,7 +12,17 @@ import { getChainPairs, getChartStack, processChartData } from './Charts.utils';
 export function Charts({ data, granularity }: ChartsProps) {
   const chains = useChains();
 
-  if (!data) return null;
+  const chartData = useMemo(() => processChartData(data), [data]);
+
+  const useStack = useMemo(
+    () => getChartStack(chartData).useStack,
+    [chartData]
+  );
+
+  const chainPairs = useMemo(
+    () => getChainPairs(data, chains),
+    [data, chains]
+  );
 
   const {
     GMPStatsByChains,
@@ -22,9 +32,6 @@ export function Charts({ data, granularity }: ChartsProps) {
   } = data;
 
   const TIME_FORMAT = granularity === 'month' ? 'MMM' : 'D MMM';
-  const chartData = processChartData(data);
-  const { useStack } = getChartStack(chartData);
-  const chainPairs = getChainPairs(data, chains);
   const totalTxs =
     toNumber(_.sumBy(GMPStatsByChains?.source_chains, 'num_txs')) +
     toNumber(transfersStats?.total);

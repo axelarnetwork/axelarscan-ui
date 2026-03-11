@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { Container } from '@/components/Container';
 import { useAssets, useITSAssets, useStats } from '@/hooks/useGlobalData';
@@ -71,7 +71,16 @@ export function Interchain() {
   useInterchainTimeSpent(hooksParams);
   useInterchainAutoRefresh(hooksParams);
 
-  if (!data) {
+  // Stale-while-revalidate: show previous data while new filter loads
+  const key = generateKeyByParams(params);
+  const currentData = data?.[key] as InterchainData | undefined;
+  const lastDataRef = useRef<InterchainData | undefined>(undefined);
+  if (currentData) {
+    lastDataRef.current = currentData;
+  }
+  const displayData = currentData ?? lastDataRef.current;
+
+  if (!displayData) {
     return (
       <Container className={interchainStyles.container}>
         <Spinner />
@@ -92,26 +101,21 @@ export function Interchain() {
           isRefreshing={refresh && typeof refresh !== 'boolean' ? true : false}
           onRefresh={() => setRefresh(true)}
         />
-        <Summary
-          data={data[generateKeyByParams(params)] as InterchainData}
-          params={params}
-        />
+        <Summary data={displayData} params={params} />
         <Charts
-          data={data[generateKeyByParams(params)] as InterchainData}
+          data={displayData}
           granularity={granularity}
           params={params}
         />
         <Tops
-          data={data[generateKeyByParams(params)] as InterchainData}
+          data={displayData}
           types={Array.isArray(types) ? types : [types]}
           params={params}
         />
         {types.includes('gmp') && (
           <GMPTimeSpents
             data={
-              (timeSpentData?.[
-                generateKeyByParams(params)
-              ] as InterchainData) || {}
+              (timeSpentData?.[key] as InterchainData) || {}
             }
           />
         )}
