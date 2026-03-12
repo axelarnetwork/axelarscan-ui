@@ -102,11 +102,7 @@ export function Interchain() {
           onRefresh={() => setRefresh(true)}
         />
         <Summary data={displayData} params={params} />
-        <Charts
-          data={displayData}
-          granularity={granularity}
-          params={params}
-        />
+        <Charts data={displayData} granularity={granularity} params={params} />
         <Tops
           data={displayData}
           types={Array.isArray(types) ? types : [types]}
@@ -114,9 +110,7 @@ export function Interchain() {
         />
         {types.includes('gmp') && (
           <GMPTimeSpents
-            data={
-              (timeSpentData?.[key] as InterchainData) || {}
-            }
+            data={(timeSpentData?.[key] as InterchainData) || {}}
           />
         )}
       </div>

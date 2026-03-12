@@ -17,7 +17,8 @@ export const listboxOptions =
 export const listboxOptionBase =
   'relative cursor-default select-none py-2 pl-3 pr-9' as const;
 export const listboxOptionActive = 'bg-blue-600 text-white' as const;
-export const listboxOptionInactive = 'text-zinc-900 dark:text-zinc-100' as const;
+export const listboxOptionInactive =
+  'text-zinc-900 dark:text-zinc-100' as const;
 export const listboxOptionTextSelected = 'font-semibold' as const;
 export const listboxOptionTextNormal = 'font-normal' as const;
 export const listboxCheckActive = 'text-white' as const;

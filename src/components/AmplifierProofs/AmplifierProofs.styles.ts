@@ -50,7 +50,8 @@ export const comboboxOptions =
 export const comboboxOptionBase =
   'relative cursor-default select-none py-2 pl-3 pr-9' as const;
 export const comboboxOptionActive = 'bg-blue-600 text-white' as const;
-export const comboboxOptionInactive = 'text-zinc-900 dark:text-zinc-100' as const;
+export const comboboxOptionInactive =
+  'text-zinc-900 dark:text-zinc-100' as const;
 export const optionTextSelected = 'font-semibold' as const;
 export const optionTextNormal = 'font-normal' as const;
 export const optionCheckWrapper =

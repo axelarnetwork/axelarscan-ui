@@ -19,10 +19,7 @@ export function Charts({ data, granularity }: ChartsProps) {
     [chartData]
   );
 
-  const chainPairs = useMemo(
-    () => getChainPairs(data, chains),
-    [data, chains]
-  );
+  const chainPairs = useMemo(() => getChainPairs(data, chains), [data, chains]);
 
   const {
     GMPStatsByChains,

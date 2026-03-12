@@ -27,11 +27,7 @@ export function useChartData({
     return chartDataPoints.map((d: Record<string, unknown>) => {
       const time = moment(d.timestamp as number).utc();
       const timeString = time.format(dateFormat);
-      const focusTimeString = getFocusTimeString(
-        time,
-        granularity,
-        dateFormat
-      );
+      const focusTimeString = getFocusTimeString(time, granularity, dateFormat);
 
       return {
         ...d,
