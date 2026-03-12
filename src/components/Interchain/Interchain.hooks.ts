@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import moment from 'moment';
-import { ReadonlyURLSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 
 import {
@@ -18,36 +17,15 @@ import {
   transfersTopUsers,
   transfersTotalVolume,
 } from '@/lib/api/token-transfer';
+import type { Asset } from '@/types';
 import { ENVIRONMENT, getAssetData, getITSAssetData } from '@/lib/config';
 import { toNumber } from '@/lib/number';
 import { generateKeyByParams, getParams } from '@/lib/operator';
 import { toArray } from '@/lib/parser';
 import { toBoolean } from '@/lib/string';
-import {
-  ChartDataPoint,
-  DynamicInterchainData,
-  FilterParams,
-} from './Interchain.types';
-
-interface UseInterchainHooksParams {
-  searchParams: ReadonlyURLSearchParams;
-  params: FilterParams;
-  setParams: (params: FilterParams) => void;
-  types: string[] | string;
-  setTypes: (types: string[] | string) => void;
-  setData: (
-    updater: (prevData: DynamicInterchainData | null) => DynamicInterchainData
-  ) => void;
-  setTimeSpentData: (
-    updater: (prevData: DynamicInterchainData | null) => DynamicInterchainData
-  ) => void;
-  refresh: boolean | null;
-  setRefresh: (refresh: boolean | null) => void;
-  assets: unknown;
-  stats: Record<string, unknown> | null;
-  itsAssets: unknown;
-  granularity: 'day' | 'week' | 'month';
-}
+import { REFRESH_INTERVAL_MS } from './Interchain.constants';
+import { ChartDataPoint, FilterParams } from './Interchain.types';
+import type { UseInterchainHooksParams } from './Interchain.types';
 
 const INTERCHAIN_METRICS = [
   'GMPStatsByChains',
@@ -72,7 +50,7 @@ function checkIfSearchingITSOnTransfers(
   metricName: string,
   types: string[] | string,
   currentParams: FilterParams,
-  itsAssets: unknown
+  itsAssets: Asset[] | null
 ): boolean {
   return (
     types.includes('transfers') &&
@@ -87,7 +65,7 @@ function checkIfSearchingITSOnTransfers(
 function checkIfHasITS(
   types: string[] | string,
   currentParams: FilterParams,
-  assets: unknown
+  assets: Asset[] | null
 ): boolean {
   return (
     types.includes('gmp') &&
@@ -272,13 +250,13 @@ async function processAirdropData(
     return null;
   }
 
-  const airdropResponse = await transfersChart({
+  const airdropResponse = (await transfersChart({
     ...currentParams,
     chain,
     fromTime: airdropFromTime,
     toTime: airdropToTime,
     granularity,
-  });
+  })) as { data?: ChartDataPoint[] } | null;
 
   if (toArray(airdropResponse?.data).length === 0) {
     return null;
@@ -286,7 +264,7 @@ async function processAirdropData(
 
   // Adjust chart data by subtracting airdrop volumes
   for (const airdropPoint of toArray(
-    airdropResponse.data
+    airdropResponse!.data
   ) as ChartDataPoint[]) {
     if (airdropPoint.timestamp && (airdropPoint.volume || 0) > 0) {
       const matchingIndex = chartValue.data.findIndex(
@@ -335,16 +313,17 @@ async function fetchTransfersChart(
     return [metricName, false];
   }
 
-  let chartValue = await transfersChart({
+  let chartValue = (await transfersChart({
     ...currentParams,
     granularity,
-  });
+  })) as { data?: ChartDataPoint[] } | null;
 
   if (!chartValue?.data || granularity !== 'month') {
     return [metricName, chartValue];
   }
 
-  const chartValues: [string, unknown][] = [[metricName, chartValue]];
+  const chartValueWithData = chartValue as { data: ChartDataPoint[] };
+  const chartValues: [string, unknown][] = [[metricName, chartValueWithData]];
 
   const airdrops = [
     {
@@ -362,7 +341,7 @@ async function fetchTransfersChart(
       airdrop,
       currentParams,
       granularity,
-      chartValue,
+      chartValueWithData,
       metricName
     );
     if (airdropResult) {
@@ -446,8 +425,8 @@ async function fetchMetricData(
   currentParams: FilterParams,
   types: string[] | string,
   stats: Record<string, unknown> | null,
-  assets: unknown,
-  itsAssets: unknown,
+  assets: Asset[] | null,
+  itsAssets: Asset[] | null,
   granularity: 'day' | 'week' | 'month'
 ): Promise<[string, unknown] | [string, unknown][]> {
   const isSearchITSOnTransfers = checkIfSearchingITSOnTransfers(
@@ -554,18 +533,20 @@ export function useInterchainData(params: UseInterchainHooksParams) {
 
       const fetchedData = Object.fromEntries(
         await Promise.all(
-          (toArray(INTERCHAIN_METRICS) as string[]).map(async metricName => {
-            const result = await fetchMetricData(
-              metricName,
-              currentParams,
-              types,
-              stats,
-              assets,
-              itsAssets,
-              granularity
-            );
-            return result;
-          })
+          (toArray(INTERCHAIN_METRICS) as unknown as string[]).map(
+            async metricName => {
+              const result = await fetchMetricData(
+                metricName,
+                currentParams,
+                types,
+                stats,
+                assets,
+                itsAssets,
+                granularity
+              );
+              return result;
+            }
+          )
         ).then((results: ([string, unknown] | [string, unknown][])[]) =>
           results
             .filter(result => result !== null && result !== undefined)
@@ -576,7 +557,10 @@ export function useInterchainData(params: UseInterchainHooksParams) {
 
       setData(prevData => ({
         ...prevData,
-        [generateKeyByParams(currentParams)]: fetchedData,
+        [generateKeyByParams(currentParams)]: fetchedData as Record<
+          string,
+          unknown
+        >,
       }));
       setRefresh(false);
     };
@@ -622,7 +606,10 @@ export function useInterchainTimeSpent(params: UseInterchainHooksParams) {
 
       setTimeSpentData(prevData => ({
         ...prevData,
-        [generateKeyByParams(currentParams)]: timeSpentData,
+        [generateKeyByParams(currentParams)]: timeSpentData as Record<
+          string,
+          unknown
+        >,
       }));
     };
 
@@ -634,7 +621,7 @@ export function useInterchainAutoRefresh(params: UseInterchainHooksParams) {
   const { setRefresh } = params;
 
   useEffect(() => {
-    const interval = setInterval(() => setRefresh(true), 5 * 60 * 1000);
+    const interval = setInterval(() => setRefresh(true), REFRESH_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [setRefresh]);
 }

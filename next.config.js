@@ -1,9 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  transpilePackages: [
+    '@xrpl-wallet-standard/core',
+    '@xrpl-wallet-adapter/walletconnect',
+  ],
   experimental: {
-    missingSuspenseWithCSRBailout: false,
+    // Client-side Router Cache TTL. Visited pages are cached for these
+    // durations - repeat navigations are instant (no server roundtrip).
+    // React Query still refetches on mount for fresh data.
+    staleTimes: {
+      dynamic: 180,
+      static: 300,
+    },
   },
-  transpilePackages: ['@xrpl-wallet-standard/core'],
 };
 
 module.exports = nextConfig;

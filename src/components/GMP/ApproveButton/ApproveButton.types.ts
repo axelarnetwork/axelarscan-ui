@@ -21,3 +21,27 @@ export interface ApproveButtonProps {
   setProcessing: Dispatch<SetStateAction<boolean>>;
   setResponse: Dispatch<SetStateAction<GMPToastState | null>>;
 }
+
+export interface UseApproveActionParams {
+  setProcessing: Dispatch<SetStateAction<boolean>>;
+  setResponse: Dispatch<SetStateAction<GMPToastState | null>>;
+  cosmosSigner?: KeplrSigner | null;
+}
+
+export interface UseApproveButtonOptions {
+  data: GMPMessage | null;
+  processing: boolean;
+  setProcessing: Dispatch<SetStateAction<boolean>>;
+  setResponse: Dispatch<SetStateAction<GMPToastState | null>>;
+}
+
+export interface UseApproveButtonResult {
+  buttonLabel: string;
+  isCosmosWalletConnected: boolean;
+  requiresCosmosWallet: boolean;
+  isEvmWalletConnected: boolean;
+  needsEvmWallet: boolean;
+  targetChain: string | undefined;
+  targetChainType: string | undefined;
+  handleApprove: () => Promise<void>;
+}

@@ -2,9 +2,7 @@
 
 import { useCallback, useState } from 'react';
 
-interface UseInfoStateOptions {
-  initialSeeMore?: boolean;
-}
+import type { UseInfoStateOptions } from './Info.types';
 
 export function useInfoState(options: UseInfoStateOptions = {}) {
   const { initialSeeMore = false } = options;

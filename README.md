@@ -50,11 +50,7 @@ npm run lint
 npm run lint:check
 ```
 
-### TypeScript Support
-
-This project supports both JavaScript and TypeScript files. You can gradually migrate existing JavaScript files to TypeScript or create new TypeScript files.
-
-#### TypeScript Commands
+### Build
 
 ```bash
 # Run TypeScript type checking (no emit)
@@ -87,40 +83,22 @@ Axelarscan UI uses a straightforward deployment process with Vercel. The project
 
 ### 🌍 Environment Setup
 
-<table>
-  <tr>
-    <th>Environment</th>
-    <th>Vercel Project</th>
-    <th>Build Command</th>
-  </tr>
-  <tr>
-    <td>Mainnet</td>
-    <td>axelarscan-mainnet</td>
-    <td><code>npm run build-mainnet</code></td>
-  </tr>
-  <tr>
-    <td>Testnet</td>
-    <td>axelarscan-testnet</td>
-    <td><code>npm run build-testnet</code></td>
-  </tr>
-  <tr>
-    <td>Staging</td>
-    <td>axelarscan-staging</td>
-    <td><code>npm run build-staging</code></td>
-  </tr>
-  <tr>
-    <td>Stagenet</td>
-    <td>axelarscan-stagenet</td>
-    <td><code>npm run build-stagenet</code></td>
-  </tr>
-  <tr>
-    <td>Devnet Amplifier</td>
-    <td>axelarscan-devnet-amplifier</td>
-    <td><code>npm run build-devnet-amplifier</code></td>
-  </tr>
-</table>
+Environment variables are managed via a single `.env` file locally and Vercel environment variables for deployments.
 
-Each environment uses environment-specific variables loaded from corresponding `.env.*` files during build.
+```bash
+# Copy the example and fill in values for your target environment
+cp .env.example .env
+```
+
+| Environment      | Vercel Project              |
+| ---------------- | --------------------------- |
+| Mainnet          | axelarscan-mainnet          |
+| Testnet          | axelarscan-testnet          |
+| Staging          | axelarscan-staging          |
+| Stagenet         | axelarscan-stagenet         |
+| Devnet Amplifier | axelarscan-devnet-amplifier |
+
+Each Vercel project has its own environment variables configured in the Vercel dashboard. Locally, set `NEXT_PUBLIC_ENVIRONMENT` in your `.env` to target the desired environment.
 
 ### 🔄 Release Process
 

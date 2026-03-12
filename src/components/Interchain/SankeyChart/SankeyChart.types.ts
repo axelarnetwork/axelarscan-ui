@@ -1,4 +1,11 @@
+import type { ReactNode } from 'react';
 import { GroupDataItem } from '../Interchain.types';
+
+export interface SankeyChartNodeTooltipProps {
+  id: string;
+  formattedValue: string;
+  nodeColor?: string;
+}
 
 export interface SankeyChartProps {
   i: number;
@@ -6,7 +13,7 @@ export interface SankeyChartProps {
   topN?: number;
   totalValue?: number;
   field?: string;
-  title?: string;
+  title?: ReactNode;
   description?: string;
   valueFormat?: string;
   valuePrefix?: string;

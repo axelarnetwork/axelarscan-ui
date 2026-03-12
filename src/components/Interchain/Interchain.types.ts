@@ -1,4 +1,6 @@
 // Shared types for Interchain components
+import type { ReadonlyURLSearchParams } from 'next/navigation';
+import type { Chain, Asset } from '@/types';
 
 export interface FilterParams {
   from?: number;
@@ -200,22 +202,33 @@ export interface CustomTooltipProps {
   payload?: Array<{ payload: ChartDataPoint }>;
 }
 
-// Data type definitions for config functions
-export interface ChainData {
-  id: string;
-  name: string;
-  deprecated?: boolean;
-  i?: number;
-  [key: string]: unknown;
+export interface UseInterchainHooksParams {
+  searchParams: ReadonlyURLSearchParams;
+  params: FilterParams;
+  setParams: (params: FilterParams) => void;
+  types: string[] | string;
+  setTypes: (types: string[] | string) => void;
+  setData: (
+    updater: (prevData: DynamicInterchainData | null) => DynamicInterchainData
+  ) => void;
+  setTimeSpentData: (
+    updater: (prevData: DynamicInterchainData | null) => DynamicInterchainData
+  ) => void;
+  refresh: boolean | null;
+  setRefresh: (refresh: boolean | null) => void;
+  assets: Asset[] | null;
+  stats: Record<string, unknown> | null;
+  itsAssets: Asset[] | null;
+  granularity: 'day' | 'week' | 'month';
 }
 
-export interface AssetData {
-  id: string;
-  symbol: string;
-  [key: string]: unknown;
+export interface InterchainOptionContentProps {
+  selected: boolean;
+  active: boolean;
+  title: string;
 }
 
-export interface ITSAssetData {
-  symbol: string;
-  [key: string]: unknown;
-}
+// Re-export shared types for backward compatibility
+export type ChainData = Chain;
+export type AssetData = Asset;
+export type ITSAssetData = Asset;

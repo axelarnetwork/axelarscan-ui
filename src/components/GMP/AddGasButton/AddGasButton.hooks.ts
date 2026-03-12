@@ -1,38 +1,25 @@
 import { useSignAndExecuteTransaction as useSuiSignAndExecuteTransaction } from '@mysten/dapp-kit';
 import { useSignAndSubmitTransaction as useXRPLSignAndSubmitTransaction } from '@xrpl-wallet-standard/react';
-import { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { getChainData } from '@/lib/config';
 
-import { useCosmosWalletStore } from '@/components/Wallet/CosmosWallet.hooks';
-import { useEVMWalletStore } from '@/components/Wallet/EVMWallet';
-import { useStellarWalletStore } from '@/components/Wallet/StellarWallet';
-import { useSuiWalletStore } from '@/components/Wallet/SuiWallet';
-import { useXRPLWalletStore } from '@/components/Wallet/XRPLWallet';
+import {
+  useCosmosWalletStore,
+  useEVMWalletStore,
+  useStellarWalletStore,
+  useSuiWalletStore,
+  useXRPLWalletStore,
+} from '@/components/Wallet';
 
-import { useApproveAction } from '../ApproveButton/ApproveButton.hooks';
+import { useApproveAction } from '../ApproveButton';
 import { useEstimatedGasUsed, useGMPRecoveryAPI } from '../GMP.hooks';
-import type { ChainMetadata, GMPMessage, GMPToastState } from '../GMP.types';
 import { isWalletConnectedForChain, shouldSwitchChain } from '../GMP.utils';
 import { executeAddGas } from './AddGasButton.utils';
-
-interface UseAddGasButtonResult {
-  buttonLabel: string;
-  isWalletConnected: boolean;
-  needsSwitchChain: boolean;
-  targetChain: string | undefined;
-  targetChainType: string | undefined;
-  handleAddGas: () => Promise<void>;
-}
-
-interface UseAddGasButtonOptions {
-  data: GMPMessage | null;
-  processing: boolean;
-  chains: ChainMetadata[] | null;
-  setProcessing: Dispatch<SetStateAction<boolean>>;
-  setResponse: Dispatch<SetStateAction<GMPToastState | null>>;
-  refreshData: () => Promise<GMPMessage | undefined>;
-}
+import type {
+  UseAddGasButtonOptions,
+  UseAddGasButtonResult,
+} from './AddGasButton.types';
 
 export function useAddGasButton(
   props: UseAddGasButtonOptions

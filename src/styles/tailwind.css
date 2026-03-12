@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Apply color-scheme via CSS instead of next-themes' enableColorScheme
+   (which causes hydration mismatches). This tells the browser to use
+   appropriate default colors for native elements in dark mode. */
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}

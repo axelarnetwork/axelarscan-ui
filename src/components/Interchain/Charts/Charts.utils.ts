@@ -1,5 +1,6 @@
 import _ from 'lodash';
 
+import type { Chain } from '@/types';
 import { getChainData } from '@/lib/config';
 import { toNumber } from '@/lib/number';
 import { toArray } from '@/lib/parser';
@@ -98,7 +99,7 @@ export function processChartData(data: InterchainData): ChartDataPoint[] {
 
 export function groupData(
   data: GroupDataItem[],
-  chains: string[],
+  chains: Chain[] | null,
   by = 'key'
 ): GroupDataItem[] {
   return Object.entries(_.groupBy(toArray(data) as GroupDataItem[], by)).map(
@@ -106,20 +107,22 @@ export function groupData(
       key: (v[0] as GroupDataItem)?.key || k,
       num_txs: _.sumBy(v, 'num_txs'),
       volume: _.sumBy(v, 'volume'),
-      chain: _.orderBy(
-        toArray(
-          _.uniq(
-            toArray(
-              by === 'customKey'
-                ? (v[0] as GroupDataItem)?.chain
-                : (v as GroupDataItem[]).map((d: GroupDataItem) => d.chain)
+      chain: (
+        _.orderBy(
+          toArray(
+            _.uniq(
+              toArray(
+                by === 'customKey'
+                  ? (v[0] as GroupDataItem)?.chain
+                  : (v as GroupDataItem[]).map((d: GroupDataItem) => d.chain)
+              )
+            ).map((d: string | string[] | undefined) =>
+              getChainData(d as string, chains)
             )
-          ).map((d: string | string[] | undefined) =>
-            getChainData(d as string, chains)
-          )
-        ),
-        ['i'],
-        ['asc']
+          ),
+          ['i'],
+          ['asc']
+        ) as Chain[]
       ).map(d => d.id),
     })
   );
@@ -127,7 +130,7 @@ export function groupData(
 
 export function getChainPairs(
   data: InterchainData,
-  chains: string[]
+  chains: Chain[] | null
 ): GroupDataItem[] {
   const { GMPStatsByChains, transfersStats } = { ...data };
 

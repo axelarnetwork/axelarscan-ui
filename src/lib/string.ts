@@ -227,6 +227,28 @@ export const lastString = (
 };
 
 /**
+ * Parses a compound ID in the format `contractAddress_resourceId`.
+ * Returns the contract address and resource ID as separate values.
+ *
+ * @example
+ * ```ts
+ * parseCompoundId('axelar1abc_1888') // { contractAddress: 'axelar1abc', resourceId: '1888' }
+ * parseCompoundId('1888')            // { contractAddress: undefined, resourceId: '1888' }
+ * ```
+ */
+export const parseCompoundId = (
+  id: string
+): { contractAddress: string | undefined; resourceId: string } => {
+  if (id.includes('_')) {
+    return {
+      contractAddress: headString(id, '_'),
+      resourceId: lastString(id, '_') ?? id,
+    };
+  }
+  return { contractAddress: undefined, resourceId: id };
+};
+
+/**
  * Finds an element in an array that matches the given value (case-insensitive)
  *
  * @param searchValue - The value to search for
@@ -373,6 +395,16 @@ export const toTitle = (
  * filterSearchInput('hello', '') // true (empty pattern)
  * ```
  */
+/**
+ * Returns a string prefixed with a space, or empty string if the value is nullish.
+ * Useful for Number suffix props where `\` ${symbol}\`` would produce " undefined".
+ */
+export const spacedSuffix = (value?: string | null): string =>
+  value ? ` ${value}` : '';
+
+/** Non-breaking space - use as placeholder text to reserve layout space. */
+export const NBSP = '\u00A0';
+
 export const filterSearchInput = (
   searchInput: string | string[],
   pattern: string | unknown

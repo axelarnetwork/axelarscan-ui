@@ -1,4 +1,11 @@
-import { ChartDataPoint } from '../Interchain.types';
+import { ChartDataPoint, CustomTooltipProps } from '../Interchain.types';
+
+export interface StatsBarChartTooltipProps extends CustomTooltipProps {
+  stacks: string[];
+  field: string;
+  valueFormat: string;
+  valuePrefix: string;
+}
 
 export interface StatsBarChartProps {
   i: number;
@@ -14,4 +21,11 @@ export interface StatsBarChartProps {
   granularity?: string;
   valueFormat?: string;
   valuePrefix?: string;
+}
+
+export interface UseChartDataParams {
+  data: unknown;
+  field: string;
+  dateFormat: string;
+  granularity: string;
 }

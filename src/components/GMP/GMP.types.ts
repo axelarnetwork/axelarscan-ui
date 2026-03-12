@@ -1,23 +1,13 @@
 import type { providers } from 'ethers';
+import type React from 'react';
+import type { Chain, Asset } from '@/types';
 
 export type ChainType = 'cosmos' | 'evm' | 'vm';
 
-export interface ExplorerPaths {
-  url?: string;
-  block_path?: string;
-  transaction_path?: string;
-  [key: string]: string | undefined;
-}
-
-export interface ChainMetadata {
-  id?: string;
-  name?: string;
-  chain_id?: number;
-  chain_name?: string;
-  deprecated?: boolean;
-  explorer?: ExplorerPaths;
-  [key: string]: unknown;
-}
+/**
+ * @deprecated Use Chain from @/types instead. Kept as alias for compatibility.
+ */
+export type ChainMetadata = Chain;
 
 export interface AssetAddressEntry {
   symbol?: string;
@@ -282,6 +272,7 @@ export interface GMPToastState {
 export interface GMPProps {
   tx?: string;
   lite?: boolean;
+  initialData?: SearchGMPResult | null;
 }
 
 export type GMPStepStatus = 'pending' | 'success' | 'failed' | string;
@@ -420,4 +411,297 @@ export interface XRPLSignAndSubmitResponse {
   };
   tx_hash?: string;
   error?: unknown;
+}
+
+// Types moved from GMP.hooks.ts
+export type ChainCollection = ChainMetadata[] | null | undefined;
+
+export type AssetCollection = Asset[] | null | undefined;
+
+export interface SearchGMPResult {
+  data?: GMPMessage[];
+}
+
+// Types moved from GMP.utils.ts
+export interface ConfirmResolutionContext {
+  call?: GMPEventLog;
+  confirm?: GMPEventLog;
+  confirmFailed?: GMPEventLog;
+  confirmFailedEvent?: GMPEventLog;
+  approved?: GMPEventLog;
+  executed?: GMPEventLog;
+  isExecuted?: boolean;
+  error?: GMPEventLog | undefined;
+  isInvalidCall?: boolean;
+  gasPaid?: GMPEventLog | string | undefined;
+  gasPaidToCallback?: GMPEventLog | undefined;
+  expressExecuted?: GMPEventLog | undefined;
+}
+
+export interface ExecuteResolutionContext {
+  executed?: GMPEventLog;
+  isExecuted?: boolean;
+  error?: GMPEventLog | undefined;
+  errored: boolean;
+  confirm?: GMPEventLog;
+  call?: GMPEventLog;
+}
+
+// StepRow sub-component prop types
+
+export interface TxHashCellProps {
+  stepTX: string | number | undefined;
+  stepURL: string | undefined;
+  proposalId: string | undefined;
+  chainId: string | undefined;
+  stepMoreInfos: React.ReactElement[];
+  stepMoreTransactions: React.ReactElement[];
+}
+
+export interface HeightCellProps {
+  blockNumber: number | undefined;
+  axelarBlockNumber: string | number | undefined;
+  url: string | undefined;
+  blockPath: string | undefined;
+  axelarChainData: Chain | undefined;
+}
+
+export interface BlockNumberLinkProps {
+  blockNumber: string | number | undefined;
+  url: string | undefined;
+  blockPath: string | undefined;
+}
+
+export interface AddressCellProps {
+  fromAddress: string | undefined;
+  toAddress: string | undefined;
+  step: GMPStep;
+  stepData: GMPEventLog | undefined;
+  destinationChainData: Chain | undefined;
+}
+
+export interface GasCellProps {
+  gasAmount: number | undefined;
+  fees: GMPMessage['fees'];
+  data: GMPMessage;
+}
+
+export interface ExecuteErrorInfoProps {
+  data: GMPMessage;
+  axelarTransactionHash: string | undefined;
+}
+
+export interface ErrorCodeDisplayProps {
+  code: string | number;
+  destinationChainType: string | undefined;
+}
+
+// InfoGasMetrics sub-component prop types
+
+export interface InfoGasMetricsProps {
+  data: GMPMessage;
+  gasData: GMPMessage['gas'];
+  refundedData: GMPMessage['refunded'];
+  refundedMoreData: GMPEventLog[];
+  showDetails: boolean;
+  fees: GMPMessage['fees'];
+  gas: GMPMessage['gas'];
+  gasPaid: GMPEventLog | undefined;
+  gasPaidToCallback: number | undefined;
+  isMultihop: boolean;
+}
+
+export interface GasChargedSectionProps {
+  gasChargedAmount: number;
+  sourceToken: GMPTokenInfo | undefined;
+  formatTokenSuffix: (symbol?: string) => string;
+  renderUsdValue: (
+    value?: number,
+    className?: string
+  ) => React.ReactElement | null;
+}
+
+export interface GasPaidSectionProps {
+  data: GMPMessage;
+  gas: GMPMessage['gas'];
+  gasPaid: GMPEventLog | undefined;
+  gasPaidToCallback: number | undefined;
+  combinedFees: GMPMessage['fees'];
+  sourceToken: GMPTokenInfo | undefined;
+  formatTokenSuffix: (symbol?: string) => string;
+  renderUsdValue: (
+    value?: number,
+    className?: string
+  ) => React.ReactElement | null;
+}
+
+export interface GasUsedSectionProps {
+  data: GMPMessage;
+  gasData: GMPMessage['gas'];
+  sourceToken: GMPTokenInfo | undefined;
+  formatTokenSuffix: (symbol?: string) => string;
+  renderUsdValue: (
+    value?: number,
+    className?: string
+  ) => React.ReactElement | null;
+}
+
+// BaseFeeSection sub-component prop types
+
+export interface BaseFeeEntryProps {
+  entryFees: GMPFees;
+  index: number;
+  formatTokenSuffix: (symbol?: string) => string;
+  renderUsdValue: (
+    value?: number,
+    className?: string
+  ) => React.ReactElement | null;
+  renderFiPlus: (index: number) => React.ReactElement | null;
+}
+
+export interface BaseFeeSectionProps {
+  data: GMPMessage;
+  isMultihop: boolean;
+  combinedFees: GMPFees | undefined;
+  sourceTokenSymbol: string | undefined;
+  formatTokenSuffix: (symbol?: string) => string;
+  renderUsdValue: (
+    value?: number,
+    className?: string
+  ) => React.ReactElement | null;
+  renderFiPlus: (index: number) => React.ReactElement | null;
+}
+
+export interface MultihopBaseFeeProps {
+  data: GMPMessage;
+  formatTokenSuffix: (symbol?: string) => string;
+  renderUsdValue: (
+    value?: number,
+    className?: string
+  ) => React.ReactElement | null;
+  renderFiPlus: (index: number) => React.ReactElement | null;
+}
+
+export interface SingleBaseFeeProps {
+  combinedFees: GMPFees | undefined;
+  sourceTokenSymbol: string | undefined;
+  formatTokenSuffix: (symbol?: string) => string;
+  renderUsdValue: (
+    value?: number,
+    className?: string
+  ) => React.ReactElement | null;
+}
+
+// ExpressFeeSection sub-component prop types
+
+export interface ExpressFeeEntryProps {
+  entryFees: GMPFees;
+  index: number;
+  formatTokenSuffix: (symbol?: string) => string;
+  renderUsdValue: (
+    value?: number,
+    className?: string
+  ) => React.ReactElement | null;
+  renderFiPlus: (index: number) => React.ReactElement | null;
+}
+
+export interface ExpressFeeBreakdownProps {
+  sourceExpressFee: GMPExpressFeeDetail;
+  tokenSymbol: string | undefined;
+  formatTokenSuffix: (symbol?: string) => string;
+  renderUsdValue: (
+    value?: number,
+    className?: string
+  ) => React.ReactElement | null;
+}
+
+export interface ExpressFeeSectionProps {
+  data: GMPMessage;
+  isMultihop: boolean;
+  combinedFees: GMPFees | undefined;
+  sourceTokenSymbol: string | undefined;
+  formatTokenSuffix: (symbol?: string) => string;
+  renderUsdValue: (
+    value?: number,
+    className?: string
+  ) => React.ReactElement | null;
+  renderFiPlus: (index: number) => React.ReactElement | null;
+}
+
+export interface MultihopExpressFeeProps {
+  data: GMPMessage;
+  formatTokenSuffix: (symbol?: string) => string;
+  renderUsdValue: (
+    value?: number,
+    className?: string
+  ) => React.ReactElement | null;
+  renderFiPlus: (index: number) => React.ReactElement | null;
+}
+
+export interface SingleExpressFeeProps {
+  data: GMPMessage;
+  combinedFees: GMPFees | undefined;
+  sourceTokenSymbol: string | undefined;
+  formatTokenSuffix: (symbol?: string) => string;
+  renderUsdValue: (
+    value?: number,
+    className?: string
+  ) => React.ReactElement | null;
+}
+
+// WarningMessages sub-component prop types
+
+export interface WarningMessagesProps {
+  entry: GMPMessage;
+}
+
+export interface WarningRowProps {
+  text: string;
+}
+
+export interface InsufficientFeeWarningProps {
+  entry: GMPMessage;
+}
+
+export interface InvalidGasPaidWarningProps {
+  entry: GMPMessage;
+}
+
+export interface InsufficientGasWarningProps {
+  entry: GMPMessage;
+}
+
+// HopLinks sub-component prop types
+
+export interface HopLinksProps {
+  sourceChain: string | undefined;
+  destinationChain: string | undefined;
+  parentMessageID: string | undefined;
+  childMessageIDs: unknown[] | undefined;
+}
+
+export interface PrevHopLinkProps {
+  sourceChain: string | undefined;
+  parentMessageID: string | undefined;
+}
+
+export interface NextHopLinksProps {
+  destinationChain: string | undefined;
+  childMessageIDs: unknown[] | undefined;
+}
+
+// TimelineEntry sub-component prop types
+
+export interface TimelineEntryProps {
+  entry: GMPMessage;
+  chains: ChainMetadata[] | null | undefined;
+  isMultihop: boolean;
+  estimatedTimeSpent?: ChainTimeEstimate | null;
+  rootCall?: GMPMessage['call'];
+  expressExecuted?: GMPEventLog;
+}
+
+export interface ChainPathProps {
+  sourceChain: string | undefined;
+  destinationChain: string | undefined;
 }

@@ -1,18 +1,6 @@
-import { AxelarGMPRecoveryAPI } from '@axelar-network/axelarjs-sdk';
-import { providers } from 'ethers';
+import { parseError, resolveErrorMessage } from '@/lib/parser';
 
-import { parseError } from '@/lib/parser';
-import { GMPMessage, GMPToastState } from '../GMP.types';
-
-interface ExecuteActionParams {
-  data: GMPMessage;
-  sdk: AxelarGMPRecoveryAPI | null;
-  provider: providers.Web3Provider | null;
-  signer: providers.JsonRpcSigner | null;
-  setResponse: (response: GMPToastState) => void;
-  setProcessing: (processing: boolean) => void;
-  getData: () => Promise<GMPMessage | undefined>;
-}
+import type { ExecuteActionParams } from './ExecuteButton.types';
 
 /**
  * Execute the execute action for a GMP transaction on EVM chains
@@ -39,12 +27,6 @@ export async function executeExecute(
       throw new Error('Missing transaction hash for execute');
     }
 
-    console.log('[execute request]', {
-      transactionHash,
-      logIndex,
-      gasLimitBuffer,
-    });
-
     const response = await sdk.execute(transactionHash, logIndex, {
       useWindowEthereum: true,
       provider: provider ?? undefined,
@@ -53,18 +35,15 @@ export async function executeExecute(
       gasLimitBuffer: Number(gasLimitBuffer),
     });
 
-    console.log('[execute response]', response);
-
     const { success, error, transaction } = { ...response };
+
+    const fallback = transaction
+      ? 'Execute successful'
+      : 'Error Execution. Please see the error on console.';
 
     setResponse({
       status: success && transaction ? 'success' : 'failed',
-      message:
-        parseError(error)?.message ||
-        error ||
-        (transaction
-          ? 'Execute successful'
-          : 'Error Execution. Please see the error on console.'),
+      message: resolveErrorMessage(error, fallback),
       hash: transaction?.transactionHash,
       chain: data.approved.chain,
     });

@@ -18,35 +18,32 @@ import {
 import { isAxelar } from '@/lib/chain';
 import { getProvider } from '@/lib/chain/evm';
 import { ENVIRONMENT, getAssetData, getChainData } from '@/lib/config';
-import { isNumber, toBigNumber, toNumber } from '@/lib/number';
+import { toBigNumber, toNumber } from '@/lib/number';
 import { getParams } from '@/lib/operator';
 import { toArray, toCase } from '@/lib/parser';
 import { equalsIgnoreCase } from '@/lib/string';
 
+import { REFRESH_INTERVAL_MS } from './GMP.constants';
 import {
   AssetDataEntry,
-  ChainMetadata,
   ChainTimeEstimate,
   GMPMessage,
-  GMPSettlementData,
+  ChainCollection,
+  AssetCollection,
+  SearchGMPResult,
 } from './GMP.types';
-import { getDefaultGasLimit, isGMPMessage } from './GMP.utils';
+import {
+  getDefaultGasLimit,
+  isGMPMessage,
+  fetchSettlementEvents,
+} from './GMP.utils';
 import { normalizeRecoveryBytes } from './GMP.recovery.utils';
-
-type ChainCollection = ChainMetadata[] | null | undefined;
-
-type AssetCollection = AssetDataEntry[] | null | undefined;
-
-interface SearchGMPResult {
-  data?: GMPMessage[];
-}
-
-const REFRESH_INTERVAL_MS = 0.5 * 60 * 1000;
 
 async function parseCustomData(
   value: unknown
 ): Promise<GMPMessage | undefined> {
-  const parsed = await customData(value);
+  if (!value || typeof value !== 'object') return undefined;
+  const parsed = await customData(value as Parameters<typeof customData>[0]);
   return isGMPMessage(parsed) ? parsed : undefined;
 }
 
@@ -56,13 +53,19 @@ function getSearchParamsRecord(
   return getParams(searchParams) as unknown as Record<string, unknown>;
 }
 
-export function useGMPMessageData(tx?: string): {
+export function useGMPMessageData(
+  tx?: string,
+  initialData?: SearchGMPResult | null
+): {
   data: GMPMessage | null;
   refresh: () => Promise<GMPMessage | undefined>;
 } {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [data, setData] = useState<GMPMessage | null>(null);
+  const [data, setData] = useState<GMPMessage | null>(() => {
+    const first = initialData?.data?.[0] ?? null;
+    return first as GMPMessage | null;
+  });
   const [ended, setEnded] = useState<boolean>(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -72,7 +75,9 @@ export function useGMPMessageData(tx?: string): {
       typeof params.commandId === 'string' ? params.commandId : undefined;
 
     if (commandId) {
-      const response = await searchGMP({ commandId });
+      const response = (await searchGMP({
+        commandId,
+      })) as SearchGMPResult | null;
       const parsed = await parseCustomData(response?.data?.[0]);
 
       if (parsed) {
@@ -98,9 +103,9 @@ export function useGMPMessageData(tx?: string): {
       return undefined;
     }
 
-    const response = await searchGMP(
+    const response = (await searchGMP(
       tx.includes('-') ? { messageId: tx } : { txHash: tx }
-    );
+    )) as SearchGMPResult | null;
     const parsedMessage = await parseCustomData(response?.data?.[0]);
 
     const isSecondHopOfInterchainTransfer = (message: GMPMessage): boolean => {
@@ -144,11 +149,11 @@ export function useGMPMessageData(tx?: string): {
     if (parsedMessage.callback?.transactionHash) {
       const callbackTxHash = parsedMessage.callback.transactionHash;
       const { data } = {
-        ...(await searchGMP({
+        ...((await searchGMP({
           txHash: callbackTxHash,
           txIndex: parsedMessage.callback.transactionIndex,
           txLogIndex: parsedMessage.callback.logIndex,
-        })),
+        })) as SearchGMPResult | null),
       };
 
       parsedMessage.callbackData = toArray(data).find(callbackEntry =>
@@ -160,9 +165,9 @@ export function useGMPMessageData(tx?: string): {
     } else if (parsedMessage.executed?.transactionHash) {
       const executedTxHash = parsedMessage.executed.transactionHash;
       const { data } = {
-        ...(await searchGMP({
+        ...((await searchGMP({
           txHash: executedTxHash,
-        })),
+        })) as SearchGMPResult | null),
       };
 
       parsedMessage.callbackData = toArray(data).find(callbackEntry =>
@@ -173,7 +178,9 @@ export function useGMPMessageData(tx?: string): {
       );
     } else if (parsedMessage.callback?.messageIdHash) {
       const messageId = `${parsedMessage.callback.messageIdHash}-${parsedMessage.callback.messageIdIndex}`;
-      const { data } = { ...(await searchGMP({ messageId })) };
+      const { data } = {
+        ...((await searchGMP({ messageId })) as SearchGMPResult | null),
+      };
 
       parsedMessage.callbackData = toArray(data).find(callbackEntry =>
         equalsIgnoreCase(callbackEntry.call?.returnValues?.messageId, messageId)
@@ -188,9 +195,9 @@ export function useGMPMessageData(tx?: string): {
     ) {
       const childMessageId = parsedMessage.executed.childMessageIDs[0];
       const { data } = {
-        ...(await searchGMP({
+        ...((await searchGMP({
           messageId: childMessageId,
-        })),
+        })) as SearchGMPResult | null),
       };
 
       parsedMessage.callbackData = toArray(data).find(callbackEntry =>
@@ -223,7 +230,11 @@ export function useGMPMessageData(tx?: string): {
           : null;
 
       if (callbackSearchParams) {
-        const { data } = { ...(await searchGMP(callbackSearchParams)) };
+        const { data } = {
+          ...((await searchGMP(
+            callbackSearchParams
+          )) as SearchGMPResult | null),
+        };
 
         parsedMessage.originData = toArray(data).find(originEntry => {
           const callTransactionHash = parsedMessage.call?.transactionHash;
@@ -260,110 +271,29 @@ export function useGMPMessageData(tx?: string): {
     }
 
     if (parsedMessage.settlement_forwarded_events) {
-      const size = 10;
-      let retryCount = 0;
-      let offset = 0;
-      let totalEvents: number | undefined;
-      let filledEventsAccumulator: GMPSettlementData[] = [];
-
-      while (
-        (!isNumber(totalEvents) ||
-          (typeof totalEvents === 'number' &&
-            totalEvents > filledEventsAccumulator.length) ||
-          (typeof totalEvents === 'number' && offset < totalEvents)) &&
-        retryCount < 10
-      ) {
-        const settlementResponse = {
-          ...(await searchGMP({
-            event: 'SquidCoralSettlementFilled',
-            squidCoralOrderHash: parsedMessage.settlement_forwarded_events.map(
-              settlementEvent => settlementEvent.orderHash
-            ),
-            from: offset,
-            size,
-          })),
-        };
-
-        if (isNumber(settlementResponse.total)) {
-          totalEvents = settlementResponse.total;
-        }
-
-        if (settlementResponse.data) {
-          const normalizedResponse = toArray(settlementResponse.data).filter(
-            (entry): entry is GMPSettlementData =>
-              typeof entry === 'object' && entry !== null
-          );
-
-          filledEventsAccumulator = _.uniqBy(
-            _.concat(filledEventsAccumulator, normalizedResponse),
-            'id'
-          );
-          offset = filledEventsAccumulator.length;
-        } else {
-          break;
-        }
-
-        retryCount++;
-      }
-
-      if (filledEventsAccumulator.length > 0) {
-        parsedMessage.settlementFilledData = filledEventsAccumulator;
+      const filledEvents = await fetchSettlementEvents(
+        'SquidCoralSettlementFilled',
+        parsedMessage.settlement_forwarded_events
+          .map(e => e.orderHash)
+          .filter((h): h is string => !!h)
+      );
+      if (filledEvents.length > 0) {
+        parsedMessage.settlementFilledData = filledEvents;
       }
     }
 
     if (parsedMessage.settlement_filled_events) {
-      const size = 10;
-      let retryCount = 0;
-      let offset = 0;
-      let totalEvents: number | undefined;
-      let forwardedEventsAccumulator: GMPSettlementData[] = [];
-
-      while (
-        (!isNumber(totalEvents) ||
-          (typeof totalEvents === 'number' &&
-            totalEvents > forwardedEventsAccumulator.length) ||
-          (typeof totalEvents === 'number' && offset < totalEvents)) &&
-        retryCount < 10
-      ) {
-        const settlementResponse = {
-          ...(await searchGMP({
-            event: 'SquidCoralSettlementForwarded',
-            squidCoralOrderHash: parsedMessage.settlement_filled_events.map(
-              settlementEvent => settlementEvent.orderHash
-            ),
-            from: offset,
-            size,
-          })),
-        };
-
-        if (isNumber(settlementResponse.total)) {
-          totalEvents = settlementResponse.total;
-        }
-
-        if (settlementResponse.data) {
-          const normalizedResponse = toArray(settlementResponse.data).filter(
-            (entry): entry is GMPSettlementData =>
-              typeof entry === 'object' && entry !== null
-          );
-
-          forwardedEventsAccumulator = _.uniqBy(
-            _.concat(forwardedEventsAccumulator, normalizedResponse),
-            'id'
-          );
-          offset = forwardedEventsAccumulator.length;
-        } else {
-          break;
-        }
-
-        retryCount++;
-      }
-
-      if (forwardedEventsAccumulator.length > 0) {
-        parsedMessage.settlementForwardedData = forwardedEventsAccumulator;
+      const forwardedEvents = await fetchSettlementEvents(
+        'SquidCoralSettlementForwarded',
+        parsedMessage.settlement_filled_events
+          .map(e => e.orderHash)
+          .filter((h): h is string => !!h)
+      );
+      if (forwardedEvents.length > 0) {
+        parsedMessage.settlementForwardedData = forwardedEvents;
       }
     }
 
-    console.log('[data]', parsedMessage);
     setData(parsedMessage);
 
     return parsedMessage;

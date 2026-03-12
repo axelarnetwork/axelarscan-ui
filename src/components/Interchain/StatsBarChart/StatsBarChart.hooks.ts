@@ -1,18 +1,12 @@
 import moment from 'moment';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 
 import { ChartDataPoint } from '../Interchain.types';
 import {
   extractChartDataPoints,
   getFocusTimeString,
 } from './StatsBarChart.utils';
-
-interface UseChartDataParams {
-  data: unknown;
-  field: string;
-  dateFormat: string;
-  granularity: string;
-}
+import type { UseChartDataParams } from './StatsBarChart.types';
 
 /**
  * Hook to process and manage chart data
@@ -23,34 +17,23 @@ export function useChartData({
   dateFormat,
   granularity,
 }: UseChartDataParams) {
-  const [chartData, setChartData] = useState<ChartDataPoint[] | null>(null);
-
-  useEffect(() => {
+  return useMemo<ChartDataPoint[] | null>(() => {
     if (!data) {
-      setChartData(null);
-      return;
+      return null;
     }
 
     const chartDataPoints = extractChartDataPoints(data);
 
-    setChartData(
-      chartDataPoints.map((d: Record<string, unknown>) => {
-        const time = moment(d.timestamp as number).utc();
-        const timeString = time.format(dateFormat);
-        const focusTimeString = getFocusTimeString(
-          time,
-          granularity,
-          dateFormat
-        );
+    return chartDataPoints.map((d: Record<string, unknown>) => {
+      const time = moment(d.timestamp as number).utc();
+      const timeString = time.format(dateFormat);
+      const focusTimeString = getFocusTimeString(time, granularity, dateFormat);
 
-        return {
-          ...d,
-          timeString,
-          focusTimeString,
-        };
-      })
-    );
+      return {
+        ...d,
+        timeString,
+        focusTimeString,
+      };
+    });
   }, [data, field, dateFormat, granularity]);
-
-  return chartData;
 }

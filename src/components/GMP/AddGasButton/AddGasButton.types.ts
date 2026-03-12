@@ -50,3 +50,21 @@ export interface AddGasButtonProps {
   setResponse: Dispatch<SetStateAction<GMPToastState | null>>;
   refreshData: () => Promise<GMPMessage | undefined>;
 }
+
+export interface UseAddGasButtonResult {
+  buttonLabel: string;
+  isWalletConnected: boolean;
+  needsSwitchChain: boolean;
+  targetChain: string | undefined;
+  targetChainType: string | undefined;
+  handleAddGas: () => Promise<void>;
+}
+
+export interface UseAddGasButtonOptions {
+  data: GMPMessage | null;
+  processing: boolean;
+  chains: ChainMetadata[] | null;
+  setProcessing: Dispatch<SetStateAction<boolean>>;
+  setResponse: Dispatch<SetStateAction<GMPToastState | null>>;
+  refreshData: () => Promise<GMPMessage | undefined>;
+}

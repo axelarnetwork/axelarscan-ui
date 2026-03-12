@@ -32,7 +32,7 @@ function findAccountName(address?: string): string | undefined {
  */
 export function groupData(
   data: GroupDataItem[],
-  chains: ChainData[],
+  chains: ChainData[] | null,
   by = GROUP_BY_KEY
 ): GroupDataItem[] {
   return Object.entries(_.groupBy(toArray(data) as GroupDataItem[], by)).map(
@@ -40,20 +40,22 @@ export function groupData(
       key: (v[0] as GroupDataItem)?.key || k,
       num_txs: _.sumBy(v, 'num_txs'),
       volume: _.sumBy(v, 'volume'),
-      chain: _.orderBy(
-        toArray(
-          _.uniq(
-            toArray(
-              by === GROUP_BY_CUSTOM_KEY
-                ? (v[0] as GroupDataItem)?.chain
-                : (v as GroupDataItem[]).map((d: GroupDataItem) => d.chain)
-            ) as (string | string[] | undefined)[]
-          ).map((d: string | string[] | undefined) =>
-            getChainData(d as string, chains)
-          )
-        ),
-        ['i'],
-        ['asc']
+      chain: (
+        _.orderBy(
+          toArray(
+            _.uniq(
+              toArray(
+                by === GROUP_BY_CUSTOM_KEY
+                  ? (v[0] as GroupDataItem)?.chain
+                  : (v as GroupDataItem[]).map((d: GroupDataItem) => d.chain)
+              ) as (string | string[] | undefined)[]
+            ).map((d: string | string[] | undefined) =>
+              getChainData(d as string, chains)
+            )
+          ),
+          ['i'],
+          ['asc']
+        ) as ChainData[]
       ).map(d => d.id),
     })
   );
@@ -123,7 +125,7 @@ export function processChainPairs(
       data?: TransferStatsItem[];
     };
   },
-  chains: ChainData[]
+  chains: ChainData[] | null
 ): GroupDataItem[] {
   const gmpData = extractGMPDestinationChains(
     toArray(data.GMPStatsByChains?.source_chains) as SourceChainData[]
@@ -156,7 +158,7 @@ export function processSourceChains(
       data?: TransferStatsItem[];
     };
   },
-  chains: ChainData[]
+  chains: ChainData[] | null
 ): GroupDataItem[] {
   const gmpData = extractGMPDestinationChains(
     toArray(data.GMPStatsByChains?.source_chains) as SourceChainData[]
@@ -189,7 +191,7 @@ export function processDestinationChains(
       data?: TransferStatsItem[];
     };
   },
-  chains: ChainData[]
+  chains: ChainData[] | null
 ): GroupDataItem[] {
   const gmpData = extractGMPDestinationChains(
     toArray(data.GMPStatsByChains?.source_chains) as SourceChainData[]
@@ -215,7 +217,7 @@ export function processDestinationChains(
  */
 export function processTransfersUsers(
   data: TopDataItem[],
-  chains: ChainData[]
+  chains: ChainData[] | null
 ): GroupDataItem[] {
   return groupData(
     (toArray(data) as TopDataItem[]).map((d: TopDataItem) => {
@@ -238,7 +240,7 @@ export function processTransfersUsers(
  */
 export function processContracts(
   data: ChainWithContracts[],
-  chains: ChainData[]
+  chains: ChainData[] | null
 ): GroupDataItem[] {
   return groupData(
     (toArray(data) as ChainWithContracts[]).flatMap((d: ChainWithContracts) =>
@@ -267,7 +269,7 @@ export function processContracts(
  */
 export function processGMPUsers(
   data: TopDataItem[],
-  chains: ChainData[]
+  chains: ChainData[] | null
 ): GroupDataItem[] {
   return groupData(
     (toArray(data) as TopDataItem[]).map((d: TopDataItem) => {
@@ -301,7 +303,7 @@ function filterByVolume(
  */
 export function processITSUsers(
   data: TopDataItem[],
-  chains: ChainData[],
+  chains: ChainData[] | null,
   includeVolume = false
 ): GroupDataItem[] {
   const processedData = filterByVolume(
@@ -331,8 +333,8 @@ export function processITSUsers(
  */
 export function processITSAssets(
   data: TopDataItem[],
-  chains: ChainData[],
-  itsAssets: ITSAssetData[],
+  chains: ChainData[] | null,
+  itsAssets: ITSAssetData[] | null,
   includeVolume = false
 ): GroupDataItem[] {
   const processedData = filterByVolume(

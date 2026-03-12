@@ -1,24 +1,25 @@
-import { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import { getChainData } from '@/lib/config';
 
-import { useCosmosWalletStore } from '@/components/Wallet/CosmosWallet.hooks';
-import { useEVMWalletStore } from '@/components/Wallet/EVMWallet';
-import { useStellarWalletStore } from '@/components/Wallet/StellarWallet';
-import { useSuiWalletStore } from '@/components/Wallet/SuiWallet';
-import { useXRPLWalletStore } from '@/components/Wallet/XRPLWallet';
+import {
+  useCosmosWalletStore,
+  useEVMWalletStore,
+  useStellarWalletStore,
+  useSuiWalletStore,
+  useXRPLWalletStore,
+} from '@/components/Wallet';
 
-import { useApproveAction } from '../ApproveButton/ApproveButton.hooks';
+import { useApproveAction } from '../ApproveButton';
 import { useGMPRecoveryAPI } from '../GMP.hooks';
-import { ChainMetadata, GMPMessage, GMPToastState } from '../GMP.types';
+import type { GMPMessage } from '../GMP.types';
 import { shouldSwitchChain } from '../GMP.utils';
 import { executeExecute } from './ExecuteButton.utils';
-
-interface UseExecuteActionParams {
-  refreshData: () => Promise<GMPMessage | undefined>;
-  setProcessing: Dispatch<SetStateAction<boolean>>;
-  setResponse: Dispatch<SetStateAction<GMPToastState | null>>;
-}
+import type {
+  UseExecuteActionParams,
+  UseExecuteButtonOptions,
+  UseExecuteButtonResult,
+} from './ExecuteButton.types';
 
 function useExecuteAction({
   refreshData,
@@ -42,25 +43,6 @@ function useExecuteAction({
     },
     [provider, refreshData, sdk, setProcessing, setResponse, signer]
   );
-}
-
-interface UseExecuteButtonResult {
-  buttonLabel: string;
-  isCosmosDestination: boolean;
-  isWalletConnected: boolean;
-  needsSwitchChain: boolean;
-  targetChain: string | undefined;
-  targetChainType: string | undefined;
-  handleExecute: () => Promise<void>;
-}
-
-interface UseExecuteButtonOptions {
-  data: GMPMessage | null;
-  processing: boolean;
-  chains: ChainMetadata[] | null;
-  setProcessing: Dispatch<SetStateAction<boolean>>;
-  setResponse: Dispatch<SetStateAction<GMPToastState | null>>;
-  refreshData: () => Promise<GMPMessage | undefined>;
 }
 
 export function useExecuteButton(

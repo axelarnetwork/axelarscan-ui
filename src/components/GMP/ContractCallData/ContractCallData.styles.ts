@@ -17,3 +17,20 @@ export const contractCallDataStyles = {
     'flex items-center gap-x-1 text-green-600 dark:text-green-500',
   timeSpentTotal: 'flex items-center gap-x-1 text-zinc-400 dark:text-zinc-500',
 } as const;
+
+// ─── Status Tag Helper ──────────────────────────────────────────
+const statusColorByState: Record<string, string> = {
+  received: 'bg-green-600 dark:bg-green-500',
+  approved: 'bg-orange-500 dark:bg-orange-600',
+  failed: 'bg-red-600 dark:bg-red-500',
+};
+
+const DEFAULT_STATUS_COLOR = 'bg-yellow-400 dark:bg-yellow-500';
+
+export function getStatusTagClass(status?: string): string {
+  if (!status) {
+    return DEFAULT_STATUS_COLOR;
+  }
+
+  return statusColorByState[status] ?? DEFAULT_STATUS_COLOR;
+}

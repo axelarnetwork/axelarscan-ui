@@ -8,9 +8,9 @@ import { ExplorerLink } from '@/components/ExplorerLink';
 import { isAxelar } from '@/lib/chain';
 import { getChainData } from '@/lib/config';
 
-import { AddGasButton } from '../AddGasButton/AddGasButton';
-import { ApproveButton } from '../ApproveButton/ApproveButton';
-import { ExecuteButton } from '../ExecuteButton/ExecuteButton';
+import { AddGasButton } from '../AddGasButton';
+import { ApproveButton } from '../ApproveButton';
+import { ExecuteButton } from '../ExecuteButton';
 import type { GMPToastState } from '../GMP.types';
 import { recoveryButtonsStyles } from './RecoveryButtons.styles';
 import { RecoveryButtonsProps } from './RecoveryButtons.types';

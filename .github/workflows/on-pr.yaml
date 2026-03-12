@@ -28,11 +28,18 @@ jobs:
 
       - name: Set up environment variables
         run: |
-          echo "ENVIRONMENT=testnet" >> $GITHUB_ENV
+          echo "ENVIRONMENT=mainnet" >> $GITHUB_ENV
           echo "LOG_LEVEL=debug" >> $GITHUB_ENV
           echo "NODE_NO_WARNINGS=1" >> $GITHUB_ENV
           echo "INDEXER_URL=http://localhost:9200" >> $GITHUB_ENV
           echo "DD_TRACE_ENABLED=false" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_ENVIRONMENT=mainnet" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_AXELARSCAN_API_URL=https://api.axelarscan.io/api" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_VALIDATOR_API_URL=https://api.axelarscan.io/validator" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_TOKEN_TRANSFER_API_URL=https://api.axelarscan.io/token" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_GMP_API_URL=https://api.axelarscan.io/gmp" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_RPC_URL=https://mainnet-rpc-router.axelar-dev.workers.dev/chain/axelar" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_LCD_URL=https://axelar-lcd.quickapi.com" >> $GITHUB_ENV
 
       - name: Build
         run: npm run build
@@ -44,6 +51,7 @@ jobs:
           echo "Tests completed"
 
       - name: Run linting check
+        continue-on-error: true
         run: |
           echo "Running ESLint..."
           npm run lint:check

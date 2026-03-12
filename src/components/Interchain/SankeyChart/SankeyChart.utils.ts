@@ -1,5 +1,6 @@
 import _ from 'lodash';
 
+import type { Chain } from '@/types';
 import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { headString, lastString } from '@/lib/string';
@@ -19,7 +20,7 @@ export function processSankeyChartData(
   data: GroupDataItem[] | GroupDataItem | undefined,
   field: string,
   topN: number,
-  chains: unknown
+  chains: Chain[] | null
 ): ProcessedChartDataItem[] {
   if (!data) {
     return [];
@@ -32,8 +33,8 @@ export function processSankeyChartData(
       dataArray
         .filter(d => ((d[field as keyof GroupDataItem] as number) || 0) > 0)
         .map(d => ({
-          source: headString(d.key, '_'),
-          target: lastString(d.key, '_'),
+          source: headString(d.key, '_') ?? '',
+          target: lastString(d.key, '_') ?? '',
           value: parseInt(String(d[field as keyof GroupDataItem])),
           key: d.key,
         })),

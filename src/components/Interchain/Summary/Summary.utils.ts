@@ -64,8 +64,8 @@ export function processContracts(data: InterchainData): ProcessedContract[] {
 
 export function processTVLData(
   tvlData: TVLData[],
-  assets: AssetData[],
-  itsAssets: ITSAssetData[]
+  assets: AssetData[] | null,
+  itsAssets: ITSAssetData[] | null
 ): TVLData[] {
   return (toArray(tvlData) as TVLData[]).map((d: TVLData) => {
     const assetData =

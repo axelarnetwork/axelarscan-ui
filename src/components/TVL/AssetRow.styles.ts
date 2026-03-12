@@ -8,7 +8,7 @@ export const assetRowStyles = {
   // Cell styles
   cell: {
     assetName:
-      'sticky left-0 z-10 px-3 py-4 text-left backdrop-blur backdrop-filter',
+      'sticky left-0 z-10 px-3 py-4 text-left bg-white dark:bg-zinc-900',
     standard: 'px-3 py-4 text-left',
     rightAlign: 'px-3 py-4 text-right',
   },
