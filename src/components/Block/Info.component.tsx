@@ -1,20 +1,20 @@
 'use client';
 
-import Link from 'next/link';
 import moment from 'moment';
+import Link from 'next/link';
 import { MdArrowBackIosNew, MdArrowForwardIos } from 'react-icons/md';
 
 import { Copy } from '@/components/Copy';
-import { Tooltip } from '@/components/Tooltip';
 import { Number } from '@/components/Number';
 import { Profile } from '@/components/Profile';
-import { find, ellipse } from '@/lib/string';
-import { isNumber, toNumber, numberFormat } from '@/lib/number';
+import { Tooltip } from '@/components/Tooltip';
+import { isNumber, numberFormat, toNumber } from '@/lib/number';
+import { ellipse, find } from '@/lib/string';
 import { TIME_FORMAT } from '@/lib/time';
 
+import * as styles from './Block.styles';
 import type { InfoProps, ValidatorSetEntry } from './Block.types';
 import { SignerSection } from './SignerSection.component';
-import * as styles from './Block.styles';
 
 export function Info({ data, height, validatorSets }: InfoProps) {
   const hash = data.block_id?.hash;

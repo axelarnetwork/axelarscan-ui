@@ -13,10 +13,13 @@ export default async function BlockPage({
   params: Promise<{ height: string }>;
 }) {
   const { height } = await params;
-  const [block, validatorSets] = await Promise.all([
+  const [block, validatorSetsResponse] = await Promise.all([
     getBlock(height) as Promise<BlockData | null>,
-    getValidatorSets(height) as Promise<ValidatorSetEntry[] | null>,
+    getValidatorSets(height) as Promise<{
+      result?: { validators?: ValidatorSetEntry[] };
+    } | null>,
   ]);
+  const validatorSets = validatorSetsResponse?.result?.validators ?? null;
   return (
     <Block
       height={height}
