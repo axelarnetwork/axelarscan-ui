@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { ThemeProvider, useTheme } from 'next-themes';
 // @ts-expect-error — no type declarations available
 import TagManager from 'react-gtm-module';
@@ -26,6 +26,15 @@ import WagmiConfigProvider from '@/lib/provider/WagmiConfigProvider';
 import { queryClient, xrplConfig } from '@/lib/provider/wagmi';
 import * as ga from '@/lib/ga';
 import { ENVIRONMENT } from '@/lib/config';
+
+const { networkConfig: suiNetworkConfig } = createNetworkConfig({
+  testnet: {
+    url: 'https://sui-testnet-rpc.publicnode.com',
+  },
+  mainnet: {
+    url: 'https://sui-rpc.publicnode.com',
+  },
+});
 
 function ThemeWatcher() {
   const { resolvedTheme, setTheme } = useTheme();
@@ -68,53 +77,33 @@ function AnalyticsTracker() {
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [rendered, setRendered] = useState(false);
-  const [tagManagerInitiated, setTagManagerInitiated] = useState(false);
-  const [xrplRegisterWallets, setXRPLlRegisterWallets] = useState<
-    XRPLWallet[] | null
-  >(null);
   const [client] = useState(() => queryClient);
-
-  useEffect(() => {
-    setRendered(true);
-  }, []);
+  const tagManagerInitRef = useRef(false);
 
   // google tag manager
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_GTM_ID && rendered && !tagManagerInitiated) {
+    if (process.env.NEXT_PUBLIC_GTM_ID && !tagManagerInitRef.current) {
+      tagManagerInitRef.current = true;
       TagManager.initialize({ gtmId: process.env.NEXT_PUBLIC_GTM_ID });
-      setTagManagerInitiated(true);
     }
-  }, [rendered, tagManagerInitiated, setTagManagerInitiated]);
-
-  // sui
-  const { networkConfig } = createNetworkConfig({
-    testnet: {
-      url: 'https://sui-testnet-rpc.publicnode.com',
-    },
-    mainnet: {
-      url: 'https://sui-rpc.publicnode.com',
-    },
-  });
+  }, []);
 
   // xrpl - with EIP-6963 support for MetaMask
   const metamaskProvider = useMetaMaskProvider();
-  useEffect(() => {
-    if (!rendered) return;
-
-    const wallets = [
-      new CrossmarkWallet(),
-      new XRPLWalletConnectWallet(
-        xrplConfig as ConstructorParameters<typeof XRPLWalletConnectWallet>[0]
-      ),
-      new XamanWallet(process.env.NEXT_PUBLIC_XAMAN_API_KEY!),
-      new MetaMaskWallet(
-        metamaskProvider as ConstructorParameters<typeof MetaMaskWallet>[0]
-      ),
-    ] as XRPLWallet[];
-
-    setXRPLlRegisterWallets(wallets);
-  }, [rendered, setXRPLlRegisterWallets, metamaskProvider]);
+  const xrplRegisterWallets = useMemo(
+    () =>
+      [
+        new CrossmarkWallet(),
+        new XRPLWalletConnectWallet(
+          xrplConfig as ConstructorParameters<typeof XRPLWalletConnectWallet>[0]
+        ),
+        new XamanWallet(process.env.NEXT_PUBLIC_XAMAN_API_KEY!),
+        new MetaMaskWallet(
+          metamaskProvider as ConstructorParameters<typeof MetaMaskWallet>[0]
+        ),
+      ] as XRPLWallet[],
+    [metamaskProvider]
+  );
 
   return (
     <ThemeProvider
@@ -134,11 +123,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
           <Global />
           <WagmiConfigProvider>
             <XRPLWalletProvider
-              registerWallets={xrplRegisterWallets ?? undefined}
+              registerWallets={xrplRegisterWallets}
               autoConnect={false}
             >
               <SuiClientProvider
-                networks={networkConfig}
+                networks={suiNetworkConfig}
                 defaultNetwork={
                   ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'
                 }
