@@ -83,8 +83,8 @@ export default function RootLayout({
               <Suspense>{children}</Suspense>
             </Layout>
           </div>
+          <Toaster />
         </Providers>
-        <Toaster />
         <Analytics />
       </body>
     </html>
