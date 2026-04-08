@@ -1,31 +1,30 @@
 'use client';
 
-import { usePathname, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
-import { ThemeProvider, useTheme } from 'next-themes';
-// @ts-expect-error — no type declarations available
-import TagManager from 'react-gtm-module';
-import { IntercomProvider } from 'react-use-intercom';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { useAppKitTheme } from '@reown/appkit/react';
+import { Global } from '@/components/Global.component';
+import { ENVIRONMENT } from '@/lib/config';
+import * as ga from '@/lib/ga';
+import WagmiConfigProvider from '@/lib/provider/WagmiConfigProvider';
+import { queryClient, xrplConfig } from '@/lib/provider/wagmi';
+import { MetaMaskWallet } from '@/lib/wallets/MetaMaskEIP6963Wallet';
+import { useMetaMaskProvider } from '@/lib/wallets/eip6963';
 import {
   createNetworkConfig,
   SuiClientProvider,
   WalletProvider as SuiWalletProvider,
 } from '@mysten/dapp-kit';
-import { WalletProvider as XRPLWalletProvider } from '@xrpl-wallet-standard/react';
-import type { XRPLWallet } from '@xrpl-wallet-standard/core';
+import { useAppKitTheme } from '@reown/appkit/react';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { CrossmarkWallet } from '@xrpl-wallet-adapter/crossmark';
 import { WalletConnectWallet as XRPLWalletConnectWallet } from '@xrpl-wallet-adapter/walletconnect';
 import { XamanWallet } from '@xrpl-wallet-adapter/xaman';
-import { MetaMaskWallet } from '@/lib/wallets/MetaMaskEIP6963Wallet';
-import { useMetaMaskProvider } from '@/lib/wallets/eip6963';
-
-import { Global } from '@/components/Global.component';
-import WagmiConfigProvider from '@/lib/provider/WagmiConfigProvider';
-import { queryClient, xrplConfig } from '@/lib/provider/wagmi';
-import * as ga from '@/lib/ga';
-import { ENVIRONMENT } from '@/lib/config';
+import type { XRPLWallet } from '@xrpl-wallet-standard/core';
+import { WalletProvider as XRPLWalletProvider } from '@xrpl-wallet-standard/react';
+import { ThemeProvider, useTheme } from 'next-themes';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useRef, useState } from 'react';
+// @ts-expect-error — no type declarations available
+import TagManager from 'react-gtm-module';
+import { IntercomProvider } from 'react-use-intercom';
 
 const { networkConfig: suiNetworkConfig } = createNetworkConfig({
   testnet: {
@@ -89,21 +88,26 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, []);
 
   // xrpl - with EIP-6963 support for MetaMask
+  // Wallet adapters are constructed in useEffect to avoid calling third-party
+  // constructors during SSR — they may access browser globals like `window`.
   const metamaskProvider = useMetaMaskProvider();
-  const xrplRegisterWallets = useMemo(
-    () =>
-      [
-        new CrossmarkWallet(),
-        new XRPLWalletConnectWallet(
-          xrplConfig as ConstructorParameters<typeof XRPLWalletConnectWallet>[0]
-        ),
-        new XamanWallet(process.env.NEXT_PUBLIC_XAMAN_API_KEY!),
-        new MetaMaskWallet(
-          metamaskProvider as ConstructorParameters<typeof MetaMaskWallet>[0]
-        ),
-      ] as XRPLWallet[],
-    [metamaskProvider]
-  );
+  const [xrplRegisterWallets, setXrplRegisterWallets] = useState<
+    XRPLWallet[] | undefined
+  >();
+  useEffect(() => {
+    // Wallet adapter constructors may access browser globals; must defer to client via effect.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setXrplRegisterWallets([
+      new CrossmarkWallet(),
+      new XRPLWalletConnectWallet(
+        xrplConfig as ConstructorParameters<typeof XRPLWalletConnectWallet>[0]
+      ),
+      new XamanWallet(process.env.NEXT_PUBLIC_XAMAN_API_KEY!),
+      new MetaMaskWallet(
+        metamaskProvider as ConstructorParameters<typeof MetaMaskWallet>[0]
+      ),
+    ] as XRPLWallet[]);
+  }, [metamaskProvider]);
 
   return (
     <ThemeProvider
