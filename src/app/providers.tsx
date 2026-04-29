@@ -24,7 +24,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
 // @ts-expect-error — no type declarations available
 import TagManager from 'react-gtm-module';
-import { IntercomProvider } from 'react-use-intercom';
+import { IntercomChat } from '@/components/IntercomChat';
 
 const { networkConfig: suiNetworkConfig } = createNetworkConfig({
   testnet: {
@@ -115,10 +115,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange
       enableColorScheme={false}
     >
-      <IntercomProvider
-        appId={process.env.NEXT_PUBLIC_INTERCOM_APP_ID!}
-        autoBoot={true}
-      >
+        <IntercomChat />
         <ThemeWatcher />
         <Suspense>
           <AnalyticsTracker />
@@ -141,7 +138,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
             </XRPLWalletProvider>
           </WagmiConfigProvider>
         </QueryClientProvider>
-      </IntercomProvider>
     </ThemeProvider>
   );
 }

@@ -35,6 +35,7 @@
     "@creit.tech/stellar-wallets-kit": "^1.9.5",
     "@headlessui/react": "^2.2.2",
     "@headlessui/tailwindcss": "^0.2.2",
+    "@intercom/messenger-js-sdk": "^0.0.19",
     "@mysten/dapp-kit": "^0.16.1",
     "@mysten/sui": "^1.29.0",
     "@nivo/sankey": "^0.92.2",
