@@ -115,29 +115,27 @@ export function Providers({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange
       enableColorScheme={false}
     >
-        <IntercomChat />
-        <ThemeWatcher />
-        <Suspense>
-          <AnalyticsTracker />
-        </Suspense>
-        <QueryClientProvider client={client}>
-          <Global />
-          <WagmiConfigProvider>
-            <XRPLWalletProvider
-              registerWallets={xrplRegisterWallets}
-              autoConnect={false}
+      <IntercomChat />
+      <ThemeWatcher />
+      <Suspense>
+        <AnalyticsTracker />
+      </Suspense>
+      <QueryClientProvider client={client}>
+        <Global />
+        <WagmiConfigProvider>
+          <XRPLWalletProvider
+            registerWallets={xrplRegisterWallets}
+            autoConnect={false}
+          >
+            <SuiClientProvider
+              networks={suiNetworkConfig}
+              defaultNetwork={ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'}
             >
-              <SuiClientProvider
-                networks={suiNetworkConfig}
-                defaultNetwork={
-                  ENVIRONMENT === 'mainnet' ? 'mainnet' : 'testnet'
-                }
-              >
-                <SuiWalletProvider>{children}</SuiWalletProvider>
-              </SuiClientProvider>
-            </XRPLWalletProvider>
-          </WagmiConfigProvider>
-        </QueryClientProvider>
+              <SuiWalletProvider>{children}</SuiWalletProvider>
+            </SuiClientProvider>
+          </XRPLWalletProvider>
+        </WagmiConfigProvider>
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }

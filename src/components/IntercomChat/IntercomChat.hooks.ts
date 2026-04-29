@@ -20,7 +20,9 @@ function extractTxFromPathname(pathname: string): string | null {
 
 /** Returns the Intercom messenger function, or undefined if not yet initialised. */
 function getMessenger(): ((...args: unknown[]) => void) | undefined {
-  const messenger = (window as unknown as { Intercom?: (...args: unknown[]) => void }).Intercom;
+  const messenger = (
+    window as unknown as { Intercom?: (...args: unknown[]) => void }
+  ).Intercom;
   return typeof messenger === 'function' ? messenger : undefined;
 }
 
@@ -57,7 +59,9 @@ export function useIntercomChat(appId: string | undefined): void {
     });
 
     getMessenger()?.('onShow', () => {
-      getMessenger()?.('update', { latest_swap_tx_hash: resolveLatestTxHash() });
+      getMessenger()?.('update', {
+        latest_swap_tx_hash: resolveLatestTxHash(),
+      });
     });
   }, [appId]);
 
