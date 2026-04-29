@@ -46,6 +46,7 @@ export function useIntercomChat(appId: string | undefined): void {
       latest_swap_tx_hash:
         extractTxFromPathname(window.location.pathname) ?? '',
       axelar_environment: ENVIRONMENT,
+      axelar_app: 'axelarscan',
     });
 
     getMessenger()?.('onShow', () => {
