@@ -53,6 +53,7 @@ export function useIntercomChat(appId: string | undefined): void {
       getMessenger()?.('update', {
         latest_swap_tx_hash:
           extractTxFromPathname(window.location.pathname) ?? '',
+        axelar_app: 'axelarscan',
       });
     });
   }, [appId]);
