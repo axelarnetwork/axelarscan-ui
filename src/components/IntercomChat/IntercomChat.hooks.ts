@@ -27,16 +27,6 @@ function getMessenger(): ((...args: unknown[]) => void) | undefined {
 }
 
 /**
- * Resolves the tx identifier to surface to Fin AI.
- * Only set when the user is on a /gmp/ or /transactions/ detail page.
- * Reads window.location.pathname directly so it is always current, even
- * when called from a long-lived closure such as an onShow handler.
- */
-function resolveLatestTxHash(): string {
-  return extractTxFromPathname(window.location.pathname) ?? '';
-}
-
-/**
  * Boots the Intercom messenger and keeps latest_swap_tx_hash in sync with
  * the currently viewed transaction page so Fin AI can look it up without
  * asking the user.
@@ -46,19 +36,22 @@ export function useIntercomChat(appId: string | undefined): void {
 
   // Boot once on mount with the active tx hash already set so Fin never
   // reads a stale value from the anonymous visitor cookie.
-  // onShow is registered here (once) so it never captures a stale closure.
+  // onShow is registered here (once) so it never captures a stale pathname
+  // closure — window.location.pathname is read at call time instead.
   useEffect(() => {
     if (!appId) return;
     Intercom({
       app_id: appId,
       api_base: INTERCOM_API_BASE,
-      latest_swap_tx_hash: resolveLatestTxHash(),
+      latest_swap_tx_hash:
+        extractTxFromPathname(window.location.pathname) ?? '',
       axelar_environment: ENVIRONMENT,
     });
 
     getMessenger()?.('onShow', () => {
       getMessenger()?.('update', {
-        latest_swap_tx_hash: resolveLatestTxHash(),
+        latest_swap_tx_hash:
+          extractTxFromPathname(window.location.pathname) ?? '',
       });
     });
   }, [appId]);
@@ -68,7 +61,7 @@ export function useIntercomChat(appId: string | undefined): void {
     if (!appId) return;
     getMessenger()?.('update', {
       current_page_path: pathname,
-      latest_swap_tx_hash: resolveLatestTxHash(),
+      latest_swap_tx_hash: extractTxFromPathname(pathname) ?? '',
     });
   }, [appId, pathname]);
 }
