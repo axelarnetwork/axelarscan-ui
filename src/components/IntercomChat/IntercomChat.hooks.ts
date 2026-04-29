@@ -33,9 +33,7 @@ function getMessenger(): ((...args: unknown[]) => void) | undefined {
  * when called from a long-lived closure such as an onShow handler.
  */
 function resolveLatestTxHash(): string {
-  const tx = extractTxFromPathname(window.location.pathname);
-  console.log('[Intercom] latest_swap_tx_hash:', tx ?? '(empty)');
-  return tx ?? '';
+  return extractTxFromPathname(window.location.pathname) ?? '';
 }
 
 /**
