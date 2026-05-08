@@ -1,0 +1,23 @@
+/* Intercom: sit below the navbar on desktop, above it on mobile (full-screen). */
+.intercom-lightweight-app,
+.intercom-app,
+#intercom-container {
+  z-index: 40 !important;
+}
+
+/* Desktop: navbar is 88px; panel bottom-offset is ~80px — clamp height so it can't overlap. */
+@media (min-width: 768px) {
+  .intercom-app .intercom-messenger-frame,
+  iframe[name="intercom-messenger-frame"] {
+    max-height: calc(100dvh - 168px) !important;
+  }
+}
+
+/* Mobile: raise above the navbar (z-50) so the full-screen messenger covers it. */
+@media (max-width: 767px) {
+  .intercom-lightweight-app,
+  .intercom-app,
+  #intercom-container {
+    z-index: 60 !important;
+  }
+}

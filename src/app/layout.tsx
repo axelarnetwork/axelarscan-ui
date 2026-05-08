@@ -11,6 +11,7 @@ import { Layout } from '@/components/Layout';
 
 import '@/styles/tailwind.css';
 import '@/styles/global.css';
+import '@/styles/intercom.css';
 
 export const metadata: Metadata = {
   title: {
