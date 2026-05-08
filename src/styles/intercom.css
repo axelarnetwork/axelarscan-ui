@@ -8,7 +8,7 @@
 /* Desktop: navbar is 88px; panel bottom-offset is ~80px — clamp height so it can't overlap. */
 @media (min-width: 768px) {
   .intercom-app .intercom-messenger-frame,
-  iframe[name="intercom-messenger-frame"] {
+  iframe[name='intercom-messenger-frame'] {
     max-height: calc(100dvh - 168px) !important;
   }
 }
