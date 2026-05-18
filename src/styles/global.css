@@ -9,9 +9,3 @@
 .ant-btn-primary {
   @apply !bg-blue-600 !text-white;
 }
-
-.intercom-lightweight-app,
-.intercom-app,
-#intercom-container {
-  z-index: 40 !important;
-}
