@@ -21,3 +21,10 @@
     z-index: 60 !important;
   }
 }
+
+/* Hide the launcher when any dialog/sidebar is open (e.g. filter panel). */
+body:has([role='dialog']) .intercom-lightweight-app,
+body:has([role='dialog']) .intercom-app,
+body:has([role='dialog']) #intercom-container {
+  display: none !important;
+}
