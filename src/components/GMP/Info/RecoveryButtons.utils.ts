@@ -76,7 +76,7 @@ function isChainSupportedForAddGas(
  * other recovery paths require it (e.g. callback leg).
  */
 function needsGasForOriginalCall(gmp: GMPMessage): boolean {
-  const { call, gas_paid, confirm, approved, executed, gas } = gmp;
+  const { call, gas_paid, confirm, approved, executed } = gmp;
 
   // If the message is already executed (or marked executed) we do not need more gas.
   if (executed || gmp.is_executed || approved) {
@@ -97,14 +97,20 @@ function needsGasForOriginalCall(gmp: GMPMessage): boolean {
     return false;
   }
 
-  // Detect insufficient gas using Axelar-provided flags and balances.
+  // Detect insufficient gas using Axelar-provided flags only.
   // Any of these markers signal that the origin leg still needs funding.
+  //
+  // NOTE: We intentionally do NOT infer a shortage from `gas.gas_remain_amount`
+  // being near zero. A correctly funded message can legitimately have ~0 gas
+  // remaining (no refund expected) while it is still "Waiting for Finality",
+  // which produced false-positive Add Gas buttons on transactions that go on to
+  // complete normally. Genuine shortages are already reported by the backend via
+  // `is_insufficient_fee` / `is_invalid_gas_paid` / `not_enough_gas_to_execute`.
   const shortageDetected =
     !(gas_paid || gmp.gas_paid_to_callback) ||
     gmp.is_insufficient_fee ||
     gmp.is_invalid_gas_paid ||
-    gmp.not_enough_gas_to_execute ||
-    (gas?.gas_remain_amount !== undefined && gas.gas_remain_amount < 0.000001);
+    gmp.not_enough_gas_to_execute;
 
   return shortageDetected;
 }
