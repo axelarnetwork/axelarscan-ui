@@ -1,10 +1,45 @@
 import _ from 'lodash';
 
+import { getChainData } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { equalsIgnoreCase, includesSomePatterns } from '@/lib/string';
 import type { Chain, Asset, AssetAddress } from '@/types';
 
-import type { AssetResourceData } from './Resources.types';
+import type {
+  AssetResourceData,
+  NormalizedAssetAddress,
+} from './Resources.types';
+
+/**
+ * Orders the chains an asset is deployed on for display on an asset card.
+ *
+ * The card truncates its icon row to the first few entries, so this ordering decides which deployments a user sees before expanding.
+ * The native chain comes first, then active chains, then deprecated ones.
+ * Deprecated chains are pushed to the end rather than removed — the token still exists on them, it is just no longer bridgeable, which the greyed icon and its tooltip convey.
+ * The native chain outranks that demotion so a token whose origin chain has been deprecated still shows where it came from.
+ *
+ * Ordering is otherwise left untouched: `_.orderBy` is stable, so entries that tie keep the order they arrived in.
+ *
+ * @param chainAddresses - Deployments to order, native chain first as built by the asset card
+ * @param chains - Chain configs used to resolve each entry, may be null before the API responds
+ * @param nativeChain - Chain the asset originates from, if known
+ * @returns A new ordered array; nothing is filtered out
+ */
+export function orderChainAddresses(
+  chainAddresses: NormalizedAssetAddress[],
+  chains: Chain[] | null,
+  nativeChain: string | undefined
+): NormalizedAssetAddress[] {
+  return _.orderBy(
+    chainAddresses,
+    [
+      (d: NormalizedAssetAddress) => d.chain !== nativeChain,
+      (d: NormalizedAssetAddress) =>
+        !!getChainData(d.chain, chains)?.deprecated,
+    ],
+    ['asc', 'asc']
+  );
+}
 
 export function filterChains(
   chains: unknown,

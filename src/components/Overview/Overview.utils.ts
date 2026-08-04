@@ -23,6 +23,22 @@ function resolveChainId(
   return cached || key;
 }
 
+function makeDeprecatedChainChecker(
+  chains: Chain[] | null | undefined
+): (key: string | undefined) => boolean {
+  const cache = new Map<string, boolean>();
+
+  return (key: string | undefined) => {
+    if (!key) return false;
+
+    if (!cache.has(key)) {
+      cache.set(key, !!getChainData(key, chains)?.deprecated);
+    }
+
+    return cache.get(key)!;
+  };
+}
+
 function buildGmpGraphItems(
   data: OverviewData,
   lookup: Record<string, string | undefined>,
@@ -123,26 +139,32 @@ export function buildChainPairs(
       ).map(d => d?.id),
     }));
 
+  const isDeprecatedChain = makeDeprecatedChainChecker(chains);
+
   return groupData(
     _.concat(
-      toArray(data.GMPStatsByChains?.source_chains).flatMap(
-        (s: SourceChainEntry) =>
+      toArray(data.GMPStatsByChains?.source_chains)
+        .filter((s: SourceChainEntry) => !isDeprecatedChain(s.key))
+        .flatMap((s: SourceChainEntry) =>
           toArray(s.destination_chains)
             .filter(
               (d: DestinationChainEntry) =>
-                !chainFocus || find(chainFocus, [s.key, d.key])
+                (!chainFocus || find(chainFocus, [s.key, d.key])) &&
+                !isDeprecatedChain(d.key)
             )
             .map((d: DestinationChainEntry) => ({
               key: `${s.key}_${d.key}`,
               num_txs: d.num_txs,
               volume: d.volume,
             }))
-      ),
+        ),
       toArray(data.transfersStats?.data)
         .filter(
           (d: TransferStatsEntry) =>
-            !chainFocus ||
-            find(chainFocus, [d.source_chain, d.destination_chain])
+            (!chainFocus ||
+              find(chainFocus, [d.source_chain, d.destination_chain])) &&
+            !isDeprecatedChain(d.source_chain) &&
+            !isDeprecatedChain(d.destination_chain)
         )
         .map((d: TransferStatsEntry) => ({
           key: `${d.source_chain}_${d.destination_chain}`,

@@ -39,6 +39,7 @@ export const chainIconSelected =
   'border-2 border-blue-600 dark:border-blue-500' as const;
 export const chainIconNative =
   'border-2 border-orange-400 dark:border-orange-500' as const;
+export const chainIconDeprecated = 'opacity-60 grayscale' as const;
 export const seeMoreButton =
   '3xl:text-sm 3xl:px-2.5 3xl:py-1.5 mb-1.5 rounded bg-zinc-100 px-1.5 py-1 text-xs font-medium text-blue-600 dark:bg-zinc-800 dark:text-blue-500' as const;
 export const focusedChainSection = 'flex flex-col gap-y-3' as const;

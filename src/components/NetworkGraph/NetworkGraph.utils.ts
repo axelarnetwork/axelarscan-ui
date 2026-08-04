@@ -3,6 +3,7 @@ import _ from 'lodash';
 import { isString } from '@/lib/string';
 import { isNumber, toNumber } from '@/lib/number';
 import { toArray } from '@/lib/parser';
+import type { Chain } from '@/types';
 
 import type {
   GraphNode,
@@ -10,6 +11,20 @@ import type {
   ImagesMap,
   TierConfig,
 } from './NetworkGraph.types';
+
+export const getDeprecatedChainIds = (
+  chains: Chain[] | null | undefined
+): Set<string> =>
+  new Set(
+    toArray(chains)
+      .filter(d => d.deprecated && d.id)
+      .map(d => d.id.toLowerCase())
+  );
+
+export const isDeprecatedChain = (
+  id: string | undefined,
+  deprecatedChainIds: Set<string>
+): boolean => !!id && deprecatedChainIds.has(id.toLowerCase());
 
 // ---------------------------------------------------------------------------
 // Image preloading helpers

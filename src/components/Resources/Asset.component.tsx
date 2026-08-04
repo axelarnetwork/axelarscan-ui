@@ -16,6 +16,7 @@ import type {
   NormalizedAssetAddress,
 } from './Resources.types';
 import * as styles from './Resources.styles';
+import { orderChainAddresses } from './Resources.utils';
 import { ChainIcon } from './ChainIcon.component';
 import { FocusedChainDetail } from './FocusedChainDetail.component';
 
@@ -35,25 +36,29 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
   } = { ...data };
   const asset = type === 'its' ? data.id : denom;
 
-  const chainAddresses: NormalizedAssetAddress[] = _.uniqBy(
-    toArray(
-      _.concat(
-        {
-          chain: native_chain,
-          ...(type === 'its'
-            ? data.chains?.[native_chain!]
-            : rawAddresses?.[native_chain!]),
-        },
-        Object.entries({
-          ...(type === 'its' ? data.chains : rawAddresses),
-        }).map(([k, v]) => ({ chain: k, ...(v as AssetAddressEntry) }))
-      )
-    ),
-    'chain'
-  ).map((d: NormalizedAssetAddress) => ({
-    ...d,
-    address: d.address || d.tokenAddress,
-  }));
+  const chainAddresses: NormalizedAssetAddress[] = orderChainAddresses(
+    _.uniqBy(
+      toArray(
+        _.concat(
+          {
+            chain: native_chain,
+            ...(type === 'its'
+              ? data.chains?.[native_chain!]
+              : rawAddresses?.[native_chain!]),
+          },
+          Object.entries({
+            ...(type === 'its' ? data.chains : rawAddresses),
+          }).map(([k, v]) => ({ chain: k, ...(v as AssetAddressEntry) }))
+        )
+      ),
+      'chain'
+    ).map((d: NormalizedAssetAddress) => ({
+      ...d,
+      address: d.address || d.tokenAddress,
+    })),
+    chains,
+    native_chain
+  );
 
   const isFocused = focusID === asset;
   const {
