@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { getChainData } from '@/lib/config';
+import { makeDeprecatedChainChecker } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { equalsIgnoreCase, includesSomePatterns } from '@/lib/string';
 import type { Chain, Asset, AssetAddress } from '@/types';
@@ -30,12 +30,13 @@ export function orderChainAddresses(
   chains: Chain[] | null,
   nativeChain: string | undefined
 ): NormalizedAssetAddress[] {
+  const isDeprecatedChain = makeDeprecatedChainChecker(chains);
+
   return _.orderBy(
     chainAddresses,
     [
       (d: NormalizedAssetAddress) => d.chain !== nativeChain,
-      (d: NormalizedAssetAddress) =>
-        !!getChainData(d.chain, chains)?.deprecated,
+      (d: NormalizedAssetAddress) => isDeprecatedChain(d.chain),
     ],
     ['asc', 'asc']
   );

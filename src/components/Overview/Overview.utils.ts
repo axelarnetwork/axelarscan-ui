@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { getChainData } from '@/lib/config';
+import { getChainData, makeDeprecatedChainChecker } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { find } from '@/lib/string';
 import { toNumber } from '@/lib/number';
@@ -21,22 +21,6 @@ function resolveChainId(
   const cached = lookup[key] || getChainData(key, chains)?.id;
   lookup[key] = cached;
   return cached || key;
-}
-
-function makeDeprecatedChainChecker(
-  chains: Chain[] | null | undefined
-): (key: string | undefined) => boolean {
-  const cache = new Map<string, boolean>();
-
-  return (key: string | undefined) => {
-    if (!key) return false;
-
-    if (!cache.has(key)) {
-      cache.set(key, !!getChainData(key, chains)?.deprecated);
-    }
-
-    return cache.get(key)!;
-  };
 }
 
 function buildGmpGraphItems(

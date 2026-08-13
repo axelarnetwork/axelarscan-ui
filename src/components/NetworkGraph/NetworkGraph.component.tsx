@@ -9,7 +9,7 @@ import _ from 'lodash';
 
 import { Spinner } from '@/components/Spinner';
 import { useChains } from '@/hooks/useGlobalData';
-import { getChainData } from '@/lib/config';
+import { getChainData, makeDeprecatedChainChecker } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { equalsIgnoreCase, find } from '@/lib/string';
 
@@ -21,12 +21,7 @@ import type {
   GraphEdge,
   GraphData,
 } from './NetworkGraph.types';
-import {
-  TIERS,
-  THRESHOLD,
-  getDeprecatedChainIds,
-  isDeprecatedChain,
-} from './NetworkGraph.utils';
+import { TIERS, THRESHOLD } from './NetworkGraph.utils';
 import {
   useImagePreloader,
   useNodeCanvasObject,
@@ -55,12 +50,12 @@ export function NetworkGraph({
   }, []);
 
   const activeData = useMemo(() => {
-    const deprecatedChainIds = getDeprecatedChainIds(chains);
+    const isDeprecatedChain = makeDeprecatedChainChecker(chains);
 
     return (toArray(data) as NetworkDataItem[]).filter(
       d =>
-        !isDeprecatedChain(d.sourceChain, deprecatedChainIds) &&
-        !isDeprecatedChain(d.destinationChain, deprecatedChainIds)
+        !isDeprecatedChain(d.sourceChain) &&
+        !isDeprecatedChain(d.destinationChain)
     );
   }, [data, chains]);
 
