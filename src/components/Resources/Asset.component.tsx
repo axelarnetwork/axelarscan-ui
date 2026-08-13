@@ -36,26 +36,28 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
   } = { ...data };
   const asset = type === 'its' ? data.id : denom;
 
-  const chainAddresses: NormalizedAssetAddress[] = orderChainAddresses(
-    _.uniqBy(
-      toArray(
-        _.concat(
-          {
-            chain: native_chain,
-            ...(type === 'its'
-              ? data.chains?.[native_chain!]
-              : rawAddresses?.[native_chain!]),
-          },
-          Object.entries({
-            ...(type === 'its' ? data.chains : rawAddresses),
-          }).map(([k, v]) => ({ chain: k, ...(v as AssetAddressEntry) }))
-        )
-      ),
-      'chain'
-    ).map((d: NormalizedAssetAddress) => ({
-      ...d,
-      address: d.address || d.tokenAddress,
-    })),
+  const unorderedChainAddresses: NormalizedAssetAddress[] = _.uniqBy(
+    toArray(
+      _.concat(
+        {
+          chain: native_chain,
+          ...(type === 'its'
+            ? data.chains?.[native_chain!]
+            : rawAddresses?.[native_chain!]),
+        },
+        Object.entries({
+          ...(type === 'its' ? data.chains : rawAddresses),
+        }).map(([k, v]) => ({ chain: k, ...(v as AssetAddressEntry) }))
+      )
+    ),
+    'chain'
+  ).map((d: NormalizedAssetAddress) => ({
+    ...d,
+    address: d.address || d.tokenAddress,
+  }));
+
+  const chainAddresses = orderChainAddresses(
+    unorderedChainAddresses,
     chains,
     native_chain
   );
