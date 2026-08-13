@@ -16,6 +16,7 @@ import type {
   NormalizedAssetAddress,
 } from './Resources.types';
 import * as styles from './Resources.styles';
+import { orderChainAddresses } from './Resources.utils';
 import { ChainIcon } from './ChainIcon.component';
 import { FocusedChainDetail } from './FocusedChainDetail.component';
 
@@ -35,7 +36,7 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
   } = { ...data };
   const asset = type === 'its' ? data.id : denom;
 
-  const chainAddresses: NormalizedAssetAddress[] = _.uniqBy(
+  const unorderedChainAddresses: NormalizedAssetAddress[] = _.uniqBy(
     toArray(
       _.concat(
         {
@@ -54,6 +55,12 @@ export function Asset({ data, focusID, onFocus }: AssetProps) {
     ...d,
     address: d.address || d.tokenAddress,
   }));
+
+  const chainAddresses = orderChainAddresses(
+    unorderedChainAddresses,
+    chains,
+    native_chain
+  );
 
   const isFocused = focusID === asset;
   const {

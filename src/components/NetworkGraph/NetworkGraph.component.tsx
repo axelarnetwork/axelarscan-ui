@@ -9,7 +9,7 @@ import _ from 'lodash';
 
 import { Spinner } from '@/components/Spinner';
 import { useChains } from '@/hooks/useGlobalData';
-import { getChainData } from '@/lib/config';
+import { getChainData, makeDeprecatedChainChecker } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { equalsIgnoreCase, find } from '@/lib/string';
 
@@ -49,6 +49,16 @@ export function NetworkGraph({
     fg?.d3Force('center')?.strength(0);
   }, []);
 
+  const activeData = useMemo(() => {
+    const isDeprecatedChain = makeDeprecatedChainChecker(chains);
+
+    return (toArray(data) as NetworkDataItem[]).filter(
+      d =>
+        !isDeprecatedChain(d.sourceChain) &&
+        !isDeprecatedChain(d.destinationChain)
+    );
+  }, [data, chains]);
+
   useEffect(() => {
     if (data && chains) {
       const AXELAR = 'axelarnet';
@@ -56,7 +66,7 @@ export function NetworkGraph({
       const _data: NetworkDataItem[] = _.orderBy(
         Object.entries(
           _.groupBy(
-            data.flatMap(d => {
+            activeData.flatMap(d => {
               if (find(AXELAR, [d.sourceChain, d.destinationChain])) {
                 return d;
               }
@@ -84,7 +94,12 @@ export function NetworkGraph({
 
       // add no traffic pairs
       chains
-        .filter(d => (!d.maintainer_id || !d.no_inflation) && d.id !== AXELAR)
+        .filter(
+          d =>
+            (!d.maintainer_id || !d.no_inflation) &&
+            d.id !== AXELAR &&
+            !d.deprecated
+        )
         .forEach(d => {
           [
             [d.id, AXELAR],
@@ -171,7 +186,7 @@ export function NetworkGraph({
 
       setGraphData({ nodes, edges });
     }
-  }, [data, setGraphData, resolvedTheme, chains]);
+  }, [data, activeData, setGraphData, resolvedTheme, chains]);
 
   useEffect(() => {
     if (!page) {
@@ -187,7 +202,7 @@ export function NetworkGraph({
   );
   const images = useImagePreloader(toArray(imagesUrl) as string[]);
   const imagesLoaded =
-    chains && Object.keys({ ...images }).length / chains.length >= 0.5;
+    !!nodes?.length && Object.keys({ ...images }).length / nodes.length >= 0.5;
 
   const nodeCanvasObject = useNodeCanvasObject(
     selectedNode,
@@ -197,7 +212,7 @@ export function NetworkGraph({
   );
   const linkCanvasObject = useLinkCanvasObject(selectedNode, resolvedTheme);
 
-  const filteredData = (toArray(data) as NetworkDataItem[]).filter(
+  const filteredData = activeData.filter(
     (d: NetworkDataItem) =>
       !selectedNode?.id ||
       find(selectedNode.id, [d.sourceChain, d.destinationChain])

@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import { getChainData } from '@/lib/config';
+import { getChainData, makeDeprecatedChainChecker } from '@/lib/config';
 import { toArray } from '@/lib/parser';
 import { find } from '@/lib/string';
 import { toNumber } from '@/lib/number';
@@ -123,26 +123,32 @@ export function buildChainPairs(
       ).map(d => d?.id),
     }));
 
+  const isDeprecatedChain = makeDeprecatedChainChecker(chains);
+
   return groupData(
     _.concat(
-      toArray(data.GMPStatsByChains?.source_chains).flatMap(
-        (s: SourceChainEntry) =>
+      toArray(data.GMPStatsByChains?.source_chains)
+        .filter((s: SourceChainEntry) => !isDeprecatedChain(s.key))
+        .flatMap((s: SourceChainEntry) =>
           toArray(s.destination_chains)
             .filter(
               (d: DestinationChainEntry) =>
-                !chainFocus || find(chainFocus, [s.key, d.key])
+                (!chainFocus || find(chainFocus, [s.key, d.key])) &&
+                !isDeprecatedChain(d.key)
             )
             .map((d: DestinationChainEntry) => ({
               key: `${s.key}_${d.key}`,
               num_txs: d.num_txs,
               volume: d.volume,
             }))
-      ),
+        ),
       toArray(data.transfersStats?.data)
         .filter(
           (d: TransferStatsEntry) =>
-            !chainFocus ||
-            find(chainFocus, [d.source_chain, d.destination_chain])
+            (!chainFocus ||
+              find(chainFocus, [d.source_chain, d.destination_chain])) &&
+            !isDeprecatedChain(d.source_chain) &&
+            !isDeprecatedChain(d.destination_chain)
         )
         .map((d: TransferStatsEntry) => ({
           key: `${d.source_chain}_${d.destination_chain}`,

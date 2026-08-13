@@ -84,6 +84,35 @@ export const getChainData = (
   return toArray(chainsData).find((d: Chain) => d.id === id);
 };
 
+/**
+ * Builds a predicate that reports whether a chain is deprecated.
+ *
+ * Resolution goes through `getChainData`, so any identifier form the chain
+ * config knows about is accepted - id, chain_id, chain_name, maintainer_id,
+ * name or alias - not just the canonical id.
+ *
+ * The returned closure memoizes per key, so callers can use it inside filters
+ * and comparators without rescanning the chain list on every element.
+ *
+ * @param chainsData - Chain configs to resolve against, may be null before the API responds
+ * @returns Predicate that is false for falsy input and for unknown chains
+ */
+export const makeDeprecatedChainChecker = (
+  chainsData: Chain[] | null | undefined
+): ((chain: string | undefined) => boolean) => {
+  const cache = new Map<string, boolean>();
+
+  return (chain: string | undefined) => {
+    if (!chain) return false;
+
+    if (!cache.has(chain)) {
+      cache.set(chain, !!getChainData(chain, chainsData)?.deprecated);
+    }
+
+    return cache.get(chain)!;
+  };
+};
+
 export const getAssetData = (
   asset: string | null | undefined,
   assetsData: Asset[] | null | undefined
