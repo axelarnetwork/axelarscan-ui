@@ -192,7 +192,7 @@ describe('normalizeIbcAttributes (whole-array parity for Object.fromEntries / _.
     expect(obj.packet_sequence).toBe('42');
     expect(issues).toHaveLength(0);
   });
-  it('raw-only (v8) event is unchanged in effect: packet_data present', () => {
+  it('raw-only event is unchanged in effect: packet_data present', () => {
     const out = normalizeIbcAttributes(
       [{ key: 'packet_data', value: PACKET_DATA_JSON }],
       () => {}

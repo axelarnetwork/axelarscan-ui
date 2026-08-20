@@ -103,7 +103,7 @@ export const resolveIbcPayload = (
   const raw = raws[0] ?? undefined;
   const hex = hexes[0] ?? undefined;
 
-  // No hex form present -> pre-upgrade / v8 raw-only behavior.
+  // No hex form present -> accept raw-only input.
   if (hex === undefined) return { value: raw ?? undefined };
 
   let decoded: string;
