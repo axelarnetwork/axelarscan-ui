@@ -60,7 +60,7 @@ describe('resolveIbcPayload: packet_data', () => {
         [{ key: 'packet_data', value: PACKET_DATA_JSON }],
         'packet_data'
       )
-    ).toEqual({ value: PACKET_DATA_JSON });
+    ).toEqual({ value: PACKET_DATA_JSON, source: 'raw' });
   });
   it('hex-only parses', () => {
     expect(
@@ -68,7 +68,7 @@ describe('resolveIbcPayload: packet_data', () => {
         [{ key: 'packet_data_hex', value: PACKET_DATA_HEX }],
         'packet_data'
       )
-    ).toEqual({ value: PACKET_DATA_JSON });
+    ).toEqual({ value: PACKET_DATA_JSON, source: 'hex' });
   });
   it('matching raw + hex uses hex, no error', () => {
     const r = resolveIbcPayload(
@@ -79,6 +79,7 @@ describe('resolveIbcPayload: packet_data', () => {
       'packet_data'
     );
     expect(r.value).toBe(PACKET_DATA_JSON);
+    expect(r.source).toBe('hex');
     expect(r.error).toBeUndefined();
   });
   it('conflicting raw + hex surfaces error, prefers hex', () => {
@@ -90,6 +91,7 @@ describe('resolveIbcPayload: packet_data', () => {
       'packet_data'
     );
     expect(r.value).toBe(PACKET_DATA_JSON);
+    expect(r.source).toBe('hex');
     expect(r.error).toMatch(/disagree/);
   });
   it('odd-length hex, no raw -> rejected', () => {
@@ -125,10 +127,11 @@ describe('resolveIbcPayload: packet_data', () => {
       'packet_data'
     );
     expect(r.value).toBe(PACKET_DATA_JSON);
+    expect(r.source).toBe('raw');
     expect(r.error).toMatch(/using raw/);
   });
   it('empty payload -> unresolved, no error', () => {
-    expect(resolveIbcPayload([], 'packet_data')).toEqual({ value: undefined });
+    expect(resolveIbcPayload([], 'packet_data')).toEqual({});
   });
   it('duplicate raw -> rejected', () => {
     const r = resolveIbcPayload(
@@ -202,6 +205,38 @@ describe('normalizeIbcAttributes (whole-array parity for Object.fromEntries / _.
       PACKET_DATA_JSON
     );
   });
+  it('returns non-payload attributes untouched', () => {
+    const attrs: IbcAttribute[] = [
+      { key: 'amount', value: '1000uaxl' },
+      { key: 'receiver', value: 'axelar1recv' },
+    ];
+    expect(normalizeIbcAttributes(attrs, () => {})).toEqual(attrs);
+  });
+  it('drops both raw entries when duplicated', () => {
+    const issues: string[] = [];
+    const out = normalizeIbcAttributes(
+      [
+        { key: 'packet_data', value: PACKET_DATA_JSON },
+        { key: 'packet_data', value: PACKET_DATA_JSON },
+      ],
+      (k, m) => issues.push(`${k}:${m}`)
+    );
+    expect(out).toEqual([]);
+    expect(issues.some(i => /duplicate/.test(i))).toBe(true);
+  });
+  it('resolves packet_data and packet_ack from one write_acknowledgement event', () => {
+    const out = normalizeIbcAttributes(
+      [
+        { key: 'packet_data_hex', value: PACKET_DATA_HEX },
+        { key: 'packet_ack_hex', value: toHex(ACK_SUCCESS_JSON) },
+      ],
+      () => {}
+    );
+    const obj = Object.fromEntries(out.map(a => [a.key, a.value]));
+
+    expect(obj.packet_data).toBe(PACKET_DATA_JSON);
+    expect(obj.packet_ack).toBe(ACK_SUCCESS_JSON);
+  });
   it('malformed hex-only event: no packet_data (degraded, not crashed), issue reported', () => {
     const issues: string[] = [];
     const out = normalizeIbcAttributes(
@@ -230,7 +265,7 @@ describe('extractIbcPacketData', () => {
       {
         eventType: 'send_packet',
         sequence: '42',
-        source: 'packet_data_hex',
+        source: 'hex',
         value: JSON.parse(PACKET_DATA_JSON),
       },
     ]);
@@ -244,7 +279,7 @@ describe('extractIbcPacketData', () => {
           attributes: [{ key: 'packet_data', value: PACKET_DATA_JSON }],
         },
       ])[0]?.source
-    ).toBe('packet_data');
+    ).toBe('raw');
   });
 
   it('keeps separate packets from a multi-packet transaction', () => {

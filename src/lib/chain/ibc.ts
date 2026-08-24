@@ -17,7 +17,7 @@ import { toArray } from '@/lib/parser';
  * receiving `packet_data` for hex-only v10 events. Malformed input, duplicates
  * and raw/hex mismatches are surfaced (never silently swallowed).
  *
- * The fallback is intentionally restricted to these two keys only — there is no
+ * The fallback is intentionally restricted to these two keys only - there is no
  * generic <key>_hex fallback.
  *
  * Decoding uses TextDecoder/Uint8Array (browser- and server-safe) rather than
@@ -30,15 +30,19 @@ export interface IbcAttribute {
   index?: boolean;
 }
 
-export type IbcIssueHandler = (key: string, message: string) => void;
+type IbcIssueHandler = (key: string, message: string) => void;
 
 // The only two keys that gained hex-only emission in ibc-go v10.
 const IBC_PAYLOAD_KEYS = ['packet_data', 'packet_ack'] as const;
 
-const HEX_KEY: Record<string, string> = {
-  packet_data: 'packet_data_hex',
-  packet_ack: 'packet_ack_hex',
-};
+type IbcPayloadKey = (typeof IBC_PAYLOAD_KEYS)[number];
+
+const hexKeyOf = (key: IbcPayloadKey): string => `${key}_hex`;
+
+// Both forms of both payload keys, for cheap "is this event IBC-shaped?" tests.
+const PAYLOAD_ATTRIBUTES = new Set<string>(
+  IBC_PAYLOAD_KEYS.flatMap(key => [key, hexKeyOf(key)])
+);
 
 const HEX_CHARS = /^[0-9a-fA-F]*$/;
 
@@ -57,7 +61,7 @@ export const decodeHexStrict = (hex: unknown): string => {
 
   const bytes = new Uint8Array(hex.length / 2);
   for (let i = 0; i < bytes.length; i++) {
-    bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+    bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
   }
 
   try {
@@ -67,51 +71,54 @@ export const decodeHexStrict = (hex: unknown): string => {
   }
 };
 
-export interface ResolvedPayload {
+interface ResolvedPayload {
   value?: string;
+  /** Which attribute the returned value came from. */
+  source?: 'raw' | 'hex';
   error?: string;
 }
 
 export interface IbcPacketData {
   eventType: string;
   sequence?: string;
-  source: 'packet_data' | 'packet_data_hex';
+  source: 'raw' | 'hex';
   value: Record<string, unknown>;
+}
+
+export interface IbcEvent {
+  type?: string;
+  attributes?: IbcAttribute[];
 }
 
 /**
  * Resolve the canonical UTF-8 string for a single IBC payload key from an
  * event's full attribute array. `value` is the decoded/raw canonical string, or
- * undefined when unresolvable. `error` is a human-readable description when
- * something was wrong (duplicate, malformed hex, or raw/hex mismatch); a
- * mismatch still returns the canonical (hex) value alongside the error.
+ * undefined when unresolvable, and `source` says which attribute it came from.
+ * `error` is a human-readable description when something was wrong (duplicate,
+ * malformed hex, or raw/hex mismatch); a mismatch still returns the canonical
+ * (hex) value alongside the error.
  */
 export const resolveIbcPayload = (
   attributes: IbcAttribute[] | undefined,
-  key: string
+  key: IbcPayloadKey
 ): ResolvedPayload => {
-  const hexKey = HEX_KEY[key];
+  const hexKey = hexKeyOf(key);
   const list = toArray(attributes) as IbcAttribute[];
-
-  if (!hexKey) {
-    const found = list.find(a => a && a.key === key);
-    return { value: found?.value ?? undefined };
-  }
 
   const raws = list.filter(a => a && a.key === key).map(a => a.value);
   const hexes = list.filter(a => a && a.key === hexKey).map(a => a.value);
 
   // Duplicates are ambiguous: reject (do not guess) but report.
-  if (raws.length > 1)
-    return { value: undefined, error: `duplicate "${key}" attributes` };
-  if (hexes.length > 1)
-    return { value: undefined, error: `duplicate "${hexKey}" attributes` };
+  if (raws.length > 1) return { error: `duplicate "${key}" attributes` };
+  if (hexes.length > 1) return { error: `duplicate "${hexKey}" attributes` };
 
   const raw = raws[0] ?? undefined;
   const hex = hexes[0] ?? undefined;
 
   // No hex form present -> accept raw-only input.
-  if (hex === undefined) return { value: raw ?? undefined };
+  if (hex === undefined) {
+    return raw === undefined ? {} : { value: raw, source: 'raw' };
+  }
 
   let decoded: string;
   try {
@@ -120,25 +127,27 @@ export const resolveIbcPayload = (
     const message = e instanceof Error ? e.message : String(e);
     // Malformed hex must not silently fall through to the raw value: report it.
     // Fall back to raw only when raw is present, otherwise leave unresolved.
-    if (raw !== undefined && raw !== null) {
+    if (raw !== undefined) {
       return {
         value: raw,
+        source: 'raw',
         error: `"${hexKey}" ${message}; using raw "${key}"`,
       };
     }
-    return { value: undefined, error: `"${hexKey}" ${message}` };
+    return { error: `"${hexKey}" ${message}` };
   }
 
   // Both forms present and disagree: prefer the canonical hex value, surface it.
   // (Equal UTF-8 strings imply equal bytes, so string comparison is exact.)
-  if (raw !== undefined && raw !== null && raw !== decoded) {
+  if (raw !== undefined && raw !== decoded) {
     return {
       value: decoded,
+      source: 'hex',
       error: `"${key}" and "${hexKey}" disagree; using "${hexKey}"`,
     };
   }
 
-  return { value: decoded };
+  return { value: decoded, source: 'hex' };
 };
 
 const defaultOnIssue: IbcIssueHandler = (key, message) => {
@@ -147,18 +156,21 @@ const defaultOnIssue: IbcIssueHandler = (key, message) => {
 };
 
 /**
- * Return a NEW attribute array where the IBC payload keys have been collapsed to
- * a single canonical entry holding the decoded UTF-8 string. The *_hex entries
- * are preserved for diagnostics; existing raw entries are replaced by the
- * canonical value. Whole-array consumers (Object.fromEntries / _.assign) that
- * key on `packet_data` / `packet_ack` therefore keep working for hex-only v10
- * events, exactly as they did for v8.
+ * Return a NEW attribute array with a single canonical `packet_data` /
+ * `packet_ack` entry holding the decoded UTF-8 string. The *_hex entries are
+ * kept for diagnostics, raw entries are replaced, and unresolvable payloads
+ * (duplicates, malformed hex) are reported and left out. Whole-array consumers
+ * (Object.fromEntries / _.assign) that key on `packet_data` / `packet_ack`
+ * therefore keep working for hex-only v10 events, exactly as they did for v8.
  */
 export const normalizeIbcAttributes = (
   attributes: IbcAttribute[] | undefined,
   onIssue: IbcIssueHandler = defaultOnIssue
 ): IbcAttribute[] => {
   const list = toArray(attributes) as IbcAttribute[];
+
+  // Fast path: no IBC payload attribute in this event, nothing to decode.
+  if (!list.some(a => a && PAYLOAD_ATTRIBUTES.has(a.key))) return list;
 
   // Keep every non-payload attribute, and keep the *_hex entries as diagnostics;
   // drop the raw payload entries so we can re-add a single canonical one.
@@ -180,17 +192,16 @@ export const normalizeIbcAttributes = (
  * event attributes are never modified; this is a derived view for display.
  */
 export const extractIbcPacketData = (
-  events: Array<{ type?: string; attributes?: IbcAttribute[] }> | undefined,
+  events: IbcEvent[] | undefined,
   onIssue: IbcIssueHandler = defaultOnIssue
 ): IbcPacketData[] =>
   toArray(events).flatMap(event => {
     const attributes = toArray(event?.attributes) as IbcAttribute[];
-    const hasRaw = attributes.some(a => a?.key === 'packet_data');
-    const hasHex = attributes.some(a => a?.key === 'packet_data_hex');
 
-    if (!hasRaw && !hasHex) return [];
-
-    const { value, error } = resolveIbcPayload(attributes, 'packet_data');
+    const { value, source, error } = resolveIbcPayload(
+      attributes,
+      'packet_data'
+    );
     if (error) onIssue('packet_data', error);
     if (value === undefined) return [];
 
@@ -213,10 +224,7 @@ export const extractIbcPacketData = (
       {
         eventType: event?.type ?? 'IBC packet',
         sequence: sequence ?? undefined,
-        source:
-          hasHex && !error?.includes('using raw')
-            ? 'packet_data_hex'
-            : 'packet_data',
+        source: source === 'hex' ? 'hex' : 'raw',
         value: parsed as Record<string, unknown>,
       },
     ];
