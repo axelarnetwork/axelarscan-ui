@@ -17,7 +17,7 @@ export function PacketData({ data }: DataProps) {
       <div className={styles.packetDataPanel}>
         {packets.map((packet, index) => (
           <div
-            key={`${packet.eventType}-${packet.sequence ?? index}`}
+            key={`${packet.eventType}-${packet.sequence ?? 'unknown'}-${index}`}
             className={styles.packetDataItem}
           >
             <div className={styles.packetDataHeader}>
