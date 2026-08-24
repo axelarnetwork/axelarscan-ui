@@ -5,6 +5,7 @@ import {
   decodeHexStrict,
   resolveIbcPayload,
   normalizeIbcAttributes,
+  extractIbcPacketData,
   type IbcAttribute,
 } from './ibc';
 
@@ -210,5 +211,77 @@ describe('normalizeIbcAttributes (whole-array parity for Object.fromEntries / _.
     const obj = Object.fromEntries(out.map(a => [a.key, a.value]));
     expect(obj.packet_data).toBeUndefined();
     expect(issues.some(i => /valid UTF-8/.test(i))).toBe(true);
+  });
+});
+
+describe('extractIbcPacketData', () => {
+  it('extracts a displayable packet from a hex-only event', () => {
+    expect(
+      extractIbcPacketData([
+        {
+          type: 'send_packet',
+          attributes: [
+            { key: 'packet_sequence', value: '42' },
+            { key: 'packet_data_hex', value: PACKET_DATA_HEX },
+          ],
+        },
+      ])
+    ).toEqual([
+      {
+        eventType: 'send_packet',
+        sequence: '42',
+        source: 'packet_data_hex',
+        value: JSON.parse(PACKET_DATA_JSON),
+      },
+    ]);
+  });
+
+  it('accepts pre-upgrade raw-only packet data', () => {
+    expect(
+      extractIbcPacketData([
+        {
+          type: 'send_packet',
+          attributes: [{ key: 'packet_data', value: PACKET_DATA_JSON }],
+        },
+      ])[0]?.source
+    ).toBe('packet_data');
+  });
+
+  it('keeps separate packets from a multi-packet transaction', () => {
+    const events = ['1', '2'].map(sequence => ({
+      type: 'send_packet',
+      attributes: [
+        { key: 'packet_sequence', value: sequence },
+        { key: 'packet_data_hex', value: PACKET_DATA_HEX },
+      ],
+    }));
+
+    expect(extractIbcPacketData(events).map(packet => packet.sequence)).toEqual(
+      ['1', '2']
+    );
+  });
+
+  it('does not display malformed or non-object JSON', () => {
+    const issues: string[] = [];
+    const events = [
+      {
+        type: 'send_packet',
+        attributes: [{ key: 'packet_data_hex', value: toHex('{') }],
+      },
+      {
+        type: 'send_packet',
+        attributes: [{ key: 'packet_data_hex', value: toHex('null') }],
+      },
+    ];
+
+    expect(
+      extractIbcPacketData(events, (key, message) =>
+        issues.push(`${key}:${message}`)
+      )
+    ).toEqual([]);
+    expect(issues).toEqual([
+      'packet_data:decoded value is not valid JSON',
+      'packet_data:decoded JSON is not an object',
+    ]);
   });
 });

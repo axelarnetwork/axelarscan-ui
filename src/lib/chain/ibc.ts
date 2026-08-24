@@ -72,6 +72,13 @@ export interface ResolvedPayload {
   error?: string;
 }
 
+export interface IbcPacketData {
+  eventType: string;
+  sequence?: string;
+  source: 'packet_data' | 'packet_data_hex';
+  value: Record<string, unknown>;
+}
+
 /**
  * Resolve the canonical UTF-8 string for a single IBC payload key from an
  * event's full attribute array. `value` is the decoded/raw canonical string, or
@@ -167,3 +174,50 @@ export const normalizeIbcAttributes = (
 
   return out;
 };
+
+/**
+ * Extract JSON packet payloads for the transaction details page. The original
+ * event attributes are never modified; this is a derived view for display.
+ */
+export const extractIbcPacketData = (
+  events: Array<{ type?: string; attributes?: IbcAttribute[] }> | undefined,
+  onIssue: IbcIssueHandler = defaultOnIssue
+): IbcPacketData[] =>
+  toArray(events).flatMap(event => {
+    const attributes = toArray(event?.attributes) as IbcAttribute[];
+    const hasRaw = attributes.some(a => a?.key === 'packet_data');
+    const hasHex = attributes.some(a => a?.key === 'packet_data_hex');
+
+    if (!hasRaw && !hasHex) return [];
+
+    const { value, error } = resolveIbcPayload(attributes, 'packet_data');
+    if (error) onIssue('packet_data', error);
+    if (value === undefined) return [];
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(value);
+    } catch {
+      onIssue('packet_data', 'decoded value is not valid JSON');
+      return [];
+    }
+
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      onIssue('packet_data', 'decoded JSON is not an object');
+      return [];
+    }
+
+    const sequence = attributes.find(a => a?.key === 'packet_sequence')?.value;
+
+    return [
+      {
+        eventType: event?.type ?? 'IBC packet',
+        sequence: sequence ?? undefined,
+        source:
+          hasHex && !error?.includes('using raw')
+            ? 'packet_data_hex'
+            : 'packet_data',
+        value: parsed as Record<string, unknown>,
+      },
+    ];
+  });
