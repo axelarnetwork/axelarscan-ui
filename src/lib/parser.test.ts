@@ -164,13 +164,49 @@ describe('parser utilities', () => {
     });
 
     it('should handle error by returning original value', () => {
-      // Create a value that might cause Buffer.from to throw
+      // Create a value whose stringification throws
       const weirdValue = {
         toString: () => {
           throw new Error('test');
         },
       };
       expect(getIBCDenomBase64(weirdValue)).toBe(weirdValue);
+    });
+
+    it('should match Buffer base64 output for every padding length', () => {
+      // The encoder is hand-rolled, so pin it against a known-good reference
+      // across all three padding cases and multi-byte input.
+      for (const denom of [
+        'a',
+        'ab',
+        'abc',
+        'abcd',
+        'uaxl',
+        'é',
+        '日本語',
+        '🚀',
+        // Unpaired surrogate: ethers' toUtf8Bytes throws here, which used to
+        // fall into the catch and return the denom un-encoded.
+        'a\uD800b',
+      ]) {
+        expect(getIBCDenomBase64(denom)).toBe(
+          Buffer.from(denom, 'utf8').toString('base64')
+        );
+      }
+    });
+
+    it('should encode without relying on the Node Buffer global', () => {
+      // The browser bundle has no `Buffer`. The old implementation used it and
+      // fell into the catch block, silently returning the un-encoded denom.
+      const originalBuffer = globalThis.Buffer;
+
+      try {
+        // @ts-expect-error - deliberately removing the Node global
+        delete globalThis.Buffer;
+        expect(getIBCDenomBase64('transfer/channel-0/uaxl')).toBe('dWF4bA==');
+      } finally {
+        globalThis.Buffer = originalBuffer;
+      }
     });
   });
 

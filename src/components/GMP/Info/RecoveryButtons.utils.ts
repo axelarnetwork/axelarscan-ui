@@ -1,15 +1,17 @@
 import { checkNeedMoreGasFromError } from '@/components/GMPs';
 import { isAxelar } from '@/lib/chain';
 import { getChainData } from '@/lib/config';
-import { equalsIgnoreCase, headString } from '@/lib/string';
+import { equalsIgnoreCase } from '@/lib/string';
 import { timeDiff } from '@/lib/time';
 
 import type {
+  ChainKind,
   ChainMetadata,
   ChainType,
   GMPMessage,
   GMPToastState,
 } from '../GMP.types';
+import { resolveChainKind } from '../GMP.utils';
 
 /**
  * Determine whether our add-gas UX can be surfaced for a given chain.
@@ -29,6 +31,22 @@ import type {
  * @param chains           Cached Axelar chain metadata used for lookups.
  * @returns true when the UI should present an add-gas option.
  */
+/**
+ * Wallet families executeAddGas has a handler for.
+ *
+ * Only consulted for `vm` chains - everything else short-circuits above - so
+ * 'cosmos' is unreachable here in practice. It is listed anyway so the set
+ * describes what add-gas supports rather than what this one call site needs;
+ * dropping it would break the moment the early return changes.
+ */
+const ADD_GAS_SUPPORTED_KINDS: ReadonlySet<ChainKind> = new Set([
+  'evm',
+  'cosmos',
+  'sui',
+  'stellar',
+  'xrpl',
+]);
+
 function isChainSupportedForAddGas(
   targetChain: string | undefined,
   targetChainType: ChainType | undefined,
@@ -39,26 +57,16 @@ function isChainSupportedForAddGas(
     return true;
   }
 
-  // Some “vm” classified chains are actually EVM-compatible (e.g. xrpl-evm)
-  // and expose a numeric chain_id. Treat them as fully supported.
-  const chainData = getChainData(targetChain, chains);
-  const isEvmCompatible =
-    chainData !== undefined && typeof chainData.chain_id === 'number';
-
-  if (isEvmCompatible) {
-    return true;
-  }
-
-  // Otherwise, only Sui, Stellar, XRPL are supported.
-  const normalizedChain = headString(targetChain)?.toLowerCase();
-
-  if (!normalizedChain) {
-    return false;
-  }
-
-  const isSupported = ['sui', 'stellar', 'xrpl'].includes(normalizedChain);
-
-  return isSupported;
+  // For amplifier chains, support follows the wallet family we can sign with -
+  // but only the families executeAddGas actually has a handler for. Resolving
+  // a chain kind is not the same as being able to pay gas on it: a kind with
+  // no handler would render an action row that silently does nothing.
+  //
+  // `resolveChainKind` also folds in the EVM-compatible amplifier chains such
+  // as xrpl-evm, which are typed `vm` but expose a numeric chain_id.
+  return ADD_GAS_SUPPORTED_KINDS.has(
+    resolveChainKind(targetChain, targetChainType, chains)
+  );
 }
 
 /**

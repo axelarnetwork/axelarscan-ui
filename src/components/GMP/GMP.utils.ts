@@ -9,6 +9,7 @@ import { headString } from '@/lib/string';
 import { timeDiff } from '@/lib/time';
 
 import {
+  ChainKind,
   ChainMetadata,
   GMPEventLog,
   GMPSettlementData,
@@ -439,8 +440,45 @@ export function getDefaultGasLimit(chain?: string): number {
 }
 
 /**
- * Check if adding gas is supported for the given chain
+ * Which wallet family a chain needs.
+ *
+ * Every recovery action has to answer the same question - which wallet do we
+ * ask the user to connect, and can we sign for this chain at all. That ladder
+ * used to be spelled out separately in `isWalletConnectedForChain`, in
+ * `WalletSelector`, and in `isChainSupportedForAddGas`, which meant adding a
+ * chain required editing three places that could silently drift apart.
+ *
+ * Note the ordering: a chain typed `vm` that exposes a numeric `chain_id`
+ * (xrpl-evm, monad, berachain, ...) is EVM-compatible and must be resolved as
+ * `evm`, not by its name.
  */
+export function resolveChainKind(
+  targetChain: string | undefined,
+  targetChainType: string | undefined,
+  chainMetadataList: ChainMetadata[] | null
+): ChainKind {
+  if (targetChainType === 'cosmos') return 'cosmos';
+
+  if (isNumber(getChainData(targetChain, chainMetadataList)?.chain_id)) {
+    return 'evm';
+  }
+
+  if (!targetChain) return 'unknown';
+
+  switch (headString(targetChain)?.toLowerCase()) {
+    case 'sui':
+      return 'sui';
+    case 'stellar':
+      return 'stellar';
+    case 'xrpl':
+      return 'xrpl';
+    case 'solana':
+      return 'solana';
+    default:
+      return 'unknown';
+  }
+}
+
 /**
  * Check if a wallet is connected for the given chain
  */
@@ -450,28 +488,20 @@ export function isWalletConnectedForChain(
   chainMetadataList: ChainMetadata[] | null,
   walletContext: WalletContext
 ): boolean {
-  if (targetChainType === 'cosmos') {
-    return Boolean(walletContext.cosmosWalletStore?.signer);
+  switch (resolveChainKind(targetChain, targetChainType, chainMetadataList)) {
+    case 'cosmos':
+      return Boolean(walletContext.cosmosWalletStore?.signer);
+    case 'evm':
+      return Boolean(walletContext.signer);
+    case 'sui':
+      return Boolean(walletContext.suiWalletStore?.address);
+    case 'stellar':
+      return Boolean(walletContext.stellarWalletStore?.address);
+    case 'xrpl':
+      return Boolean(walletContext.xrplWalletStore?.address);
+    default:
+      return false;
   }
-
-  if (isNumber(getChainData(targetChain, chainMetadataList)?.chain_id)) {
-    return Boolean(walletContext.signer);
-  }
-
-  if (!targetChain) return false;
-
-  const normalizedChain = headString(targetChain);
-  if (normalizedChain === 'sui') {
-    return Boolean(walletContext.suiWalletStore?.address);
-  }
-  if (normalizedChain === 'stellar') {
-    return Boolean(walletContext.stellarWalletStore?.address);
-  }
-  if (normalizedChain === 'xrpl') {
-    return Boolean(walletContext.xrplWalletStore?.address);
-  }
-
-  return false;
 }
 
 /**

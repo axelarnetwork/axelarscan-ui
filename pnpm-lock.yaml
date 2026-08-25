@@ -11,6 +11,12 @@ importers:
       '@axelar-network/axelarjs-sdk':
         specifier: ^0.19.1
         version: 0.19.1(bufferutil@4.0.9)(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.9.3)(utf-8-validate@5.0.10)
+      '@cosmjs/proto-signing':
+        specifier: ^0.38.1
+        version: 0.38.1
+      '@cosmjs/stargate':
+        specifier: ^0.38.1
+        version: 0.38.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@creit.tech/stellar-wallets-kit':
         specifier: ^1.9.5
         version: 1.9.5(@solana/sysvars@2.3.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3))(@stellar/stellar-base@14.0.1)(@stellar/stellar-sdk@13.3.0(debug@4.4.3(supports-color@8.1.1)))(@trezor/connect@9.6.2(@solana/sysvars@2.3.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3))(bufferutil@4.0.9)(debug@4.4.3(supports-color@8.1.1))(fastestsmallesttextencoderdecoder@1.0.22)(supports-color@8.1.1)(tslib@2.8.1)(typescript@5.9.3)(utf-8-validate@5.0.10)(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)))(@types/react@19.2.14)(bufferutil@4.0.9)(debug@4.4.3(supports-color@8.1.1))(fastestsmallesttextencoderdecoder@1.0.22)(near-api-js@5.1.1)(react@19.2.4)(supports-color@8.1.1)(tslib@2.8.1)(typescript@5.9.3)(utf-8-validate@5.0.10)(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))

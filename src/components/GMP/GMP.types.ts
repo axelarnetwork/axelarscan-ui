@@ -5,6 +5,22 @@ import type { Chain, Asset } from '@/types';
 export type ChainType = 'cosmos' | 'evm' | 'vm';
 
 /**
+ * Wallet family a chain belongs to, as resolved by `resolveChainKind`.
+ *
+ * This is deliberately not the same axis as `ChainType`: `vm` covers both
+ * EVM-compatible amplifier chains and non-EVM ones, and what the recovery
+ * actions actually need to know is which wallet to talk to.
+ */
+export type ChainKind =
+  | 'cosmos'
+  | 'evm'
+  | 'sui'
+  | 'stellar'
+  | 'xrpl'
+  | 'solana'
+  | 'unknown';
+
+/**
  * @deprecated Use Chain from @/types instead. Kept as alias for compatibility.
  */
 export type ChainMetadata = Chain;

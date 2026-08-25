@@ -140,6 +140,45 @@ export const safeBase64ToString = (value: unknown): unknown => {
   return base64ToString(value);
 };
 
+const BASE64_ALPHABET =
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+/**
+ * UTF-8 encodes a string and returns its base64 representation.
+ *
+ * Deliberately avoids both `Buffer` (absent in the browser bundle - Turbopack
+ * does not inject the global the way webpack did) and `btoa` (absent in some
+ * server runtimes, and byte-oriented rather than UTF-8 aware). The previous
+ * `Buffer.from(...)` call silently fell into the caller's catch block in the
+ * browser, returning the un-encoded denom.
+ *
+ * @param value - The string to encode
+ * @returns Base64 representation of the UTF-8 bytes
+ */
+const utf8ToBase64 = (value: string): string => {
+  // TextEncoder, not ethers' toUtf8Bytes: the latter throws on unpaired
+  // surrogates, and that throw lands in the caller's catch and returns the
+  // un-encoded denom - exactly the failure this function exists to avoid.
+  // TextEncoder substitutes U+FFFD, matching what Buffer.from(v, 'utf8') did.
+  const bytes = new TextEncoder().encode(value);
+  let out = '';
+
+  for (let i = 0; i < bytes.length; i += 3) {
+    const remaining = bytes.length - i;
+    const chunk =
+      (bytes[i] << 16) |
+      ((remaining > 1 ? bytes[i + 1] : 0) << 8) |
+      (remaining > 2 ? bytes[i + 2] : 0);
+
+    out += BASE64_ALPHABET[(chunk >> 18) & 63];
+    out += BASE64_ALPHABET[(chunk >> 12) & 63];
+    out += remaining > 1 ? BASE64_ALPHABET[(chunk >> 6) & 63] : '=';
+    out += remaining > 2 ? BASE64_ALPHABET[chunk & 63] : '=';
+  }
+
+  return out;
+};
+
 /**
  * Extracts and encodes the last part of an IBC denom path to base64
  *
@@ -157,7 +196,7 @@ export const getIBCDenomBase64 = <T>(ibcDenom: T): string | T => {
     const lastPart = _.last(parts);
 
     if (lastPart) {
-      return Buffer.from(lastPart as string).toString('base64');
+      return utf8ToBase64(lastPart as string);
     }
 
     return ibcDenom;

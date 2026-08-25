@@ -31,6 +31,8 @@
   "browserslist": "defaults, not ie <= 11",
   "dependencies": {
     "@axelar-network/axelarjs-sdk": "^0.19.1",
+    "@cosmjs/proto-signing": "^0.38.1",
+    "@cosmjs/stargate": "^0.38.1",
     "@creit.tech/stellar-wallets-kit": "^1.9.5",
     "@headlessui/react": "^2.2.2",
     "@headlessui/tailwindcss": "^0.2.2",
