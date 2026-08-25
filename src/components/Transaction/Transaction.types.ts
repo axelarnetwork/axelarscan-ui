@@ -3,6 +3,7 @@ import type {
   TransactionData as BaseTransactionData,
   TransactionActivity,
 } from '@/components/Transactions';
+import type { IbcPacketData } from '@/lib/chain/ibc';
 
 export interface TransactionData extends BaseTransactionData {
   sender?: string;
@@ -56,6 +57,10 @@ export interface ActivityItemProps {
   chains: Chain[] | null;
   assets: Asset[] | null;
   validators: Validator[] | null;
+}
+
+export interface PacketDataItemProps {
+  packet: IbcPacketData;
 }
 
 export interface EventLogEntryProps {

@@ -5,6 +5,7 @@ import {
   getEventByType,
   normalizeEvents,
 } from '@/lib/chain/cosmos';
+import { normalizeIbcAttributes } from '@/lib/chain/ibc';
 import { getAssetData } from '@/lib/config';
 import { toJson, toHex, split, toArray } from '@/lib/parser';
 import {
@@ -161,10 +162,11 @@ export const getActivities = (
             symbol: assetData?.symbol,
             send_packet_data: attributes
               ? Object.fromEntries(
-                  (attributes as CosmosAttributeLike[]).map(a => [
-                    a.key,
-                    a.value,
-                  ])
+                  // Normalize hex-only (ibc-go v10) attributes into a canonical
+                  // packet_data before keying, so downstream receives packet_data.
+                  normalizeIbcAttributes(
+                    attributes as CosmosAttributeLike[]
+                  ).map(a => [a.key, a.value])
                 )
               : undefined,
             packet: d.packet,
@@ -356,6 +358,11 @@ export const getActivities = (
         return out;
       }
 
+      // Normalize hex-only (ibc-go v10) attributes so a canonical packet_data
+      // feeds event.packet_data (consumed downstream).
+      const eventAttributes = normalizeIbcAttributes(
+        cosmosEvent.attributes
+      ) as CosmosAttributeLike[];
       const event: TransactionActivity = {
         type: cosmosEvent.type,
         ...(
@@ -364,7 +371,7 @@ export const getActivities = (
           ) => Record<string, unknown>
         ).apply(
           _,
-          toArray<CosmosAttributeLike>(cosmosEvent.attributes).map(
+          toArray<CosmosAttributeLike>(eventAttributes).map(
             ({ key, value }) => {
               const attribute: Record<string, unknown> = {};
 
