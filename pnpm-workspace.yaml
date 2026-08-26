@@ -1,0 +1,51 @@
+# pnpm 11 reads its settings from here rather than from a `pnpm` key in
+# package.json or from .npmrc.
+
+# Use npm's flat node_modules layout rather than pnpm's symlinked one.
+#
+# pnpm's default isolated layout only exposes a package's *declared*
+# dependencies to it. This app imports several it never declared - dayjs,
+# viem, xrpl, @xrpl-wallet-standard/core, @metamask/providers and more - which
+# resolved only because npm hoisted everything into one flat tree. On top of
+# that, @axelar-network/axelarjs-sdk requires cosmjs-types without declaring
+# it, and Turbopack cannot resolve bs58 through pnpm's symlinks even though
+# the SDK does declare it.
+#
+# The trade: we keep the store, hardlinks, lockfile and install speed, and
+# give up pnpm's phantom-dependency protection - which is the very thing the
+# undeclared imports above would otherwise force us to fix first. Declaring
+# them is worth doing, but it is a separate change from switching tools.
+nodeLinker: hoisted
+
+# pnpm refuses to install while any dependency's build script is neither
+# approved nor explicitly declined, so every package in the tree that has one
+# must appear below.
+#
+# true  = run the install script
+# false = deliberately skipped, with the reason given
+allowBuilds:
+  # Needed by the Next build: image optimisation and the oxc resolver.
+  sharp: true
+  unrs-resolver: true
+
+  # Native crypto and websocket addons used at runtime.
+  "@axelar-network/axelarjs-sdk": true
+  bufferutil: true
+  keccak: true
+  secp256k1: true
+  utf-8-validate: true
+
+  # node-gyp-build style: prebuilds resolve at require time without the
+  # install script. tiny-secp256k1 also has a pure-JS fallback.
+  blake-hash: false
+  tiny-secp256k1: false
+  usb: false
+
+  # Install scripts are echo or try-catch no-ops.
+  es5-ext: false
+  web3: false
+  web3-bzz: false
+  web3-shh: false
+
+  # postinstall only sets up the CLI, which we do not use.
+  protobufjs: false

@@ -1,0 +1,6 @@
+# Generated lockfile - never hand-formatted, and reformatting it would make
+# every dependency change unreviewable.
+pnpm-lock.yaml
+
+.next
+node_modules

@@ -26,8 +26,7 @@
   },
   "homepage": "https://github.com/axelarnetwork/axelarscan-ui#readme",
   "engines": {
-    "node": "24.14.0",
-    "npm": ">=10.0.0"
+    "node": "24.x"
   },
   "browserslist": "defaults, not ie <= 11",
   "dependencies": {
@@ -42,6 +41,7 @@
     "@reown/appkit": "^1.7.6",
     "@reown/appkit-adapter-wagmi": "^1.7.6",
     "@siddomains/sidjs": "^0.1.29",
+    "@stellar/stellar-base": "14.0.1",
     "@stellar/stellar-sdk": "^13.3.0",
     "@tailwindcss/forms": "^0.5.10",
     "@tanstack/react-query": "^5.74.11",
@@ -98,5 +98,5 @@
     "ts-jest": "^29.4.5",
     "typescript": "^5.9.3"
   },
-  "packageManager": "pnpm@10.15.1+sha512.34e538c329b5553014ca8e8f4535997f96180a1d0f614339357449935350d924e22f8614682191264ec33d1462ac21561aff97f6bb18065351c162c7e8f6de67"
+  "packageManager": "pnpm@11.24.0+sha512.bd27e345e976dcb0be0b7a1228217b049a817e21b1f355c90dbe7dc46671895a8bc1e6d06c24554505ea93ea0b45f489a27ec1bfbc8de6a9659fca0f16fa0000"
 }

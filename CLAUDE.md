@@ -48,6 +48,6 @@ ComponentName/
 
 ## Build & Tooling
 
-- Package manager: **npm**
-- Build: `npm run build` (runs `tsc && next build`)
-- Node 20 via nvm
+- Package manager: **pnpm** (the lockfile is `pnpm-lock.yaml`; do not use npm)
+- Build: `pnpm run build` (runs `tsc && next build`)
+- Node 24.14.0 via nvm (see `.nvmrc`)
