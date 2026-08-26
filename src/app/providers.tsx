@@ -1,5 +1,9 @@
 'use client';
 
+// Must come before anything that can reach the axelarjs SDK - see the module
+// for why the browser needs a Buffer global at all.
+import '@/lib/bufferPolyfill';
+
 import { Global } from '@/components/Global.component';
 import { ENVIRONMENT } from '@/lib/config';
 import * as ga from '@/lib/ga';
