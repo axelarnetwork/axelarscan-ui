@@ -20,7 +20,7 @@ export function useApproveAction({
   const sdk = useGMPRecoveryAPI();
   const { provider } = useEVMWalletStore();
 
-  return useCallback(
+  const approve = useCallback(
     async (message: GMPMessage, afterPayGas: boolean = false) => {
       await executeApprove({
         data: message,
@@ -34,6 +34,12 @@ export function useApproveAction({
     },
     [cosmosSigner, provider, sdk, setProcessing, setResponse]
   );
+
+  // isReady has to come from the same instance the callback closes over.
+  // Calling useGMPRecoveryAPI again in the consumer would build a second SDK,
+  // with its own dynamic import and its own execRecoveryUrlFetch patch, and
+  // would report readiness for an instance the click handler never touches.
+  return Object.assign(approve, { isReady: Boolean(sdk) });
 }
 
 export function useApproveButton({
@@ -110,6 +116,7 @@ export function useApproveButton({
 
   return {
     buttonLabel,
+    isReady: approve.isReady,
     isCosmosWalletConnected,
     requiresCosmosWallet,
     isEvmWalletConnected,

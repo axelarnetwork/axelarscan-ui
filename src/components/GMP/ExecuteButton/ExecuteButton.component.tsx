@@ -10,6 +10,7 @@ export function ExecuteButton(props: ExecuteButtonProps) {
     props;
   const {
     buttonLabel,
+    isReady,
     isCosmosDestination,
     isWalletConnected,
     needsSwitchChain,
@@ -33,9 +34,9 @@ export function ExecuteButton(props: ExecuteButtonProps) {
     <div key="execute" className={gmpStyles.actionRow}>
       {(isCosmosDestination || (isWalletConnected && !needsSwitchChain)) && (
         <button
-          disabled={processing}
+          disabled={processing || !isReady}
           onClick={handleExecute}
-          className={clsx(gmpStyles.actionButton(processing))}
+          className={clsx(gmpStyles.actionButton(processing || !isReady))}
         >
           {buttonLabel}
         </button>

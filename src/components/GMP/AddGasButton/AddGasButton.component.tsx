@@ -9,6 +9,7 @@ export function AddGasButton(props: AddGasButtonProps) {
     props;
   const {
     buttonLabel,
+    isReady,
     isWalletConnected,
     needsSwitchChain,
     targetChain,
@@ -31,9 +32,9 @@ export function AddGasButton(props: AddGasButtonProps) {
     <div key="addGas" className={gmpStyles.actionRow}>
       {isWalletConnected && !needsSwitchChain && (
         <button
-          disabled={processing}
+          disabled={processing || !isReady}
           onClick={handleAddGas}
-          className={clsx(gmpStyles.actionButton(processing))}
+          className={clsx(gmpStyles.actionButton(processing || !isReady))}
         >
           {buttonLabel}
         </button>

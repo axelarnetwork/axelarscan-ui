@@ -1,7 +1,7 @@
 'use client';
 
 import { customData } from '@/components/GMPs';
-import {
+import type {
   AxelarGMPRecoveryAPI,
   Environment,
 } from '@axelar-network/axelarjs-sdk';
@@ -525,32 +525,81 @@ const RECOVERY_BYTES_ENDPOINTS = new Set([
   '/sign_commands',
 ]);
 
+/**
+ * Build the recovery SDK, once per page load.
+ *
+ * The instance depends only on build-time env, so it is cached at module
+ * scope: several recovery buttons can be on screen at once, and each used to
+ * construct its own SDK, run its own dynamic import and install its own
+ * execRecoveryUrlFetch patch.
+ */
+let recoveryApiPromise: Promise<AxelarGMPRecoveryAPI> | undefined;
+
+function loadGMPRecoveryAPI(): Promise<AxelarGMPRecoveryAPI> {
+  if (!recoveryApiPromise) {
+    recoveryApiPromise = import('@axelar-network/axelarjs-sdk')
+      .then(({ AxelarGMPRecoveryAPI }) => {
+        const recoverySdk = new AxelarGMPRecoveryAPI({
+          environment: ENVIRONMENT as Environment,
+          axelarRpcUrl: process.env.NEXT_PUBLIC_RPC_URL,
+          axelarLcdUrl: process.env.NEXT_PUBLIC_LCD_URL,
+        });
+
+        const originalExecRecoveryUrlFetch =
+          recoverySdk.execRecoveryUrlFetch.bind(recoverySdk);
+
+        recoverySdk.execRecoveryUrlFetch = async (endpoint, params) => {
+          const response = await originalExecRecoveryUrlFetch(endpoint, params);
+          if (!RECOVERY_BYTES_ENDPOINTS.has(endpoint)) {
+            return response;
+          }
+          return normalizeRecoveryBytes(response) ?? response;
+        };
+
+        return recoverySdk;
+      })
+      .catch(error => {
+        // Do not cache the failure: a chunk that failed once (stale build,
+        // flaky network) should be retried rather than leaving every recovery
+        // button permanently dead.
+        recoveryApiPromise = undefined;
+        throw error;
+      });
+  }
+
+  return recoveryApiPromise;
+}
+
+/**
+ * Load the recovery SDK on demand.
+ *
+ * AxelarGMPRecoveryAPI statically requires @solana/web3.js, @mysten/sui,
+ * @stellar/stellar-sdk, xrpl, @cosmjs/stargate and ethers, which together are
+ * roughly 3.5 MB of the GMP page's client JS. Importing it statically put all
+ * of that on every GMP page, including the majority that show no recovery
+ * action at all.
+ *
+ * This hook is only called from the recovery button hooks, and those only
+ * mount when their button is actually rendered - so with a dynamic import the
+ * chunk is fetched only when a recovery action is on screen.
+ */
 export function useGMPRecoveryAPI(): AxelarGMPRecoveryAPI | undefined {
   const [sdk, setSDK] = useState<AxelarGMPRecoveryAPI | undefined>();
 
   useEffect(() => {
-    try {
-      const recoverySdk = new AxelarGMPRecoveryAPI({
-        environment: ENVIRONMENT as Environment,
-        axelarRpcUrl: process.env.NEXT_PUBLIC_RPC_URL,
-        axelarLcdUrl: process.env.NEXT_PUBLIC_LCD_URL,
+    let cancelled = false;
+
+    loadGMPRecoveryAPI()
+      .then(recoverySdk => {
+        if (!cancelled) setSDK(recoverySdk);
+      })
+      .catch(error => {
+        console.error('[recovery sdk load failed]', error);
       });
 
-      const originalExecRecoveryUrlFetch =
-        recoverySdk.execRecoveryUrlFetch.bind(recoverySdk);
-
-      recoverySdk.execRecoveryUrlFetch = async (endpoint, params) => {
-        const response = await originalExecRecoveryUrlFetch(endpoint, params);
-        if (!RECOVERY_BYTES_ENDPOINTS.has(endpoint)) {
-          return response;
-        }
-        return normalizeRecoveryBytes(response) ?? response;
-      };
-
-      setSDK(recoverySdk);
-    } catch (error) {
-      setSDK(undefined);
-    }
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return sdk;

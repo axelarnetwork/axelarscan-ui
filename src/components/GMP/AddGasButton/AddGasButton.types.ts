@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import { AxelarGMPRecoveryAPI } from '@axelar-network/axelarjs-sdk';
+import type { AxelarGMPRecoveryAPI } from '@axelar-network/axelarjs-sdk';
 import type { useSignAndExecuteTransaction as useSuiSignAndExecuteTransaction } from '@mysten/dapp-kit';
 import type { useSignAndSubmitTransaction as useXRPLSignAndSubmitTransaction } from '@xrpl-wallet-standard/react';
 import { providers } from 'ethers';
@@ -53,6 +53,8 @@ export interface AddGasButtonProps {
 
 export interface UseAddGasButtonResult {
   buttonLabel: string;
+  /** False until the lazily-loaded recovery SDK is available. */
+  isReady: boolean;
   isWalletConnected: boolean;
   needsSwitchChain: boolean;
   targetChain: string | undefined;

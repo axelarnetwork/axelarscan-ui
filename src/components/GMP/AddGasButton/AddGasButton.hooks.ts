@@ -149,6 +149,7 @@ export function useAddGasButton(
 
   return {
     buttonLabel,
+    isReady: Boolean(sdk),
     isWalletConnected,
     needsSwitchChain,
     targetChain: call?.chain,

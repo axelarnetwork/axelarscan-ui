@@ -21,6 +21,7 @@ export function ApproveButton(props: ApproveButtonProps) {
   }, [chains]);
   const {
     buttonLabel,
+    isReady,
     isCosmosWalletConnected,
     requiresCosmosWallet,
     isEvmWalletConnected,
@@ -47,9 +48,9 @@ export function ApproveButton(props: ApproveButtonProps) {
     <div key="approve" className={gmpStyles.actionRow}>
       {canApprove && (
         <button
-          disabled={processing}
+          disabled={processing || !isReady}
           onClick={handleApprove}
-          className={clsx(gmpStyles.actionButton(processing))}
+          className={clsx(gmpStyles.actionButton(processing || !isReady))}
         >
           {buttonLabel}
         </button>

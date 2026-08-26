@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import { AxelarGMPRecoveryAPI } from '@axelar-network/axelarjs-sdk';
+import type { AxelarGMPRecoveryAPI } from '@axelar-network/axelarjs-sdk';
 import { providers } from 'ethers';
 import type { KeplrSigner } from '@/types/cosmos';
 
@@ -37,6 +37,8 @@ export interface UseApproveButtonOptions {
 
 export interface UseApproveButtonResult {
   buttonLabel: string;
+  /** False until the lazily-loaded recovery SDK is available. */
+  isReady: boolean;
   isCosmosWalletConnected: boolean;
   requiresCosmosWallet: boolean;
   isEvmWalletConnected: boolean;

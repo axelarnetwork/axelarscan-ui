@@ -10,7 +10,7 @@ import type {
   Environment,
 } from '@axelar-network/axelarjs-sdk';
 import type { OfflineSigner } from '@cosmjs/proto-signing';
-import * as StellarSDK from '@stellar/stellar-sdk';
+import type * as StellarSDKTypes from '@stellar/stellar-sdk';
 import type { GMPMessage } from '../GMP.types';
 import { getDefaultGasLimit, isWalletConnectedForChain } from '../GMP.utils';
 import { AddGasActionParams } from './AddGasButton.types';
@@ -540,6 +540,10 @@ async function handleStellarAddGas({
 
   const networkPassphrase = stellarWalletStore.network.networkPassphrase!;
 
+  // Loaded on demand: @stellar/stellar-sdk is a large dependency that only
+  // this one branch needs.
+  const StellarSDK = await import('@stellar/stellar-sdk');
+
   const server = new StellarSDK.rpc.Server(
     sourceChainData?.endpoints?.rpc?.[0] || stellarWalletStore.sorobanRpcUrl,
     { allowHttp: true }
@@ -560,7 +564,9 @@ async function handleStellarAddGas({
     return;
   }
 
-  let stellarResponse: StellarSDK.rpc.Api.SendTransactionResponse | undefined;
+  let stellarResponse:
+    | StellarSDKTypes.rpc.Api.SendTransactionResponse
+    | undefined;
   let stellarError: string | undefined;
 
   try {

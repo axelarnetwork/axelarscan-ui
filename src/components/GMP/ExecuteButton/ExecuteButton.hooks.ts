@@ -29,7 +29,7 @@ function useExecuteAction({
   const sdk = useGMPRecoveryAPI();
   const { provider, signer } = useEVMWalletStore();
 
-  return useCallback(
+  const execute = useCallback(
     async (message: GMPMessage) => {
       await executeExecute({
         data: message,
@@ -43,6 +43,10 @@ function useExecuteAction({
     },
     [provider, refreshData, sdk, setProcessing, setResponse, signer]
   );
+
+  // See the note in useApproveAction: readiness must describe the same SDK
+  // instance the callback uses, not a second one built by the consumer.
+  return Object.assign(execute, { isReady: Boolean(sdk) });
 }
 
 export function useExecuteButton(
@@ -143,6 +147,9 @@ export function useExecuteButton(
 
   return {
     buttonLabel,
+    isReady: isCosmosDestination
+      ? approveAction.isReady
+      : executeAction.isReady,
     isCosmosDestination,
     isWalletConnected,
     needsSwitchChain,

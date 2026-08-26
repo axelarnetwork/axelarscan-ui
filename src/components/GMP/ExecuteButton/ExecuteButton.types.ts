@@ -20,6 +20,8 @@ export interface UseExecuteActionParams {
 
 export interface UseExecuteButtonResult {
   buttonLabel: string;
+  /** False until the lazily-loaded recovery SDK is available. */
+  isReady: boolean;
   isCosmosDestination: boolean;
   isWalletConnected: boolean;
   needsSwitchChain: boolean;
