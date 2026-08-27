@@ -28,36 +28,36 @@ Run the application locally on [localhost:3000](http://localhost:3000):
 nvm use
 
 # Install dependencies
-npm ci
+pnpm install --frozen-lockfile
 
 # Start development server
-npm run dev
+pnpm run dev
 ```
 
 ### Code Quality
 
 ```bash
 # Format code with Prettier
-npm run format
+pnpm run format
 
 # Check code formatting
-npm run format:check
+pnpm run format:check
 
 # Run ESLint and fix issues
-npm run lint
+pnpm run lint
 
 # Check for linting issues
-npm run lint:check
+pnpm run lint:check
 ```
 
 ### Build
 
 ```bash
 # Run TypeScript type checking (no emit)
-npm run tsc
+pnpm run tsc
 
 # Build project with TypeScript checking
-npm run build
+pnpm run build
 ```
 
 ### Testing
@@ -66,13 +66,13 @@ Run the test suite to verify functionality:
 
 ```bash
 # Run all tests
-npm test
+pnpm test
 
 # Run tests in watch mode
-npm run test:watch
+pnpm run test:watch
 
 # Run tests with coverage report
-npm run test:coverage
+pnpm run test:coverage
 ```
 
 ## 🚀 Deployment and Release Process
