@@ -10,6 +10,7 @@ import { getSender, getType } from '@/components/Transactions';
 import { getTransaction } from '@/lib/api/validator';
 import type { TransactionData, TransactionProps } from './Transaction.types';
 import { Info } from './Info.component';
+import { MessageData } from './MessageData.component';
 import { PacketData } from './PacketData.component';
 import { Data } from './Data.component';
 import * as styles from './Transaction.styles';
@@ -66,6 +67,7 @@ export function Transaction({ tx, initialData }: TransactionProps) {
     <Container className="sm:mt-8">
       <div className={styles.transactionContent}>
         <Info data={data} tx={tx} />
+        <MessageData data={data} />
         <PacketData data={data} />
         <Data data={data} />
       </div>
