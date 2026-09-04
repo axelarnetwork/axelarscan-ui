@@ -1029,3 +1029,167 @@ describe('IBC light client updates', () => {
     expect(summary.fields.map(f => f.label)).toEqual(['Client', 'Relayer']);
   });
 });
+
+describe('gaps the third round of review found', () => {
+  const wrappedAck = (inner: unknown) =>
+    Buffer.from(
+      JSON.stringify({
+        contract_result: 'e30=',
+        ibc_ack: Buffer.from(JSON.stringify(inner)).toString('base64'),
+      })
+    ).toString('base64');
+
+  const ackTx = (acknowledgement: string) => ({
+    '@type': '/ibc.core.channel.v1.MsgAcknowledgement',
+    packet: { sequence: '1', source_channel: 'a', destination_channel: 'b' },
+    acknowledgement,
+    signer: 'axelar1relayer',
+  });
+
+  const resultOf = (acknowledgement: string) => {
+    const [summary] = extractMessageSummaries(wrap([ackTx(acknowledgement)]));
+    const field = summary.fields.find(f => f.label === 'Result');
+    return field?.kind === 'text' ? field.text : undefined;
+  };
+
+  it('finds the failure inside a middleware-wrapped success ack', () => {
+    // ibc-hooks and CosmWasm deliberately report an application failure inside
+    // a successful envelope so the tokens are not reverted. Trusting the outer
+    // envelope reports a failed delivery as a success.
+    expect(resultOf(wrappedAck({ error: 'contract execution failed' }))).toBe(
+      'contract execution failed'
+    );
+  });
+
+  it('reports a wrapped success as a success', () => {
+    expect(resultOf(wrappedAck({ result: 'AQ==' }))).toBe('Success');
+  });
+
+  it('only calls the ICS-20 success byte a success', () => {
+    expect(resultOf(Buffer.from('{"result":"AQ=="}').toString('base64'))).toBe(
+      'Success'
+    );
+    // Any other payload proves delivery, not that the application succeeded.
+    expect(
+      resultOf(Buffer.from('{"result":"eyJvayI6e319"}').toString('base64'))
+    ).toBe('Delivered');
+  });
+
+  it('reports fatal_error, which is the name some contracts use', () => {
+    expect(
+      resultOf(
+        Buffer.from('{"fatal_error":"codespace sdk code 11"}').toString(
+          'base64'
+        )
+      )
+    ).toBe('codespace sdk code 11');
+  });
+
+  it('says nothing rather than something wrong for an unreadable ack', () => {
+    // ICS-004 actually specifies a protobuf envelope; ibc-go's JSON is the
+    // deviation, so a conformant counterparty may send bytes we cannot read.
+    expect(
+      resultOf(Buffer.from([0xaa, 0x01, 0x02]).toString('base64'))
+    ).toBeUndefined();
+  });
+
+  it('surfaces where a GMP packet is actually headed', () => {
+    // The receiver is the escrow account; the destination is in the memo.
+    const [summary] = extractMessageSummaries(
+      wrap([
+        {
+          '@type': '/ibc.core.channel.v1.MsgRecvPacket',
+          packet: {
+            sequence: '5',
+            source_channel: 'channel-0',
+            destination_channel: 'channel-612',
+            data: Buffer.from(
+              JSON.stringify({
+                denom: 'uaxl',
+                amount: '1',
+                sender: 'osmo1sender',
+                receiver: 'axelar1escrow',
+                memo: JSON.stringify({
+                  destination_chain: 'ethereum',
+                  destination_address: '0xabc',
+                }),
+              })
+            ).toString('base64'),
+          },
+          signer: 'axelar1relayer',
+        },
+      ])
+    );
+    const byLabel = Object.fromEntries(summary.fields.map(f => [f.label, f]));
+
+    expect(byLabel['Destination chain']).toEqual({
+      label: 'Destination chain',
+      kind: 'chain',
+      chain: 'ethereum',
+    });
+    expect(
+      byLabel['Destination address'].kind === 'text' &&
+        byLabel['Destination address'].text
+    ).toBe('0xabc');
+  });
+
+  it('shows a foreign sender as text, not as an axelar account', () => {
+    // Rendering it as an account would link to a dead /account/osmo1... page.
+    const [summary] = extractMessageSummaries(
+      wrap([
+        {
+          '@type': '/ibc.core.channel.v1.MsgRecvPacket',
+          packet: {
+            sequence: '5',
+            source_channel: 'a',
+            destination_channel: 'b',
+            data: Buffer.from(
+              JSON.stringify({ sender: 'osmo1sender', receiver: 'axelar1r' })
+            ).toString('base64'),
+          },
+          signer: 'axelar1relayer',
+        },
+      ])
+    );
+    const sender = summary.fields.find(f => f.label === 'Sender');
+
+    expect(sender?.kind).toBe('text');
+  });
+
+  it('unwraps MsgExec, a third envelope', () => {
+    const summaries = extractMessageSummaries(
+      wrap([
+        {
+          '@type': '/cosmos.authz.v1beta1.MsgExec',
+          grantee: 'axelar1grantee',
+          msgs: [
+            {
+              '@type': '/cosmos.gov.v1beta1.MsgVote',
+              proposal_id: '9',
+              voter: 'axelar1voter',
+              option: 'VOTE_OPTION_NO',
+            },
+          ],
+        },
+      ])
+    );
+
+    expect(summaries[0].label).toBe('Governance vote');
+    expect(summaries[0].wrappedIn).toBe('MsgExec');
+  });
+
+  it('describes a validator commission withdrawal', () => {
+    const [summary] = extractMessageSummaries(
+      wrap([
+        {
+          '@type':
+            '/cosmos.distribution.v1beta1.MsgWithdrawValidatorCommission',
+          validator_address: 'axelarvaloper1val',
+        },
+      ])
+    );
+
+    expect(summary.label).toBe('Withdraw commission');
+    expect(addressOf(summary.fields, 'Validator')).toBe('axelarvaloper1val');
+  });
+});

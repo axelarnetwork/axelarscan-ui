@@ -235,6 +235,9 @@ interface IbcPacket {
   sender?: string;
   receiver?: string;
   amount?: MessageAmount;
+  /** Where a GMP packet is actually headed, from the transfer memo. */
+  destinationChain?: string;
+  destinationAddress?: string;
 }
 
 const readPacket = (message: Record<string, unknown>): IbcPacket => {
@@ -247,11 +250,21 @@ const readPacket = (message: Record<string, unknown>): IbcPacket => {
       ? (data as Record<string, unknown>)
       : {};
 
+  // A GMP transfer names the escrow account as its receiver and carries the
+  // real destination in the memo, so the receiver alone is misleading.
+  const memo = toJson(readString(payload, 'memo'));
+  const routing =
+    memo && typeof memo === 'object' && !Array.isArray(memo)
+      ? (memo as Record<string, unknown>)
+      : {};
+
   return {
     sequence: readString(packet, 'sequence'),
     route: source && destination ? `${source} -> ${destination}` : undefined,
     sender: readString(payload, 'sender'),
     receiver: readString(payload, 'receiver'),
+    destinationChain: readString(routing, 'destination_chain'),
+    destinationAddress: readString(routing, 'destination_address'),
     // A transfer payload carries denom and amount as sibling strings, not as
     // the Coin object readAmount expects, so rebuild one to get its checks.
     amount: readAmount({
@@ -260,22 +273,70 @@ const readPacket = (message: Record<string, unknown>): IbcPacket => {
   };
 };
 
-/** {"result":"AQ=="} means it succeeded; {"error":"..."} carries the reason. */
-const readAcknowledgement = (
-  message: Record<string, unknown>
+/** ICS-20 encodes its one success value as this single byte. */
+const ICS20_SUCCESS = 'AQ==';
+
+/**
+ * An acknowledgement is not a reliable success signal on its own.
+ *
+ * ibc-go's envelope is {"result": <base64>} or {"error": <string>}, and for a
+ * plain transfer success is always result === "AQ==". But middleware reports an
+ * application failure inside a *successful* envelope on purpose: the tokens
+ * must not be reverted, so the transport-level ack has to stay a success and
+ * the real one is nested as {"contract_result": ..., "ibc_ack": <base64>}.
+ * CosmWasm documents the pattern and Osmosis has a helper named
+ * NewSuccessAckRepresentingAnError.
+ *
+ * So look inside before trusting the outer level, report an error found at any
+ * depth, and only say "Success" when the result really is the success byte.
+ * Anything else opaque is reported as "Delivered", which is all a non-empty
+ * result actually proves.
+ *
+ * The ack is authored by the counterparty chain, so Axelar's own ibc-go version
+ * offers no protection here. ICS-004 actually specifies a protobuf envelope, of
+ * which ibc-go's JSON is a deviation; a protobuf ack yields no row at all
+ * rather than a wrong one.
+ */
+const resolveAcknowledgement = (
+  raw: unknown,
+  depth = 0
 ): string | undefined => {
-  const decoded = toJson(safeBase64ToString(message.acknowledgement));
+  if (depth > 3) return undefined;
+
+  const decoded = toJson(raw);
 
   if (!decoded || typeof decoded !== 'object' || Array.isArray(decoded)) {
     return undefined;
   }
 
-  const { result, error } = decoded as Record<string, unknown>;
+  const ack = decoded as Record<string, unknown>;
 
-  if (typeof error === 'string' && error) return error;
+  // `fatal_error` is the name Polytone and friends use.
+  for (const key of ['error', 'fatal_error']) {
+    const value = ack[key];
+    // An empty string is still a failure, just an unhelpful one.
+    if (typeof value === 'string') return value || 'Failed';
+  }
 
-  return result ? 'Success' : undefined;
+  if (ack.ibc_ack !== undefined) {
+    const nested = resolveAcknowledgement(
+      safeBase64ToString(ack.ibc_ack),
+      depth + 1
+    );
+    if (nested) return nested;
+  }
+
+  const { result } = ack;
+
+  if (result === ICS20_SUCCESS) return 'Success';
+
+  return result ? 'Delivered' : undefined;
 };
+
+const readAcknowledgement = (
+  message: Record<string, unknown>
+): string | undefined =>
+  resolveAcknowledgement(safeBase64ToString(message.acknowledgement));
 
 const accountField = (
   label: string,
@@ -425,7 +486,7 @@ export const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
       return toArray([
         chainField('Counterparty chain', readString(inner ?? {}, 'chain_id')),
         textField('Client', readString(message, 'client_id')),
-        textField('Height', from && to ? `${from} -> ${to}` : (to ?? from)),
+        textField('Height', from && to ? `${from} -> ${to}` : to),
         accountField('Relayer', readString(message, 'signer')),
       ]);
     },
@@ -444,6 +505,8 @@ export const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
         // The far side is a foreign address, so it is shown as plain text.
         textField('Sender', packet.sender),
         accountField('Receiver', packet.receiver),
+        chainField('Destination chain', packet.destinationChain),
+        textField('Destination address', packet.destinationAddress),
         amountField('Amount', packet.amount),
         accountField('Relayer', readString(message, 'signer')),
       ]);
@@ -537,6 +600,13 @@ export const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
         validatorField('Validator', readString(message, 'validator_address')),
       ]),
   },
+  '/cosmos.distribution.v1beta1.MsgWithdrawValidatorCommission': {
+    label: 'Withdraw commission',
+    extract: message =>
+      toArray([
+        validatorField('Validator', readString(message, 'validator_address')),
+      ]),
+  },
   '/cosmos.staking.v1beta1.MsgBeginRedelegate': {
     label: 'Redelegate',
     extract: message =>
@@ -584,8 +654,9 @@ export const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
  */
 const UNWRAP_KEYS: Record<string, string> = {
   '/axelar.reward.v1beta1.RefundMsgRequest': 'inner_message',
-  // BatchRequest carries an array instead, so one entry can yield several.
+  // These carry an array instead, so one entry can yield several.
   '/axelar.auxiliary.v1beta1.BatchRequest': 'messages',
+  '/cosmos.authz.v1beta1.MsgExec': 'msgs',
 };
 
 interface Unwrapped {
