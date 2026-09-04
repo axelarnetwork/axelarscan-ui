@@ -11,7 +11,11 @@ export function MessageDataItem({ summary }: MessageDataItemProps) {
     <div className={styles.stackedPanelItem}>
       <div className={styles.stackedPanelHeader}>
         <Tag className={styles.stackedPanelTag}>{summary.label}</Tag>
-        <span className={styles.stackedPanelMutedText}>{summary.type}</span>
+        <span className={styles.stackedPanelMutedText}>
+          {summary.wrappedIn
+            ? `${summary.type} in ${summary.wrappedIn}`
+            : summary.type}
+        </span>
       </div>
       <dl className={styles.infoDivider}>
         {summary.fields.map(field => (

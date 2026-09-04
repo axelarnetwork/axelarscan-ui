@@ -84,6 +84,18 @@ export interface MessageAmountValueProps {
   amount: MessageAmount;
 }
 
+export interface MessageHashListProps {
+  hashes: string[];
+  chain?: string;
+  gmp?: boolean;
+}
+
+export interface MessageHashRowProps {
+  hash: string;
+  chain?: string;
+  gmp?: boolean;
+}
+
 export interface EventLogEntryProps {
   entry: EventLogRecord;
   index: number;
