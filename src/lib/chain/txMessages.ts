@@ -407,6 +407,30 @@ export const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
       ]),
   },
 
+  '/ibc.core.client.v1.MsgUpdateClient': {
+    label: 'Update IBC light client',
+    extract: message => {
+      // A relayer submits a signed header from the counterparty chain so the
+      // light client advances far enough to verify the packet proofs that
+      // follow. Every packet receive, acknowledge and timeout is preceded by
+      // one of these.
+      const header = readObject(message, 'client_message');
+      const signed = readObject(header ?? {}, 'signed_header');
+      const inner = readObject(signed ?? {}, 'header');
+      const trusted = readObject(header ?? {}, 'trusted_height');
+
+      const from = readString(trusted ?? {}, 'revision_height');
+      const to = readString(inner ?? {}, 'height');
+
+      return toArray([
+        chainField('Counterparty chain', readString(inner ?? {}, 'chain_id')),
+        textField('Client', readString(message, 'client_id')),
+        textField('Height', from && to ? `${from} -> ${to}` : (to ?? from)),
+        accountField('Relayer', readString(message, 'signer')),
+      ]);
+    },
+  },
+
   // --- IBC packet lifecycle. The relayer signs these; the interesting part is
   // the packet they carry and, for an acknowledgement, whether it worked.
   '/ibc.core.channel.v1.MsgRecvPacket': {

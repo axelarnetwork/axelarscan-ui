@@ -958,3 +958,74 @@ describe('IBC packet lifecycle', () => {
     ]);
   });
 });
+
+describe('IBC light client updates', () => {
+  // Verbatim from testnet tx 2BB03AC43DE374DA0816D992C64147D4B3CC86003EE83887B73B7B0CF4085E8D,
+  // with the validator set and commit signatures stripped.
+  const updateClient = {
+    '@type': '/ibc.core.client.v1.MsgUpdateClient',
+    client_id: '07-tendermint-1163',
+    signer: 'axelar139wppx205q2vp3m8ygugyrf8e0xq4whqp2t9nl',
+    client_message: {
+      '@type': '/ibc.lightclients.tendermint.v1.Header',
+      signed_header: {
+        header: { chain_id: 'zig-test-2', height: '7493822' },
+      },
+      trusted_height: { revision_number: '2', revision_height: '7478413' },
+    },
+  };
+
+  it('reads which chain the client tracks and how far it advanced', () => {
+    const [summary] = extractMessageSummaries(wrap([updateClient]));
+    const byLabel = Object.fromEntries(summary.fields.map(f => [f.label, f]));
+
+    expect(summary.label).toBe('Update IBC light client');
+    expect(byLabel['Counterparty chain']).toEqual({
+      label: 'Counterparty chain',
+      kind: 'chain',
+      chain: 'zig-test-2',
+    });
+    expect(byLabel.Client.kind === 'text' && byLabel.Client.text).toBe(
+      '07-tendermint-1163'
+    );
+    // The advance is the substance of the message.
+    expect(byLabel.Height.kind === 'text' && byLabel.Height.text).toBe(
+      '7478413 -> 7493822'
+    );
+  });
+
+  it('falls back to the new height alone when there is no trusted height', () => {
+    const [summary] = extractMessageSummaries(
+      wrap([
+        {
+          ...updateClient,
+          client_message: {
+            ...updateClient.client_message,
+            trusted_height: undefined,
+          },
+        },
+      ])
+    );
+    const height = summary.fields.find(f => f.label === 'Height');
+
+    expect(height?.kind === 'text' && height.text).toBe('7493822');
+  });
+
+  it('still names the client when the header cannot be read', () => {
+    // Other light client types exist; the envelope fields are always there.
+    const [summary] = extractMessageSummaries(
+      wrap([
+        {
+          '@type': '/ibc.core.client.v1.MsgUpdateClient',
+          client_id: '07-tendermint-9',
+          signer: 'axelar1relayer',
+          client_message: {
+            '@type': '/ibc.lightclients.solomachine.v3.Header',
+          },
+        },
+      ])
+    );
+
+    expect(summary.fields.map(f => f.label)).toEqual(['Client', 'Relayer']);
+  });
+});
