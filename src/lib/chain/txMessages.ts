@@ -1,4 +1,5 @@
-import { toArray } from '@/lib/parser';
+import { safeBase64ToString, toArray, toHex, toJson } from '@/lib/parser';
+import { toTitle } from '@/lib/string';
 
 /**
  * Pulls the fields worth reading out of a Cosmos transaction's messages.
@@ -22,11 +23,32 @@ export interface MessageAmount {
  * How a field should be rendered. Validators are separate from plain accounts
  * because they live on a different page and need their own address prefix.
  */
-export type MessageFieldKind = 'account' | 'validator' | 'amount';
+export type MessageFieldKind =
+  | 'account'
+  | 'validator'
+  | 'amount'
+  | 'text'
+  | 'chain'
+  | 'hash'
+  | 'link';
 
 export type MessageField =
   | { label: string; kind: 'account' | 'validator'; address: string }
-  | { label: string; kind: 'amount'; amount: MessageAmount };
+  | { label: string; kind: 'amount'; amount: MessageAmount }
+  | { label: string; kind: 'text'; text: string }
+  | { label: string; kind: 'chain'; chain: string }
+  /**
+   * One or more transaction hashes, already hex encoded. `gmp` marks them as
+   * GMP calls, so the hash itself links to the cross-chain message page.
+   */
+  | {
+      label: string;
+      kind: 'hash';
+      hashes: string[];
+      chain?: string;
+      gmp?: boolean;
+    }
+  | { label: string; kind: 'link'; text: string; href: string };
 
 export interface MessageSummary {
   /**
@@ -35,10 +57,23 @@ export interface MessageSummary {
    * skipped, so it still lines up with the raw JSON further down the page.
    */
   index: number;
+  /**
+   * Position within an envelope that held several messages. One BatchRequest
+   * can hold two identical calls, which would otherwise be indistinguishable
+   * to React's key.
+   */
+  innerIndex: number;
   /** Short type name, e.g. MsgBeginRedelegate. */
   type: string;
+  /**
+   * Set when this message arrived wrapped in another one, naming the wrapper
+   * so the section still corresponds to what the raw JSON shows.
+   */
+  wrappedIn?: string;
   /** What the message does, in words. */
   label: string;
+  /** Set when the chain no longer accepts this message type. */
+  deprecated?: boolean;
   fields: MessageField[];
 }
 
@@ -47,6 +82,11 @@ type MessageExtractor = (message: Record<string, unknown>) => MessageField[];
 interface MessageHandler {
   label: string;
   extract: MessageExtractor;
+  /**
+   * The chain no longer accepts this message. Kept so historical transactions
+   * still read properly, and marked so nobody mistakes it for a live flow.
+   */
+  deprecated?: boolean;
 }
 
 const readString = (
@@ -56,6 +96,15 @@ const readString = (
   const value = message[key];
   return typeof value === 'string' && value.length > 0 ? value : undefined;
 };
+
+/**
+ * Axelar messages carry both `sender` and a `sender_deprecated` kept for
+ * decoding old transactions. Validators running older software populate only
+ * the deprecated one, and the address is right there in the payload, so fall
+ * back to it rather than dropping the row.
+ */
+const readSender = (message: Record<string, unknown>): string | undefined =>
+  readString(message, 'sender') ?? readString(message, 'sender_deprecated');
 
 const readAmount = (
   message: Record<string, unknown>,
@@ -80,6 +129,222 @@ const readAmount = (
   return { denom, amount };
 };
 
+/**
+ * Byte fields arrive in two shapes, both from the same LCD response: a poll
+ * request's tx_ids come as arrays of byte values, while the tx_id inside a
+ * vote's events is already a hex string. toHex handles both, returning a
+ * string unchanged.
+ */
+const readHashes = (value: unknown): string[] =>
+  toArray(value)
+    .map(entry =>
+      Array.isArray(entry) || typeof entry === 'string'
+        ? toHex(entry)
+        : undefined
+    )
+    // Only real hex: toHex returns a non-array string unchanged, so without
+    // this a base64 field would render as a hash with a dead explorer link.
+    .filter((hex): hex is string => /^0x[0-9a-f]+$/i.test(hex ?? ''));
+
+const textField = (
+  label: string,
+  text: string | undefined
+): MessageField | undefined =>
+  text ? { label, kind: 'text', text } : undefined;
+
+const chainField = (
+  label: string,
+  chain: string | undefined
+): MessageField | undefined =>
+  chain ? { label, kind: 'chain', chain } : undefined;
+
+const hashField = (
+  label: string,
+  hashes: string[],
+  chain?: string,
+  gmp = false
+): MessageField | undefined =>
+  hashes.length > 0 ? { label, kind: 'hash', hashes, chain, gmp } : undefined;
+
+const linkField = (
+  label: string,
+  text: string | undefined,
+  href: (value: string) => string
+): MessageField | undefined =>
+  text ? { label, kind: 'link', text, href: href(text) } : undefined;
+
+/**
+ * Coins are a repeated field on bank messages. Not toArray here: it stringifies
+ * a bare object rather than wrapping it, which silently dropped a single coin.
+ */
+const coinFields = (
+  label: string,
+  value: unknown
+): (MessageField | undefined)[] => {
+  const coins = Array.isArray(value) ? value : value ? [value] : [];
+
+  return coins.map((coin, index) =>
+    amountField(
+      // Numbered only when there are several, so two rows cannot share a label.
+      coins.length > 1 ? `${label} ${index + 1}` : label,
+      readAmount({ amount: coin })
+    )
+  );
+};
+
+const readObject = (
+  message: Record<string, unknown>,
+  key: string
+): Record<string, unknown> | undefined => {
+  const value = message[key];
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
+};
+
+/** VOTE_OPTION_YES -> Yes */
+const readVoteOption = (option: string | undefined): string | undefined =>
+  option
+    ? toTitle(option.replace(/^VOTE_OPTION_/, '').toLowerCase(), '_', true)
+    : undefined;
+
+/**
+ * A CosmWasm execute payload's single top level key names the action, e.g.
+ * {"submit_signature": {...}}. That name is the useful part - it is how an
+ * amplifier poll or routing call identifies itself.
+ *
+ * The LCD returns `msg` already decoded as an object; base64 is only what the
+ * raw protobuf carries. Both are handled, since toJson passes an object
+ * through and safeBase64ToString leaves a non-string alone.
+ */
+const readContractAction = (
+  message: Record<string, unknown>
+): string | undefined => {
+  const decoded = toJson(safeBase64ToString(message.msg));
+
+  if (!decoded || typeof decoded !== 'object' || Array.isArray(decoded)) {
+    return undefined;
+  }
+
+  const [action] = Object.keys(decoded as Record<string, unknown>);
+  return action ? toTitle(action, '_', true) : undefined;
+};
+
+/**
+ * The three IBC packet messages all wrap the same packet, whose `data` is a
+ * base64 JSON transfer payload. The Packet data section further down the page
+ * is driven by events, which these transactions do not carry, so this is the
+ * only place the payload is shown.
+ */
+interface IbcPacket {
+  sequence?: string;
+  route?: string;
+  sender?: string;
+  receiver?: string;
+  amount?: MessageAmount;
+  /** Where a GMP packet is actually headed, from the transfer memo. */
+  destinationChain?: string;
+  destinationAddress?: string;
+}
+
+const readPacket = (message: Record<string, unknown>): IbcPacket => {
+  const packet = readObject(message, 'packet') ?? {};
+  const source = readString(packet, 'source_channel');
+  const destination = readString(packet, 'destination_channel');
+  const data = toJson(safeBase64ToString(packet.data));
+  const payload =
+    data && typeof data === 'object' && !Array.isArray(data)
+      ? (data as Record<string, unknown>)
+      : {};
+
+  // A GMP transfer names the escrow account as its receiver and carries the
+  // real destination in the memo, so the receiver alone is misleading.
+  const memo = toJson(readString(payload, 'memo'));
+  const routing =
+    memo && typeof memo === 'object' && !Array.isArray(memo)
+      ? (memo as Record<string, unknown>)
+      : {};
+
+  return {
+    sequence: readString(packet, 'sequence'),
+    route: source && destination ? `${source} -> ${destination}` : undefined,
+    sender: readString(payload, 'sender'),
+    receiver: readString(payload, 'receiver'),
+    destinationChain: readString(routing, 'destination_chain'),
+    destinationAddress: readString(routing, 'destination_address'),
+    // A transfer payload carries denom and amount as sibling strings, not as
+    // the Coin object readAmount expects, so rebuild one to get its checks.
+    amount: readAmount({
+      amount: { denom: payload.denom, amount: payload.amount },
+    }),
+  };
+};
+
+/** ICS-20 encodes its one success value as this single byte. */
+const ICS20_SUCCESS = 'AQ==';
+
+/**
+ * An acknowledgement is not a reliable success signal on its own.
+ *
+ * ibc-go's envelope is {"result": <base64>} or {"error": <string>}, and for a
+ * plain transfer success is always result === "AQ==". But middleware reports an
+ * application failure inside a *successful* envelope on purpose: the tokens
+ * must not be reverted, so the transport-level ack has to stay a success and
+ * the real one is nested as {"contract_result": ..., "ibc_ack": <base64>}.
+ * CosmWasm documents the pattern and Osmosis has a helper named
+ * NewSuccessAckRepresentingAnError.
+ *
+ * So look inside before trusting the outer level, report an error found at any
+ * depth, and only say "Success" when the result really is the success byte.
+ * Anything else opaque is reported as "Delivered", which is all a non-empty
+ * result actually proves.
+ *
+ * The ack is authored by the counterparty chain, so Axelar's own ibc-go version
+ * offers no protection here. ICS-004 actually specifies a protobuf envelope, of
+ * which ibc-go's JSON is a deviation; a protobuf ack yields no row at all
+ * rather than a wrong one.
+ */
+const resolveAcknowledgement = (
+  raw: unknown,
+  depth = 0
+): string | undefined => {
+  if (depth > 3) return undefined;
+
+  const decoded = toJson(raw);
+
+  if (!decoded || typeof decoded !== 'object' || Array.isArray(decoded)) {
+    return undefined;
+  }
+
+  const ack = decoded as Record<string, unknown>;
+
+  // `fatal_error` is the name Polytone and friends use.
+  for (const key of ['error', 'fatal_error']) {
+    const value = ack[key];
+    // An empty string is still a failure, just an unhelpful one.
+    if (typeof value === 'string') return value || 'Failed';
+  }
+
+  if (ack.ibc_ack !== undefined) {
+    const nested = resolveAcknowledgement(
+      safeBase64ToString(ack.ibc_ack),
+      depth + 1
+    );
+    if (nested) return nested;
+  }
+
+  const { result } = ack;
+
+  if (result === ICS20_SUCCESS) return 'Success';
+
+  return result ? 'Delivered' : undefined;
+};
+
+const readAcknowledgement = (
+  message: Record<string, unknown>
+): string | undefined =>
+  resolveAcknowledgement(safeBase64ToString(message.acknowledgement));
+
 const accountField = (
   label: string,
   address: string | undefined
@@ -102,6 +367,311 @@ const amountField = (
  * One entry per message type we can describe. Add to this to cover more.
  */
 export const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
+  // --- Axelar validator traffic. Nearly every transaction on the chain is one
+  // of these, wrapped in a RefundMsgRequest (see UNWRAPPERS below).
+  '/axelar.vote.v1beta1.VoteRequest': {
+    label: 'Vote',
+    extract: message => {
+      const vote = readObject(message, 'vote');
+      const events = toArray(vote?.events) as Record<string, unknown>[];
+
+      // Only a gateway contract call has a page under /gmp. Everything voted on
+      // today is one, but a transfer or token event would link nowhere.
+      const allContractCalls =
+        events.length > 0 &&
+        events.every(
+          event => event.contract_call ?? event.contract_call_with_token
+        );
+
+      return toArray([
+        linkField(
+          'Poll',
+          readString(message, 'poll_id'),
+          id => `/evm-poll/${id}`
+        ),
+        accountField('Voter', readSender(message)),
+        chainField('Chain', readString(vote ?? {}, 'chain')),
+        // An empty event list is a vote that the event did not happen, which is
+        // the one case where the absence is the whole point.
+        textField(
+          'Voted',
+          events.length > 0
+            ? `${events.length} event${events.length === 1 ? '' : 's'} confirmed`
+            : 'No event found'
+        ),
+        hashField(
+          // A poll covers a single source transaction, so every event in the
+          // vote repeats the same tx_id. Duplicates would also collide on the
+          // React key of the row.
+          'Source transaction',
+          [...new Set(events.flatMap(event => readHashes([event.tx_id])))],
+          readString(vote ?? {}, 'chain'),
+          allContractCalls
+        ),
+      ]);
+    },
+  },
+  '/axelar.evm.v1beta1.ConfirmGatewayTxsRequest': {
+    label: 'Start confirmation poll',
+    extract: message =>
+      toArray([
+        chainField('Chain', readString(message, 'chain')),
+        hashField(
+          'Transactions',
+          // The singular ConfirmGatewayTxRequest is still in use and carries
+          // tx_id instead; both are read here.
+          readHashes(message.tx_ids ?? [message.tx_id]),
+          readString(message, 'chain'),
+          true
+        ),
+        accountField('Sender', readSender(message)),
+      ]),
+  },
+  '/axelar.evm.v1beta1.ConfirmGatewayTxRequest': {
+    label: 'Start confirmation poll',
+    extract: message =>
+      toArray([
+        chainField('Chain', readString(message, 'chain')),
+        hashField(
+          'Transaction',
+          readHashes([message.tx_id]),
+          readString(message, 'chain'),
+          true
+        ),
+        accountField('Sender', readSender(message)),
+      ]),
+  },
+  '/axelar.multisig.v1beta1.SubmitSignatureRequest': {
+    label: 'Submit signature',
+    extract: message =>
+      toArray([
+        textField('Signature ID', readString(message, 'sig_id')),
+        accountField('Signer', readSender(message)),
+      ]),
+  },
+  '/axelar.evm.v1beta1.SignCommandsRequest': {
+    label: 'Sign commands',
+    extract: message =>
+      toArray([
+        chainField('Chain', readString(message, 'chain')),
+        accountField('Sender', readSender(message)),
+      ]),
+  },
+  '/cosmwasm.wasm.v1.MsgExecuteContract': {
+    label: 'Contract call',
+    extract: message =>
+      toArray([
+        textField('Action', readContractAction(message)),
+        accountField('Contract', readString(message, 'contract')),
+        accountField('Sender', readSender(message)),
+      ]),
+  },
+  '/axelar.axelarnet.v1beta1.RouteMessageRequest': {
+    label: 'Route message',
+    extract: message =>
+      toArray([
+        linkField('Message', readString(message, 'id'), id => `/gmp/${id}`),
+        accountField('Sender', readSender(message)),
+      ]),
+  },
+
+  '/ibc.core.client.v1.MsgUpdateClient': {
+    label: 'Update IBC light client',
+    extract: message => {
+      // A relayer submits a signed header from the counterparty chain so the
+      // light client advances far enough to verify the packet proofs that
+      // follow. Every packet receive, acknowledge and timeout is preceded by
+      // one of these.
+      const header = readObject(message, 'client_message');
+      const signed = readObject(header ?? {}, 'signed_header');
+      const inner = readObject(signed ?? {}, 'header');
+      const trusted = readObject(header ?? {}, 'trusted_height');
+
+      const from = readString(trusted ?? {}, 'revision_height');
+      const to = readString(inner ?? {}, 'height');
+
+      return toArray([
+        chainField('Counterparty chain', readString(inner ?? {}, 'chain_id')),
+        textField('Client', readString(message, 'client_id')),
+        textField('Height', from && to ? `${from} -> ${to}` : to),
+        accountField('Relayer', readString(message, 'signer')),
+      ]);
+    },
+  },
+
+  // --- IBC packet lifecycle. The relayer signs these; the interesting part is
+  // the packet they carry and, for an acknowledgement, whether it worked.
+  '/ibc.core.channel.v1.MsgRecvPacket': {
+    label: 'Receive IBC packet',
+    extract: message => {
+      const packet = readPacket(message);
+
+      return toArray([
+        textField('Sequence', packet.sequence),
+        textField('Channel', packet.route),
+        // The far side is a foreign address, so it is shown as plain text.
+        textField('Sender', packet.sender),
+        accountField('Receiver', packet.receiver),
+        chainField('Destination chain', packet.destinationChain),
+        textField('Destination address', packet.destinationAddress),
+        amountField('Amount', packet.amount),
+        accountField('Relayer', readString(message, 'signer')),
+      ]);
+    },
+  },
+  '/ibc.core.channel.v1.MsgAcknowledgement': {
+    label: 'Acknowledge IBC packet',
+    extract: message => {
+      const packet = readPacket(message);
+
+      return toArray([
+        textField('Result', readAcknowledgement(message)),
+        textField('Sequence', packet.sequence),
+        textField('Channel', packet.route),
+        accountField('Sender', packet.sender),
+        textField('Receiver', packet.receiver),
+        amountField('Amount', packet.amount),
+        accountField('Relayer', readString(message, 'signer')),
+      ]);
+    },
+  },
+  '/ibc.core.channel.v1.MsgTimeout': {
+    label: 'IBC packet timed out',
+    extract: message => {
+      const packet = readPacket(message);
+
+      return toArray([
+        textField('Sequence', packet.sequence),
+        textField('Channel', packet.route),
+        accountField('Sender', packet.sender),
+        textField('Receiver', packet.receiver),
+        amountField('Amount', packet.amount),
+        accountField('Relayer', readString(message, 'signer')),
+      ]);
+    },
+  },
+
+  // --- Deposit-address bridging. axelar-core removed these RPCs in v1.4.5 and
+  // the chain now rejects them ("link-deposit protocol is disabled"), but more
+  // than 1.5 million historical transactions use them, and an explorer has to
+  // render history. Marked deprecated so the page says so.
+  '/axelar.axelarnet.v1beta1.LinkRequest': {
+    label: 'Link address',
+    deprecated: true,
+    extract: message =>
+      toArray([
+        chainField('Recipient chain', readString(message, 'recipient_chain')),
+        textField('Recipient', readString(message, 'recipient_addr')),
+        textField(
+          'Asset',
+          readString(message, 'asset') ?? readString(message, 'denom')
+        ),
+        accountField('Sender', readSender(message)),
+      ]),
+  },
+  '/axelar.evm.v1beta1.LinkRequest': {
+    label: 'Link address',
+    deprecated: true,
+    extract: message =>
+      toArray([
+        chainField('Chain', readString(message, 'chain')),
+        chainField('Recipient chain', readString(message, 'recipient_chain')),
+        textField('Recipient', readString(message, 'recipient_addr')),
+        textField(
+          'Asset',
+          readString(message, 'asset') ?? readString(message, 'denom')
+        ),
+        accountField('Sender', readSender(message)),
+      ]),
+  },
+  '/axelar.axelarnet.v1beta1.ConfirmDepositRequest': {
+    label: 'Confirm deposit',
+    deprecated: true,
+    extract: message =>
+      toArray([
+        accountField('Deposit address', readString(message, 'deposit_address')),
+        textField('Denom', readString(message, 'denom')),
+        accountField('Sender', readSender(message)),
+      ]),
+  },
+  '/axelar.evm.v1beta1.ConfirmDepositRequest': {
+    label: 'Confirm deposit',
+    deprecated: true,
+    extract: message =>
+      toArray([
+        chainField('Chain', readString(message, 'chain')),
+        hashField(
+          'Transaction',
+          readHashes([message.tx_id]),
+          readString(message, 'chain')
+        ),
+        accountField('Sender', readSender(message)),
+      ]),
+  },
+
+  // --- Messages a person is likely to have sent themselves.
+  '/cosmos.bank.v1beta1.MsgSend': {
+    label: 'Send',
+    extract: message =>
+      toArray([
+        accountField('From', readString(message, 'from_address')),
+        accountField('To', readString(message, 'to_address')),
+        ...coinFields('Amount', message.amount),
+      ]),
+  },
+  '/ibc.applications.transfer.v1.MsgTransfer': {
+    label: 'IBC transfer',
+    extract: message =>
+      toArray([
+        accountField('Sender', readString(message, 'sender')),
+        textField('Receiver', readString(message, 'receiver')),
+        amountField('Token', readAmount(message, 'token')),
+        textField('Channel', readString(message, 'source_channel')),
+      ]),
+  },
+  // Both gov versions are live, v1beta1 more often than v1, and the payload is
+  // identical, so they share a handler.
+  '/cosmos.gov.v1beta1.MsgVote': {
+    label: 'Governance vote',
+    extract: message =>
+      toArray([
+        linkField(
+          'Proposal',
+          readString(message, 'proposal_id'),
+          id => `/proposal/${id}`
+        ),
+        accountField('Voter', readString(message, 'voter')),
+        textField('Option', readVoteOption(readString(message, 'option'))),
+      ]),
+  },
+  '/cosmos.gov.v1.MsgVote': {
+    label: 'Governance vote',
+    extract: message =>
+      toArray([
+        linkField(
+          'Proposal',
+          readString(message, 'proposal_id'),
+          id => `/proposal/${id}`
+        ),
+        accountField('Voter', readString(message, 'voter')),
+        textField('Option', readVoteOption(readString(message, 'option'))),
+      ]),
+  },
+  '/cosmos.distribution.v1beta1.MsgWithdrawDelegatorReward': {
+    label: 'Withdraw rewards',
+    extract: message =>
+      toArray([
+        accountField('Delegator', readString(message, 'delegator_address')),
+        validatorField('Validator', readString(message, 'validator_address')),
+      ]),
+  },
+  '/cosmos.distribution.v1beta1.MsgWithdrawValidatorCommission': {
+    label: 'Withdraw commission',
+    extract: message =>
+      toArray([
+        validatorField('Validator', readString(message, 'validator_address')),
+      ]),
+  },
   '/cosmos.staking.v1beta1.MsgBeginRedelegate': {
     label: 'Redelegate',
     extract: message =>
@@ -139,6 +709,50 @@ export const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
 };
 
 /**
+ * Wrappers that carry the real message inside them. RefundMsgRequest is the
+ * envelope validators put their routine work in so the chain refunds their gas
+ * (x/reward), and it accounts for nearly every transaction on Axelar - without
+ * unwrapping, the registry would describe almost nothing.
+ *
+ * The wrapper's sender is the signer, and the inner message usually leaves its
+ * own sender empty, so it is carried down.
+ */
+const UNWRAP_KEYS: Record<string, string> = {
+  '/axelar.reward.v1beta1.RefundMsgRequest': 'inner_message',
+  // These carry an array instead, so one entry can yield several.
+  '/axelar.auxiliary.v1beta1.BatchRequest': 'messages',
+  '/cosmos.authz.v1beta1.MsgExec': 'msgs',
+};
+
+interface Unwrapped {
+  message: Record<string, unknown>;
+  wrappedIn?: string;
+}
+
+const unwrap = (message: Record<string, unknown>): Unwrapped[] => {
+  const type = readString(message, '@type');
+  const key =
+    type && Object.prototype.hasOwnProperty.call(UNWRAP_KEYS, type)
+      ? UNWRAP_KEYS[type]
+      : undefined;
+  const payload = key ? message[key] : undefined;
+
+  if (!type || !payload) return [{ message }];
+
+  const inner = (Array.isArray(payload) ? payload : [payload]).filter(
+    (entry): entry is Record<string, unknown> =>
+      Boolean(entry) && typeof entry === 'object' && !Array.isArray(entry)
+  );
+
+  if (inner.length === 0) return [{ message }];
+
+  return inner.map(entry => ({
+    message: { ...entry, sender: readSender(entry) ?? readSender(message) },
+    wrappedIn: shortMessageType(type),
+  }));
+};
+
+/**
  * Trailing segment of the protobuf type URL. Shown beside the label so a
  * section can be matched to its entry in the raw JSON further down the page.
  *
@@ -163,30 +777,44 @@ export function extractMessageSummaries(data: unknown): MessageSummary[] {
   return list.flatMap((entry, index) => {
     if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return [];
 
-    const message = entry as Record<string, unknown>;
-    const type = readString(message, '@type');
-    // Own properties only - an @type of "constructor" would otherwise resolve
-    // to something off Object.prototype.
-    const handler =
-      type && Object.prototype.hasOwnProperty.call(MESSAGE_HANDLERS, type)
-        ? MESSAGE_HANDLERS[type]
-        : undefined;
-
-    if (!type || !handler) return [];
-
-    const fields = handler.extract(message);
-
-    // A message we recognise but cannot read anything out of is not worth a
-    // row of its own - the raw JSON below already shows it.
-    if (fields.length === 0) return [];
-
-    return [
-      {
-        index,
-        type: shortMessageType(type),
-        label: handler.label,
-        fields,
-      },
-    ];
+    return unwrap(entry as Record<string, unknown>).flatMap(
+      ({ message, wrappedIn }, innerIndex) =>
+        describe(message, index, innerIndex, wrappedIn)
+    );
   });
+}
+
+function describe(
+  message: Record<string, unknown>,
+  index: number,
+  innerIndex: number,
+  wrappedIn?: string
+): MessageSummary[] {
+  const type = readString(message, '@type');
+  // Own properties only - an @type of "constructor" would otherwise resolve
+  // to something off Object.prototype.
+  const handler =
+    type && Object.prototype.hasOwnProperty.call(MESSAGE_HANDLERS, type)
+      ? MESSAGE_HANDLERS[type]
+      : undefined;
+
+  if (!type || !handler) return [];
+
+  const fields = handler.extract(message);
+
+  // A message we recognise but cannot read anything out of is not worth a
+  // row of its own - the raw JSON below already shows it.
+  if (fields.length === 0) return [];
+
+  return [
+    {
+      index,
+      innerIndex,
+      type: shortMessageType(type),
+      label: handler.label,
+      fields,
+      ...(handler.deprecated ? { deprecated: true } : {}),
+      ...(wrappedIn ? { wrappedIn } : {}),
+    },
+  ];
 }

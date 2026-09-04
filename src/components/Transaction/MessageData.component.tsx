@@ -1,5 +1,7 @@
 'use client';
 
+import { useMemo } from 'react';
+
 import { extractMessageSummaries } from '@/lib/chain/txMessages';
 
 import { MessageDataItem } from './MessageDataItem.component';
@@ -7,7 +9,9 @@ import type { DataProps } from './Transaction.types';
 import * as styles from './Transaction.styles';
 
 export function MessageData({ data }: DataProps) {
-  const summaries = extractMessageSummaries(data);
+  // The transaction object is replaced when the asset registry resolves, so
+  // this would otherwise re-parse every message on each render.
+  const summaries = useMemo(() => extractMessageSummaries(data), [data]);
 
   // Nothing to add for message types we cannot describe - the raw JSON below
   // still shows them.
@@ -19,7 +23,7 @@ export function MessageData({ data }: DataProps) {
       <div className={styles.stackedPanel}>
         {summaries.map(summary => (
           <MessageDataItem
-            key={`${summary.type}-${summary.index}`}
+            key={`${summary.type}-${summary.index}-${summary.innerIndex}`}
             summary={summary}
           />
         ))}
