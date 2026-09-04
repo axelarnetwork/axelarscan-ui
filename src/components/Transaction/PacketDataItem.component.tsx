@@ -7,15 +7,15 @@ import * as styles from './Transaction.styles';
 
 export function PacketDataItem({ packet }: PacketDataItemProps) {
   return (
-    <div className={styles.packetDataItem}>
-      <div className={styles.packetDataHeader}>
-        <Tag className={styles.packetDataTag}>{packet.eventType}</Tag>
+    <div className={styles.stackedPanelItem}>
+      <div className={styles.stackedPanelHeader}>
+        <Tag className={styles.stackedPanelTag}>{packet.eventType}</Tag>
         {packet.sequence && (
           <span className={styles.packetDataSequence}>
             Packet #{packet.sequence}
           </span>
         )}
-        <span className={styles.packetDataSource}>
+        <span className={styles.stackedPanelMutedText}>
           {packet.source === 'hex'
             ? 'Decoded from packet_data_hex'
             : 'From packet_data'}

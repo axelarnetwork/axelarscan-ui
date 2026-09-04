@@ -4,6 +4,11 @@ import type {
   TransactionActivity,
 } from '@/components/Transactions';
 import type { IbcPacketData } from '@/lib/chain/ibc';
+import type {
+  MessageAmount,
+  MessageField,
+  MessageSummary,
+} from '@/lib/chain/txMessages';
 
 export interface TransactionData extends BaseTransactionData {
   sender?: string;
@@ -61,6 +66,22 @@ export interface ActivityItemProps {
 
 export interface PacketDataItemProps {
   packet: IbcPacketData;
+}
+
+export interface MessageDataItemProps {
+  summary: MessageSummary;
+}
+
+export interface MessageFieldRowProps {
+  field: MessageField;
+}
+
+export interface MessageFieldValueProps {
+  field: MessageField;
+}
+
+export interface MessageAmountValueProps {
+  amount: MessageAmount;
 }
 
 export interface EventLogEntryProps {

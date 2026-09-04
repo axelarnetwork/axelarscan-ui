@@ -39,18 +39,29 @@ export const sectionWrapper = 'flex flex-col gap-y-4' as const;
 export const sectionTitle = 'text-lg font-semibold' as const;
 export const sectionPanel =
   'flex flex-col gap-y-8 bg-zinc-50/75 px-4 py-6 dark:bg-zinc-800/25 sm:rounded-lg sm:px-6' as const;
-export const packetDataPanel =
+// Stacked panel: a list of items each carrying a small header. Used by the
+// packet data and message details sections, which are the same shape.
+export const stackedPanel =
   'flex flex-col divide-y divide-zinc-200 overflow-hidden bg-zinc-50/75 dark:divide-zinc-700 dark:bg-zinc-800/25 sm:rounded-lg' as const;
-export const packetDataItem =
+export const stackedPanelItem =
   'flex flex-col gap-y-4 px-4 py-6 sm:px-6' as const;
-export const packetDataHeader =
+export const stackedPanelHeader =
   'flex flex-wrap items-center gap-x-3 gap-y-2' as const;
-export const packetDataTag = 'w-fit !text-2xs' as const;
-export const packetDataSequence = 'text-xs font-medium' as const;
-export const packetDataSource =
+export const stackedPanelTag = 'w-fit !text-2xs' as const;
+export const stackedPanelMutedText =
   'text-xs text-zinc-400 dark:text-zinc-500' as const;
+export const packetDataSequence = 'text-xs font-medium' as const;
 export const packetDataJson =
   '!max-w-full overflow-x-auto rounded-lg bg-zinc-100 px-3 py-4 dark:bg-zinc-800 sm:px-4' as const;
+// Message summary (parsed fields for known message types).
+// The panel and header come from the shared stacked-panel styles below, and the
+// rows reuse the info table's label/value styles - they are the same definition
+// list, just tighter, because the panel already has its own padding.
+export const messageFieldRow =
+  'py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-2' as const;
+export const messageFieldAmount =
+  'text-sm font-semibold text-zinc-900 dark:text-zinc-100' as const;
+
 export const activityItem = 'flex flex-col gap-y-4' as const;
 export const activityRow = 'flex flex-wrap' as const;
 export const activityFieldWrapper = 'mr-3 flex flex-col gap-y-1' as const;
