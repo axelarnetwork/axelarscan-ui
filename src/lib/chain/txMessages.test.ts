@@ -1193,3 +1193,79 @@ describe('gaps the third round of review found', () => {
     expect(addressOf(summary.fields, 'Validator')).toBe('axelarvaloper1val');
   });
 });
+
+describe('retired message types', () => {
+  // axelar-core removed these RPCs in v1.4.5 and the chain rejects them now,
+  // but over 1.5 million historical transactions use them.
+  const cases = [
+    [
+      {
+        '@type': '/axelar.axelarnet.v1beta1.LinkRequest',
+        recipient_addr: 'osmo14tudpxycxldyy',
+        recipient_chain: 'osmosis',
+        denom: 'uusdc',
+        sender: 'axelar1sender',
+      },
+      'Link address',
+    ],
+    [
+      {
+        '@type': '/axelar.evm.v1beta1.LinkRequest',
+        chain: 'polygon',
+        recipient_addr: 'osmo14tudpxycxldyy',
+        recipient_chain: 'osmosis',
+        asset: 'uusdc',
+        sender: 'axelar1sender',
+      },
+      'Link address',
+    ],
+    [
+      {
+        '@type': '/axelar.axelarnet.v1beta1.ConfirmDepositRequest',
+        deposit_address: 'axelar1deposit',
+        denom: 'uaxl',
+        sender: 'axelar1sender',
+      },
+      'Confirm deposit',
+    ],
+    [
+      {
+        '@type': '/axelar.evm.v1beta1.ConfirmDepositRequest',
+        chain: 'ethereum',
+        tx_id: '0xdeadbeef',
+        sender: 'axelar1sender',
+      },
+      'Confirm deposit',
+    ],
+  ] as const;
+
+  it('still describes a historical deposit-address transaction', () => {
+    for (const [message, label] of cases) {
+      const [summary] = extractMessageSummaries(wrap([message]));
+      expect(summary?.label).toBe(label);
+    }
+  });
+
+  it('marks every one of them deprecated', () => {
+    for (const [message] of cases) {
+      const [summary] = extractMessageSummaries(wrap([message]));
+      expect(summary.deprecated).toBe(true);
+    }
+  });
+
+  it('does not mark a live message type deprecated', () => {
+    const [summary] = extractMessageSummaries(
+      wrap([
+        {
+          '@type': '/cosmos.staking.v1beta1.MsgDelegate',
+          delegator_address: 'axelar1d',
+          validator_address: 'axelarvaloper1v',
+          amount: { denom: 'uaxl', amount: '1' },
+        },
+      ])
+    );
+
+    // Absent rather than false, so the exact-shape assertions stay clean.
+    expect(summary.deprecated).toBeUndefined();
+  });
+});

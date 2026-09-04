@@ -11,6 +11,9 @@ export function MessageDataItem({ summary }: MessageDataItemProps) {
     <div className={styles.stackedPanelItem}>
       <div className={styles.stackedPanelHeader}>
         <Tag className={styles.stackedPanelTag}>{summary.label}</Tag>
+        {summary.deprecated && (
+          <Tag className={styles.messageDeprecatedTag}>Deprecated</Tag>
+        )}
         <span className={styles.stackedPanelMutedText}>
           {summary.wrappedIn
             ? `${summary.type} in ${summary.wrappedIn}`

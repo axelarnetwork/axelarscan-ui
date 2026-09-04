@@ -72,6 +72,8 @@ export interface MessageSummary {
   wrappedIn?: string;
   /** What the message does, in words. */
   label: string;
+  /** Set when the chain no longer accepts this message type. */
+  deprecated?: boolean;
   fields: MessageField[];
 }
 
@@ -80,6 +82,11 @@ type MessageExtractor = (message: Record<string, unknown>) => MessageField[];
 interface MessageHandler {
   label: string;
   extract: MessageExtractor;
+  /**
+   * The chain no longer accepts this message. Kept so historical transactions
+   * still read properly, and marked so nobody mistakes it for a live flow.
+   */
+  deprecated?: boolean;
 }
 
 const readString = (
@@ -544,6 +551,64 @@ export const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
     },
   },
 
+  // --- Deposit-address bridging. axelar-core removed these RPCs in v1.4.5 and
+  // the chain now rejects them ("link-deposit protocol is disabled"), but more
+  // than 1.5 million historical transactions use them, and an explorer has to
+  // render history. Marked deprecated so the page says so.
+  '/axelar.axelarnet.v1beta1.LinkRequest': {
+    label: 'Link address',
+    deprecated: true,
+    extract: message =>
+      toArray([
+        chainField('Recipient chain', readString(message, 'recipient_chain')),
+        textField('Recipient', readString(message, 'recipient_addr')),
+        textField(
+          'Asset',
+          readString(message, 'asset') ?? readString(message, 'denom')
+        ),
+        accountField('Sender', readSender(message)),
+      ]),
+  },
+  '/axelar.evm.v1beta1.LinkRequest': {
+    label: 'Link address',
+    deprecated: true,
+    extract: message =>
+      toArray([
+        chainField('Chain', readString(message, 'chain')),
+        chainField('Recipient chain', readString(message, 'recipient_chain')),
+        textField('Recipient', readString(message, 'recipient_addr')),
+        textField(
+          'Asset',
+          readString(message, 'asset') ?? readString(message, 'denom')
+        ),
+        accountField('Sender', readSender(message)),
+      ]),
+  },
+  '/axelar.axelarnet.v1beta1.ConfirmDepositRequest': {
+    label: 'Confirm deposit',
+    deprecated: true,
+    extract: message =>
+      toArray([
+        accountField('Deposit address', readString(message, 'deposit_address')),
+        textField('Denom', readString(message, 'denom')),
+        accountField('Sender', readSender(message)),
+      ]),
+  },
+  '/axelar.evm.v1beta1.ConfirmDepositRequest': {
+    label: 'Confirm deposit',
+    deprecated: true,
+    extract: message =>
+      toArray([
+        chainField('Chain', readString(message, 'chain')),
+        hashField(
+          'Transaction',
+          readHashes([message.tx_id]),
+          readString(message, 'chain')
+        ),
+        accountField('Sender', readSender(message)),
+      ]),
+  },
+
   // --- Messages a person is likely to have sent themselves.
   '/cosmos.bank.v1beta1.MsgSend': {
     label: 'Send',
@@ -748,6 +813,7 @@ function describe(
       type: shortMessageType(type),
       label: handler.label,
       fields,
+      ...(handler.deprecated ? { deprecated: true } : {}),
       ...(wrappedIn ? { wrappedIn } : {}),
     },
   ];
