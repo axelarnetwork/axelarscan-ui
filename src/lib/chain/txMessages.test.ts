@@ -619,26 +619,6 @@ describe('gaps the first round of review found', () => {
     expect(hashes?.kind === 'hash' && hashes.hashes).toEqual(['0x010203']);
   });
 
-  it('prefers the chain proto field name over the one the proxy adds', () => {
-    // The chain calls it `asset`; the Axelarscan proxy rewrites it to `denom`.
-    const read = (message: Record<string, unknown>) =>
-      extractMessageSummaries(wrap([message]))[0].fields.find(
-        f => f.label === 'Asset'
-      );
-
-    const base = {
-      '@type': '/axelar.evm.v1beta1.LinkRequest',
-      chain: 'polygon',
-      recipient_chain: 'osmosis',
-      recipient_addr: 'osmo1abc',
-      sender: 'axelar1sender',
-    };
-
-    expect(read({ ...base, asset: 'uusdc' })?.kind === 'text').toBe(true);
-    const viaProxy = read({ ...base, denom: 'uusdc' });
-    expect(viaProxy?.kind === 'text' && viaProxy.text).toBe('uusdc');
-  });
-
   it('describes the remaining handlers end to end', () => {
     const cases: [Record<string, unknown>, string, string[]][] = [
       [
@@ -649,16 +629,6 @@ describe('gaps the first round of review found', () => {
         },
         'Sign commands',
         ['Chain', 'Sender'],
-      ],
-      [
-        {
-          '@type': '/axelar.axelarnet.v1beta1.ConfirmDepositRequest',
-          deposit_address: 'axelar1deposit',
-          denom: 'uaxl',
-          sender: 'axelar1sender',
-        },
-        'Confirm deposit',
-        ['Deposit address', 'Denom', 'Sender'],
       ],
       [
         {
@@ -846,46 +816,6 @@ describe('shapes the LCD actually sends', () => {
     expect(action?.kind === 'text' && action.text).toBe('Submit Signature');
   });
 
-  it('describes the axelarnet LinkRequest, which has no source chain', () => {
-    // 190 of 200 recent LinkRequests are this one, not the evm variant.
-    const [summary] = extractMessageSummaries(
-      wrap([
-        {
-          '@type': '/axelar.axelarnet.v1beta1.LinkRequest',
-          recipient_addr: 'osmo14tudpxycxldyy',
-          recipient_chain: 'osmosis',
-          denom: 'uusdc',
-          sender: 'axelar1sender',
-        },
-      ])
-    );
-
-    expect(summary.label).toBe('Link address');
-    expect(summary.fields.map(f => f.label)).toEqual([
-      'Recipient chain',
-      'Recipient',
-      'Asset',
-      'Sender',
-    ]);
-  });
-
-  it('describes an evm deposit confirmation', () => {
-    const [summary] = extractMessageSummaries(
-      wrap([
-        {
-          '@type': '/axelar.evm.v1beta1.ConfirmDepositRequest',
-          chain: 'ethereum',
-          tx_id: '0xdeadbeef',
-          sender: 'axelar1sender',
-        },
-      ])
-    );
-    const hashes = summary.fields.find(f => f.label === 'Transaction');
-
-    expect(summary.label).toBe('Confirm deposit');
-    expect(hashes?.kind === 'hash' && hashes.hashes).toEqual(['0xdeadbeef']);
-  });
-
   it('does not link a vote to /gmp when the event is not a contract call', () => {
     // A gateway confirmation can be a token transfer, which has no GMP page.
     const [summary] = extractMessageSummaries(
@@ -905,5 +835,126 @@ describe('shapes the LCD actually sends', () => {
 
     expect(hashes?.kind === 'hash' && hashes.hashes).toEqual(['0xabc']);
     expect(hashes?.kind === 'hash' && hashes.gmp).toBe(false);
+  });
+});
+
+describe('IBC packet lifecycle', () => {
+  // Verbatim from testnet, proofs and the client update stripped.
+  const packet = (overrides: Record<string, unknown> = {}) => ({
+    sequence: '209',
+    source_port: 'transfer',
+    source_channel: 'channel-612',
+    destination_port: 'transfer',
+    destination_channel: 'channel-0',
+    data: Buffer.from(
+      JSON.stringify({
+        denom: 'uaxl',
+        amount: '1',
+        sender: 'axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7j',
+        receiver: 'zig1n76jdx557exce9s0ule2usynfvpykj9fm7mn22',
+      })
+    ).toString('base64'),
+    ...overrides,
+  });
+
+  it('describes a received packet, reading the transfer inside it', () => {
+    const [summary] = extractMessageSummaries(
+      wrap([
+        {
+          '@type': '/ibc.core.channel.v1.MsgRecvPacket',
+          packet: packet(),
+          signer: 'axelar139wppx205',
+        },
+      ])
+    );
+    const byLabel = Object.fromEntries(summary.fields.map(f => [f.label, f]));
+
+    expect(summary.label).toBe('Receive IBC packet');
+    expect(byLabel.Sequence.kind === 'text' && byLabel.Sequence.text).toBe(
+      '209'
+    );
+    expect(byLabel.Channel.kind === 'text' && byLabel.Channel.text).toBe(
+      'channel-612 -> channel-0'
+    );
+    expect(amountOf(summary.fields, 'Amount')).toEqual({
+      denom: 'uaxl',
+      amount: '1',
+    });
+    expect(addressOf(summary.fields, 'Relayer')).toBe('axelar139wppx205');
+  });
+
+  it('says whether an acknowledgement succeeded', () => {
+    const ok = extractMessageSummaries(
+      wrap([
+        {
+          '@type': '/ibc.core.channel.v1.MsgAcknowledgement',
+          packet: packet(),
+          // {"result":"AQ=="} is how a success is encoded.
+          acknowledgement: Buffer.from('{"result":"AQ=="}').toString('base64'),
+          signer: 'axelar139wppx205',
+        },
+      ])
+    )[0];
+    const result = ok.fields.find(f => f.label === 'Result');
+
+    expect(ok.label).toBe('Acknowledge IBC packet');
+    expect(result?.kind === 'text' && result.text).toBe('Success');
+  });
+
+  it('surfaces the reason a packet was rejected', () => {
+    const failed = extractMessageSummaries(
+      wrap([
+        {
+          '@type': '/ibc.core.channel.v1.MsgAcknowledgement',
+          packet: packet(),
+          acknowledgement: Buffer.from(
+            '{"error":"ABCI code: 1: error handling packet"}'
+          ).toString('base64'),
+          signer: 'axelar139wppx205',
+        },
+      ])
+    )[0];
+    const result = failed.fields.find(f => f.label === 'Result');
+
+    expect(result?.kind === 'text' && result.text).toBe(
+      'ABCI code: 1: error handling packet'
+    );
+  });
+
+  it('describes a timed out packet', () => {
+    const [summary] = extractMessageSummaries(
+      wrap([
+        {
+          '@type': '/ibc.core.channel.v1.MsgTimeout',
+          packet: packet({ sequence: '201' }),
+          next_sequence_recv: '201',
+          signer: 'axelar15wnw52zkr',
+        },
+      ])
+    );
+
+    expect(summary.label).toBe('IBC packet timed out');
+    expect(addressOf(summary.fields, 'Sender')).toBe(
+      'axelar1dv4u5k73pzqrxlzujxg3qp8kvc3pje7j'
+    );
+  });
+
+  it('still describes a packet whose payload is not a transfer', () => {
+    // Not every IBC packet carries a fungible token payload.
+    const [summary] = extractMessageSummaries(
+      wrap([
+        {
+          '@type': '/ibc.core.channel.v1.MsgRecvPacket',
+          packet: packet({ data: Buffer.from('not json').toString('base64') }),
+          signer: 'axelar139wppx205',
+        },
+      ])
+    );
+
+    expect(summary.fields.map(f => f.label)).toEqual([
+      'Sequence',
+      'Channel',
+      'Relayer',
+    ]);
   });
 });

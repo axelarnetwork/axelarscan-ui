@@ -223,6 +223,60 @@ const readContractAction = (
   return action ? toTitle(action, '_', true) : undefined;
 };
 
+/**
+ * The three IBC packet messages all wrap the same packet, whose `data` is a
+ * base64 JSON transfer payload. The Packet data section further down the page
+ * is driven by events, which these transactions do not carry, so this is the
+ * only place the payload is shown.
+ */
+interface IbcPacket {
+  sequence?: string;
+  route?: string;
+  sender?: string;
+  receiver?: string;
+  amount?: MessageAmount;
+}
+
+const readPacket = (message: Record<string, unknown>): IbcPacket => {
+  const packet = readObject(message, 'packet') ?? {};
+  const source = readString(packet, 'source_channel');
+  const destination = readString(packet, 'destination_channel');
+  const data = toJson(safeBase64ToString(packet.data));
+  const payload =
+    data && typeof data === 'object' && !Array.isArray(data)
+      ? (data as Record<string, unknown>)
+      : {};
+
+  return {
+    sequence: readString(packet, 'sequence'),
+    route: source && destination ? `${source} -> ${destination}` : undefined,
+    sender: readString(payload, 'sender'),
+    receiver: readString(payload, 'receiver'),
+    // A transfer payload carries denom and amount as sibling strings, not as
+    // the Coin object readAmount expects, so rebuild one to get its checks.
+    amount: readAmount({
+      amount: { denom: payload.denom, amount: payload.amount },
+    }),
+  };
+};
+
+/** {"result":"AQ=="} means it succeeded; {"error":"..."} carries the reason. */
+const readAcknowledgement = (
+  message: Record<string, unknown>
+): string | undefined => {
+  const decoded = toJson(safeBase64ToString(message.acknowledgement));
+
+  if (!decoded || typeof decoded !== 'object' || Array.isArray(decoded)) {
+    return undefined;
+  }
+
+  const { result, error } = decoded as Record<string, unknown>;
+
+  if (typeof error === 'string' && error) return error;
+
+  return result ? 'Success' : undefined;
+};
+
 const accountField = (
   label: string,
   address: string | undefined
@@ -335,58 +389,6 @@ export const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
         accountField('Sender', readSender(message)),
       ]),
   },
-  // Two LinkRequests exist. The axelarnet one is the overwhelming majority of
-  // real traffic and has no source chain, so they cannot share a handler.
-  '/axelar.axelarnet.v1beta1.LinkRequest': {
-    label: 'Link address',
-    extract: message =>
-      toArray([
-        chainField('Recipient chain', readString(message, 'recipient_chain')),
-        textField('Recipient', readString(message, 'recipient_addr')),
-        textField(
-          'Asset',
-          readString(message, 'asset') ?? readString(message, 'denom')
-        ),
-        accountField('Sender', readSender(message)),
-      ]),
-  },
-  '/axelar.evm.v1beta1.LinkRequest': {
-    label: 'Link address',
-    extract: message =>
-      toArray([
-        chainField('Chain', readString(message, 'chain')),
-        chainField('Recipient chain', readString(message, 'recipient_chain')),
-        textField('Recipient', readString(message, 'recipient_addr')),
-        textField(
-          'Asset',
-          readString(message, 'asset') ?? readString(message, 'denom')
-        ),
-        accountField('Sender', readSender(message)),
-      ]),
-  },
-  '/axelar.evm.v1beta1.ConfirmDepositRequest': {
-    label: 'Confirm deposit',
-    extract: message =>
-      toArray([
-        chainField('Chain', readString(message, 'chain')),
-        hashField(
-          'Transaction',
-          readHashes([message.tx_id]),
-          readString(message, 'chain')
-        ),
-        accountField('Sender', readSender(message)),
-      ]),
-  },
-  '/axelar.axelarnet.v1beta1.ConfirmDepositRequest': {
-    label: 'Confirm deposit',
-    extract: message =>
-      toArray([
-        accountField('Deposit address', readString(message, 'deposit_address')),
-        textField('Denom', readString(message, 'denom')),
-        accountField('Sender', readSender(message)),
-      ]),
-  },
-
   '/cosmwasm.wasm.v1.MsgExecuteContract': {
     label: 'Contract call',
     extract: message =>
@@ -403,6 +405,56 @@ export const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
         linkField('Message', readString(message, 'id'), id => `/gmp/${id}`),
         accountField('Sender', readSender(message)),
       ]),
+  },
+
+  // --- IBC packet lifecycle. The relayer signs these; the interesting part is
+  // the packet they carry and, for an acknowledgement, whether it worked.
+  '/ibc.core.channel.v1.MsgRecvPacket': {
+    label: 'Receive IBC packet',
+    extract: message => {
+      const packet = readPacket(message);
+
+      return toArray([
+        textField('Sequence', packet.sequence),
+        textField('Channel', packet.route),
+        // The far side is a foreign address, so it is shown as plain text.
+        textField('Sender', packet.sender),
+        accountField('Receiver', packet.receiver),
+        amountField('Amount', packet.amount),
+        accountField('Relayer', readString(message, 'signer')),
+      ]);
+    },
+  },
+  '/ibc.core.channel.v1.MsgAcknowledgement': {
+    label: 'Acknowledge IBC packet',
+    extract: message => {
+      const packet = readPacket(message);
+
+      return toArray([
+        textField('Result', readAcknowledgement(message)),
+        textField('Sequence', packet.sequence),
+        textField('Channel', packet.route),
+        accountField('Sender', packet.sender),
+        textField('Receiver', packet.receiver),
+        amountField('Amount', packet.amount),
+        accountField('Relayer', readString(message, 'signer')),
+      ]);
+    },
+  },
+  '/ibc.core.channel.v1.MsgTimeout': {
+    label: 'IBC packet timed out',
+    extract: message => {
+      const packet = readPacket(message);
+
+      return toArray([
+        textField('Sequence', packet.sequence),
+        textField('Channel', packet.route),
+        accountField('Sender', packet.sender),
+        textField('Receiver', packet.receiver),
+        amountField('Amount', packet.amount),
+        accountField('Relayer', readString(message, 'signer')),
+      ]);
+    },
   },
 
   // --- Messages a person is likely to have sent themselves.
