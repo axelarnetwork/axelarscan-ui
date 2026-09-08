@@ -372,8 +372,22 @@ export const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
   '/axelar.vote.v1beta1.VoteRequest': {
     label: 'Vote',
     extract: message => {
-      const vote = readObject(message, 'vote');
-      const events = toArray(vote?.events) as Record<string, unknown>[];
+      // Three generations of this message exist. Current votes carry a
+      // VoteEvents under `vote`; v1.3 reinstated `vote_deprecated` to keep
+      // historical transactions decodable, holding the same payload under
+      // `result` (or, older still, the first of `results_deprecated`); and the
+      // oldest name the event list `results` rather than `events`.
+      const legacy = readObject(message, 'vote_deprecated');
+      const vote =
+        readObject(message, 'vote') ??
+        readObject(legacy ?? {}, 'result') ??
+        (toArray(legacy?.results_deprecated)[0] as
+          | Record<string, unknown>
+          | undefined);
+      const events = toArray(vote?.events ?? vote?.results) as Record<
+        string,
+        unknown
+      >[];
 
       // Only a gateway contract call has a page under /gmp. Everything voted on
       // today is one, but a transfer or token event would link nowhere.
@@ -383,21 +397,29 @@ export const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
           event => event.contract_call ?? event.contract_call_with_token
         );
 
+      // Historical votes predate numeric poll ids: they carry poll_id "0" and
+      // the real identifier in poll_key. Only a numeric id has a poll page, so
+      // the older string key is shown as plain text rather than a dead link.
+      const pollId = readString(message, 'poll_id');
+      const numericPoll = pollId && pollId !== '0' ? pollId : undefined;
+      const pollKey = readString(readObject(message, 'poll_key') ?? {}, 'id');
+
       return toArray([
-        linkField(
-          'Poll',
-          readString(message, 'poll_id'),
-          id => `/evm-poll/${id}`
-        ),
+        numericPoll
+          ? linkField('Poll', numericPoll, id => `/evm-poll/${id}`)
+          : textField('Poll', pollKey),
         accountField('Voter', readSender(message)),
         chainField('Chain', readString(vote ?? {}, 'chain')),
         // An empty event list is a vote that the event did not happen, which is
-        // the one case where the absence is the whole point.
+        // the one case where the absence is the whole point. Say nothing at all
+        // when there is no payload to read, rather than claiming no event.
         textField(
           'Voted',
-          events.length > 0
-            ? `${events.length} event${events.length === 1 ? '' : 's'} confirmed`
-            : 'No event found'
+          vote
+            ? events.length > 0
+              ? `${events.length} event${events.length === 1 ? '' : 's'} confirmed`
+              : 'No event found'
+            : undefined
         ),
         hashField(
           // A poll covers a single source transaction, so every event in the
@@ -729,7 +751,7 @@ interface Unwrapped {
   wrappedIn?: string;
 }
 
-const unwrap = (message: Record<string, unknown>): Unwrapped[] => {
+const unwrap = (message: Record<string, unknown>, depth = 0): Unwrapped[] => {
   const type = readString(message, '@type');
   const key =
     type && Object.prototype.hasOwnProperty.call(UNWRAP_KEYS, type)
@@ -746,10 +768,22 @@ const unwrap = (message: Record<string, unknown>): Unwrapped[] => {
 
   if (inner.length === 0) return [{ message }];
 
-  return inner.map(entry => ({
-    message: { ...entry, sender: readSender(entry) ?? readSender(message) },
-    wrappedIn: shortMessageType(type),
-  }));
+  // An envelope can hold another one, so keep unwrapping. The depth guard is
+  // for safety against a malformed cycle, not because the chain nests deeply.
+  return inner.flatMap(entry => {
+    const carried = {
+      ...entry,
+      sender: readSender(entry) ?? readSender(message),
+    };
+    const nested =
+      depth < 4 ? unwrap(carried, depth + 1) : [{ message: carried }];
+
+    // Name the outermost envelope, which is what the raw JSON shows first.
+    return nested.map(({ message: unwrapped }) => ({
+      message: unwrapped,
+      wrappedIn: shortMessageType(type),
+    }));
+  });
 };
 
 /**
@@ -784,6 +818,22 @@ export function extractMessageSummaries(data: unknown): MessageSummary[] {
   });
 }
 
+/**
+ * Transactions from 2022 name Axelar's own types without the `axelar.` prefix,
+ * e.g. /vote.v1beta1.VoteRequest, so a miss is retried with it. The lookups are
+ * on own properties only: an @type of "constructor" would otherwise resolve to
+ * something off Object.prototype.
+ */
+const findHandler = (type: string): MessageHandler | undefined => {
+  for (const key of [type, type.replace(/^\//, '/axelar.')]) {
+    if (Object.prototype.hasOwnProperty.call(MESSAGE_HANDLERS, key)) {
+      return MESSAGE_HANDLERS[key];
+    }
+  }
+
+  return undefined;
+};
+
 function describe(
   message: Record<string, unknown>,
   index: number,
@@ -791,12 +841,7 @@ function describe(
   wrappedIn?: string
 ): MessageSummary[] {
   const type = readString(message, '@type');
-  // Own properties only - an @type of "constructor" would otherwise resolve
-  // to something off Object.prototype.
-  const handler =
-    type && Object.prototype.hasOwnProperty.call(MESSAGE_HANDLERS, type)
-      ? MESSAGE_HANDLERS[type]
-      : undefined;
+  const handler = type ? findHandler(type) : undefined;
 
   if (!type || !handler) return [];
 
@@ -806,15 +851,16 @@ function describe(
   // row of its own - the raw JSON below already shows it.
   if (fields.length === 0) return [];
 
-  return [
-    {
-      index,
-      innerIndex,
-      type: shortMessageType(type),
-      label: handler.label,
-      fields,
-      ...(handler.deprecated ? { deprecated: true } : {}),
-      ...(wrappedIn ? { wrappedIn } : {}),
-    },
-  ];
+  const summary: MessageSummary = {
+    index,
+    innerIndex,
+    type: shortMessageType(type),
+    label: handler.label,
+    fields,
+  };
+
+  if (handler.deprecated) summary.deprecated = true;
+  if (wrappedIn) summary.wrappedIn = wrappedIn;
+
+  return [summary];
 }

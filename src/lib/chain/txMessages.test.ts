@@ -1269,3 +1269,134 @@ describe('retired message types', () => {
     expect(summary.deprecated).toBeUndefined();
   });
 });
+
+describe('historical vote generations', () => {
+  // All three shapes are verbatim from mainnet through the LCD, which is what
+  // the page reads. The search index reports these differently.
+  it('reads the oldest votes, which name the event list results', () => {
+    // tx 2255942BE434BF6A3A0F10B4F778061BC69ECCDAE82A4605C17C1F230D86FEA4,
+    // 2022-05-05. Note the type url has no axelar. prefix.
+    const [summary] = extractMessageSummaries(
+      wrap([
+        {
+          '@type': '/vote.v1beta1.VoteRequest',
+          sender: 'axelar1zqe94f0pqpfulw8ku508zhax5x05gj4qqr7ms7',
+          poll_key: { module: 'evm', id: '0xc872a24e_0xd85a2160' },
+          vote: {
+            results: [
+              {
+                '@type': '/evm.v1beta1.Event',
+                chain: 'Moonbeam',
+                tx_id: [200, 114, 162],
+                transfer: { amount: '1100000' },
+              },
+            ],
+          },
+        },
+      ])
+    );
+    const byLabel = Object.fromEntries(summary.fields.map(f => [f.label, f]));
+
+    expect(summary.label).toBe('Vote');
+    expect(byLabel.Voted.kind === 'text' && byLabel.Voted.text).toBe(
+      '1 event confirmed'
+    );
+    // A transfer event is not a contract call, so it gets no /gmp link.
+    expect(
+      byLabel['Source transaction'].kind === 'hash' &&
+        byLabel['Source transaction'].gmp
+    ).toBe(false);
+  });
+
+  it('shows the old string poll key as text, never as a link to poll zero', () => {
+    // tx C5AF87A91B6536912732B165955B5D398BE0661D225D22F0E1B0B056F4D7EDBB,
+    // 2022-04-28: poll_id is literally "0" and vote is null.
+    const [summary] = extractMessageSummaries(
+      wrap([
+        refundWrapped({
+          '@type': '/axelar.vote.v1beta1.VoteRequest',
+          sender_deprecated: 'axelar1xfukgejgsy2u0wth3xk6kx34zj8rmdac9t2yue',
+          poll_key: { module: 'evm', id: '0x98c9a840_0xfA2355f9' },
+          vote_deprecated: { results_deprecated: [], result: null },
+          poll_id: '0',
+          vote: null,
+          sender: '',
+        }),
+      ])
+    );
+    const poll = summary.fields.find(f => f.label === 'Poll');
+
+    expect(poll?.kind).toBe('text');
+    expect(poll?.kind === 'text' && poll.text).toBe('0x98c9a840_0xfA2355f9');
+  });
+
+  it('does not claim no event happened when there is no vote payload', () => {
+    const [summary] = extractMessageSummaries(
+      wrap([
+        refundWrapped({
+          '@type': '/axelar.vote.v1beta1.VoteRequest',
+          poll_key: { module: 'evm', id: '0xabc' },
+          vote_deprecated: { results_deprecated: [], result: null },
+          poll_id: '0',
+          vote: null,
+          sender: 'axelar1voter',
+        }),
+      ])
+    );
+
+    expect(summary.fields.map(f => f.label)).not.toContain('Voted');
+  });
+
+  it('reads a vote payload reinstated under vote_deprecated', () => {
+    const [summary] = extractMessageSummaries(
+      wrap([
+        refundWrapped({
+          '@type': '/axelar.vote.v1beta1.VoteRequest',
+          poll_id: '742',
+          vote: null,
+          vote_deprecated: {
+            results_deprecated: [],
+            result: {
+              '@type': '/axelar.evm.v1beta1.VoteEvents',
+              chain: 'Fantom',
+              events: [{ tx_id: '0xfeed', contract_call: {} }],
+            },
+          },
+          sender: 'axelar1voter',
+        }),
+      ])
+    );
+    const byLabel = Object.fromEntries(summary.fields.map(f => [f.label, f]));
+
+    expect(byLabel.Chain).toEqual({
+      label: 'Chain',
+      kind: 'chain',
+      chain: 'Fantom',
+    });
+    expect(byLabel.Voted.kind === 'text' && byLabel.Voted.text).toBe(
+      '1 event confirmed'
+    );
+  });
+
+  it('unwraps an envelope inside an envelope', () => {
+    const [summary] = extractMessageSummaries(
+      wrap([
+        {
+          '@type': '/cosmos.authz.v1beta1.MsgExec',
+          grantee: 'axelar1grantee',
+          msgs: [
+            refundWrapped({
+              '@type': '/axelar.multisig.v1beta1.SubmitSignatureRequest',
+              sig_id: '77',
+              sender: 'axelar1signer',
+            }),
+          ],
+        },
+      ])
+    );
+
+    expect(summary.label).toBe('Submit signature');
+    // The outermost envelope is what the raw JSON shows first.
+    expect(summary.wrappedIn).toBe('MsgExec');
+  });
+});
