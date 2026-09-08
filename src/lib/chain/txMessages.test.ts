@@ -1301,6 +1301,17 @@ describe('historical vote generations', () => {
     expect(byLabel.Voted.kind === 'text' && byLabel.Voted.text).toBe(
       '1 event confirmed'
     );
+    // This shape puts the chain on the event, not on the vote wrapper. Reading
+    // only the wrapper drops the row and leaves the hash with no explorer link.
+    expect(byLabel.Chain).toEqual({
+      label: 'Chain',
+      kind: 'chain',
+      chain: 'Moonbeam',
+    });
+    expect(
+      byLabel['Source transaction'].kind === 'hash' &&
+        byLabel['Source transaction'].chain
+    ).toBe('Moonbeam');
     // A transfer event is not a contract call, so it gets no /gmp link.
     expect(
       byLabel['Source transaction'].kind === 'hash' &&

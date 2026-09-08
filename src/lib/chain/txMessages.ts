@@ -389,6 +389,12 @@ export const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
         unknown
       >[];
 
+      // Current votes carry the chain on the wrapper; the oldest put it on each
+      // event instead, so the wrapper alone leaves the row and the explorer
+      // link empty.
+      const chain =
+        readString(vote ?? {}, 'chain') ?? readString(events[0] ?? {}, 'chain');
+
       // Only a gateway contract call has a page under /gmp. Everything voted on
       // today is one, but a transfer or token event would link nowhere.
       const allContractCalls =
@@ -409,7 +415,7 @@ export const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
           ? linkField('Poll', numericPoll, id => `/evm-poll/${id}`)
           : textField('Poll', pollKey),
         accountField('Voter', readSender(message)),
-        chainField('Chain', readString(vote ?? {}, 'chain')),
+        chainField('Chain', chain),
         // An empty event list is a vote that the event did not happen, which is
         // the one case where the absence is the whole point. Say nothing at all
         // when there is no payload to read, rather than claiming no event.
@@ -427,7 +433,7 @@ export const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
           // React key of the row.
           'Source transaction',
           [...new Set(events.flatMap(event => readHashes([event.tx_id])))],
-          readString(vote ?? {}, 'chain'),
+          chain,
           allContractCalls
         ),
       ]);
