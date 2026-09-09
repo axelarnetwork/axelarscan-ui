@@ -59,6 +59,10 @@ export const packetDataJson =
 // list, just tighter, because the panel already has its own padding.
 export const messageFieldRow =
   'py-3 sm:grid sm:grid-cols-3 sm:gap-4 sm:py-2' as const;
+export const messageDeprecatedTag =
+  'w-fit !bg-amber-100 !text-2xs !text-amber-700 dark:!bg-amber-400/10 dark:!text-amber-500' as const;
+export const messageHashList = 'flex flex-col gap-y-1' as const;
+export const messageHashRow = 'flex items-center gap-x-1' as const;
 export const messageFieldAmount =
   'text-sm font-semibold text-zinc-900 dark:text-zinc-100' as const;
 
