@@ -130,6 +130,8 @@ export interface HopAndRecipientProps {
 export interface EventDataInput {
   call?: {
     event?: string;
+    chain?: string;
+    chain_type?: string;
     returnValues?: { destinationChain?: string; [key: string]: unknown };
     [key: string]: unknown;
   };
@@ -143,5 +145,6 @@ export interface EventDataInput {
   interchain_transfers?: Record<string, unknown>[];
   originData?: EventDataInput;
   simplified_status?: string;
+  status?: string;
   [key: string]: unknown;
 }

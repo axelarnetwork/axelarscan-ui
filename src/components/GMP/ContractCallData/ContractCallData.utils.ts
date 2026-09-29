@@ -1,4 +1,4 @@
-import { getEvent } from '@/components/GMPs';
+import { getDisplayStatus, getEvent } from '@/components/GMPs';
 import { isAxelar } from '@/lib/chain';
 import { toCase } from '@/lib/parser';
 
@@ -26,5 +26,5 @@ export function resolveStatusLabel(data: GMPMessage): string {
   ) {
     return 'Executed';
   }
-  return simplified_status ?? '';
+  return getDisplayStatus(data);
 }

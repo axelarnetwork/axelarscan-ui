@@ -81,6 +81,7 @@ export const statusCellWrapper = 'flex flex-col gap-y-1.5' as const;
 export const statusRow = 'flex items-center space-x-1.5' as const;
 export const statusTagBase = 'w-fit capitalize' as const;
 export const statusReceived = 'bg-green-600 dark:bg-green-500' as const;
+export const statusConfirmed = 'bg-amber-500 dark:bg-amber-600' as const;
 export const statusApproved = 'bg-orange-500 dark:bg-orange-600' as const;
 export const statusFailed = 'bg-red-600 dark:bg-red-500' as const;
 export const statusPending = 'bg-yellow-400 dark:bg-yellow-500' as const;
@@ -101,10 +102,12 @@ export const paginationWrapper =
   'mt-8 flex items-center justify-center' as const;
 
 // ─── Status Tag Helper ──────────────────────────────────────────
-export function getStatusTagClass(simplifiedStatus: string): string {
-  switch (simplifiedStatus) {
+export function getStatusTagClass(displayStatus: string): string {
+  switch (displayStatus) {
     case 'received':
       return statusReceived;
+    case 'confirmed':
+      return statusConfirmed;
     case 'approved':
       return statusApproved;
     case 'failed':
