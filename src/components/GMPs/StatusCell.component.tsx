@@ -15,7 +15,7 @@ import { timeDiff } from '@/lib/time';
 
 import type { StatusCellProps } from './GMPs.types';
 import * as styles from './GMPs.styles';
-import { getStatusLabel } from './GMPs.utils';
+import { getDisplayStatus, getStatusLabel } from './GMPs.utils';
 
 export function StatusCell({ data: d }: StatusCellProps) {
   const receivedTransactionHash =
@@ -30,7 +30,7 @@ export function StatusCell({ data: d }: StatusCellProps) {
             <Tag
               className={clsx(
                 styles.statusTagBase,
-                styles.getStatusTagClass(d.simplified_status)
+                styles.getStatusTagClass(getDisplayStatus(d))
               )}
             >
               {getStatusLabel(d)}

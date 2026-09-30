@@ -167,6 +167,23 @@ export function buildGmpHref(d: GMPRowData): string {
 }
 
 /**
+ * Refine the API's simplified_status with a 'confirmed' state, which the API
+ * folds into 'sent'. Calls from Cosmos chains or Axelar are on Axelar
+ * already, so they count as confirmed without a confirm event.
+ */
+export function getDisplayStatus(d: EventDataInput): string {
+  const { simplified_status, status, call } = d;
+
+  if (simplified_status === 'sent') {
+    const isSourceOnAxelar =
+      call?.chain_type === 'cosmos' || isAxelar(call?.chain);
+    return status === 'confirmed' || isSourceOnAxelar ? 'confirmed' : 'sent';
+  }
+
+  return simplified_status ?? '';
+}
+
+/**
  * Derive the human-readable status label for a GMP row.
  */
 export function getStatusLabel(d: EventDataInput): string {
@@ -178,5 +195,5 @@ export function getStatusLabel(d: EventDataInput): string {
   ) {
     return 'Executed';
   }
-  return d.simplified_status ?? '';
+  return getDisplayStatus(d);
 }

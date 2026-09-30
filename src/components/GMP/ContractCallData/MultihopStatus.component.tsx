@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 
+import { getDisplayStatus } from '@/components/GMPs';
 import { Tag } from '@/components/Tag';
 
 import { TimeSpentSection } from './TimeSpentSection.component';
@@ -19,7 +20,7 @@ export function MultihopStatus({ data }: MultihopStatusProps) {
           <Tag
             className={clsx(
               contractCallDataStyles.statusTag,
-              getStatusTagClass(data.simplified_status)
+              getStatusTagClass(getDisplayStatus(data))
             )}
           >
             {resolveStatusLabel(data)}

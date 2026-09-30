@@ -21,6 +21,7 @@ export const contractCallDataStyles = {
 // ─── Status Tag Helper ──────────────────────────────────────────
 const statusColorByState: Record<string, string> = {
   received: 'bg-green-600 dark:bg-green-500',
+  confirmed: 'bg-amber-500 dark:bg-amber-600',
   approved: 'bg-orange-500 dark:bg-orange-600',
   failed: 'bg-red-600 dark:bg-red-500',
 };
