@@ -229,12 +229,12 @@ export const getInputType = (
   const matchers: [string, () => boolean][] = [
     ['txhash', () => /^0x[A-Fa-f0-9]{64}$/.test(inputString)],
     // GMP message id: <tx hash>-<index>, e.g. 0x<hex>-5 or <base58 signature>-1.7,
-    // or the legacy <tx hash>:<log index> form used in /gmp links
+    // or the legacy <hex tx hash>:<log index> form used in /gmp links
     [
       'messageId',
       () =>
         new RegExp(
-          `^(0x[A-Fa-f0-9]{64}|[A-Fa-f0-9]{64}|[${BASE58_CHARS}]{32,90})[-:]\\d+(\\.\\d+)?$`
+          `^((0x)?[A-Fa-f0-9]{64}[-:]\\d+|[${BASE58_CHARS}]{32,90}-\\d+(\\.\\d+)?)$`
         ).test(inputString),
     ],
     ['evmAddress', () => /^0x[a-fA-F0-9]{40}$/.test(inputString)],

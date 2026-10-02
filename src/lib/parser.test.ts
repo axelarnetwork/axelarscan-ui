@@ -206,6 +206,15 @@ describe('parser utilities', () => {
       ).toBe('messageId');
     });
 
+    it('should only accept the colon form for hex tx hashes', () => {
+      expect(
+        getInputType(
+          '2WW7ewZ9zVqkaELaKJP6ghE7Ny6K8mVWPvagCLMjJxLDXHGffxKqCN96saA3gc6xa4RquK4ZbXPYbjisKyNpzffQ:1.7',
+          mockChains
+        )
+      ).toBe('tx');
+    });
+
     it('should detect validator addresses', () => {
       expect(
         getInputType(
