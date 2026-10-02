@@ -243,7 +243,11 @@ export const getInputType = (
       () => /^[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z]{2,63}$/.test(inputString),
     ],
     ['validator', () => bech32Prefix === 'axelarvaloper'],
-    ['axelarAddress', () => bech32Prefix === 'axelar'],
+    // consensus addresses open /account, which redirects to the validator
+    [
+      'axelarAddress',
+      () => bech32Prefix === 'axelar' || bech32Prefix === 'axelarvalcons',
+    ],
     [
       'cosmosAddress',
       () => !!bech32Prefix && cosmosPrefixes.includes(bech32Prefix),

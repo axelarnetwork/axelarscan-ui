@@ -233,6 +233,15 @@ describe('parser utilities', () => {
       ).toBe('axelarAddress');
     });
 
+    it('should detect validator consensus addresses as axelar addresses', () => {
+      expect(
+        getInputType(
+          'axelarvalcons1qurswpc8qurswpc8qurswpc8qurswpc8r05t4w',
+          mockChains
+        )
+      ).toBe('axelarAddress');
+    });
+
     it('should detect cosmos addresses with proper prefix', () => {
       expect(
         getInputType('osmo1qurswpc8qurswpc8qurswpc8qurswpc8mg52kn', mockChains)
