@@ -1,3 +1,4 @@
+import { bech32 } from 'bech32';
 import { utils } from 'ethers';
 import _ from 'lodash';
 const { base64, getAddress, toUtf8String } = { ...utils };
@@ -172,16 +173,34 @@ interface ChainData {
   [key: string]: unknown;
 }
 
+// bech32 limits strings to 90 chars by default, contract addresses are longer
+const BECH32_MAX_LENGTH = 1023;
+
+const BASE58_CHARS = '1-9A-HJ-NP-Za-km-z';
+
+/**
+ * Returns the human-readable prefix of a valid bech32 string, or undefined if
+ * the string is not valid bech32 (bad charset, mixed case or wrong checksum)
+ */
+const getBech32Prefix = (string: string): string | undefined => {
+  try {
+    return bech32.decode(string, BECH32_MAX_LENGTH).prefix;
+  } catch (error) {
+    return undefined;
+  }
+};
+
 /**
  * Determines the type of input based on pattern matching
  *
  * @param string - The input string to analyze
  * @param chainsData - Array of chain data for cosmos address matching
- * @returns The detected input type: 'txhash', 'evmAddress', 'domainName', 'validator', 'axelarAddress', 'cosmosAddress', 'block', or 'tx'
+ * @returns The detected input type: 'txhash', 'messageId', 'evmAddress', 'domainName', 'validator', 'axelarAddress', 'cosmosAddress', 'block', or 'tx'
  *
  * @example
  * ```ts
  * getInputType('0x1234...', chains) // 'evmAddress'
+ * getInputType('0x1234...-5', chains) // 'messageId'
  * getInputType('axelarvaloper1...', chains) // 'validator'
  * getInputType('123456', chains) // 'block'
  * getInputType('abc123', chains) // 'tx'
@@ -197,67 +216,41 @@ export const getInputType = (
 
   // Convert number to string for pattern matching
   const inputString = typeof string === 'number' ? String(string) : string;
+  const bech32Prefix = getBech32Prefix(inputString);
 
-  // Build regex patterns for different input types
-  const regexMap = {
-    txhash: new RegExp(/^0x([A-Fa-f0-9]{64})$/, 'igm'),
-    evmAddress: new RegExp(/^0x[a-fA-F0-9]{40}$/, 'igm'),
-    domainName: new RegExp(
-      /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)?/,
-      'igm'
-    ),
-    validator: new RegExp('axelarvaloper.*$', 'igm'),
-    axelarAddress: new RegExp('axelar.*$', 'igm'),
-    cosmosAddress: Object.fromEntries(
-      toArray(chainsData)
-        .filter((data: unknown): data is ChainData => {
-          const chain = data as ChainData;
-          return !!(chain.prefix_address && chain.prefix_address !== 'axelar');
-        })
-        .map((chainData: ChainData) => [
-          chainData.id,
-          new RegExp(`${chainData.prefix_address}.*$`, 'igm'),
-        ])
-    ),
-  };
+  const cosmosPrefixes = toArray(chainsData)
+    .map((data: unknown) => (data as ChainData).prefix_address)
+    .filter(
+      (prefix: string | undefined): prefix is string =>
+        !!prefix && prefix !== 'axelar'
+    );
 
-  // Filter regexMap entries that match the input
-  const matchingEntries = Object.entries(regexMap).filter(
-    ([regexKey, regexValue]) => {
-      if (regexKey === 'cosmosAddress') {
-        // Special handling for cosmos addresses
-        const cosmosEntries = Object.entries(regexValue);
+  // Ordered checks, the first match wins
+  const matchers: [string, () => boolean][] = [
+    ['txhash', () => /^0x[A-Fa-f0-9]{64}$/.test(inputString)],
+    // GMP message id: <tx hash>-<index>, e.g. 0x<hex>-5 or <base58 signature>-1.7,
+    // or the legacy <tx hash>:<log index> form used in /gmp links
+    [
+      'messageId',
+      () =>
+        new RegExp(
+          `^(0x[A-Fa-f0-9]{64}|[A-Fa-f0-9]{64}|[${BASE58_CHARS}]{32,90})[-:]\\d+(\\.\\d+)?$`
+        ).test(inputString),
+    ],
+    ['evmAddress', () => /^0x[a-fA-F0-9]{40}$/.test(inputString)],
+    [
+      'domainName',
+      () => /^[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z]{2,63}$/.test(inputString),
+    ],
+    ['validator', () => bech32Prefix === 'axelarvaloper'],
+    ['axelarAddress', () => bech32Prefix === 'axelar'],
+    [
+      'cosmosAddress',
+      () => !!bech32Prefix && cosmosPrefixes.includes(bech32Prefix),
+    ],
+  ];
 
-        for (const [chainId, chainRegex] of cosmosEntries) {
-          const matchesRegex = inputString.match(chainRegex as RegExp);
-
-          if (matchesRegex) {
-            const chain = chainsData.find(
-              (chainData: ChainData) => chainData.id === chainId
-            );
-            const startsWithPrefix = inputString.startsWith(
-              chain?.prefix_address || ''
-            );
-
-            if (startsWithPrefix) {
-              return true;
-            }
-          }
-        }
-
-        return false;
-      }
-
-      // For other types, just check regex match
-      return !!inputString.match(regexValue as RegExp);
-    }
-  );
-
-  // Extract the matched type name
-  const matchedTypes = matchingEntries.map(
-    ([matchedType, _regex]) => matchedType
-  );
-  const detectedType = _.head(matchedTypes);
+  const detectedType = matchers.find(([_type, matches]) => matches())?.[0];
 
   // If a type was detected, return it
   if (detectedType) {
