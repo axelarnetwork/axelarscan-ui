@@ -61,6 +61,10 @@ export function Search() {
         _input = (spaceIDDomain as Record<string, string>).address;
         type = 'address';
       }
+      // gmp message id
+      else if (type === 'messageId') {
+        type = 'gmp';
+      }
       // domain name
       else if (type === 'domainName') {
         type = 'address';
