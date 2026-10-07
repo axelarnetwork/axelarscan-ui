@@ -191,17 +191,84 @@ describe('parser utilities', () => {
       );
     });
 
+    it('should detect GMP message ids', () => {
+      expect(getInputType('0x' + 'a'.repeat(64) + '-5', mockChains)).toBe(
+        'messageId'
+      );
+      expect(getInputType('0x' + 'a'.repeat(64) + ':5', mockChains)).toBe(
+        'messageId'
+      );
+      expect(
+        getInputType(
+          '2WW7ewZ9zVqkaELaKJP6ghE7Ny6K8mVWPvagCLMjJxLDXHGffxKqCN96saA3gc6xa4RquK4ZbXPYbjisKyNpzffQ-1.7',
+          mockChains
+        )
+      ).toBe('messageId');
+    });
+
+    it('should only accept the colon form for hex tx hashes', () => {
+      expect(
+        getInputType(
+          '2WW7ewZ9zVqkaELaKJP6ghE7Ny6K8mVWPvagCLMjJxLDXHGffxKqCN96saA3gc6xa4RquK4ZbXPYbjisKyNpzffQ:1.7',
+          mockChains
+        )
+      ).toBe('tx');
+    });
+
     it('should detect validator addresses', () => {
-      expect(getInputType('axelarvaloper1abc', mockChains)).toBe('validator');
+      expect(
+        getInputType(
+          'axelarvaloper1qurswpc8qurswpc8qurswpc8qurswpc8hu8he0',
+          mockChains
+        )
+      ).toBe('validator');
     });
 
     it('should detect axelar addresses', () => {
-      expect(getInputType('axelar1abc', mockChains)).toBe('axelarAddress');
+      expect(
+        getInputType(
+          'axelar1qurswpc8qurswpc8qurswpc8qurswpc8ha3jtq',
+          mockChains
+        )
+      ).toBe('axelarAddress');
+    });
+
+    it('should detect validator consensus addresses as axelar addresses', () => {
+      expect(
+        getInputType(
+          'axelarvalcons1qurswpc8qurswpc8qurswpc8qurswpc8r05t4w',
+          mockChains
+        )
+      ).toBe('axelarAddress');
     });
 
     it('should detect cosmos addresses with proper prefix', () => {
-      expect(getInputType('osmo1abc123', mockChains)).toBe('cosmosAddress');
-      expect(getInputType('cosmos1xyz789', mockChains)).toBe('cosmosAddress');
+      expect(
+        getInputType('osmo1qurswpc8qurswpc8qurswpc8qurswpc8mg52kn', mockChains)
+      ).toBe('cosmosAddress');
+      expect(
+        getInputType(
+          'cosmos1qurswpc8qurswpc8qurswpc8qurswpc8nn86qp',
+          mockChains
+        )
+      ).toBe('cosmosAddress');
+    });
+
+    it('should not detect addresses that are not valid bech32', () => {
+      expect(getInputType('axelar123123123', mockChains)).toBe('tx');
+      expect(getInputType('axelarvaloper1abc', mockChains)).toBe('tx');
+      expect(getInputType('osmo1abc123', mockChains)).toBe('tx');
+      // wrong checksum
+      expect(
+        getInputType(
+          'axelar1qurswpc8qurswpc8qurswpc8qurswpc8ha3jtp',
+          mockChains
+        )
+      ).toBe('tx');
+      // prefix of an unknown chain
+      expect(
+        getInputType('noble1qurswpc8qurswpc8qurswpc8qurswpc8msjjc0', mockChains)
+      ).toBe('tx');
     });
 
     it('should detect block numbers', () => {
@@ -217,6 +284,10 @@ describe('parser utilities', () => {
     it('should detect domain names', () => {
       expect(getInputType('example.com', mockChains)).toBe('domainName');
       expect(getInputType('test.eth', mockChains)).toBe('domainName');
+    });
+
+    it('should not detect strings that only contain a dot as domain names', () => {
+      expect(getInputType('abc-1.7', mockChains)).toBe('tx');
     });
 
     it('should return undefined for empty input', () => {
