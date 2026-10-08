@@ -54,6 +54,16 @@ export interface ContractRef {
   [key: string]: unknown;
 }
 
+export interface IBCChannelEnd {
+  portId?: string;
+  channelId?: string;
+}
+
+export interface IBCChannels {
+  fromAxelar?: IBCChannelEnd;
+  toAxelar?: IBCChannelEnd;
+}
+
 export type ChainResourceData = Chain & {
   gateway?: ContractRef;
   multisig_prover?: ContractRef;
@@ -62,6 +72,7 @@ export type ChainResourceData = Chain & {
   service_registry?: ContractRef;
   rewards?: ContractRef;
   multisig?: ContractRef;
+  ibc?: IBCChannels;
 };
 
 export interface AssetAddressEntry {
