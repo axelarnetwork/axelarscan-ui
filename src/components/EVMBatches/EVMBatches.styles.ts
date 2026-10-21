@@ -60,8 +60,6 @@ export const chainTooltip = 'whitespace-nowrap' as const;
 export const codeIcon = 'text-zinc-700 dark:text-zinc-300' as const;
 export const mintTransferRow =
   'mr-2 flex h-6 min-w-fit items-center gap-x-1.5' as const;
-export const transferLink =
-  'font-medium text-blue-600 dark:text-blue-500' as const;
 export const saltRow = 'mr-2 flex h-6 items-center gap-x-1.5' as const;
 export const saltLabel = 'text-zinc-400 dark:text-zinc-500' as const;
 export const saltValue = 'text-zinc-400 dark:text-zinc-500' as const;

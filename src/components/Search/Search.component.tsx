@@ -12,7 +12,6 @@ import { Button } from '@/components/Button';
 import { useNameServicesStore } from '@/components/Profile';
 import { useChains } from '@/hooks/useGlobalData';
 import { searchGMP } from '@/lib/api/gmp';
-import { searchTransfers } from '@/lib/api/token-transfer';
 import { getENS } from '@/lib/api/name-services/ens';
 import { getSpaceID } from '@/lib/api/name-services/spaceid';
 import { getSlug } from '@/lib/navigation';
@@ -92,24 +91,7 @@ export function Search() {
 
           type = 'gmp';
         } else {
-          const transfersTotal = (
-            (await searchTransfers({
-              txHash: _input,
-              noRecover: true,
-              size: 0,
-            })) as Record<string, unknown>
-          )?.total as number | undefined;
-
-          if (transfersTotal && transfersTotal > 0) {
-            if (transfersTotal > 1) {
-              _input = `search?txHash=${_input}`;
-              type = 'transfers';
-            } else {
-              type = 'transfer';
-            }
-          } else {
-            type = type === 'txhash' ? 'gmp' : 'tx';
-          }
+          type = type === 'txhash' ? 'gmp' : 'tx';
         }
       }
 

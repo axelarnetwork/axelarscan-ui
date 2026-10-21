@@ -4,8 +4,6 @@ const request = createApiClient(
   process.env.NEXT_PUBLIC_TOKEN_TRANSFER_API_URL!
 );
 
-export const searchTransfers = (params?: ApiParams) =>
-  request('searchTransfers', params);
 export const transfersStats = (params?: ApiParams) =>
   request('transfersStats', params);
 export const transfersChart = (params?: ApiParams) =>
@@ -14,8 +12,6 @@ export const transfersTotalVolume = (params?: ApiParams) =>
   request('transfersTotalVolume', params);
 export const transfersTopUsers = (params?: ApiParams) =>
   request('transfersTopUsers', params);
-export const searchDepositAddresses = (params?: ApiParams) =>
-  request('searchDepositAddresses', params);
 export const searchBatches = (params?: ApiParams) =>
   request('searchBatches', params);
 export const getBatch = (chain: string, batchId: string) =>

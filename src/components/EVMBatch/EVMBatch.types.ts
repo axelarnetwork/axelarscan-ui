@@ -97,7 +97,6 @@ export interface SourceChainInfoProps {
 }
 
 export interface MintTransferInfoProps {
-  transferID: number;
   account: string | undefined;
   chain: string;
 }

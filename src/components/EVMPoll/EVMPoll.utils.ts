@@ -68,25 +68,24 @@ export function buildPollUrl(
   explorerUrl: string | undefined,
   transactionPath: string | undefined
 ): string {
-  if (includesSomePatterns(eventName, ['operator', 'token_deployed'])) {
-    return `${explorerUrl}${transactionPath?.replace('{tx}', d.transaction_id!)}`;
+  const isContractCall = includesSomePatterns(eventName, [
+    'contract_call',
+    'ContractCall',
+  ]);
+  // legacy token transfers have no axelarscan page, link to the source tx instead
+  const isLegacyTransfer =
+    !isContractCall &&
+    (includesSomePatterns(eventName, ['transfer', 'Transfer']) ||
+      !!d.deposit_address);
+
+  if (
+    includesSomePatterns(eventName, ['operator', 'token_deployed']) ||
+    isLegacyTransfer
+  ) {
+    return `${explorerUrl}${transactionPath?.replace('{tx}', d.transaction_id || '')}`;
   }
 
-  const isGmp =
-    includesSomePatterns(eventName, ['contract_call', 'ContractCall']) ||
-    !(
-      includesSomePatterns(eventName, ['transfer', 'Transfer']) ||
-      d.deposit_address
-    );
-  const routePrefix = isGmp ? 'gmp' : 'transfer';
-
-  if (d.transaction_id) {
-    return `/${routePrefix}/${d.transaction_id}`;
-  }
-  if (d.transfer_id) {
-    return `/${routePrefix}/?transferId=${d.transfer_id}`;
-  }
-  return `/${routePrefix}/`;
+  return `/gmp/${d.transaction_id || ''}`;
 }
 
 /** Build the full vote options array from raw votes. */
