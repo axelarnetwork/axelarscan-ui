@@ -42,7 +42,6 @@ export function CommandItem({
   } = { ...c.params };
   let { symbol, decimals } = { ...c.params };
 
-  const transferID = parseInt(c.id, 16);
   const assetData = getAssetData(symbol, assets);
 
   symbol =
@@ -142,26 +141,14 @@ export function CommandItem({
           )}
         </div>
       )}
-      {type === 'mintToken' && (
+      {type === 'mintToken' && account && (
         <div className={styles.mintTransferRow}>
-          <Link
-            href={`/transfer?transferId=${transferID}`}
-            target="_blank"
-            className={styles.transferLink}
-          >
-            Transfer
-          </Link>
-          {account && (
-            <>
-              <MdOutlineCode size={20} className={styles.codeIcon} />
-              <Profile
-                address={account}
-                chain={batch.chain}
-                width={20}
-                height={20}
-              />
-            </>
-          )}
+          <Profile
+            address={account}
+            chain={batch.chain}
+            width={20}
+            height={20}
+          />
         </div>
       )}
       {salt && (

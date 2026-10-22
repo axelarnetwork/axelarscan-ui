@@ -1,24 +1,3 @@
-export interface DepositAddressData {
-  source_chain?: string;
-  destination_chain?: string;
-  denom?: string;
-  sender_address?: string;
-  recipient_address?: string;
-}
-
-export interface TransferSend {
-  source_chain?: string;
-  destination_chain?: string;
-  sender_address?: string;
-  recipient_address?: string;
-  txhash?: string;
-}
-
-export interface TransferData {
-  link?: DepositAddressData;
-  send?: TransferSend;
-}
-
 export interface BalanceEntry {
   denom?: string;
   amount: number;
@@ -40,14 +19,7 @@ export interface AccountData {
   redelegations?: { data?: DelegationEntry[] };
   unbondings?: { data?: DelegationEntry[] };
   balances?: { data?: BalanceEntry[] };
-  depositAddressData?: DepositAddressData;
-  transferData?: TransferData;
   [key: string]: unknown;
-}
-
-export interface DepositAddressProps {
-  data: AccountData;
-  address: string;
 }
 
 export interface InfoProps {

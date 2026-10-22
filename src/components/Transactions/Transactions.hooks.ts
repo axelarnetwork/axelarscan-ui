@@ -6,11 +6,10 @@ import _ from 'lodash';
 
 import { useChains, useAssets } from '@/hooks/useGlobalData';
 import { searchTransactions, getTransactions } from '@/lib/api/validator';
-import { searchDepositAddresses } from '@/lib/api/token-transfer';
 import { axelarContracts, getAxelarContractAddresses } from '@/lib/config';
 import { getIcapAddress, getInputType, toArray } from '@/lib/parser';
 import { getParams } from '@/lib/operator';
-import { equalsIgnoreCase, find } from '@/lib/string';
+import { find } from '@/lib/string';
 
 import type {
   TransactionData,
@@ -65,89 +64,36 @@ async function fetchTransactionsData(
     const addressType = getInputType(address, chains);
 
     if (
-      ((address.length !== undefined && address.length >= 65) ||
-        addressType === 'evmAddress') &&
+      addressType === 'evmAddress' &&
       !find(
         address,
         _.concat(axelarContracts, getAxelarContractAddresses(chains))
       )
     ) {
-      const depositResponse = (await searchDepositAddresses({ address })) as {
-        data?: Array<{ deposit_address?: string }>;
-      } | null;
-      const { deposit_address } = {
-        ...depositResponse?.data?.[0],
-      };
+      const qAddress = getIcapAddress(address);
 
-      if (deposit_address || addressType === 'evmAddress') {
-        let qAddress = equalsIgnoreCase(address, deposit_address)
-          ? deposit_address
-          : address;
+      let response = (await searchTransactions({
+        ...params,
+        address: qAddress,
+        size: PAGE_SIZE,
+      })) as { data?: TransactionData[]; total?: number } | null;
 
-        let response: { data?: TransactionData[]; total?: number } | null;
-
-        switch (addressType) {
-          case 'axelarAddress':
-            response = (await getTransactions({
-              events: `message.sender='${qAddress}'`,
-            })) as { data?: TransactionData[]; total?: number } | null;
-
-            if (response) {
-              data = response.data;
-            }
-
-            response = (await getTransactions({
-              events: `transfer.recipient='${qAddress}'`,
-            })) as { data?: TransactionData[]; total?: number } | null;
-
-            if (response) {
-              data = _.concat(
-                toArray<TransactionData>(response.data),
-                toArray<TransactionData>(data)
-              );
-            }
-            break;
-          case 'evmAddress':
-            qAddress = getIcapAddress(qAddress);
-
-            response = (await searchTransactions({
-              ...params,
-              address: qAddress,
-              size: PAGE_SIZE,
-            })) as { data?: TransactionData[]; total?: number } | null;
-
-            if (response) {
-              data = response.data;
-            }
-            break;
-          default:
-            break;
-        }
-
-        response = (await getTransactions({
-          events: `link.depositAddress='${qAddress}'`,
-        })) as { data?: TransactionData[]; total?: number } | null;
-
-        if (response) {
-          data = _.concat(
-            toArray<TransactionData>(response.data),
-            toArray<TransactionData>(data)
-          );
-        }
-
-        total = data?.length;
-      } else {
-        const response = (await searchTransactions({
-          ...params,
-          address,
-          size: PAGE_SIZE,
-        })) as { data?: TransactionData[]; total?: number } | null;
-
-        if (response) {
-          data = response.data;
-          total = response.total;
-        }
+      if (response) {
+        data = response.data;
       }
+
+      response = (await getTransactions({
+        events: `link.depositAddress='${qAddress}'`,
+      })) as { data?: TransactionData[]; total?: number } | null;
+
+      if (response) {
+        data = _.concat(
+          toArray<TransactionData>(response.data),
+          toArray<TransactionData>(data)
+        );
+      }
+
+      total = data?.length;
     } else {
       const response = (await searchTransactions({
         ...params,

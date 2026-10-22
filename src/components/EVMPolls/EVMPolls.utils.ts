@@ -43,27 +43,21 @@ export function buildPollUrl(
     'operator',
     'token_deployed',
   ]);
-
-  if (isOperatorOrTokenDeployed) {
-    return `${explorerUrl}${transactionPath?.replace('{tx}', d.transaction_id || '')}`;
-  }
-
   const isContractCall = includesSomePatterns(eventName, [
     'contract_call',
     'ContractCall',
   ]);
-  const isTransfer =
-    includesSomePatterns(eventName, ['transfer', 'Transfer']) ||
-    !!d.deposit_address;
-  const routeType = isContractCall || !isTransfer ? 'gmp' : 'transfer';
+  // legacy token transfers have no axelarscan page, link to the source tx instead
+  const isLegacyTransfer =
+    !isContractCall &&
+    (includesSomePatterns(eventName, ['transfer', 'Transfer']) ||
+      !!d.deposit_address);
 
-  if (d.transaction_id) {
-    return `/${routeType}/${d.transaction_id}`;
+  if (isOperatorOrTokenDeployed || isLegacyTransfer) {
+    return `${explorerUrl}${transactionPath?.replace('{tx}', d.transaction_id || '')}`;
   }
-  if (d.transfer_id) {
-    return `/${routeType}/?transferId=${d.transfer_id}`;
-  }
-  return `/${routeType}/`;
+
+  return `/gmp/${d.transaction_id || ''}`;
 }
 
 /** Build the vote suffix label for a participation number */

@@ -19,12 +19,9 @@ export const detailLabel =
   'text-sm font-medium text-zinc-900 dark:text-zinc-100' as const;
 export const detailValue =
   'mt-1 text-sm leading-6 text-zinc-700 dark:text-zinc-300 sm:col-span-2 sm:mt-0' as const;
-export const detailValueCol = 'flex flex-col' as const;
 export const detailValueRow = 'flex items-center' as const;
 
 // ─── Transfer Link ──────────────────────────────────────────────
-export const transferLink =
-  'font-medium text-blue-600 dark:text-blue-500' as const;
 
 // ─── Number Display ─────────────────────────────────────────────
 export const numberValue =

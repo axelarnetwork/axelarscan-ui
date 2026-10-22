@@ -34,7 +34,6 @@ export function CommandParams({
   } = { ...command.params };
   let { symbol, decimals } = { ...command.params };
 
-  const transferID = parseInt(command.id, 16);
   const assetData = getAssetData(symbol, assets);
 
   symbol = assetData?.addresses?.[chain]?.symbol || assetData?.symbol || symbol;
@@ -70,11 +69,7 @@ export function CommandParams({
         />
       )}
       {type === 'mintToken' && (
-        <MintTransferInfo
-          transferID={transferID}
-          account={account}
-          chain={chain}
-        />
+        <MintTransferInfo account={account} chain={chain} />
       )}
       {salt && <SaltInfo salt={salt} depositAddress={deposit_address} />}
       {name && <NameInfo name={name} decimals={decimals} cap={cap} />}
