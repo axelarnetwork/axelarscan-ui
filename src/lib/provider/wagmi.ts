@@ -155,6 +155,20 @@ export const CHAINS = toArray(
             },
           },
         },
+        {
+          _id: 'arc',
+          id: 5042,
+          network: 'arc',
+          name: 'Arc',
+          nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
+          rpcUrls: { default: { http: ['https://rpc.mainnet.arc.io'] } },
+          blockExplorers: {
+            default: {
+              name: 'Arc Explorer',
+              url: 'https://explorer.arc.io',
+            },
+          },
+        },
       ]
     : [
         ['testnet', 'stagenet'].includes(ENVIRONMENT) && {
