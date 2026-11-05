@@ -169,6 +169,22 @@ export const CHAINS = toArray(
             },
           },
         },
+        {
+          _id: 'robinhood',
+          id: 4663,
+          network: 'robinhood',
+          name: 'Robinhood',
+          nativeCurrency: { name: 'Ethereum', symbol: 'ETH', decimals: 18 },
+          rpcUrls: {
+            default: { http: ['https://rpc.mainnet.chain.robinhood.com'] },
+          },
+          blockExplorers: {
+            default: {
+              name: 'Blockscout',
+              url: 'https://robinhoodchain.blockscout.com',
+            },
+          },
+        },
       ]
     : [
         ['testnet', 'stagenet'].includes(ENVIRONMENT) && {
