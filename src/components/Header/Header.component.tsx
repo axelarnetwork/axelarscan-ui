@@ -52,12 +52,8 @@ const NAVIGATIONS: NavigationItem[] = [
 const ENVIRONMENTS: EnvironmentItem[] = [
   { name: 'mainnet', href: 'https://axelarscan.io' },
   { name: 'testnet', href: 'https://testnet.axelarscan.io' },
-  { name: 'stagenet', href: 'https://stagenet.axelarscan.io' },
   { name: 'devnet-amplifier', href: 'https://devnet-amplifier.axelarscan.io' },
-].filter(
-  d =>
-    !['stagenet', 'devnet-amplifier'].includes(d.name) || d.name === ENVIRONMENT
-);
+].filter(d => d.name !== 'devnet-amplifier' || d.name === ENVIRONMENT);
 
 export function Header() {
   const pathname = usePathname();

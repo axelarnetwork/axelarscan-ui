@@ -95,7 +95,6 @@ cp .env.example .env
 | Mainnet          | axelarscan-mainnet          |
 | Testnet          | axelarscan-testnet          |
 | Staging          | axelarscan-staging          |
-| Stagenet         | axelarscan-stagenet         |
 | Devnet Amplifier | axelarscan-devnet-amplifier |
 
 Each Vercel project has its own environment variables configured in the Vercel dashboard. Locally, set `NEXT_PUBLIC_ENVIRONMENT` in your `.env` to target the desired environment.
