@@ -50,9 +50,13 @@ export function Chain({ data }: ChainProps) {
     explorer,
     prefix_address,
     chain_type,
+    ibc,
   } = { ...data };
   const { rpc, lcd } = { ...endpoints };
   const { url, address_path } = { ...explorer };
+
+  const outboundChannelId = ibc?.fromAxelar?.channelId;
+  const inboundChannelId = ibc?.toAxelar?.channelId;
 
   const gatewayAddress =
     data?.gateway?.address || gateway_contracts?.[id]?.address;
@@ -209,6 +213,20 @@ export function Chain({ data }: ChainProps) {
           )}
           {prefix_address && (
             <ValueBox title="Address Prefix" value={prefix_address} />
+          )}
+          {outboundChannelId && (
+            <ValueBox
+              title="Outbound IBC Channel (from Axelar)"
+              value={outboundChannelId}
+              noEllipse={true}
+            />
+          )}
+          {inboundChannelId && (
+            <ValueBox
+              title="Inbound IBC Channel (to Axelar)"
+              value={inboundChannelId}
+              noEllipse={true}
+            />
           )}
         </div>
       </div>
