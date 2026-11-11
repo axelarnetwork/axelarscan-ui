@@ -187,16 +187,16 @@ export const CHAINS = toArray(
         },
       ]
     : [
-        ['testnet', 'stagenet'].includes(ENVIRONMENT) && {
+        ['testnet'].includes(ENVIRONMENT) && {
           _id: 'ethereum-sepolia',
           ...sepolia,
         },
-        ['testnet', 'stagenet'].includes(ENVIRONMENT) && {
+        ['testnet'].includes(ENVIRONMENT) && {
           _id: 'test-sepolia',
           ...sepolia,
           name: `${sepolia.name} (Amplifier)`,
         },
-        ['testnet', 'stagenet'].includes(ENVIRONMENT) && {
+        ['testnet'].includes(ENVIRONMENT) && {
           _id: 'celo-sepolia',
           id: 11142220,
           network: 'celo-sepolia',
@@ -243,11 +243,11 @@ export const CHAINS = toArray(
         },
         { _id: 'binance', ...bscTestnet },
         { _id: 'polygon-sepolia', ...polygonAmoy },
-        ['testnet', 'stagenet'].includes(ENVIRONMENT) && {
+        ['testnet'].includes(ENVIRONMENT) && {
           _id: 'avalanche',
           ...avalancheFuji,
         },
-        ['testnet', 'stagenet'].includes(ENVIRONMENT) && {
+        ['testnet'].includes(ENVIRONMENT) && {
           _id: 'test-avalanche',
           ...avalancheFuji,
           name: `${avalancheFuji.name} (Amplifier)`,
@@ -290,7 +290,7 @@ export const CHAINS = toArray(
         { _id: 'fraxtal', ...fraxtalTestnet },
         { _id: 'blast-sepolia', ...blastSepolia },
         { _id: 'flow', ...flowTestnet },
-        ['testnet', 'stagenet'].includes(ENVIRONMENT) && {
+        ['testnet'].includes(ENVIRONMENT) && {
           _id: 'hedera',
           ...hederaTestnet,
         },
@@ -298,7 +298,7 @@ export const CHAINS = toArray(
           _id: 'hedera-testnet',
           ...hederaTestnet,
         },
-        ['testnet', 'stagenet'].includes(ENVIRONMENT) && {
+        ['testnet'].includes(ENVIRONMENT) && {
           _id: 'xrpl-evm',
           id: 1449000,
           network: 'xrpl-evm',
@@ -328,7 +328,7 @@ export const CHAINS = toArray(
           },
           testnet: true,
         },
-        ['testnet', 'stagenet'].includes(ENVIRONMENT) && {
+        ['testnet'].includes(ENVIRONMENT) && {
           _id: 'plume',
           id: 98867,
           network: 'plume',
@@ -358,7 +358,7 @@ export const CHAINS = toArray(
           },
           testnet: true,
         },
-        ['testnet', 'stagenet', 'devnet-amplifier'].includes(ENVIRONMENT) && {
+        ['testnet', 'devnet-amplifier'].includes(ENVIRONMENT) && {
           _id: 'hyperliquid',
           id: 998,
           network: 'hyperliquid',
@@ -417,7 +417,7 @@ export const CHAINS = toArray(
           },
           testnet: true,
         },
-        ['stagenet', 'devnet-amplifier'].includes(ENVIRONMENT) && {
+        ['devnet-amplifier'].includes(ENVIRONMENT) && {
           _id: 'monad',
           id: 10143,
           network: 'monad',
