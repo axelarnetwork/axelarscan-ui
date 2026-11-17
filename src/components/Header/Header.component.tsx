@@ -9,7 +9,6 @@ import { Container } from '@/components/Container';
 import { Logo } from '@/components/Logo';
 import { Search } from '@/components/Search';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { useTVL } from '@/hooks/useGlobalData';
 import { ENVIRONMENT } from '@/lib/config';
 
 import type { NavigationItem, EnvironmentItem } from './Header.types';
@@ -62,9 +61,7 @@ const ENVIRONMENTS: EnvironmentItem[] = [
 export function Header() {
   const pathname = usePathname();
   const [popoverOpen, setPopoverOpen] = useState<number | null>(null);
-  const tvl = useTVL();
-
-  const hasTVL = pathname === '/tvl' && !!tvl;
+  const hasTVL = pathname === '/tvl';
 
   return (
     <header className={clsx(header.root, hasTVL && header.tvlWidth)}>
