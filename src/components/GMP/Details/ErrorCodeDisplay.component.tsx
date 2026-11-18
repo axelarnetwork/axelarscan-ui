@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from '@/components/Link';
 
 import { isNumber } from '@/lib/number';
 import { split } from '@/lib/parser';

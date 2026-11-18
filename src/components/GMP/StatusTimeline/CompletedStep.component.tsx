@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import Link from 'next/link';
+import { Link } from '@/components/Link';
 
 import { StepContent } from './StepContent.component';
 import { statusTimelineStyles } from './StatusTimeline.styles';

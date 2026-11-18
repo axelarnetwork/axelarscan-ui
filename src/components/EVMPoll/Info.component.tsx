@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/components/Link';
 import clsx from 'clsx';
 import _ from 'lodash';
 import moment from 'moment';

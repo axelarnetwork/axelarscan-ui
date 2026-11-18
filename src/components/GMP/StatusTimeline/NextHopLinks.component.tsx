@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from '@/components/Link';
 
 import { isAxelar } from '@/lib/chain';
 import { toArray } from '@/lib/parser';

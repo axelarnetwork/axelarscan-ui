@@ -19,7 +19,29 @@ const eslintConfig = defineConfig([
       '@typescript-eslint/no-explicit-any': 'warn',
       'prefer-const': 'off',
       'no-unused-vars': 'off',
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'next/link',
+              message:
+                "Use { Link } from '@/components/Link': it prefetches on hover instead of in the viewport.",
+            },
+          ],
+        },
+      ],
     },
+  },
+  {
+    // the wrapper itself, and the header nav (Header, NavLink), which keeps
+    // viewport prefetching
+    files: [
+      'src/components/Link/**',
+      'src/components/Header/**',
+      'src/components/NavLink/**',
+    ],
+    rules: { 'no-restricted-imports': 'off' },
   },
 ]);
 

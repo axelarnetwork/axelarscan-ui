@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/components/Link';
 import { MdOutlineRefresh } from 'react-icons/md';
 
 import { Container } from '@/components/Container';

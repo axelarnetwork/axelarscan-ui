@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/components/Link';
 import moment from 'moment';
 import { MdArrowForwardIos } from 'react-icons/md';
 

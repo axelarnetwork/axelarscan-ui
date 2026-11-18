@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/components/Link';
 
 import { ellipse } from '@/lib/string';
 

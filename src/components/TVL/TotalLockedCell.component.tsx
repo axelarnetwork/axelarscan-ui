@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from '@/components/Link';
 import { PiInfo } from 'react-icons/pi';
 
 import { Number } from '@/components/Number';
