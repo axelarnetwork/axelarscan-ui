@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/components/Link';
 
 import { Image } from '@/components/Image';
 import { Copy } from '@/components/Copy';

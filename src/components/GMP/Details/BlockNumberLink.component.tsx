@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from '@/components/Link';
 
 import { Number as NumberDisplay } from '@/components/Number';
 import { isNumber, toNumber } from '@/lib/number';

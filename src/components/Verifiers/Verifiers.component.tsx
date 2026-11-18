@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/components/Link';
 
 import { Container } from '@/components/Container';
 import { Spinner } from '@/components/Spinner';

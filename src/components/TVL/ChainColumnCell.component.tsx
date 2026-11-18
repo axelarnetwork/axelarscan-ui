@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import Link from 'next/link';
+import { Link } from '@/components/Link';
 
 import { Number } from '@/components/Number';
 import { isNumber } from '@/lib/number';

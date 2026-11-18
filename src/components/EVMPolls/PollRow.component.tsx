@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import Link from 'next/link';
+import { Link } from '@/components/Link';
 import clsx from 'clsx';
 import _ from 'lodash';
 import { IoCheckmarkCircle, IoCheckmarkDoneCircle } from 'react-icons/io5';

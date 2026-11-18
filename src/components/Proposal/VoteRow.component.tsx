@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from '@/components/Link';
 import clsx from 'clsx';
 
 import { Copy } from '@/components/Copy';

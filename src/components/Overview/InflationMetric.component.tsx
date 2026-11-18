@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { Link } from '@/components/Link';
 
 import { Number } from '@/components/Number';
 import type { InflationMetricProps } from './Overview.types';

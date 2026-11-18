@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/components/Link';
 import { LuChevronUp, LuChevronDown } from 'react-icons/lu';
 
 import { Copy } from '@/components/Copy';

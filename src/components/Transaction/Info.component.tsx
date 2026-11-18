@@ -2,7 +2,7 @@
 
 import clsx from 'clsx';
 import moment from 'moment';
-import Link from 'next/link';
+import { Link } from '@/components/Link';
 // @ts-expect-error — no type declarations available
 import Linkify from 'react-linkify';
 

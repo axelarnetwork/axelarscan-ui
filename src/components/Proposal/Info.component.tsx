@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import Link from 'next/link';
+import { Link } from '@/components/Link';
 // @ts-expect-error react-linkify has no type declarations
 import Linkify from 'react-linkify';
 import moment from 'moment';

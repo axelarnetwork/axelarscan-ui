@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/components/Link';
 import { MdOutlineArrowBack } from 'react-icons/md';
 
 import { Copy } from '@/components/Copy';
